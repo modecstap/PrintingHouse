@@ -1,0 +1,11 @@
+from _decimal import Decimal
+
+from stages.i_stage import IStage
+
+
+class EmptyStage(IStage):
+    def get_cost(self) -> Decimal:
+        return Decimal(0)
+
+    def get_cost_price(self) -> Decimal:
+        return Decimal(0)
