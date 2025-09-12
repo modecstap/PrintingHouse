@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from models.edition import Chroma
-from stages.i_stage import IStage
+from cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
+from cost_reporter.models.edition import Chroma
 
 
 class InkStage(IStage):

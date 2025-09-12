@@ -3,7 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from models.list_size import ListSize
+from cost_reporter.models.list_size import ListSize
 
 
 class Chroma(Enum):

@@ -1,7 +1,8 @@
 from decimal import Decimal
 
-from calculators.item_placement_calculator.placement_strategies.pacement_strategy import PlacementStrategy
-from stages.i_stage import IStage
+from cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_strategies.pacement_strategy import \
+    PlacementStrategy
+from cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
 
 
 class CutStage(IStage):

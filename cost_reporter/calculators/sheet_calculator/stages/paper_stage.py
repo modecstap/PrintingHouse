@@ -1,7 +1,7 @@
 from _decimal import Decimal
 
-from models.press_sheet import PressSheet
-from stages.i_stage import IStage
+from cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
+from cost_reporter.models.press_sheet import PressSheet
 
 METRE_COEFFICIENT = 1_000_000
 KILO_COEFFICIENT = 1000

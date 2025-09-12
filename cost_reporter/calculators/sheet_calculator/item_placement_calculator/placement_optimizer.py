@@ -1,7 +1,7 @@
-from item_placement_calculator.placement_strategies.pacement_strategy import PlacementStrategy
-from item_placement_calculator.placement_strategies.placement_factory import PlacementFactory
-from models.list_size import ListSize
-from models.press_sheet import PressSheet
+from cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_strategies.placement_factory import \
+    PlacementFactory
+from cost_reporter.models.list_size import ListSize
+from cost_reporter.models.press_sheet import PressSheet
 
 
 class PlacementOptimizer:
@@ -22,11 +22,8 @@ class PlacementOptimizer:
     def _find_best_solution(self):
         for placement in self._placements:
             item_count = placement.get_items_count()
-            if self._best_solution.get_items_count() > item_count:
+            if self._best_solution.get_items_count() < item_count:
                 self._best_solution = placement
 
-    def get_items_per_sheet(self) -> int:
-        return self._best_solution.get_items_count()
-
-    def get_cut_count(self) -> int:
-        return self._best_solution.get_cut_count()
+    def get_best_solution(self):
+        return self._best_solution

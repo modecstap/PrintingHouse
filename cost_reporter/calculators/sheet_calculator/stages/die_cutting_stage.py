@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from stages.i_stage import IStage
+from cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
 
 
 class DieCuttingStage(IStage):

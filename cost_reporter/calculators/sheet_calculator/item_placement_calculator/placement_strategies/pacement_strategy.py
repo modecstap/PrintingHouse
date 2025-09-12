@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from models.list_size import ListSize
-from models.press_sheet import PressSheet
+from cost_reporter.models.list_size import ListSize
+from cost_reporter.models.press_sheet import PressSheet
 
 
 class PlacementStrategy(ABC):
