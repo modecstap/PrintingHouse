@@ -25,11 +25,14 @@ class PaperStage(IStage):
 
         self._calculate_paper_cost()
 
+        self._cost_price = self._previous_stage.get_cost_price() + self._paper_cost
+        self._cost = self._previous_stage.get_cost() + self._paper_cost
+
     def get_cost(self) -> Decimal:
-        return self._previous_stage.get_cost() + self._kilograms_paper_cost
+        return self._cost
 
     def get_cost_price(self) -> Decimal:
-        return self._previous_stage.get_cost_price() + self._kilograms_paper_cost
+        return self._cost_price
 
     def _calculate_paper_cost(self):
         paper_area_mm2 = Decimal(self._press_sheet.width * self._press_sheet.height)

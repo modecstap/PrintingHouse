@@ -10,7 +10,7 @@ from stages.lamination_stage import LaminationStage
 from stages.paper_stage import PaperStage
 
 
-class ProductionBuilder:
+class SheetCostBuilder:
     def __init__(
             self,
             edition: Edition,
@@ -32,6 +32,7 @@ class ProductionBuilder:
             kilograms_paper_cost=self._production.paper_cost,
             density=self._edition.density
         )
+        return self
 
     def with_ink(self):
         self._production_line = InkStage(
@@ -40,19 +41,21 @@ class ProductionBuilder:
             color_ink_cost=self._production.ink_cost,
             chroma=self._edition.chroma
         )
+        return self
 
     def with_lamination(self):
         self._production_line = LaminationStage(
             previous_stage=self._production_line,
             lamination=self._edition.lamination
         )
+        return self
 
     def with_die_cutting(self):
         self._production_line = DieCuttingStage(
             previous_stage=self._production_line,
             die_cutting_cost=self._production.die_cutting_cost,
-            die_cutting=self._edition.die_cutting
         )
+        return self
 
     def with_cut(self):
         self._production_line = CutStage(
@@ -60,3 +63,4 @@ class ProductionBuilder:
             cut_cost=self._production.cutting_cost,
             placement=self._placement
         )
+        return self

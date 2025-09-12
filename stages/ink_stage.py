@@ -1,4 +1,4 @@
-from _decimal import Decimal
+from decimal import Decimal
 
 from models.edition import Chroma
 from stages.i_stage import IStage
@@ -21,11 +21,14 @@ class InkStage(IStage):
 
         self._calculate_ink_cost()
 
+        self._cost_price = self._previous_stage.get_cost_price() + self._ink_cost
+        self._cost = self._previous_stage.get_cost() + self._ink_cost
+
     def get_cost(self) -> Decimal:
-        return self._previous_stage.get_cost() + self._ink_cost
+        return self._cost
 
     def get_cost_price(self) -> Decimal:
-        return self._previous_stage.get_cost_price() + self._ink_cost
+        return self._cost_price
 
     def _calculate_ink_cost(self):
         if self._chroma == Chroma.ONE_ZERO:
