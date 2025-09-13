@@ -51,6 +51,8 @@ class CostReporterFactory:
             .with_ink()
             .with_lamination()
             .with_cut()
+            .with_markup()
+            .with_tax_compensation()
         )
 
         # Дополнительные опции

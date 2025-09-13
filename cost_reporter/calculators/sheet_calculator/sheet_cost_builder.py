@@ -6,7 +6,9 @@ from cost_reporter.calculators.sheet_calculator.stages.empty_stage import EmptyS
 from cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
 from cost_reporter.calculators.sheet_calculator.stages.ink_stage import InkStage
 from cost_reporter.calculators.sheet_calculator.stages.lamination_stage import LaminationStage
+from cost_reporter.calculators.sheet_calculator.stages.markup_stage import MarkupStage
 from cost_reporter.calculators.sheet_calculator.stages.paper_stage import PaperStage
+from cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
 from cost_reporter.models.edition import Edition
 from cost_reporter.models.production import Production
 
@@ -69,5 +71,19 @@ class SheetCostBuilder:
             previous_stage=self._calculator,
             cut_cost=self._production.cutting_cost,
             placement=self._placement
+        )
+        return self
+
+    def with_markup(self):
+        self._calculator = MarkupStage(
+            previous_stage=self._calculator,
+            markup=self._edition.markup
+        )
+        return self
+
+    def with_tax_compensation(self):
+        self._calculator = TaxCompensationStage(
+            previous_stage=self._calculator,
+            tax_rate=self._production.tax_rate
         )
         return self

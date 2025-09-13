@@ -58,7 +58,7 @@ class EditionCalculator:
         return self._sheet_count
 
     def _calculate_cost(self):
-        self._cost = self._sheet_cost * self._sheet_count * self._markup
+        self._cost = self._sheet_cost * self._sheet_count * self._volume_base_markup
 
     def cost(self) -> Decimal:
         return self._cost
