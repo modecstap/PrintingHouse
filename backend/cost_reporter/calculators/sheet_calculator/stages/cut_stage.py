@@ -17,12 +17,10 @@ class CutStage(IStage):
         self._cut_cost = cut_cost
         self._placement = placement
 
-        self._die_cut_price = Decimal(0)
-
         self._calculate_cut_price()
 
         self._cost_price = self._previous_stage.get_cost_price()
-        self._cost = self._previous_stage.get_cost() + self._die_cut_price
+        self._cost = self._previous_stage.get_cost()
 
     def get_cost(self) -> Decimal:
         return self._cost
