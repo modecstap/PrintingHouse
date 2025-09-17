@@ -71,8 +71,8 @@ class CostReporterFactory:
         return EditionCalculator(
             item_count=self._edition.count,
             item_per_sheet=sheet_calculator.items_per_sheet(),
-            sheet_cost=sheet_calculator.get_cost(),
-            sheet_cost_price=sheet_calculator.get_cost_price(),
+            unit_cost=sheet_calculator.get_unit_cost(),
+            unit_cost_price=sheet_calculator.get_unit_cost_price(),
             markup=self._edition.markup
         )
 
