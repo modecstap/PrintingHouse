@@ -12,7 +12,6 @@ async def main():
     server = FastAPIServer(
         config=config
     )
-    server.save_openapi_description()
     await server.start()
 
 
