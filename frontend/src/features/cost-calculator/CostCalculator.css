@@ -1,0 +1,157 @@
+:root {
+  --color-bg: #e0e4eb;
+  --color-dark: #e0e4eb87;
+  --color-darker: #989ca487;
+  --color-text: black;
+  --color-text-inverce: white;
+  --color-primary: #3498db;
+  --color-primary-hover: #2d8fd1;
+  --color-accent: #e67e22;
+}
+
+/* Контейнер */
+.calculator-container {
+  max-width: 100vw;
+  height: fit-content;
+  margin: auto;
+  padding: 20px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Заголовки */
+.page-title {
+  text-align: left;
+  margin: 20px 15px;
+  color: var(--color-text);
+}
+
+.block {
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.block-title {
+  margin: 0 0 12px;
+  color: var(--color-text);
+  font-size: 18px;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 4px;
+}
+
+/* Формы */
+.form-grid {
+  display: grid;
+  margin-top: 15px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-tile {
+  background: var(--color-dark);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.4em;
+  }
+
+.form-tile label {
+  text-align: left;
+  font-size: 14px;
+  color: var(--color-text);
+  margin: 3px;
+}
+
+.form-tile input, select { 
+  box-shadow: inset 1px 1px 2px var(--color-darker);
+  outline: none;
+  border: none;
+  padding: 5px;
+  margin-top: 2px;
+}
+
+.form-input {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #bdc3c7;
+  outline: none;
+  background: white;
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+}
+
+/* Кнопки */
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.btn {
+  border: none;
+  padding: 12px 28px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverce);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-more {
+  background: var(--color-dark);
+  color: var(--color-text);
+}
+
+.btn-more:hover {
+  background: var(--color-darker);
+}
+
+/* Доп. параметры */
+.advanced-section {
+  overflow: hidden; /* управляем только высотой */
+  transition: all 0.4s ease;
+}
+
+.advanced-content {
+  margin: 8px 0;
+  padding-right: 10px;
+}
+
+/* Таблица */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #bdc3c7;
+  padding: 8px;
+}
+
+.report-table th {
+  background: var(--color-primary);
+  color: white;
+  font-weight: bold;
+}
+
+.report-table tr:nth-child(even) td {
+  background: #f4f6f7;
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
