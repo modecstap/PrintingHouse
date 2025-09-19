@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from backend.cost_reporter.models.list_size import ListSize
 from backend.cost_reporter.models.press_sheet import PressSheet
 
+COUNT_EXTERNAL_CUT = 4
 
 class PlacementStrategy(ABC):
     """
@@ -37,4 +38,4 @@ class PlacementStrategy(ABC):
         return int(self.count_x * self.count_y)
 
     def get_cut_count(self) -> int:
-        return max(0, self.count_x - 1) + max(0, self.count_y - 1)
+        return (max(0, self.count_x - 1) + max(0, self.count_y - 1)) * 2 + COUNT_EXTERNAL_CUT
