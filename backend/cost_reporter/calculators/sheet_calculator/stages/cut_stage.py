@@ -1,7 +1,6 @@
+import math
 from decimal import Decimal
 
-from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_strategies.pacement_strategy import \
-    PlacementStrategy
 from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
 
 
@@ -11,16 +10,22 @@ class CutStage(IStage):
             self,
             previous_stage: IStage,
             cut_cost: Decimal,
-            placement: PlacementStrategy
+            cut_count: int,
+            sheet_count: int,
+            sheet_in_stack: int
     ):
         self._previous_stage = previous_stage
         self._cut_cost = cut_cost
-        self._placement = placement
+        self._cut_count = cut_count
+        self._sheet_count = sheet_count
+        self._sheet_in_stack = sheet_in_stack
+
+        self._cutting_price = Decimal(0)
 
         self._calculate_cut_price()
 
         self._cost_price = self._previous_stage.get_cost_price()
-        self._cost = self._previous_stage.get_cost()
+        self._cost = self._previous_stage.get_cost() + self._cutting_price
 
     def get_cost(self) -> Decimal:
         return self._cost
@@ -29,4 +34,5 @@ class CutStage(IStage):
         return self._cost_price
 
     def _calculate_cut_price(self):
-        self._cutting_price = self._placement.get_cut_count() * self._cut_cost
+        cutman_salary = math.ceil(self._sheet_count / self._sheet_in_stack) * self._cut_count * self._cut_cost
+        self._cutting_price = cutman_salary / self._sheet_count

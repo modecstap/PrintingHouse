@@ -1,3 +1,5 @@
+import math
+
 from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_strategies.pacement_strategy import \
     PlacementStrategy
 from backend.cost_reporter.calculators.sheet_calculator.stages.cut_stage import CutStage
@@ -67,10 +69,25 @@ class SheetCostBuilder:
         return self
 
     def with_cut(self):
+        # TODO вынести расчёт количества листов в стопке
+        sheet_count = math.ceil(
+            self._edition.count /
+            self._placement.get_items_count()
+        )
+        sheet_in_stack = max(
+            math.ceil(
+                self._production.cutter.stack_height *
+                1200 /
+                self._edition.density
+            ),
+            0
+        )
         self._calculator = CutStage(
             previous_stage=self._calculator,
             cut_cost=self._production.cutting_cost,
-            placement=self._placement
+            cut_count=self._placement.get_cut_count(),
+            sheet_count=sheet_count,
+            sheet_in_stack=sheet_in_stack
         )
         return self
 
