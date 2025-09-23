@@ -36,15 +36,41 @@ export default function CostCalculatorPage() {
         body: JSON.stringify({ edition, production }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        // FastAPI обычно кладёт описание ошибки в detail
+        if (data?.detail) {
+          if (Array.isArray(data.detail)) {
+            // ошибки валидации (pydantic)
+            throw new Error(
+              data.detail
+                .map(
+                  (d) =>
+                    `${d.loc ? d.loc.join(" → ") + ": " : ""}${d.msg || d}`
+                )
+                .join("\n")
+            );
+          } else {
+            throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail));
+          }
+        }
+        throw new Error(`Ошибка сервера (${response.status})`);
+      }
+
       setReport(data);
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      if (err.name === "TypeError") {
+        setError("Не удалось подключиться к серверу. Проверьте соединение.");
+      } else {
+        setError(err.message || "Произошла неизвестная ошибка");
+      }
     } finally {
       setLoading(false);
     }
@@ -75,7 +101,14 @@ export default function CostCalculatorPage() {
             </button>
           </div>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && (
+              <div className="error-message">
+                <h3>⚠️ Ошибка</h3>
+                {error.split("\n").map((line, idx) => (
+                  <div key={idx}>{line}</div>
+                ))}
+              </div>
+            )}
         </div>
 
         <AdvancedSection open={showAdvanced}>
