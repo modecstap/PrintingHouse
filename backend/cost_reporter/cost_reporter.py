@@ -25,8 +25,8 @@ class CostReporter:
         sheet_count = self._edition_calculator.sheet_count()
         edition_cost = self._edition_calculator.cost()
 
-        profit_before_tax = self._tax_calculator.cost_before_tax()
-        profit_after_tax = self._tax_calculator.cost_after_tax()
+        profit_before_tax = self._tax_calculator.profit_before_tax()
+        profit_after_tax = self._tax_calculator.profit_after_tax()
 
         return CostReport(
             items_per_sheet=items_per_sheet,
