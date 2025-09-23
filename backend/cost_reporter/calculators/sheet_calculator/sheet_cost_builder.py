@@ -10,7 +10,9 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.ink_stage import 
 from backend.cost_reporter.calculators.sheet_calculator.stages.lamination_stage import LaminationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.markup_stage import MarkupStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.paper_stage import PaperStage
+from backend.cost_reporter.calculators.sheet_calculator.stages.printer_salary_stage import PrinterSalaryStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
+from backend.cost_reporter.calculators.sheet_calculator.stages.volume_markup_stage import VolumeMarkupStage
 from backend.cost_reporter.models.edition import Edition
 from backend.cost_reporter.models.production import Production
 
@@ -32,6 +34,10 @@ class SheetCostBuilder:
         self._production = production
         self._placement = placement
         self._calculator = EmptyStage()
+        self._sheet_count = math.ceil(
+            self._edition.count /
+            self._placement.get_items_count()
+        )
 
     def get_calculator(self) -> IStage:
         return self._calculator
@@ -54,6 +60,13 @@ class SheetCostBuilder:
         )
         return self
 
+    def with_printer_salary(self):
+        self._calculator = PrinterSalaryStage(
+            previous_stage=self._calculator,
+            salary_by_sheet=self._production.printer_salary
+        )
+        return self
+
     def with_lamination(self):
         self._calculator = LaminationStage(
             previous_stage=self._calculator,
@@ -70,10 +83,6 @@ class SheetCostBuilder:
 
     def with_cut(self):
         # TODO вынести расчёт количества листов в стопке
-        sheet_count = math.ceil(
-            self._edition.count /
-            self._placement.get_items_count()
-        )
         sheet_in_stack = max(
             math.ceil(
                 self._production.cutter.stack_height *
@@ -86,7 +95,7 @@ class SheetCostBuilder:
             previous_stage=self._calculator,
             cut_cost=self._production.cutting_cost,
             cut_count=self._placement.get_cut_count(),
-            sheet_count=sheet_count,
+            sheet_count=self._sheet_count,
             sheet_in_stack=sheet_in_stack
         )
         return self
@@ -102,5 +111,12 @@ class SheetCostBuilder:
         self._calculator = TaxCompensationStage(
             previous_stage=self._calculator,
             tax_rate=self._production.tax_rate
+        )
+        return self
+
+    def with_volume_markup(self):
+        self._calculator = VolumeMarkupStage(
+            previous_stage=self._calculator,
+            sheet_count=self._sheet_count
         )
         return self

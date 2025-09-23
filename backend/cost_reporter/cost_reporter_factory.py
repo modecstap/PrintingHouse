@@ -50,6 +50,7 @@ class CostReporterFactory:
             builder
             .with_paper()
             .with_ink()
+            .with_printer_salary()
             .with_lamination()
             .with_cut()
             .with_markup()
@@ -83,10 +84,7 @@ class CostReporterFactory:
 
     def _create_tax_calculator(self, edition_calculator: EditionCalculator):
         """Калькулятор налогов."""
-        return TaxCalculator(
-            tax_rate=self._production.tax_rate,
-            cost_before_tax=edition_calculator.cost(),
-        )
+        return TaxCalculator(tax_rate=self._production.tax_rate, profit_before_tax=edition_calculator.profit())
 
     # --- Публичный интерфейс ---
 

@@ -13,6 +13,7 @@ class Production(BaseModel):
     tax_rate: Decimal = Field(description="Налоговая ставка (0,93 = 7%)")
     black_ink_cost: Decimal = Field(description="Стоимость чёрной краски на 1 листе в руб.")
     ink_cost: Decimal = Field(description="Стоимость всех красок на 1 листе в руб.")
+    printer_salary: Decimal = Field(description="Зарплата печатнику за 1 лист в руб.ы")
     lamination_cost: Decimal = Field(description="Цена ламинации 1 листа в руб.")
     die_cutting_cost: Decimal = Field(description="Стоимость высечки 1 листа в руб.")
     paper_cost: Decimal = Field(description="Стоимость 1кг бумаги в руб.")
