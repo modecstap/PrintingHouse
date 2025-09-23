@@ -53,3 +53,6 @@ class EditionCalculator:
 
     def cost_price(self) -> Decimal:
         return self._cost_price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    def profit(self) -> Decimal:
+        return self.cost() - self.cost_price()

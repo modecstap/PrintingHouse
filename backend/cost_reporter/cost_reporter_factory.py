@@ -53,12 +53,17 @@ class CostReporterFactory:
             .with_lamination()
             .with_cut()
             .with_markup()
-            .with_tax_compensation()
         )
 
         # Дополнительные опции
         if self._edition.die_cutting:
             builder = builder.with_die_cutting()
+
+        builder = (
+            builder
+            .with_volume_markup()
+            .with_tax_compensation()
+        )
 
         return SheetCalculator(
             items_count=self._edition.count,
