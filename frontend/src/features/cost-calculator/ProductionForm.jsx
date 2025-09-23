@@ -18,7 +18,7 @@ export default function ProductionForm({ onChange }) {
       stack_height: 80,
     },
     cutting_cost: 10,
-    printer_salary: 4,
+    printer_salary: 2,
   };
 
 
