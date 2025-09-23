@@ -135,7 +135,8 @@
 
 .report-table th,
 .report-table td {
-  border: 1px solid #bdc3c7;
+  border: 0px;
+  box-shadow: inset 1px 1px 2px var(--color-darker);
   padding: 8px;
 }
 

@@ -6,11 +6,11 @@ export default function EditionForm({ initialValues, onChange }) {
     density: 0,
     width: 0,
     height: 0,
-    bleeds: 0,
+    bleeds: 2,
     chroma: 1,
     lamination: 1,
     die_cutting: "false", // для select храним как строку
-    markup: 0,            // в процентах!
+    markup: 80,            // в процентах!
     ...initialValues,     // если будут предустановки
   });
 

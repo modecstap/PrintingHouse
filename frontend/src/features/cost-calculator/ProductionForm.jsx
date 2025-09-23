@@ -18,6 +18,7 @@ export default function ProductionForm({ onChange }) {
       stack_height: 80,
     },
     cutting_cost: 10,
+    printer_salary: 4,
   };
 
 
@@ -159,6 +160,17 @@ export default function ProductionForm({ onChange }) {
           step="0.01"
           name="cutting_cost"
           value={formValues.cutting_cost}
+          onChange={handleChange}
+        />
+      </div>
+      
+      <div className="form-tile">
+        <label>Зарплата печатнику за 1 лист (руб.)</label>
+        <input
+          type="number"
+          step="0.01"
+          name="printer_salary"
+          value={formValues.printer_salary}
           onChange={handleChange}
         />
       </div>
