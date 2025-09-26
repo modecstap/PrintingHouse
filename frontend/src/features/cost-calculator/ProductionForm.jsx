@@ -15,8 +15,9 @@ export default function ProductionForm({ onChange }) {
       spacing: 5,
     },
     cutter: {
-      stack_height: 80,
+      stack_height: 30,
     },
+    sheet_by_fitting: 2,
     cutting_cost: 10,
     printer_salary: 2,
   };
@@ -149,6 +150,16 @@ export default function ProductionForm({ onChange }) {
           type="number"
           name="cutter.stack_height"
           value={formValues.cutter.stack_height}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="form-tile">
+        <label>Листы на приладку (шт)</label>
+        <input
+          type="number"
+          name="sheet_by_fitting"
+          value={formValues.sheet_by_fitting}
           onChange={handleChange}
         />
       </div>
