@@ -103,7 +103,7 @@ class SheetCostBuilder:
     def with_markup(self):
         self._calculator = MarkupStage(
             previous_stage=self._calculator,
-            markup=self._edition.markup
+            markup=self._production.markup
         )
         return self
 

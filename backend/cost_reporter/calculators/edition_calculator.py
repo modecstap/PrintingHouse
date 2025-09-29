@@ -18,13 +18,11 @@ class EditionCalculator:
             item_cost_price: Decimal,
             item_cost: Decimal,
             item_per_sheet: int,
-            markup: Decimal
     ):
         self._item_cost_price = item_cost_price
         self._item_cost = item_cost
         self._item_count = item_count
         self._item_per_sheet = item_per_sheet
-        self._markup = markup
 
         self._sheet_count = self._calculate_sheet_count()
 

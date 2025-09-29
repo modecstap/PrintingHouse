@@ -20,19 +20,40 @@ export default function ProductionForm({ onChange }) {
     sheet_by_fitting: 2,
     cutting_cost: 10,
     printer_salary: 2,
+    markup: 80,
+    bleeds: 0, // добавил, так как есть поле в форме
   };
-
 
   const [formValues, setFormValues] = useState(defaultValues);
 
   useEffect(() => {
-    onChange(formValues);
-  }, []);
+    const normalized = {
+      tax_rate: Number(formValues.tax_rate),
+      black_ink_cost: Number(formValues.black_ink_cost),
+      ink_cost: Number(formValues.ink_cost),
+      lamination_cost: Number(formValues.lamination_cost),
+      die_cutting_cost: Number(formValues.die_cutting_cost),
+      paper_cost: Number(formValues.paper_cost),
+      press_sheet: {
+        height: Number(formValues.press_sheet.height),
+        width: Number(formValues.press_sheet.width),
+        spacing: Number(formValues.press_sheet.spacing),
+      },
+      cutter: {
+        stack_height: Number(formValues.cutter.stack_height),
+      },
+      sheet_by_fitting: Number(formValues.sheet_by_fitting),
+      cutting_cost: Number(formValues.cutting_cost),
+      printer_salary: Number(formValues.printer_salary),
+      bleeds: Number(formValues.bleeds),
+      markup: (parseFloat(formValues.markup) / 100) + 1, // преобразование
+    };
+
+    onChange(normalized);
+  }, [formValues, onChange]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Проверяем, вложенное ли поле
     const keys = name.split(".");
     let newValues = { ...formValues };
 
@@ -43,11 +64,31 @@ export default function ProductionForm({ onChange }) {
     }
 
     setFormValues(newValues);
-    onChange(newValues);
   };
 
   return (
     <div className="form-grid">
+      <div className="form-tile">
+        <label>Наценка (%)</label>
+        <input
+          type="number"
+          step="0.01"
+          name="markup"
+          value={formValues.markup}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="form-tile">
+        <label>Вылеты (мм)</label>
+        <input
+          type="number"
+          name="bleeds"
+          value={formValues.bleeds}
+          onChange={handleChange}
+        />
+      </div>
+
       <div className="form-tile">
         <label>Налоговая ставка</label>
         <input

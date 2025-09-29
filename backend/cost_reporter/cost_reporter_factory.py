@@ -77,7 +77,6 @@ class CostReporterFactory:
             item_cost=self._item_calculator.get_item_cost(),
             item_cost_price=self._item_calculator.get_item_cost_price(),
             item_per_sheet=self._sheet_calculator.items_per_sheet(),
-            markup=self._edition.markup
         )
 
     def _create_tax_calculator(self):

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -34,7 +33,3 @@ class Edition(BaseModel):
     chroma: Chroma = Field(description="Цветность бумаги")
     lamination: Lamination = Field(description="Ламинация")
     die_cutting: bool = Field(description="Наличие высечки")
-    markup: Decimal = Field(
-        description="Наценка (1.85 - наценка в 85%)",
-        gt=Decimal("0"),
-    )

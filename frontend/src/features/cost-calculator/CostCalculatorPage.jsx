@@ -5,7 +5,6 @@ import CostReportView from "./CostReportView";
 import AdvancedSection from "./AdvancedSection";
 import "./CostCalculator.css";
 import { BackendIP } from "../../constants/BackendIP";
-import ConcealedParameters from "./ConcealedParameters";
 
 export default function CostCalculatorPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -113,7 +112,6 @@ export default function CostCalculatorPage() {
 
         <AdvancedSection open={showAdvanced}>
           <div className="advanced-content">
-            <ConcealedParameters edition={edition} onChange={setEdition} />
             <ProductionForm onChange={setProduction} />
           </div>
         </AdvancedSection>

@@ -21,3 +21,7 @@ class Production(BaseModel):
     cutter: CutterInfo
     cutting_cost: Decimal = Field(description="Цена 1 реза в руб.")
     sheet_by_fitting: int = Field(description="Количество листов на приладку в шт.")
+    markup: Decimal = Field(
+        description="Наценка (1.85 - наценка в 85%)",
+        gt=Decimal("0"),
+    )
