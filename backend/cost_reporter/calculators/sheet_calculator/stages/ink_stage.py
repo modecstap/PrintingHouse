@@ -4,11 +4,12 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IS
 from backend.cost_reporter.models.edition import Chroma
 
 
-class InkStage(IStage):
+class PrintStage(IStage):
 
     def __init__(
             self,
             previous_stage: IStage,
+            salary_by_sheet: Decimal,
             color_ink_cost: Decimal,
             black_ink_cost: Decimal,
             chroma: Chroma
@@ -22,7 +23,7 @@ class InkStage(IStage):
         self._calculate_ink_cost()
 
         self._cost_price = self._previous_stage.get_cost_price() + self._ink_cost
-        self._cost = self._previous_stage.get_cost() + self._ink_cost
+        self._cost = self._previous_stage.get_cost() + self._ink_cost + salary_by_sheet
 
     def get_cost(self) -> Decimal:
         return self._cost

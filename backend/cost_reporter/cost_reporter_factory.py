@@ -48,8 +48,7 @@ class CostReporterFactory:
         builder = (
             builder
             .with_paper()
-            .with_ink()
-            .with_printer_salary()
+            .with_print()
             .with_lamination()
             .with_cut()
             .with_markup()

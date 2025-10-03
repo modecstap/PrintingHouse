@@ -6,11 +6,10 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.cut_stage import 
 from backend.cost_reporter.calculators.sheet_calculator.stages.die_cutting_stage import DieCuttingStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.empty_stage import EmptyStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
-from backend.cost_reporter.calculators.sheet_calculator.stages.ink_stage import InkStage
+from backend.cost_reporter.calculators.sheet_calculator.stages.ink_stage import PrintStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.lamination_stage import LaminationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.markup_stage import MarkupStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.paper_stage import PaperStage
-from backend.cost_reporter.calculators.sheet_calculator.stages.printer_salary_stage import PrinterSalaryStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.volume_markup_stage import VolumeMarkupStage
 from backend.cost_reporter.models.edition import Edition
@@ -51,19 +50,13 @@ class SheetCostBuilder:
         )
         return self
 
-    def with_ink(self):
-        self._calculator = InkStage(
+    def with_print(self):
+        self._calculator = PrintStage(
             previous_stage=self._calculator,
+            salary_by_sheet=self._production.printer_salary,
             black_ink_cost=self._production.black_ink_cost,
             color_ink_cost=self._production.ink_cost,
             chroma=self._edition.chroma
-        )
-        return self
-
-    def with_printer_salary(self):
-        self._calculator = PrinterSalaryStage(
-            previous_stage=self._calculator,
-            salary_by_sheet=self._production.printer_salary
         )
         return self
 
