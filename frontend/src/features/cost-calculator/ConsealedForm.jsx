@@ -1,69 +1,51 @@
 import React, { useState, useEffect } from "react";
 
-export default function ProductionForm({ onChange }) {
-  // Дефолтные значения
-  const defaultValues = {
-    tax_rate: 0.93,
-    black_ink_cost: 2,
-    ink_cost: 15.6,
-    lamination_cost: 12,
-    die_cutting_cost: 100,
-    paper_cost: 165,
-    press_sheet: {
-      height: 450,
-      width: 320,
-      spacing: 5,
-    },
-    cutter: {
-      stack_height: 30,
-    },
-    sheet_by_fitting: 2,
-    cutting_cost: 10,
-    printer_salary: 2,
-    markup: 80,
-    bleeds: 0, // добавил, так как есть поле в форме
-  };
-
-  const [formValues, setFormValues] = useState(defaultValues);
+export default function ConsealedForm({ data, onChange }) {
+  const [formValues, setFormValues] = useState({
+    ...data.production,
+    bleeds: data.edition.list_size.bleeds,
+  });
 
   useEffect(() => {
-    const normalized = {
-      tax_rate: Number(formValues.tax_rate),
-      black_ink_cost: Number(formValues.black_ink_cost),
-      ink_cost: Number(formValues.ink_cost),
-      lamination_cost: Number(formValues.lamination_cost),
-      die_cutting_cost: Number(formValues.die_cutting_cost),
-      paper_cost: Number(formValues.paper_cost),
-      press_sheet: {
-        height: Number(formValues.press_sheet.height),
-        width: Number(formValues.press_sheet.width),
-        spacing: Number(formValues.press_sheet.spacing),
-      },
-      cutter: {
-        stack_height: Number(formValues.cutter.stack_height),
-      },
-      sheet_by_fitting: Number(formValues.sheet_by_fitting),
-      cutting_cost: Number(formValues.cutting_cost),
-      printer_salary: Number(formValues.printer_salary),
-      bleeds: Number(formValues.bleeds),
-      markup: (parseFloat(formValues.markup) / 100) + 1, // преобразование
-    };
-
-    onChange(normalized);
-  }, [formValues, onChange]);
+    setFormValues({
+      ...data.production,
+      bleeds: data.edition.list_size.bleeds,
+    });
+  }, [data]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const keys = name.split(".");
-    let newValues = { ...formValues };
+    const numericValue = value === "" ? "" : Number(value);
 
-    if (keys.length === 1) {
-      newValues[keys[0]] = value;
-    } else if (keys.length === 2) {
-      newValues[keys[0]] = { ...newValues[keys[0]], [keys[1]]: value };
+    let updated = { ...formValues, [name]: numericValue };
+    setFormValues(updated);
+
+    if (name === "bleeds") {
+      // обновляем edition
+      onChange("edition", {
+        ...data.edition,
+        list_size: { ...data.edition.list_size, bleeds: numericValue },
+      });
+    } else if (name.includes(".")) {
+      // обновляем вложенные production поля
+      const keys = name.split(".");
+      const newProduction = { ...data.production };
+      let obj = newProduction;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj[keys[i]] = { ...obj[keys[i]] };
+        obj = obj[keys[i]];
+      }
+      obj[keys[keys.length - 1]] = numericValue;
+
+      onChange("production", newProduction);
+    } else {
+      // обычное production поле
+      onChange("production", {
+        ...data.production,
+        [name]: numericValue,
+      });
     }
-
-    setFormValues(newValues);
   };
 
   return (
@@ -215,7 +197,7 @@ export default function ProductionForm({ onChange }) {
           onChange={handleChange}
         />
       </div>
-      
+
       <div className="form-tile">
         <label>Зарплата печатнику за 1 лист (руб.)</label>
         <input

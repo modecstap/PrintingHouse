@@ -1,40 +1,54 @@
 import React, { useState, useEffect } from "react";
 
-export default function EditionForm({ initialValues, onChange }) {
-  const [formValues, setFormValues] = useState({
-    count: 0,
-    density: 0,
-    width: 0,
-    height: 0,
-    bleeds: 2,
-    chroma: 1,
-    lamination: 1,
-    die_cutting: "false", // для select храним как строку
-    markup: 80,            // в процентах!
-    ...initialValues,     // если будут предустановки
-  });
+export default function VisibleForm({ data, onChange }) {
+  // инициализация локального state один раз при монтировании
+  const [formValues, setFormValues] = useState(() => ({
+    count: data.edition.count,
+    density: data.edition.density,
+    width: data.edition.list_size.width,
+    height: data.edition.list_size.height,
+    chroma: data.edition.chroma,
+    lamination: data.edition.lamination,
+    die_cutting: data.edition.die_cutting,
+  }));
 
-  // трансформируем в "edition" и отправляем наружу
+  // обновляем локальный state только если data.edition реально меняется
   useEffect(() => {
-    const edition = {
-      count: Number(formValues.count),
-      density: Number(formValues.density),
-      list_size: {
-        width: Number(formValues.width),
-        height: Number(formValues.height),
-        bleeds: Number(formValues.bleeds),
-      },
-      chroma: Number(formValues.chroma),
-      lamination: Number(formValues.lamination),
-      die_cutting: formValues.die_cutting === "true",
-      markup: (parseFloat(formValues.markup) / 100) + 1, // преобразование
-    };
-    onChange(edition);
-  }, [formValues, onChange]);
+    setFormValues({
+      count: data.edition.count,
+      density: data.edition.density,
+      width: data.edition.list_size.width,
+      height: data.edition.list_size.height,
+      chroma: data.edition.chroma,
+      lamination: data.edition.lamination,
+      die_cutting: data.edition.die_cutting,
+    });
+  }, [data.edition, data.edition.list_size]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
+    let newValue = value;
+
+    if (name === "die_cutting") {
+      newValue = value === "true";
+    } else if (["count", "density", "width", "height"].includes(name)) {
+      newValue = value;
+    } else if (name === "chroma" || name === "lamination") {
+      newValue = Number(value); // преобразуем числа из select
+    }
+
+    const updated = { ...formValues, [name]: newValue };
+    setFormValues(updated);
+
+    // уведомляем родителя
+    const updatedEdition = { ...data.edition, [name]: newValue };
+    
+    // если поле width или height, обновляем внутри list_size
+    if (name === "width" || name === "height") {
+      updatedEdition.list_size = { ...data.edition.list_size, [name]: newValue };
+    }
+
+    onChange("edition", updatedEdition);
   };
 
   return (
@@ -81,7 +95,7 @@ export default function EditionForm({ initialValues, onChange }) {
 
       <div className="form-tile">
         <label>Высечка</label>
-        <select name="die_cutting" value={formValues.die_cutting} onChange={handleChange}>
+        <select name="die_cutting" value={String(formValues.die_cutting)} onChange={handleChange}>
           <option value="false">Нет</option>
           <option value="true">Да</option>
         </select>

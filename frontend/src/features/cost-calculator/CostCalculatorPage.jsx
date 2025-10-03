@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import EditionForm from "./EditionForm";
-import ProductionForm from "./ProductionForm";
+import VisibleForm from "./VisibleForm";
+import ConsealedForm from "./ConsealedForm";
 import CostReportView from "./CostReportView";
 import AdvancedSection from "./AdvancedSection";
 import "./CostCalculator.css";
@@ -8,19 +8,49 @@ import { BackendIP } from "../../constants/BackendIP";
 
 export default function CostCalculatorPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [edition, setEdition] = useState({
-    count: 0,
-    density: 0,
-    list_size: { width: 0, height: 0, bleeds: 0 },
-    chroma: 1,        // дефолт select
-    lamination: 1,    // дефолт select
-    die_cutting: false,
-    markup: 0,
+
+  const [formData, setFormData] = useState({
+    edition: {
+      count: 0,
+      density: 0,
+      list_size: { width: 0, height: 0, bleeds: 0 },
+      chroma: 1,
+      lamination: 1,
+      die_cutting: false,
+    },
+    production: {
+      tax_rate: 0.93,
+      markup: 80,
+      black_ink_cost: 2,
+      ink_cost: 15.6,
+      lamination_cost: 12,
+      die_cutting_cost: 100,
+      paper_cost: 165,
+      press_sheet: {
+        height: 450,
+        width: 320,
+        spacing: 5,
+      },
+      cutter: {
+        stack_height: 30,
+      },
+      sheet_by_fitting: 2,
+      cutting_cost: 10,
+      printer_salary: 2,
+    },
   });
-  const [production, setProduction] = useState({});
+
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  /** универсальное обновление edition / production */
+  const handleFormChange = (section, newValues) => {
+    setFormData((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], ...newValues },
+    }));
+  };
 
   const handleCalculate = async () => {
     setLoading(true);
@@ -29,10 +59,8 @@ export default function CostCalculatorPage() {
     try {
       const response = await fetch(BackendIP + "/api/costs_report", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ edition, production }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       let data;
@@ -43,10 +71,8 @@ export default function CostCalculatorPage() {
       }
 
       if (!response.ok) {
-        // FastAPI обычно кладёт описание ошибки в detail
         if (data?.detail) {
           if (Array.isArray(data.detail)) {
-            // ошибки валидации (pydantic)
             throw new Error(
               data.detail
                 .map(
@@ -56,7 +82,11 @@ export default function CostCalculatorPage() {
                 .join("\n")
             );
           } else {
-            throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail));
+            throw new Error(
+              typeof data.detail === "string"
+                ? data.detail
+                : JSON.stringify(data.detail)
+            );
           }
         }
         throw new Error(`Ошибка сервера (${response.status})`);
@@ -81,7 +111,11 @@ export default function CostCalculatorPage() {
 
       <div className="block">
         <div className="advanced-content">
-          <EditionForm edition={edition} onChange={setEdition} />
+          {/* Видимая форма — изменяет edition и production */}
+          <VisibleForm
+            data={formData}
+            onChange={handleFormChange}
+          />
 
           <div className="button-row">
             <button
@@ -101,18 +135,22 @@ export default function CostCalculatorPage() {
           </div>
 
           {error && (
-              <div className="error-message">
-                <h3>⚠️ Ошибка</h3>
-                {error.split("\n").map((line, idx) => (
-                  <div key={idx}>{line}</div>
-                ))}
-              </div>
-            )}
+            <div className="error-message">
+              <h3>⚠️ Ошибка</h3>
+              {error.split("\n").map((line, idx) => (
+                <div key={idx}>{line}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <AdvancedSection open={showAdvanced}>
           <div className="advanced-content">
-            <ProductionForm onChange={setProduction} />
+            {/* Скрытая форма — тоже изменяет edition и production */}
+            <ConsealedForm
+              data={formData}
+              onChange={handleFormChange}
+            />
           </div>
         </AdvancedSection>
       </div>
