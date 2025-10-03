@@ -11,7 +11,7 @@ class MarkupStage(IStage):
             markup: Decimal
     ):
         self._previous_stage = previous_stage
-        self._markup = markup
+        self._markup = markup / 100 + 1
 
         self._cost_price = self._previous_stage.get_cost_price()
         self._cost = self._previous_stage.get_cost() * self._markup

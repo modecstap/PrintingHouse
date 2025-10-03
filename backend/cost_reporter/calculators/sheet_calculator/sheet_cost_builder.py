@@ -70,7 +70,8 @@ class SheetCostBuilder:
     def with_lamination(self):
         self._calculator = LaminationStage(
             previous_stage=self._calculator,
-            lamination=self._edition.lamination
+            lamination=self._edition.lamination,
+            lamination_cost=self._production.lamination_cost
         )
         return self
 

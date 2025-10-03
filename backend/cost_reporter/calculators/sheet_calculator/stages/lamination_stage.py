@@ -10,11 +10,11 @@ class LaminationStage(IStage):
             self,
             previous_stage: IStage,
             lamination: Lamination,
+            lamination_cost: Decimal
     ):
         self._previous_stage = previous_stage
         self._lamination = lamination
-
-        self._lamination_cost = Decimal(0)
+        self._lamination_cost = lamination_cost
 
         self._calculate_lamination_cost()
 
@@ -31,6 +31,6 @@ class LaminationStage(IStage):
         if self._lamination == Lamination.DONT:
             self._lamination_cost = 0
         if self._lamination == Lamination.ONE_ZERO:
-            self._lamination_cost = self._production.lamination_cost
+            self._lamination_cost = self._lamination_cost
         if self._lamination == Lamination.ONE_ONE:
-            self._lamination_cost = self._production.lamination_cost * 2
+            self._lamination_cost = self._lamination_cost * 2
