@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.server.routers.CostReportRouter import CostReportRouter
+from backend.server.routers.InstructionRouter import InstructionRouter
 from backend.server.server_config import ServerConfig
 
 
@@ -38,3 +39,4 @@ class FastAPIServer:
 
     def _setup_routes(self):
         self.app.include_router(CostReportRouter().router)
+        self.app.include_router(InstructionRouter().router)
