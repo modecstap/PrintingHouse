@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from backend.cost_reporter.models.list_size import ListSize
-from backend.cost_reporter.models.press_sheet import PressSheet
+from backend.models import ListSize
+from backend.models import PressSheet
 
 COUNT_EXTERNAL_CUT = 4
 

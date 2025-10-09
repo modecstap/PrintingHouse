@@ -6,8 +6,8 @@ from backend.cost_reporter.calculators.sheet_calculator.sheet_calculator import 
 from backend.cost_reporter.calculators.sheet_calculator.sheet_cost_builder import SheetCostBuilder
 from backend.cost_reporter.calculators.tax_calculator import TaxCalculator
 from backend.cost_reporter.cost_reporter import CostReporter
-from backend.cost_reporter.models.edition import Edition
-from backend.cost_reporter.models.production import Production
+from backend.models import Edition
+from backend.models import Production
 
 
 class CostReporterFactory:

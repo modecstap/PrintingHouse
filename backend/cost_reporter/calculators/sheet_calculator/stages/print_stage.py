@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
-from backend.cost_reporter.models.edition import Chroma
+from backend.models import Chroma
 
 
 class PrintStage(IStage):

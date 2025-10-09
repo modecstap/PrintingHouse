@@ -1,7 +1,7 @@
 from _decimal import Decimal
 
 from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
-from backend.cost_reporter.models.edition import Lamination
+from backend.models import Lamination
 
 
 class LaminationStage(IStage):

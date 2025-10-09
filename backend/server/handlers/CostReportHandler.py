@@ -1,7 +1,7 @@
 from backend.cost_reporter.cost_reporter_factory import CostReporterFactory
-from backend.cost_reporter.models.cost_report import CostReport
-from backend.cost_reporter.models.edition import Edition
-from backend.cost_reporter.models.production import Production
+from backend.models import Edition
+from backend.models import Production
+from backend.models.cost_report import CostReport
 
 
 class CostReportHandler:

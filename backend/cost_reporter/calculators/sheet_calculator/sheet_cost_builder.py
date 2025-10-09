@@ -12,8 +12,8 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.paper_stage impor
 from backend.cost_reporter.calculators.sheet_calculator.stages.print_stage import PrintStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.volume_markup_stage import VolumeMarkupStage
-from backend.cost_reporter.models.edition import Edition
-from backend.cost_reporter.models.production import Production
+from backend.models import Edition
+from backend.models import Production
 
 
 class SheetCostBuilder:

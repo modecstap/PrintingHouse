@@ -2,7 +2,7 @@ from backend.cost_reporter.calculators.edition_calculator import EditionCalculat
 from backend.cost_reporter.calculators.item_calculator import ItemCalculator
 from backend.cost_reporter.calculators.sheet_calculator.sheet_calculator import SheetCalculator
 from backend.cost_reporter.calculators.tax_calculator import TaxCalculator
-from backend.cost_reporter.models.cost_report import CostReport
+from backend.models.cost_report import CostReport
 
 
 class CostReporter:

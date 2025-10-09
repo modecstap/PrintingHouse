@@ -1,22 +1,8 @@
-from enum import Enum
-
 from pydantic import BaseModel, Field
 
-from backend.cost_reporter.models.list_size import ListSize
-
-
-class Chroma(Enum):
-    ONE_ZERO = 1
-    ONE_ONE = 2
-    FOUR_ZERO = 3
-    FOUR_ONE = 4
-    FOUR_FOUR = 5
-
-
-class Lamination(Enum):
-    DONT = 1
-    ONE_ZERO = 2
-    ONE_ONE = 3
+from backend.models.chroma import Chroma
+from backend.models.lamination import Lamination
+from backend.models.list_size import ListSize
 
 
 class Edition(BaseModel):

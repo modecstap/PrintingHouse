@@ -1,7 +1,7 @@
 from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_strategies.placement_factory import \
     PlacementFactory
-from backend.cost_reporter.models.list_size import ListSize
-from backend.cost_reporter.models.press_sheet import PressSheet
+from backend.models import ListSize
+from backend.models import PressSheet
 
 
 class PlacementOptimizer:

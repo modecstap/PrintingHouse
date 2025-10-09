@@ -2,11 +2,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from backend.cost_reporter.models.press_sheet import PressSheet
-
-
-class CutterInfo(BaseModel):
-    stack_height: int = Field(description="Высота стопки помещающейся в резаке в мм")
+from backend.models.cutter import CutterInfo
+from backend.models.press_sheet import PressSheet
 
 
 class Production(BaseModel):
