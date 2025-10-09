@@ -6,10 +6,10 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.cut_stage import 
 from backend.cost_reporter.calculators.sheet_calculator.stages.die_cutting_stage import DieCuttingStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.empty_stage import EmptyStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.i_stage import IStage
-from backend.cost_reporter.calculators.sheet_calculator.stages.ink_stage import PrintStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.lamination_stage import LaminationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.markup_stage import MarkupStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.paper_stage import PaperStage
+from backend.cost_reporter.calculators.sheet_calculator.stages.print_stage import PrintStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.volume_markup_stage import VolumeMarkupStage
 from backend.cost_reporter.models.edition import Edition
