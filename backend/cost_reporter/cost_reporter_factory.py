@@ -64,7 +64,6 @@ class CostReporterFactory:
         )
 
         return SheetCalculator(
-            items_count=self._edition.count,
             placement=self._placement,
             cost_calculator=builder.get_calculator(),
         )

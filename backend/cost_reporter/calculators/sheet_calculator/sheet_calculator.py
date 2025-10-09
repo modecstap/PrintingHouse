@@ -10,11 +10,9 @@ class SheetCalculator:
 
     def __init__(
             self,
-            items_count: int,
             placement: PlacementStrategy,
             cost_calculator: IStage
     ):
-        self._items_count = items_count
         self._placement = placement
         self._cost_calculator = cost_calculator
 
