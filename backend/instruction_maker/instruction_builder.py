@@ -84,11 +84,12 @@ class InstructionBuilder:
 
 if __name__ == "__main__":
     from backend.instruction_maker.steps.column_factory import ColumnFactory
-    from backend.models import Chroma, Lamination
+    from backend.models import Chroma, Lamination, PressSheet, ListSize
 
     steps = [
-        ColumnFactory().create_print_information(300, Chroma(3), Lamination(1), False),
-        ColumnFactory().create_edition_information(180, 5),
+        ColumnFactory().create_print_information(300, PressSheet(width=450, height=320, spacing=5), Chroma(3),
+                                                 Lamination(1), False),
+        ColumnFactory().create_edition_information(200, 5, 400, ListSize(width=300, height=200, bleeds=2), 2),
     ]
 
     builder = InstructionBuilder(steps, order_id=157)
