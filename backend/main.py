@@ -14,11 +14,11 @@ async def main():
 
 async def create_db():
     config = DBConfig(
-        user="postgres",
-        password="maibenben",
-        host="localhost",
-        port=5432,
-        db_name="postgres"
+        user=os.getenv("DB_USER", "postgres"),
+        password=os.getenv("DB_PASSWORD", "postgres"),
+        host=os.getenv("DB_HOST", "localhost"),
+        port=int(os.getenv("DB_PORT", 5432)),
+        db_name=os.getenv("DB_NAME", "postgres")
     )
     await Database(config).create_all()
 
