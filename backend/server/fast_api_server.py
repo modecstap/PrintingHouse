@@ -2,8 +2,10 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.server.handlers.order_handler import OrderHandler
 from backend.server.routers.CostReportRouter import CostReportRouter
 from backend.server.routers.InstructionRouter import InstructionRouter
+from backend.server.routers.crud_router import CRUDRouter
 from backend.server.server_config import ServerConfig
 
 
@@ -40,3 +42,7 @@ class FastAPIServer:
     def _setup_routes(self):
         self.app.include_router(CostReportRouter().router)
         self.app.include_router(InstructionRouter().router)
+        self.app.include_router(CRUDRouter(
+            "order",
+            OrderHandler()
+        ).router)
