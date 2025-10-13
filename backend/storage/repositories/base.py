@@ -45,8 +45,10 @@ class BaseRepository:
         if filters:
             query = query.where(*filters)
 
-        if order_by:
-            query = query.order_by(order_by)
+        if order_by is None:
+            order_by = self._entity.id.desc()
+
+        query = query.order_by(order_by)
 
         query = query.offset(offset).limit(limit)
 
