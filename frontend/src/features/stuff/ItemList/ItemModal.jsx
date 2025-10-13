@@ -7,6 +7,7 @@ const ItemModal = ({ item, onClose }) => (
     <CostCalculatorPage
       edition={item.edition || {}}
       production={item.production || {}}
+      hideActionButtons={true}
     />
   </Modal>
 );

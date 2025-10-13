@@ -9,7 +9,8 @@ export default function FormSection({
   loading,
   error,
   showAdvanced,
-  toggleAdvanced
+  toggleAdvanced,
+  hideActionButtons,
 }) {
   return (
     <div className="advanced-content">
@@ -19,12 +20,18 @@ export default function FormSection({
         <button className="btn btn-primary" onClick={onCalculate} disabled={loading}>
           {loading ? "Вычисляем..." : "Рассчитать"}
         </button>
-        <button className="btn btn-primary" onClick={() => onOpenModal("delay")} disabled={loading}>
-          Отложить
-        </button>
-        <button className="btn btn-primary" onClick={() => onOpenModal("accept")} disabled={loading}>
-          В работу
-        </button>
+
+        {!hideActionButtons && (
+          <>
+            <button className="btn btn-primary" onClick={() => onOpenModal("delay")} disabled={loading}>
+              Отложить
+            </button>
+            <button className="btn btn-primary" onClick={() => onOpenModal("accept")} disabled={loading}>
+              В работу
+            </button>
+          </>
+        )}
+
         <button className="btn btn-more" onClick={toggleAdvanced}>
           {showAdvanced ? "Скрыть" : "Подробнее"}
         </button>
