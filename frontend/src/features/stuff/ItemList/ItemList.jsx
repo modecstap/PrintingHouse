@@ -1,140 +1,110 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
 import "./ItemList.css";
-import ItemRow from "../ItemRow/ItemRow";
-import Modal from "../Modal/Modal";
+import ItemTable from "./ItemTable";
+import ItemModal from "./ItemModal";
+import StatusModal from "./StatusModal";
 import Pagination from "../Pagination/Pagination";
-import CostCalculatorPage from "../../cost-calculator/CostCalculatorPage";
-import "./ItemList.css";
 
 const ITEMS_PER_PAGE = 10;
 
-const ItemList = ({ data, visibleFields, disableAction, apiUrl }) => {
+const ItemList = ({ data = [], visibleFields = [], disableAction = false, apiUrl }) => {
   const [items, setItems] = useState(data);
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [statusTarget, setStatusTarget] = useState(null); // 👈 новый стейт для статуса
 
-  const openModal = (item) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
+  const totalPages = useMemo(() => Math.ceil(items.length / ITEMS_PER_PAGE), [items]);
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentItems = useMemo(() => items.slice(start, start + ITEMS_PER_PAGE), [items, currentPage]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
-  };
+  const fieldKeys = useMemo(() => (
+    visibleFields.length > 0 ? visibleFields : Object.keys(items[0] || {})
+  ), [visibleFields, items]);
 
-  const handleDelete = async (itemId) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm("Удалить этот элемент?")) return;
-
     try {
-      const response = await fetch(`${apiUrl}${itemId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error(`Ошибка удаления: ${response.status}`);
-
-      setItems((prev) => prev.filter((item) => item.id !== itemId));
-    } catch (error) {
-      console.error("Ошибка при удалении:", error);
+      const res = await fetch(`${apiUrl}${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
+      setItems((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      console.error(err);
       alert("Не удалось удалить элемент.");
     }
-  };
+  }, [apiUrl]);
 
-  const fieldKeys =
-    visibleFields && visibleFields.length > 0
-      ? visibleFields
-      : Object.keys(items[0] || {});
+  const openModal = useCallback((item) => setSelectedItem(item), []);
+  const closeModal = useCallback(() => setSelectedItem(null), []);
 
-  const headers = fieldKeys.map((key) => key.replace(/_/g, " "));
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  /** === Новый метод: смена статуса === */
+  const handleStatusChange = useCallback(async (orderId, status) => {
+    try {
+      const res = await fetch(`${apiUrl}status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, new_status: status }),
+      });
 
-  const gridColumns = disableAction
-    ? `repeat(${fieldKeys.length}, 1fr)`
-    : `repeat(${fieldKeys.length + 1}, 1fr)`; // +1 для ACTIONS
+      if (!res.ok) throw new Error(`Ошибка: ${res.status}`);
+
+      // обновляем локальные данные
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === orderId ? { ...item, status } : item
+        )
+      );
+    } catch (err) {
+      console.error("Ошибка смены статуса:", err);
+      alert("Не удалось сменить статус.");
+    } finally {
+      setStatusTarget(null);
+    }
+  }, [apiUrl]);
 
   return (
     <div className="item-list">
-      {/* Заголовки таблицы */}
-      <div className="item-row header" style={{ gridTemplateColumns: gridColumns }}>
-        {headers.map((header) => (
-          <span key={header} className="item-field">
-            {header.toUpperCase()}
-          </span>
-        ))}
-        {!disableAction && <span className="item-field">ACTIONS</span>}
-      </div>
-
-      {/* Список элементов */}
-      {currentItems.map((item, index) => (
-        <div
-          key={index}
-          className="item-row"
-          style={{ gridTemplateColumns: gridColumns }}
-        >
-          {fieldKeys.map((key) => (
-            <span key={key} className="item-field">
-              {typeof item[key] === "object" && item[key] !== null
-                ? JSON.stringify(item[key])
-                : item[key]}
-            </span>
-          ))}
-
-          {!disableAction && (
-            <span className="item-field item-actions">
-              <button
-                className="edit-button"
-                onClick={() => openModal(item)}
-                title="Редактировать"
-              >
-                ✏️
-              </button>
-              <button
-                className="delete-button"
-                onClick={() => handleDelete(item.id)}
-                title="Удалить"
-              >
-                ❌
-              </button>
-            </span>
-          )}
-        </div>
-      ))}
-
-      {/* Кнопка "Добавить" */}
-      {!disableAction && (
-        <button className="add-button" onClick={() => openModal({})}>
-          +
-        </button>
-      )}
-
-      {/* Модальное окно */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content large">
-            <button className="modal-close" onClick={closeModal}>
-              ✖
-            </button>
-
-            <CostCalculatorPage
-              edition={selectedItem?.edition || {}}
-              production={selectedItem?.production || {}}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Пагинация */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
+      <ItemTable
+        items={currentItems}
+        fieldKeys={fieldKeys}
+        disableAction={disableAction}
+        onEdit={openModal}
+        onDelete={handleDelete}
+        onChangeStatus={(item) => setStatusTarget(item)} // 👈
       />
+
+      {!disableAction && (
+        <button className="add-button" onClick={() => openModal({})}>+</button>
+      )}
+
+      {selectedItem && (
+        <ItemModal item={selectedItem} onClose={closeModal} />
+      )}
+
+      {statusTarget && (
+        <StatusModal
+          item={statusTarget}
+          onClose={() => setStatusTarget(null)}
+          onSubmit={handleStatusChange}
+        />
+      )}
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
+};
+
+ItemList.propTypes = {
+  data: PropTypes.array.isRequired,
+  visibleFields: PropTypes.array,
+  disableAction: PropTypes.bool,
+  apiUrl: PropTypes.string.isRequired,
 };
 
 export default ItemList;

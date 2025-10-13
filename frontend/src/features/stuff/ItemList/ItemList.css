@@ -133,3 +133,81 @@
   color: #d33;
   transform: scale(1.1);
 }
+
+/* === Новая кнопка смены статуса === */
+.status-button {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: transform 0.15s ease, color 0.2s;
+}
+
+/* === Модалка выбора статуса === */
+.status-modal-form {
+  background: #ccc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+}
+
+.status-modal-form h3 {
+  font-size: 18px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.status-modal-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #444;
+  gap: 4px;
+}
+
+.status-modal-form select {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.status-modal-form select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.modal-actions button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.modal-actions button:hover {
+  opacity: 0.9;
+}
+
+.confirm-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #0056b3;
+}
+
