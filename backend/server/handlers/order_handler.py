@@ -12,7 +12,6 @@ from backend.instruction_maker.instruction_model import InstructionModel
 from backend.models import Status
 from backend.models.order import Order
 from backend.server.handlers.entity_handler import EntityHandler
-from backend.server.models import instruction_payload
 from backend.server.models.order_payload import OrderPayload
 from backend.storage.access_services.accessor_factory import AccessorFactory
 
@@ -61,14 +60,14 @@ class OrderHandler(EntityHandler):
         cost_report = reporter.get_report()
 
         order = Order(
-            status=Status(1),
+            status=Status(2),
             comment=order_payload.comment,
             cost_report=cost_report,
             edition=order_payload.edition,
             markup=order_payload.production.markup,
             paper_cost=order_payload.production.paper_cost
         )
-        await self._service.add_models([order])
+        order = (await self._service.add_models([order]))[0]
 
         product_per_sheet = PlacementOptimizer(
             press_sheet=order_payload.production.press_sheet,
@@ -76,7 +75,7 @@ class OrderHandler(EntityHandler):
         ).get_best_solution().get_items_count()
 
         try:
-            sheet_count = instruction_payload.edition_count / product_per_sheet
+            sheet_count = order_payload.edition.count / product_per_sheet
         except ZeroDivisionError:
             raise ItemSizeException()
         sheet_count = math.ceil(sheet_count)
@@ -89,7 +88,7 @@ class OrderHandler(EntityHandler):
             lamination=order_payload.edition.lamination,
             die_cutting=order_payload.edition.die_cutting,
             sheet_count=sheet_count,
-            fitting_count=order_payload.production.fitting_count,
+            fitting_count=order_payload.production.sheet_by_fitting,
             edition_count=order_payload.edition.count,
             list_size=order_payload.edition.list_size,
             product_per_sheet=product_per_sheet
