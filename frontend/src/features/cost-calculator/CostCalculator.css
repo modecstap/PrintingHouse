@@ -1,5 +1,5 @@
 :root {
-  --color-bg: #e0e4eb;
+  --color-bg: #f9f9f9;
   --color-dark: #e0e4eb87;
   --color-darker: #989ca487;
   --color-text: black;
@@ -17,6 +17,12 @@
   padding: 20px;
   background: var(--color-bg);
   color: var(--color-text);
+
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Заголовки */
@@ -48,11 +54,9 @@
 }
 
 .form-tile {
-  background: var(--color-dark);
   padding: 10px;
   display: flex;
   flex-direction: column;
-  border-radius: 0.4em;
   }
 
 .form-tile label {

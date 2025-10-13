@@ -1,0 +1,106 @@
+/* Общий контейнер */
+.main-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+}
+
+/* Левая панель (выбор формы) */
+.sidebar {
+  width: 15%;
+  background-color: #333;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Заголовок панели */
+.sidebar-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Меню */
+.menu {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.menu-item {
+  padding: 15px;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.menu-item:hover {
+  background-color: #444;
+}
+
+.menu-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Правая панель (отображение формы) */
+.form-display {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: auto;
+}
+
+.form-display > div {
+  min-width: 1000px;
+  margin: 0 auto;
+}
+
+.dropdown {
+  width: 100%;
+}
+
+.dropdown summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 15px;
+  font-size: 16px;
+  text-align: center;
+  border-radius: 5px;
+  background-color: #333;
+  transition: background-color 0.3s ease;
+  color: white;
+}
+
+.dropdown[open] summary {
+  background-color: #444;
+}
+
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.submenu .menu-item {
+  padding: 12px;
+  background-color: #222;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.submenu .menu-item:hover {
+  background-color: #444;
+}
+
+.submenu .menu-item.active {
+  background-color: #007bff;
+  color: white;
+}

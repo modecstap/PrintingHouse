@@ -1,11 +1,11 @@
 import './App.css';
-import CostCalculatorPage from './features/cost-calculator/CostCalculatorPage.jsx';
+import MainPage from './pages/MainPage.jsx';
 
 function App() {
   return (
     <div className="App">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto"></link>
-      <CostCalculatorPage></CostCalculatorPage>
+      <MainPage/>
     </div>
   );
 }
