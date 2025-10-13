@@ -16,3 +16,9 @@ class Order(BaseModel):
     edition: Edition
     markup: Decimal
     paper_cost: Decimal
+
+    class Config:
+        use_enum_values = False
+        json_encoders = {
+            Status: lambda v: v.name  # возвращаем name вместо value
+        }
