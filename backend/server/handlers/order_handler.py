@@ -83,6 +83,7 @@ class OrderHandler(EntityHandler):
 
         instruction_model = InstructionModel(
             order_id=order.id,
+            comment=order_payload.comment,
             density=order_payload.edition.density,
             press_sheet=order_payload.production.press_sheet,
             chroma=order_payload.edition.chroma,

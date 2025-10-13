@@ -32,4 +32,8 @@ class InstructionBuilderFactory:
             )
         ]
 
-        return InstructionBuilder(columns=columns, order_id=self._instruction.order_id)
+        return InstructionBuilder(
+            columns=columns,
+            order_id=self._instruction.order_id,
+            comment=self._instruction.comment
+        )

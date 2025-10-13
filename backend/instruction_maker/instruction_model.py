@@ -5,6 +5,7 @@ from backend.models import Chroma, Lamination, PressSheet, ListSize
 
 class InstructionModel(BaseModel):
     order_id: int | str
+    comment: str
     density: int
     press_sheet: PressSheet
     chroma: Chroma
