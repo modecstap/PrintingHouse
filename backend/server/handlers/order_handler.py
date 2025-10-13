@@ -12,6 +12,7 @@ from backend.instruction_maker.instruction_model import InstructionModel
 from backend.models import Status
 from backend.models.order import Order
 from backend.server.handlers.entity_handler import EntityHandler
+from backend.server.models.change_payload import ChangePayload
 from backend.server.models.order_payload import OrderPayload
 from backend.storage.access_services.accessor_factory import AccessorFactory
 
@@ -103,8 +104,10 @@ class OrderHandler(EntityHandler):
             headers={"Content-Disposition": "attachment; filename=instruction.pdf"}
         )
 
-    async def change(self):
-        pass
+    async def change(self, change_payload: ChangePayload):
+        order: Order = await self._service.get_model_by_id(change_payload.order_id)
+        order.status = change_payload.new_status
+        await self._service.update_models([order])
 
     async def get_all(self) -> list[MODEL]:
         return await super().get_all()

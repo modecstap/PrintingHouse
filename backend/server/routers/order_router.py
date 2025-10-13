@@ -15,3 +15,4 @@ class OrderRouter:
     def _register_routes(self):
         self.router.post("/delay")(self._handler.delay)
         self.router.post("/accept")(self._handler.accept)
+        self.router.post("/status")(self._handler.change)
