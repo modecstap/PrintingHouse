@@ -1,9 +1,8 @@
 from datetime import datetime
-from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from backend.models import CostReport, Edition
+from backend.models import CostReport, Edition, Production
 from backend.models.status import Status
 
 
@@ -14,8 +13,7 @@ class Order(BaseModel):
     comment: str
     cost_report: CostReport
     edition: Edition
-    markup: Decimal
-    paper_cost: Decimal
+    production: Production
 
     class Config:
         use_enum_values = False

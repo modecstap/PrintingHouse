@@ -65,8 +65,7 @@ class OrderHandler(EntityHandler):
             comment=order_payload.comment,
             cost_report=cost_report,
             edition=order_payload.edition,
-            markup=order_payload.production.markup,
-            paper_cost=order_payload.production.paper_cost
+            production=order_payload.production
         )
         order = (await self._service.add_models([order]))[0]
 
