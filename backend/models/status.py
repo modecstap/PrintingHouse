@@ -2,6 +2,6 @@ from enum import Enum
 
 
 class Status(Enum):
-    SAVED = 1
-    IN_WORK = 2
-    DONE = 3
+    SAVED = "Отложен"
+    IN_WORK = "В работе"
+    DONE = "Завершён"

@@ -27,12 +27,12 @@ class OrderHandler(EntityHandler):
 
     async def delay(self, payload: OrderPayload):
         """Создать заказ со статусом 'отложено'."""
-        order = await self._order_factory.create_order(payload, Status(1))
+        order = await self._order_factory.create_order(payload, Status("Отложен"))
         await self._service.add_models([order])
 
     async def accept(self, payload: OrderPayload) -> StreamingResponse:
         """Создать заказ со статусом 'в работе' и вернуть PDF-инструкцию."""
-        order = await self._order_factory.create_order(payload, Status(2))
+        order = await self._order_factory.create_order(payload, Status("В работе"))
         order = (await self._service.add_models([order]))[0]
 
         instruction_model = self._instruction_service.build_instruction_model(order.id, payload)

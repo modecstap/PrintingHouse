@@ -8,7 +8,7 @@ const StatusModal = ({ item, onClose, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedStatus) return alert("Выберите статус.");
-    onSubmit(item.id, Number(selectedStatus));
+    onSubmit(item.id, selectedStatus);
   };
 
   return (
@@ -23,9 +23,9 @@ const StatusModal = ({ item, onClose, onSubmit }) => {
             onChange={(e) => setSelectedStatus(e.target.value)}
           >
             <option value="">— Выберите —</option>
-            <option value="1">Отложен</option>
-            <option value="2">В работе</option>
-            <option value="3">Завершён</option>
+            <option value="Отложен">Отложен</option>
+            <option value="В работе">В работе</option>
+            <option value="Завершён">Завершён</option>
           </select>
         </label>
 

@@ -14,9 +14,3 @@ class Order(BaseModel):
     cost_report: CostReport
     edition: Edition
     production: Production
-
-    class Config:
-        use_enum_values = False
-        json_encoders = {
-            Status: lambda v: v.name  # возвращаем name вместо value
-        }
