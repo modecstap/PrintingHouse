@@ -1,33 +1,33 @@
 .item-list {
-    margin: 20px auto;
-  }
-  
-  .header {
-    color: aliceblue;
-    font-weight: bold;
-    background-color: #555;
-  }
+  margin: 20px auto;
+}
 
-  .add-button {
-    margin-top: 10px;
-    margin-left: 3px;
-    padding-top: 3px;
-    background-color: #007bff;
-    color: white;
-    font-size: 24px;
-    border: none;
-    border-radius: 15px;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .add-button:hover {
-    background-color: #0056b3;
-  }
+.header {
+  color: var(--highlight);
+  font-weight: bold;
+  background-color: var(--primary);
+}
+
+.add-button {
+  margin-top: 10px;
+  margin-left: 3px;
+  padding-top: 3px;
+  background-color: var(--primary);
+  font-size: 24px;
+  border: none;
+  border-radius: 15px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-button:hover {
+  background-color: var(--secondary);
+}
   
 /* Пагинация */
 .pagination {
@@ -39,7 +39,7 @@
 }
 
 .pagination button {
-  background-color: #ddd;
+  background-color: var(--primary);
   border: none;
   padding: 5px 8px;
   cursor: pointer;
@@ -47,17 +47,17 @@
 }
 
 .pagination button:hover {
-  background-color: #bbb;
+  background-color: var(--secondary);
 }
 
 .pagination .active {
-  background-color: #555;
-  color: white;
+  background-color: var(--primary);
+  color: var(--highlight);
 }
 .item-row {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--bg);
   padding: 6px 4px;
 }
 
@@ -86,18 +86,18 @@
 }
 
 .edit-button:hover {
-  color: #007bff;
+  color: var(--primary);
   transform: scale(1.1);
 }
 
 .delete-button:hover {
-  color: #d33;
   transform: scale(1.1);
 }
+
 .item-row {
   display: grid;
   align-items: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border);
   padding: 6px 4px;
 }
 
@@ -109,7 +109,7 @@
 
 /* === Модалка выбора статуса === */
 .status-modal-form {
-  background: #ccc;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -119,29 +119,29 @@
 .status-modal-form h3 {
   font-size: 18px;
   margin-bottom: 4px;
-  color: #333;
+  color: var(--text-muted);
 }
 
 .status-modal-form label {
   display: flex;
   flex-direction: column;
   font-size: 14px;
-  color: #444;
+  color: var(--text-muted);
   gap: 4px;
 }
 
 .status-modal-form select {
   padding: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 15px;
-  background-color: white;
+  background-color: var(--bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 .status-modal-form select:focus {
-  border-color: #007bff;
+  border-color: var(--primary);
   outline: none;
 }
 
