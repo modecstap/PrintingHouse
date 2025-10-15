@@ -17,15 +17,15 @@ class ColumnFactory:
         die_cutting_format = "Да" if die_cutting else "Нет"
 
         if chroma == Chroma.ONE_ZERO:
-            chroma_name = "1x0"
+            chroma_name = "1+0"
         elif chroma == Chroma.ONE_ONE:
-            chroma_name = "1x1"
+            chroma_name = "1+1"
         elif chroma == Chroma.FOUR_ZERO:
-            chroma_name = "4x0"
+            chroma_name = "4+0"
         elif chroma == Chroma.FOUR_ONE:
-            chroma_name = "4x1"
+            chroma_name = "4+1"
         elif chroma == Chroma.FOUR_FOUR:
-            chroma_name = "4x4"
+            chroma_name = "4+4"
         else:
             chroma_name = "ОШИБКА"
 
