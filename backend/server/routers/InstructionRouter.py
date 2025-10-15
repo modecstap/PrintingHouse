@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from backend.server.handlers.InstuctionHandler import InstructionHandler
+from backend.server.handlers.instruction_handler import InstructionHandler
 
 
 class InstructionRouter:
@@ -18,4 +18,5 @@ class InstructionRouter:
         self._register_routes()
 
     def _register_routes(self):
+        self.router.get("/{order_id}")(self._handler.take_instruction_on_order)
         self.router.post("")(self._handler.take_instruction)

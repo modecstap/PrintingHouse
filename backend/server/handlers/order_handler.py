@@ -35,7 +35,7 @@ class OrderHandler(EntityHandler):
         order = await self._order_factory.create_order(payload, Status(2))
         order = (await self._service.add_models([order]))[0]
 
-        instruction_model = self._instruction_service.build_instruction_model(order, payload)
+        instruction_model = self._instruction_service.build_instruction_model(order.id, payload)
         builder = InstructionBuilderFactory(instruction_model).make_instruction_builder()
         pdf_bytes = builder.build_pdf()
 

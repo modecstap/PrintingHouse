@@ -4,14 +4,14 @@ from backend.cost_reporter.calculators.exeptions.item_size_exception import Item
 from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_optimizer import \
     PlacementOptimizer
 from backend.instruction_maker.instruction_model import InstructionModel
-from backend.models import Order
 from backend.server.models.order_payload import OrderPayload
 
 
 class InstructionService:
     """Построение модели инструкции для производства."""
 
-    def build_instruction_model(self, order: Order, payload: OrderPayload) -> InstructionModel:
+    def build_instruction_model(self, order_id: int, payload: OrderPayload) -> InstructionModel:
+
         optimizer = PlacementOptimizer(
             press_sheet=payload.production.press_sheet,
             list_size=payload.edition.list_size
@@ -25,7 +25,7 @@ class InstructionService:
         sheet_count = math.ceil(payload.edition.count / product_per_sheet)
 
         return InstructionModel(
-            order_id=order.id,
+            order_id=order_id,
             comment=payload.comment,
             density=payload.edition.density,
             press_sheet=payload.production.press_sheet,
