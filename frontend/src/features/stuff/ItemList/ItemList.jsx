@@ -34,7 +34,10 @@ const ItemList = ({ data = [], visibleFields = [], disableAction = false, apiUrl
     }
   }, [apiUrl]);
 
-  const openModal = useCallback((item) => setSelectedItem(item), []);
+  const openModal = useCallback((item, showActions = false) => {
+    setSelectedItem({ ...item, showActions });
+  }, []);
+
   const closeModal = useCallback(() => setSelectedItem(null), []);
 
   /** === Новый метод: смена статуса === */
@@ -74,11 +77,15 @@ const ItemList = ({ data = [], visibleFields = [], disableAction = false, apiUrl
       />
 
       {!disableAction && (
-        <button className="add-button" onClick={() => openModal({})}>+</button>
+        <button className="add-button" onClick={() => openModal({}, true)}>+</button>
       )}
 
       {selectedItem && (
-        <ItemModal item={selectedItem} onClose={closeModal} />
+        <ItemModal
+          item={selectedItem}
+          onClose={closeModal}
+          hideActionButtons={!selectedItem.showActions}
+        />
       )}
 
       {statusTarget && (
