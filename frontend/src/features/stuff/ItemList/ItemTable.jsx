@@ -7,7 +7,7 @@ const ItemTable = ({
   disableAction,
   onEdit,
   onDelete,
-  onChangeStatus, // 👈 новый проп
+  onChangeStatus,
 }) => {
   const gridColumns = `repeat(${fieldKeys.length + (disableAction ? 0 : 1)}, 1fr)`;
   const headers = fieldKeys.map((key) => key.replace(/_/g, " "));
@@ -37,7 +37,7 @@ const ItemTable = ({
           disableAction={disableAction}
           onEdit={onEdit}
           onDelete={onDelete}
-          onChangeStatus={onChangeStatus} // 👈 передаём дальше
+          onChangeStatus={onChangeStatus}
           gridColumns={gridColumns}
         />
       ))}
@@ -51,7 +51,7 @@ ItemTable.propTypes = {
   disableAction: PropTypes.bool,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
-  onChangeStatus: PropTypes.func, // 👈 добавлено
+  onChangeStatus: PropTypes.func,
 };
 
 export default ItemTable;
