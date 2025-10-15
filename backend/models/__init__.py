@@ -4,7 +4,7 @@ from backend.models.cutter import CutterInfo
 from backend.models.edition import Edition
 from backend.models.lamination import Lamination
 from backend.models.list_size import ListSize
-from backend.models.order import Order
 from backend.models.press_sheet import PressSheet
 from backend.models.production import Production
 from backend.models.status import Status
+from backend.models.order import Order
