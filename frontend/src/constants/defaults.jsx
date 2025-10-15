@@ -1,2 +1,22 @@
-export const defaultEdition = { count: 0, density: 0, list_size: { width: 0, height: 0, bleeds: 0 }, chroma: 1, lamination: 1, die_cutting: false, }; 
-export const defaultProduction = { tax_rate: 0.93, markup: 80, black_ink_cost: 2, ink_cost: 15.6, lamination_cost: 12, die_cutting_cost: 100, paper_cost: 165, press_sheet: { height: 450, width: 320, spacing: 5, }, cutter: { stack_height: 30, }, sheet_by_fitting: 2, cutting_cost: 10, printer_salary: 2, };
+export const defaultEdition = { 
+    count: 0, 
+    density: 0, 
+    list_size: { width: 0, height: 0, bleeds: 2 }, 
+    chroma: 1, 
+    lamination: 1, 
+    die_cutting: false, 
+};
+export const defaultProduction = { 
+    tax_rate: 0.93, 
+    markup: 80, 
+    black_ink_cost: 2, 
+    ink_cost: 15.6, 
+    lamination_cost: 12, 
+    die_cutting_cost: 100, 
+    paper_cost: 165, 
+    press_sheet: { height: 450, width: 320, spacing: 5, }, 
+    cutter: { stack_height: 30, }, 
+    sheet_by_fitting: 2, 
+    cutting_cost: 10, 
+    printer_salary: 2, 
+};
