@@ -76,6 +76,7 @@ export default function VisibleForm({ data, onChange }) {
       <div className="form-tile">
         <label>Цветность</label>
         <select name="chroma" value={formValues.chroma} onChange={handleChange}>
+          <option value="0">0+0</option>
           <option value="1">1+0</option>
           <option value="2">1+1</option>
           <option value="3">4+0</option>

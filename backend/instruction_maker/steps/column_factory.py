@@ -16,7 +16,9 @@ class ColumnFactory:
     ) -> Column:
         die_cutting_format = "Да" if die_cutting else "Нет"
 
-        if chroma == Chroma.ONE_ZERO:
+        if chroma == Chroma.ZERO_ZERO:
+            chroma_name = "0+0"
+        elif chroma == Chroma.ONE_ZERO:
             chroma_name = "1+0"
         elif chroma == Chroma.ONE_ONE:
             chroma_name = "1+1"

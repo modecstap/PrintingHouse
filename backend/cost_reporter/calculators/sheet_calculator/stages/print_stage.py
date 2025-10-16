@@ -32,11 +32,15 @@ class PrintStage(IStage):
         return self._cost_price
 
     def _calculate_ink_cost(self):
-        if self._chroma == Chroma.ONE_ZERO:
+        if self._chroma == Chroma.ZERO_ZERO:
+            self._ink_cost = Decimal(0)
+        elif self._chroma == Chroma.ONE_ZERO:
             self._ink_cost = self._black_ink_cost
         elif self._chroma == Chroma.ONE_ONE:
             self._ink_cost = self._black_ink_cost * 2
         elif self._chroma == Chroma.FOUR_ZERO:
             self._ink_cost = self._color_ink_cost
+        elif self._chroma == Chroma.FOUR_ONE:
+            self._ink_cost = self._color_ink_cost+self._black_ink_cost
         elif self._chroma == Chroma.FOUR_FOUR:
             self._ink_cost = self._color_ink_cost * 2
