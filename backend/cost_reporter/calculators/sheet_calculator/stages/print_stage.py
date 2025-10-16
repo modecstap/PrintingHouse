@@ -14,6 +14,7 @@ class PrintStage(IStage):
             black_ink_cost: Decimal,
             chroma: Chroma
     ):
+        self._salary_by_sheet = salary_by_sheet
         self._previous_stage = previous_stage
         self._color_ink_cost = color_ink_cost
         self._black_ink_cost = black_ink_cost
@@ -23,7 +24,7 @@ class PrintStage(IStage):
         self._calculate_ink_cost()
 
         self._cost_price = self._previous_stage.get_cost_price() + self._ink_cost
-        self._cost = self._previous_stage.get_cost() + self._ink_cost + salary_by_sheet
+        self._cost = self._previous_stage.get_cost() + self._ink_cost + self._salary_by_sheet
 
     def get_cost(self) -> Decimal:
         return self._cost
@@ -34,6 +35,7 @@ class PrintStage(IStage):
     def _calculate_ink_cost(self):
         if self._chroma == Chroma.ZERO_ZERO:
             self._ink_cost = Decimal(0)
+            self._salary_by_sheet = 0
         elif self._chroma == Chroma.ONE_ZERO:
             self._ink_cost = self._black_ink_cost
         elif self._chroma == Chroma.ONE_ONE:
