@@ -19,7 +19,7 @@ const ItemActions = ({ itemId, onEdit, onDelete, onChangeStatus }) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `instruction_${itemId}.pdf`;
+      a.download = `ZAK_${itemId}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
