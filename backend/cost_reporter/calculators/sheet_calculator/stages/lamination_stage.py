@@ -19,7 +19,8 @@ class LaminationStage(IStage):
 
         self._calculate_lamination_cost()
 
-        self._cost_price = self._previous_stage.get_cost_price()
+        # Стоимость алёнки примерно равна 1/2 от стоимости печати
+        self._cost_price = self._previous_stage.get_cost_price() + self._lamination_cost / 2
         self._cost = self._previous_stage.get_cost() + self._lamination_cost
 
     def get_cost(self) -> Decimal:
