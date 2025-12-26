@@ -3,6 +3,7 @@ from io import BytesIO
 from starlette.responses import StreamingResponse
 
 from backend.instruction_maker.instruction_builder_factory import InstructionBuilderFactory
+from backend.models import Order
 from backend.server.helpers.instruction_factory import InstructionService
 from backend.server.models.instruction_payload import InstructionPayload
 from backend.server.models.order_payload import OrderPayload
@@ -28,7 +29,7 @@ class InstructionHandler:
         instruction_model = InstructionService().build_instruction_model(
             order_id,
             OrderPayload(
-                comment="",
+                comment=order.comment,
                 edition=order.edition,
                 production=order.production
             )
