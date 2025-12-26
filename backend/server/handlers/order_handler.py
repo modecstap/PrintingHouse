@@ -17,9 +17,9 @@ class OrderHandler(EntityHandler):
     MODEL = Order
 
     def __init__(
-        self,
-        order_factory: OrderFactoryService | None = None,
-        instruction_service: InstructionService | None = None,
+            self,
+            order_factory: OrderFactoryService | None = None,
+            instruction_service: InstructionService | None = None,
     ):
         super().__init__(AccessorFactory.get_order_crud_accessor())
         self._order_factory = order_factory or OrderFactoryService()

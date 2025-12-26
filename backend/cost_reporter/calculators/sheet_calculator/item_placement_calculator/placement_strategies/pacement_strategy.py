@@ -5,6 +5,7 @@ from backend.models import PressSheet
 
 COUNT_EXTERNAL_CUT = 4
 
+
 class PlacementStrategy(ABC):
     """
     Абстрактная стратегия размещения изделий на листе.

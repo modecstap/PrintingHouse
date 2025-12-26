@@ -43,6 +43,6 @@ class PrintStage(IStage):
         elif self._chroma == Chroma.FOUR_ZERO:
             self._ink_cost = self._color_ink_cost
         elif self._chroma == Chroma.FOUR_ONE:
-            self._ink_cost = self._color_ink_cost+self._black_ink_cost
+            self._ink_cost = self._color_ink_cost + self._black_ink_cost
         elif self._chroma == Chroma.FOUR_FOUR:
             self._ink_cost = self._color_ink_cost * 2

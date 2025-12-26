@@ -11,7 +11,6 @@ class InstructionService:
     """Построение модели инструкции для производства."""
 
     def build_instruction_model(self, order_id: int, payload: OrderPayload) -> InstructionModel:
-
         optimizer = PlacementOptimizer(
             press_sheet=payload.production.press_sheet,
             list_size=payload.edition.list_size

@@ -1,13 +1,8 @@
-import math
 from io import BytesIO
 
 from starlette.responses import StreamingResponse
 
-from backend.cost_reporter.calculators.exeptions.item_size_exception import ItemSizeException
-from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculator.placement_optimizer import \
-    PlacementOptimizer
 from backend.instruction_maker.instruction_builder_factory import InstructionBuilderFactory
-from backend.instruction_maker.instruction_model import InstructionModel
 from backend.server.helpers.instruction_factory import InstructionService
 from backend.server.models.instruction_payload import InstructionPayload
 from backend.server.models.order_payload import OrderPayload
@@ -45,4 +40,3 @@ class InstructionHandler:
             media_type="application/pdf",
             headers={"Content-Disposition": "attachment; filename=instruction.pdf"}
         )
-
