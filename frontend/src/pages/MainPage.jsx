@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./MainPage.css";
 import VariableTable from "../features/stuff/Table/VariableTable";
 import CostCalculatorPage from "../features/cost-calculator/CostCalculatorPage";
+import ReferencePage from "../features/reference-system/reference_page";
 
 const MainPage = () => {
   const [selectedPage, setSelectedPage] = useState("calculator");
@@ -24,12 +25,19 @@ const MainPage = () => {
           >
             Таблица заказов
           </li>
+          <li
+            className={`menu-item ${selectedPage === "reference" ? "active" : ""}`}
+            onClick={() => setSelectedPage("reference")}
+          >
+            Справочная система
+          </li>
         </ul>
       </div>
 
       {/* Правая панель */}
       <div className="form-display">
         {selectedPage === "calculator" && <CostCalculatorPage />}
+        {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (
           <VariableTable
             endPoint="api/order/"
