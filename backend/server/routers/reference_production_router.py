@@ -8,7 +8,7 @@ class ReferenceProductionRouter:
 
     def __init__(
             self,
-            prefix: str = "reference-production",
+            prefix: str = "reference/production",
             handler: ReferenceProductionHandler = ReferenceProductionHandler()
     ):
         self._prefix = f"/api/{prefix}"
