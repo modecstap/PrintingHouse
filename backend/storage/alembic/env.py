@@ -22,7 +22,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from backend.storage.tables import OrderEntity, CostReportEntity, EditionEntity, \
-    ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity
+    ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity, ProductionReferenceEntity
 
 OrderEntity()
 CostReportEntity()
@@ -31,6 +31,7 @@ ListSizeEntity()
 PressSheetEntity()
 CutterInfoEntity()
 ProductionEntity()
+ProductionReferenceEntity()
 
 from backend.storage.declarative_base import DeclarativeBase
 target_metadata = DeclarativeBase().base.metadata

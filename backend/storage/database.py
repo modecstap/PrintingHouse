@@ -7,7 +7,7 @@ from backend.storage.db_config import DBConfig
 from backend.storage.declarative_base import DeclarativeBase
 from backend.storage.singleton import Singleton
 from backend.storage.tables import OrderEntity, CostReportEntity, EditionEntity, ListSizeEntity, CutterInfoEntity, \
-    ProductionEntity, PressSheetEntity
+    ProductionEntity, PressSheetEntity, ProductionReferenceEntity
 from backend.storage.utils import get_db_url
 
 
@@ -45,6 +45,7 @@ class Database(metaclass=Singleton):
             PressSheetEntity()
             CutterInfoEntity()
             ProductionEntity()
+            ProductionReferenceEntity()
 
             async with self.async_engine.begin() as conn:
                 meta = DeclarativeBase().base.metadata

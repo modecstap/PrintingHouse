@@ -5,3 +5,4 @@ from backend.storage.tables.list_size import ListSizeEntity
 from backend.storage.tables.order import OrderEntity
 from backend.storage.tables.press_sheet import PressSheetEntity
 from backend.storage.tables.production import ProductionEntity
+from backend.storage.tables.production_reference import ProductionReferenceEntity

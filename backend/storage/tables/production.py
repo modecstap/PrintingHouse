@@ -36,3 +36,4 @@ class ProductionEntity(Base):
 
     # ВХОДЯЩИЕ ОТНОШЕНИЯ
     order = relationship('OrderEntity', back_populates='production', lazy='selectin')
+    reference = relationship('ProductionReferenceEntity', back_populates='production', lazy='selectin')
