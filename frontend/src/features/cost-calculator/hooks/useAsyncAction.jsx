@@ -6,24 +6,40 @@ export const useAsyncAction = () => {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
-  const execute = async (endpoint, body, { isBlob = false } = {}) => {
+  const execute = async (
+    endpoint,
+    body,
+    {
+      method = "POST", 
+      isBlob = false,
+    } = {}
+  ) => {
     setLoading(true);
     setError(null);
     setSuccessMsg(null);
 
     try {
-      const response = await fetch(`${BackendIP}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const options = {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      if (body !== undefined && method !== "GET" && method !== "HEAD") {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`${BackendIP}${endpoint}`, options);
 
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         const message =
           data?.detail
             ? Array.isArray(data.detail)
-              ? data.detail.map((d) => `${d.loc?.join(" → ")}: ${d.msg}`).join("\n")
+              ? data.detail
+                  .map((d) => `${d.loc?.join(" → ")}: ${d.msg}`)
+                  .join("\n")
               : typeof data.detail === "string"
               ? data.detail
               : JSON.stringify(data.detail)
@@ -31,8 +47,14 @@ export const useAsyncAction = () => {
         throw new Error(message);
       }
 
-      const result = isBlob ? await response.blob() : await response.json().catch(() => null);
-      if (!isBlob) setSuccessMsg("✅ Успешно отправлено");
+      const result = isBlob
+        ? await response.blob()
+        : await response.json().catch(() => null);
+
+      if (!isBlob && method !== "GET") {
+        setSuccessMsg("✅ Успешно отправлено");
+      }
+
       return result;
     } catch (err) {
       console.error(err);
