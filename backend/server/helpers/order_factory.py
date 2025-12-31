@@ -19,6 +19,4 @@ class OrderFactoryService:
             cost_report=cost_report,
             edition=payload.edition,
             production=payload.production,
-            markup=getattr(payload.production, "markup", None),
-            paper_cost=getattr(payload.production, "paper_cost", None)
         )
