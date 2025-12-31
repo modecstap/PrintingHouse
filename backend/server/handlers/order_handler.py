@@ -3,8 +3,7 @@ from io import BytesIO
 from starlette.responses import StreamingResponse
 
 from backend.instruction_maker.instruction_builder_factory import InstructionBuilderFactory
-from backend.models import Status
-from backend.models.order import Order
+from backend.models import Status, Order
 from backend.server.handlers.entity_handler import EntityHandler
 from backend.server.helpers.instruction_factory import InstructionService
 from backend.server.helpers.order_factory import OrderFactoryService
