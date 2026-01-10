@@ -18,7 +18,7 @@ export default function MultiLineCalculator({
       {
         edition: {
           count: 0,
-          list_size: { width: 420, height: 297, bleeds: 0 },
+          list_size: { width: 420, height: 297, bleeds: 2 },
           density: 80,
           chroma: 1,
           lamination: 1,
