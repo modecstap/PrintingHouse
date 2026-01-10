@@ -14,7 +14,7 @@ const printingFields = (index) => [
   {
     label: "Комментарий",
     path: `printings[${index}].comment`,
-    type: "number",
+    type: "text",
     valueParser: Number,
   },
   {
