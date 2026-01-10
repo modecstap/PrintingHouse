@@ -18,18 +18,20 @@ class OrderEntity(Base):
         primary_key=True,
         server_default=text("nextval('order_id_seq')")
     )
-    cost_report_id = Column(ForeignKey('cost_report.id', onupdate="CASCADE", ondelete="CASCADE"))
-    edition_id = Column(ForeignKey('edition.id', onupdate="CASCADE", ondelete="CASCADE"))
-    production_id = Column(ForeignKey('production.id', onupdate="CASCADE", ondelete="CASCADE"))
+    order_cost_report_id = Column(ForeignKey('order_cost_report.id', onupdate="CASCADE", ondelete="CASCADE"))
+    economy_id = Column(ForeignKey('economy.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     creation_date = Column(Date, nullable=False)
     status = Column(Enum(Status, name="order_status"), nullable=False)
     comment = Column(String(500), nullable=False)
+    unit_count = Column(BigInteger, nullable=True)
 
     # ИСХОДЯЩИЕ ОТНОШЕНИЯ
 
-    production = relationship('ProductionEntity', back_populates='order', lazy='selectin')
-    cost_report = relationship('CostReportEntity', back_populates='order', lazy='selectin')
-    edition = relationship('EditionEntity', back_populates='order', lazy='selectin')
+    cost_report = relationship('OrderCostReportEntity', back_populates='order', lazy='selectin')
+    economy = relationship('EconomyEntity', back_populates='order', lazy='selectin')
 
     # ВХОДЯЩИЕ ОТНОШЕНИЯ
+
+    operations = relationship('OperationEntity', back_populates='order', lazy='selectin', uselist=True)
+    printings = relationship('PrintingEntity', back_populates='order', lazy='selectin', uselist=True)

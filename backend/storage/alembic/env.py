@@ -21,16 +21,21 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from backend.storage.tables import OrderEntity, CostReportEntity, EditionEntity, \
-    ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity, ProductionReferenceEntity
+from backend.storage.tables import OrderEntity, PrintingCostReportEntity, EditionEntity, \
+    ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity, \
+    ProductionReferenceEntity, EconomyEntity, OperationEntity, PrintingEntity, OrderCostReportEntity
 
 OrderEntity()
-CostReportEntity()
+PrintingCostReportEntity()
+OrderCostReportEntity()
 EditionEntity()
 ListSizeEntity()
 PressSheetEntity()
 CutterInfoEntity()
 ProductionEntity()
+EconomyEntity()
+OperationEntity()
+PrintingEntity()
 ProductionReferenceEntity()
 
 from backend.storage.declarative_base import DeclarativeBase
@@ -76,7 +81,7 @@ def run_migrations_online() -> None:
     config_section = config.get_section(config.config_ini_section, {})
     db_url = DBConfig(
         user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "postgres"),
+        password=os.getenv("DB_PASSWORD", "maibenben"),
         host=os.getenv("DB_HOST", "localhost"),
         port=int(os.getenv("DB_PORT", 5432)),
         db_name=os.getenv("DB_NAME", "postgres")

@@ -9,7 +9,7 @@ class CostReportRouter:
             prefix: str = "costs_report",
             handler: CostReportHandler = CostReportHandler()
     ):
-        self._prefix = f"/api/{prefix}"
+        self._prefix = f"/api/printing/{prefix}"
         self._handler = handler
 
         self.router = APIRouter(prefix=self._prefix, tags=[prefix])

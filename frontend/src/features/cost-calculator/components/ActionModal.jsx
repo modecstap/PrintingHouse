@@ -1,23 +1,46 @@
-import React from "react";
+import FormField from "./FormField";
 
-export default function ActionModal({ actionType, comment, setComment, onConfirm, onClose, loading }) {
-  if (!actionType) return null;
+export default function ActionModal({
+  action,
+  data,
+  setData,
+  onConfirm,
+  onClose,
+  loading,
+}) {
+  if (!action) return null;
+
+  const { title, confirmText, fields } = action;
 
   return (
     <div className="modal-overlay">
-      <div className="modal">
-        <h3>{actionType === "delay" ? "Отложить заказ" : "Принять в работу"}</h3>
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Введите комментарий..."
-          rows={4}
-        />
+      <div className="calculator-container">
+        <h3>{title}</h3>
+
+        {fields.map((field) => (
+          <FormField
+            key={field.path}
+            label={field.label}
+            path={field.path}
+            data={data}
+            setData={setData}
+            type={field.type}
+            valueParser={field.valueParser ?? ((v) => v)}
+          />
+        ))}
+
         <div className="modal-buttons">
-          <button className="btn btn-primary" onClick={onConfirm} disabled={loading}>
-            {loading ? "Отправляем..." : actionType === "delay" ? "Отложить" : "Принять в работу"}
+          <button
+            className="btn btn-primary"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? "Отправляем..." : confirmText}
           </button>
-          <button className="btn btn-more" onClick={onClose}>Отмена</button>
+
+          <button className="btn btn-more" onClick={onClose}>
+            Отмена
+          </button>
         </div>
       </div>
     </div>

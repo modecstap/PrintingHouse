@@ -12,7 +12,7 @@ from backend.cost_reporter.calculators.sheet_calculator.stages.paper_stage impor
 from backend.cost_reporter.calculators.sheet_calculator.stages.print_stage import PrintStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.tax_compensation_stage import TaxCompensationStage
 from backend.cost_reporter.calculators.sheet_calculator.stages.volume_markup_stage import VolumeMarkupStage
-from backend.models import Edition
+from backend.models import Edition, Economy
 from backend.models import Production
 
 
@@ -27,10 +27,12 @@ class SheetCostBuilder:
             self,
             edition: Edition,
             production: Production,
+            economy: Economy,
             placement: PlacementStrategy
     ):
         self._edition = edition
         self._production = production
+        self._economy = economy
         self._placement = placement
         self._calculator = EmptyStage()
         self._sheet_count = math.ceil(
@@ -97,14 +99,14 @@ class SheetCostBuilder:
     def with_markup(self):
         self._calculator = MarkupStage(
             previous_stage=self._calculator,
-            markup=self._production.markup
+            markup=self._economy.markup
         )
         return self
 
     def with_tax_compensation(self):
         self._calculator = TaxCompensationStage(
             previous_stage=self._calculator,
-            tax_rate=self._production.tax_rate
+            tax_rate=self._economy.tax_rate
         )
         return self
 

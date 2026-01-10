@@ -74,25 +74,6 @@ export default function ReferencePage() {
       {error && <div className="error">{error}</div>}
 
       <div className="form-grid">
-        <FormTile label="Наценка (%)">
-          <input
-            type="number"
-            step="0.01"
-            name="markup"
-            value={formData.markup}
-            onChange={handleChange}
-          />
-        </FormTile>
-
-        <FormTile label="Налоговая ставка">
-          <input
-            type="number"
-            step="0.01"
-            name="tax_rate"
-            value={formData.tax_rate}
-            onChange={handleChange}
-          />
-        </FormTile>
 
         <FormTile label="Стоимость чёрной краски (руб./лист)">
           <input

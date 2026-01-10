@@ -7,7 +7,6 @@ from backend.models.press_sheet import PressSheet
 
 
 class Production(BaseModel):
-    tax_rate: Decimal = Field(description="Налоговая ставка (0,93 = 7%)")
     black_ink_cost: Decimal = Field(description="Стоимость чёрной краски на 1 листе в руб.")
     ink_cost: Decimal = Field(description="Стоимость всех красок на 1 листе в руб.")
     printer_salary: Decimal = Field(description="Зарплата печатнику за 1 лист в руб.ы")
@@ -18,7 +17,3 @@ class Production(BaseModel):
     cutter: CutterInfo
     cutting_cost: Decimal = Field(description="Цена 1 реза в руб.")
     sheet_by_fitting: int = Field(description="Количество листов на приладку в шт.")
-    markup: Decimal = Field(
-        description="Наценка в %",
-        gt=Decimal("0"),
-    )

@@ -6,9 +6,7 @@ export const defaultEdition = {
     lamination: 1, 
     die_cutting: false, 
 };
-export const defaultProduction = { 
-    tax_rate: 0.93, 
-    markup: 80, 
+export const defaultProduction = {
     black_ink_cost: 2, 
     ink_cost: 15.6, 
     lamination_cost: 12, 
@@ -19,4 +17,8 @@ export const defaultProduction = {
     sheet_by_fitting: 2, 
     cutting_cost: 10, 
     printer_salary: 2, 
+};
+export const defaultEconomy = { 
+    tax_rate: 0.93, 
+    markup: 80, 
 };

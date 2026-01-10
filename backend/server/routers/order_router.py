@@ -13,6 +13,7 @@ class OrderRouter:
         self._register_routes()
 
     def _register_routes(self):
+        self.router.post("/cost_report")(self._handler.cost_report)
         self.router.post("/delay")(self._handler.delay)
         self.router.post("/accept")(self._handler.accept)
         self.router.post("/status")(self._handler.change)

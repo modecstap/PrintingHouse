@@ -1,5 +1,6 @@
 from backend.models.chroma import Chroma
-from backend.models.cost_report import CostReport
+from backend.models.printing_cost_report import PrintingCostReport
+from backend.models.order_cost_report import OrderCostReport
 from backend.models.cutter import CutterInfo
 from backend.models.edition import Edition
 from backend.models.lamination import Lamination
@@ -7,4 +8,7 @@ from backend.models.list_size import ListSize
 from backend.models.press_sheet import PressSheet
 from backend.models.production import Production
 from backend.models.status import Status
+from backend.models.economy import Economy
+from backend.models.printing import Printing
+from backend.models.operation import Operation
 from backend.models.order import Order

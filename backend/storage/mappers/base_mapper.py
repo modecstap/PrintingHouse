@@ -53,7 +53,7 @@ class BaseMapper:
     def _resolve_entity_class(self, model: BaseModel):
         """
         Определяет ORM-класс по имени Pydantic-модели.
-        Пример: CostReport → CostReportEntity
+        Пример: PrintingCostReport → PrintingCostReportEntity
         """
         model_name = model.__class__.__name__
         entity_name = f"{model_name}Entity"
@@ -102,7 +102,7 @@ class BaseMapper:
     def _resolve_model_class(self, entity: DeclarativeMeta) -> BaseModel:
         """
         Находит Pydantic-модель по ORM-сущности.
-        Например: CostReportEntity → CostReport
+        Например: PrintingCostReportEntity → PrintingCostReport
         """
         entity_name = entity.__class__.__name__
         if not entity_name.endswith("Entity"):

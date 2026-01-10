@@ -6,8 +6,8 @@ from backend.storage.declarative_base import DeclarativeBase
 Base = DeclarativeBase().base
 
 
-class CostReportEntity(Base):
-    __tablename__ = 'cost_report'
+class OrderCostReportEntity(Base):
+    __tablename__ = 'order_cost_report'
 
     # ПОЛЯ ТАБЛИЦЫ
 
@@ -17,12 +17,9 @@ class CostReportEntity(Base):
         primary_key=True,
         server_default=text("nextval('cost_report_id_seq')")
     )
-    items_per_sheet = Column(Integer, nullable=False)
-    sheet_count = Column(Integer, nullable=False)
     unit_cost_price = Column(Numeric, nullable=False)
     unit_cost = Column(Numeric, nullable=False)
     edition_cost = Column(Numeric, nullable=False)
-    profit_before_tax = Column(Numeric, nullable=False)
     profit_after_tax = Column(Numeric, nullable=False)
 
     # ИСХОДЯЩИЕ ОТНОШЕНИЯ

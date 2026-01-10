@@ -6,8 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from backend.storage.db_config import DBConfig
 from backend.storage.declarative_base import DeclarativeBase
 from backend.storage.singleton import Singleton
-from backend.storage.tables import OrderEntity, CostReportEntity, EditionEntity, ListSizeEntity, CutterInfoEntity, \
-    ProductionEntity, PressSheetEntity, ProductionReferenceEntity
+from backend.storage.tables import OrderEntity, PrintingCostReportEntity, EditionEntity, ListSizeEntity, \
+    CutterInfoEntity, \
+    ProductionEntity, PressSheetEntity, ProductionReferenceEntity, EconomyEntity, OperationEntity, OrderCostReportEntity
 from backend.storage.utils import get_db_url
 
 
@@ -39,12 +40,15 @@ class Database(metaclass=Singleton):
         try:
             # SQLAlchemy не создат таблицы в БД, если не создать объекты.
             OrderEntity()
-            CostReportEntity()
+            PrintingCostReportEntity()
+            OrderCostReportEntity()
             EditionEntity()
             ListSizeEntity()
             PressSheetEntity()
             CutterInfoEntity()
             ProductionEntity()
+            EconomyEntity()
+            OperationEntity()
             ProductionReferenceEntity()
 
             async with self.async_engine.begin() as conn:

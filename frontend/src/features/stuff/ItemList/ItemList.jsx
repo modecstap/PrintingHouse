@@ -73,7 +73,7 @@ const ItemList = ({ data = [], visibleFields = [], disableAction = false, apiUrl
         disableAction={disableAction}
         onEdit={openModal}
         onDelete={handleDelete}
-        onChangeStatus={(item) => setStatusTarget(item)} // 👈
+        onChangeStatus={(item) => setStatusTarget(item)}
       />
 
       {!disableAction && (

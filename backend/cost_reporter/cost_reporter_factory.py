@@ -5,20 +5,21 @@ from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculato
 from backend.cost_reporter.calculators.sheet_calculator.sheet_calculator import SheetCalculator
 from backend.cost_reporter.calculators.sheet_calculator.sheet_cost_builder import SheetCostBuilder
 from backend.cost_reporter.calculators.tax_calculator import TaxCalculator
-from backend.cost_reporter.cost_reporter import CostReporter
-from backend.models import Edition
+from backend.cost_reporter.printing_cost_reporter import PrintingCostReporter
+from backend.models import Edition, Economy
 from backend.models import Production
 
 
 class CostReporterFactory:
     """
-    Фабрика для сборки готового CostReporter.
+    Фабрика для сборки готового PrintingCostReporter.
     Отвечает за создание и связывание зависимостей.
     """
 
-    def __init__(self, edition_data: Edition, production_data: Production):
-        self._edition = edition_data
-        self._production = production_data
+    def __init__(self, edition: Edition, production: Production, economy: Economy):
+        self._edition = edition
+        self._production = production
+        self._economy = economy
 
         self._placement = self._create_placement()
 
@@ -41,6 +42,7 @@ class CostReporterFactory:
         builder = SheetCostBuilder(
             edition=self._edition,
             production=self._production,
+            economy=self._economy,
             placement=self._placement,
         )
 
@@ -80,7 +82,7 @@ class CostReporterFactory:
     def _create_tax_calculator(self):
         """Калькулятор налогов."""
         return TaxCalculator(
-            tax_rate=self._production.tax_rate,
+            tax_rate=self._economy.tax_rate,
             profit_before_tax=self._edition_calculator.profit()
         )
 
@@ -93,9 +95,9 @@ class CostReporterFactory:
             item_count=self._edition.count
         )
 
-    def create_reporter(self) -> CostReporter:
+    def create_reporter(self) -> PrintingCostReporter:
         """Создаёт готовый объект для генерации отчёта по стоимости."""
-        return CostReporter(
+        return PrintingCostReporter(
             sheet_calculator=self._sheet_calculator,
             edition_calculator=self._edition_calculator,
             item_calculator=self._item_calculator,

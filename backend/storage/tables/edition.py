@@ -31,4 +31,4 @@ class EditionEntity(Base):
 
     # ВХОДЯЩИЕ ОТНОШЕНИЯ
 
-    order = relationship('OrderEntity', back_populates='edition', lazy='selectin')
+    printing = relationship('PrintingEntity', back_populates='edition', lazy='selectin')

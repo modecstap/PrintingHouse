@@ -1,14 +1,11 @@
-from io import BytesIO
-
 from starlette.responses import StreamingResponse
 
-from backend.instruction_maker.instruction_builder_factory import InstructionBuilderFactory
-from backend.models import Status, Order
+from backend.models import Status, Order, PrintingCostReport, OrderCostReport
 from backend.server.handlers.entity_handler import EntityHandler
+from backend.server.handlers.instruction_handler import InstructionHandler
 from backend.server.helpers.instruction_factory import InstructionService
 from backend.server.helpers.order_factory import OrderFactoryService
 from backend.server.models.change_payload import ChangePayload
-from backend.server.models.order_payload import OrderPayload
 from backend.storage.access_services.accessor_factory import AccessorFactory
 
 
@@ -24,25 +21,20 @@ class OrderHandler(EntityHandler):
         self._order_factory = order_factory or OrderFactoryService()
         self._instruction_service = instruction_service or InstructionService()
 
-    async def delay(self, payload: OrderPayload):
+    async def delay(self, payload: Order):
         """Создать заказ со статусом 'отложено'."""
-        order = await self._order_factory.create_order(payload, Status("Отложен"))
+        order = self._order_factory.fit_order(payload, Status("Отложен"))
         await self._service.add_models([order])
 
-    async def accept(self, payload: OrderPayload) -> StreamingResponse:
+    async def accept(self, payload: Order) -> StreamingResponse:
         """Создать заказ со статусом 'в работе' и вернуть PDF-инструкцию."""
-        order = await self._order_factory.create_order(payload, Status("В работе"))
+        order = self._order_factory.fit_order(payload, Status("В работе"))
         order = (await self._service.add_models([order]))[0]
 
-        instruction_model = self._instruction_service.build_instruction_model(order.id, payload)
-        builder = InstructionBuilderFactory(instruction_model).make_instruction_builder()
-        pdf_bytes = builder.build_pdf()
+        # TODO из одного хендлера лезем в другой. создать отдельный класс?
+        instruction = await InstructionHandler().take_instruction_on_order(order.id)
 
-        return StreamingResponse(
-            BytesIO(pdf_bytes),
-            media_type="application/pdf",
-            headers={"Content-Disposition": "attachment; filename=instruction.pdf"}
-        )
+        return instruction
 
     async def change(self, payload: ChangePayload):
         """Изменить статус существующего заказа."""
@@ -50,11 +42,23 @@ class OrderHandler(EntityHandler):
         order.status = payload.new_status
         await self._service.update_models([order])
 
+    def cost_report(self, order: Order) -> OrderCostReport:
+        order = self._order_factory.fit_order(order, None)
+        return order.cost_report
+
     async def get_all(self) -> list[MODEL]:
-        return await super().get_all()
+        orders = await super().get_all()
+        for order in orders:
+            for printing in order.printings:
+                printing.edition.count /= order.unit_count
+        return orders
 
     async def get(self, id: int) -> MODEL:
-        return await super().get(id)
+        order: Order = await super().get(id)
+        for printing in order.printings:
+            printing.edition.count /= order.unit_count
+        return order
+
 
     async def create(self, data: MODEL) -> MODEL:
         return await super().create(data)

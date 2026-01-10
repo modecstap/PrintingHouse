@@ -3,6 +3,7 @@ import "./MainPage.css";
 import VariableTable from "../features/stuff/Table/VariableTable";
 import CostCalculatorPage from "../features/cost-calculator/CostCalculatorPage";
 import ReferencePage from "../features/reference-system/reference_page";
+import MultiLineCalculator from "../features/cost-calculator/MultiLineCalculator";
 
 const MainPage = () => {
   const [selectedPage, setSelectedPage] = useState("calculator");
@@ -17,7 +18,13 @@ const MainPage = () => {
             className={`menu-item ${selectedPage === "calculator" ? "active" : ""}`}
             onClick={() => setSelectedPage("calculator")}
           >
-            Калькулятор стоимости
+            Калькулятор однополосный
+          </li>
+          <li
+            className={`menu-item ${selectedPage === "calculator-multi-line" ? "active" : ""}`}
+            onClick={() => setSelectedPage("calculator-multi-line")}
+          >
+            Калькулятор многополосный
           </li>
           <li
             className={`menu-item ${selectedPage === "orders" ? "active" : ""}`}
@@ -37,6 +44,7 @@ const MainPage = () => {
       {/* Правая панель */}
       <div className="form-display">
         {selectedPage === "calculator" && <CostCalculatorPage />}
+        {selectedPage === "calculator-multi-line" && <MultiLineCalculator />}
         {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (
           <VariableTable

@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
-import { defaultEdition, defaultProduction } from "../../../constants/defaults";
+import { defaultEdition, defaultProduction, defaultEconomy } from "../../../constants/defaults";
 import { BackendIP } from "../../../constants/BackendIP";
 
 export const useFormData = (
   initialEdition = {},
-  initialProduction = {}
+  initialProduction = {},
+  initialEconomy = {}
 ) => {
   const [formData, setFormData] = useState({
-    edition: { ...defaultEdition, ...initialEdition },
-    production: { ...defaultProduction, ...initialProduction },
+    printings: [
+      {
+        edition: { ...defaultEdition, ...initialEdition },
+        production: { ...defaultProduction, ...initialProduction }
+      }
+    ],
+    economy: { ...defaultEconomy, ...initialEconomy },
   });
 
-  // ===== подгрузка production, если его нет =====
   useEffect(() => {
     const isProductionEmpty =
       !initialProduction ||
@@ -32,10 +37,17 @@ export const useFormData = (
 
         setFormData((prev) => ({
           ...prev,
-          production: {
-            ...defaultProduction,
-            ...data,
-          },
+          printings: prev.printings.map((printing, index) =>
+            index === 0
+              ? {
+                  ...printing,
+                  production: {
+                    ...defaultProduction,
+                    ...data,
+                  },
+                }
+              : printing
+          ),
         }));
       } catch (err) {
         console.error("Failed to load production reference", err);
@@ -43,14 +55,8 @@ export const useFormData = (
     };
 
     loadProduction();
-  }, []); // ← важно: только при инициализации
+  }, []);
 
-  const updateSection = (section, values) => {
-    setFormData((prev) => ({
-      ...prev,
-      [section]: { ...prev[section], ...values },
-    }));
-  };
 
-  return [formData, updateSection];
+  return [formData, setFormData];
 };
