@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.add_column('order', sa.Column('unit_count', sa.BigInteger(), nullable=True))
     # ### end Alembic commands ###
 
-    op.execute("UPDATE order SET unit_count = 1 WHERE unit_count IS NULL")
+    op.execute("""UPDATE "order" SET unit_count = 1 WHERE unit_count IS NULL""")
 
     op.alter_column('order', 'unit_count', nullable=False)
 
