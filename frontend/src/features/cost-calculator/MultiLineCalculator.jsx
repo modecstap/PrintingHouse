@@ -29,11 +29,6 @@ export default function MultiLineCalculator({
       },
     ],
     operations: [
-      {
-        name: "",
-        cost: 0,
-        description: "",
-      },
     ],
     economy: {
       tax_rate: 0.93,
