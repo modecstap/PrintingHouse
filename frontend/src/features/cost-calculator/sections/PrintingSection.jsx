@@ -41,6 +41,7 @@ const printingFields = (index) => [
     type: "select",
     valueParser: Number,
     options: [
+      { value: 0, label: "0+0" },
       { value: 1, label: "1+0" },
       { value: 2, label: "1+1" },
       { value: 3, label: "4+0" },
