@@ -51,7 +51,7 @@ export default function EditionSection({
   hideActionButtons,
 }) {
   const { loading, error, successMsg, execute } = useAsyncAction();
-    const [report, setReport] = useState(null);
+  const [report, setReport] = useState(null);
 
   const handleCalculate = async () => {
     const data = await execute(`/api/order/cost_report`, formData);
@@ -63,85 +63,85 @@ export default function EditionSection({
   };
 
   const handleAccept = async () => {
-  const response = await fetch(`${BackendIP}/api/order/accept`, {
-    method: "POST",
-    body: JSON.stringify(formData),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+    const response = await fetch(`${BackendIP}/api/order/accept`, {
+      method: "POST",
+      body: JSON.stringify(formData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (!response.ok) return;
+    if (!response.ok) return;
 
-  const blob = await response.blob();
+    const blob = await response.blob();
 
-  const disposition = response.headers.get("Content-Disposition");
-  let fileName = "file";
+    const disposition = response.headers.get("Content-Disposition");
+    let fileName = "file";
 
-  if (disposition) {
-    const match = disposition.match(/filename="?(.+)"?/);
-    if (match?.[1]) {
-      fileName = match[1];
+    if (disposition) {
+      const match = disposition.match(/filename="?(.+)"?/);
+      if (match?.[1]) {
+        fileName = match[1];
+      }
     }
-  }
 
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
-};
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
 
 
   return (
     <section className="calculator-container">
-        <h2>Тираж</h2>
-        <FlexForm
-            fields={UNIT_FIELDS}
-            formData={formData}
-            setFormData={setFormData}
-        />
+      <h2>Тираж</h2>
+      <FlexForm
+        fields={UNIT_FIELDS}
+        formData={formData}
+        setFormData={setFormData}
+      />
 
-        {error && (
+      {error && (
         <div className="error-message">
-            <h3>⚠️ Ошибка</h3>
-            {error.split("\n").map((line, idx) => <div key={idx}>{line}</div>)}
+          <h3>⚠️ Ошибка</h3>
+          {error.split("\n").map((line, idx) => <div key={idx}>{line}</div>)}
         </div>
-        )}
+      )}
 
-        <div className="button-row">
+      <div className="button-row">
+        <button
+          className="btn btn-primary"
+          onClick={handleCalculate}
+          disabled={loading}
+        >
+          {loading ? "Вычисляем..." : "Рассчитать"}
+        </button>
+
+        {!hideActionButtons && (
+          <>
             <button
-            className="btn btn-primary"
-            onClick={handleCalculate}
-            disabled={loading}
+              className="btn btn-primary"
+              onClick={handleDelay}
+              disabled={loading}
             >
-            {loading ? "Вычисляем..." : "Рассчитать"}
+              Отложить
             </button>
 
-            {!hideActionButtons && (
-            <>
-                <button
-                className="btn btn-primary"
-                onClick={handleDelay}
-                disabled={loading}
-                >
-                Отложить
-                </button>
-
-                <button
-                className="btn btn-primary"
-                onClick={handleAccept}
-                disabled={loading}
-                >
-                В работу
-                </button>
-            </>
-            )}
-        </div>
-      <ReportSection report={report} base_rows={BASE_ROWS}/>
+            <button
+              className="btn btn-primary"
+              onClick={handleAccept}
+              disabled={loading}
+            >
+              В работу
+            </button>
+          </>
+        )}
+      </div>
+      <ReportSection report={report} base_rows={BASE_ROWS} />
     </section>
   );
 }

@@ -14,12 +14,22 @@ const ItemActions = ({ itemId, onEdit, onDelete, onChangeStatus }) => {
         throw new Error("Не удалось получить инструкцию");
       }
 
-      // Получаем PDF как blob и скачиваем его
       const blob = await response.blob();
+
+      const disposition = response.headers.get("Content-Disposition");
+      let fileName = "file";
+
+      if (disposition) {
+        const match = disposition.match(/filename="?(.+)"?/);
+        if (match?.[1]) {
+          fileName = match[1];
+        }
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ZAK_${itemId}.pdf`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       a.remove();
