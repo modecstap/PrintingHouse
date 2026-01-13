@@ -6,7 +6,7 @@ import AdvancedSection from "../components/AdvancedSection";
 
 const printingFields = (index) => [
   {
-    label: "Кол-во разворотов",
+    label: "Кол-во листов",
     path: `printings[${index}].edition.count`,
     type: "number",
     valueParser: Number,
@@ -18,13 +18,13 @@ const printingFields = (index) => [
     valueParser: Number,
   },
   {
-    label: "Ширина разворота",
+    label: "Ширина",
     path: `printings[${index}].edition.list_size.width`,
     type: "number",
     valueParser: Number,
   },
   {
-    label: "Высота разворота",
+    label: "Высота",
     path: `printings[${index}].edition.list_size.height`,
     type: "number",
     valueParser: Number,
@@ -166,7 +166,7 @@ export default function PrintingSection({formData, setFormData}){
   }, []);
     
     const addPrinting = () => {
-        const newP = newPrinting(); // создаём пустую запись
+        const newP = newPrinting();
         setFormData(d => ({
             ...d,
             printings: [...d.printings, newP],
@@ -174,7 +174,6 @@ export default function PrintingSection({formData, setFormData}){
 
         setShowAdvanced(prev => [...prev, false]);
 
-        // Подгружаем данные с API для только что добавленной записи
         fetch(`${BackendIP}/api/reference/production`)
             .then(res => res.json())
             .then(data => {
@@ -182,7 +181,7 @@ export default function PrintingSection({formData, setFormData}){
                 const updatedPrintings = [...d.printings];
                 updatedPrintings[updatedPrintings.length - 1] = {
                 ...updatedPrintings[updatedPrintings.length - 1],
-                production: data, // подставляем данные с сервера
+                production: data,
                 };
                 return { ...d, printings: updatedPrintings };
             });
