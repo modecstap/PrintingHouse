@@ -44,13 +44,13 @@ export default function MultiLineCalculator({
   return (
     <>
       <PrintingSection formData={formData} setFormData={setFormData} />
-      <OperationSection formData={formData} setFormData={setFormData} />
-      <EconomicSection formData={formData} setFormData={setFormData} />
       <EditionSection
         formData={formData}
         setFormData={setFormData}
         hideActionButtons={hideActionButtons}
       />
+      <OperationSection formData={formData} setFormData={setFormData} />
+      <EconomicSection formData={formData} setFormData={setFormData} />
     </>
   );
 }
