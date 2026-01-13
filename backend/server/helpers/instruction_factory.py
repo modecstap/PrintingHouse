@@ -10,7 +10,7 @@ from backend.models import Printing
 class InstructionService:
     """Построение модели инструкции для производства."""
 
-    def build_instruction_model(self, order_id: int, printing: Printing) -> InstructionModel:
+    def build_instruction_model(self, order_id: int, unit_count: int, printing: Printing) -> InstructionModel:
         optimizer = PlacementOptimizer(
             press_sheet=printing.production.press_sheet,
             list_size=printing.edition.list_size
@@ -25,6 +25,7 @@ class InstructionService:
 
         return InstructionModel(
             order_id=order_id,
+            unit_count=unit_count,
             comment=printing.comment,
             density=printing.edition.density,
             press_sheet=printing.production.press_sheet,

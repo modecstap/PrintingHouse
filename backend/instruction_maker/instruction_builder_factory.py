@@ -27,8 +27,8 @@ class InstructionBuilderFactory:
                 fitting_count=self._instruction.fitting_count,
                 edition_count=self._instruction.edition_count,
                 list_size=self._instruction.list_size,
-                product_per_sheet=self._instruction.product_per_sheet
-
+                product_per_sheet=self._instruction.product_per_sheet,
+                unit_count=self._instruction.unit_count
             )
         ]
 

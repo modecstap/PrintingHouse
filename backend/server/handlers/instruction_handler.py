@@ -11,8 +11,8 @@ from backend.storage.access_services.accessor_factory import AccessorFactory
 
 class InstructionHandler:
 
-    def take_instruction(self, order_id: int, printing: Printing) -> StreamingResponse:
-        pdf_bytes = self._get_pdf_file(order_id, printing)
+    def take_instruction(self, order_id: int, unit_count: int, printing: Printing) -> StreamingResponse:
+        pdf_bytes = self._get_pdf_file(order_id, unit_count, printing)
         return StreamingResponse(
             BytesIO(pdf_bytes),
             media_type="application/pdf",
@@ -26,7 +26,7 @@ class InstructionHandler:
         zip_buffer = BytesIO()
 
         if len(order.printings) == 1:
-            pdf_file = self._get_pdf_file(order_id, order.printings[0])
+            pdf_file = self._get_pdf_file(order_id, order.unit_count, order.printings[0])
             return StreamingResponse(
                 BytesIO(pdf_file),
                 media_type="application/pdf",
@@ -36,7 +36,7 @@ class InstructionHandler:
 
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
             for i, printing in enumerate(order.printings, start=1):
-                pdf_bytes = self._get_pdf_file(order_id, printing)
+                pdf_bytes = self._get_pdf_file(order_id, order.unit_count, printing)
                 zip_file.writestr(f"instruction_{i}.pdf", pdf_bytes)
 
         zip_buffer.seek(0)
@@ -47,8 +47,8 @@ class InstructionHandler:
             headers={"Content-Disposition": "attachment; filename=instructions.zip"}
         )
 
-    def _get_pdf_file(self, order_id: int, printing: Printing):
-        instruction_model = InstructionService().build_instruction_model(order_id, printing)
+    def _get_pdf_file(self, order_id: int, unit_count: int,  printing: Printing):
+        instruction_model = InstructionService().build_instruction_model(order_id, unit_count, printing)
         builder = InstructionBuilderFactory(instruction_model).make_instruction_builder()
         pdf_bytes = builder.build_pdf()
         return pdf_bytes
