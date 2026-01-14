@@ -20,11 +20,12 @@ class InstructionBuilderFactory:
                 press_sheet=self._instruction.press_sheet,
                 chroma=self._instruction.chroma,
                 lamination=self._instruction.lamination,
-                die_cutting=self._instruction.die_cutting
+                die_cutting=self._instruction.die_cutting,
+                sheet_count=self._instruction.sheet_count,
+                fitting_count=self._instruction.fitting_count,
             ),
             self._factory.create_edition_information(
                 sheet_count=self._instruction.sheet_count,
-                fitting_count=self._instruction.fitting_count,
                 edition_count=self._instruction.edition_count,
                 list_size=self._instruction.list_size,
                 product_per_sheet=self._instruction.product_per_sheet,

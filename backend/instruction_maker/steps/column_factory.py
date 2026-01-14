@@ -12,7 +12,9 @@ class ColumnFactory:
             press_sheet: PressSheet,
             chroma: Chroma,
             lamination: Lamination,
-            die_cutting: bool
+            die_cutting: bool,
+            sheet_count: int,
+            fitting_count: int,
     ) -> Column:
         die_cutting_format = "Да" if die_cutting else "Нет"
 
@@ -44,6 +46,7 @@ class ColumnFactory:
             InformationString(label="плотность", value=str(density), measurement="гр"),
             InformationString(label="формат бумаги", value=f"{press_sheet.width}x{press_sheet.height}",
                               measurement="мм"),
+            InformationString(label="листов для печати", value=f"{sheet_count}+{fitting_count}", measurement="шт."),
             InformationString(label="цветность", value=chroma_name, measurement=""),
             InformationString(label="ламинация", value=lamination_name, measurement=""),
             InformationString(label="высечка", value=die_cutting_format, measurement=""),
@@ -54,19 +57,16 @@ class ColumnFactory:
     def create_edition_information(
             cls,
             sheet_count: int,
-            fitting_count: int,
             edition_count: int,
             list_size: ListSize,
             product_per_sheet: int,
             unit_count: int
     ) -> Column:
         data = [
-            InformationString(label="листов/разворотов", value=f"{edition_count}", measurement="шт."),
-            InformationString(label="листов/разворотов на печатном", value=f"{product_per_sheet}", measurement="шт."),
-            InformationString(label="формат листа/разворота", value=f"{list_size.width}x{list_size.height}", measurement="мм"),
-            InformationString(label="печатных листов", value=f"{sheet_count}+{fitting_count}", measurement="шт."),
+            InformationString(label="формат изделия", value=f"{list_size.width}x{list_size.height}", measurement="мм"),
+            InformationString(label="листов в изделии", value=f"{int(edition_count/unit_count)}", measurement="шт."),
             InformationString(label="тираж", value=f"{unit_count}", measurement="шт."),
-            InformationString(label="листов/разворотов в изделии", value=f"{int(edition_count/unit_count)}", measurement="шт."),
-            InformationString(label="кол-во копий", value=f"{int(sheet_count/(edition_count/unit_count))}", measurement="раз.")
+            InformationString(label="изделий на листе", value=f"{product_per_sheet}", measurement="шт."),
+            InformationString(label="кол-во копий (для принтера)", value=f"{int(sheet_count/(edition_count/unit_count))}", measurement="раз.")
         ]
         return Column(data=data)
