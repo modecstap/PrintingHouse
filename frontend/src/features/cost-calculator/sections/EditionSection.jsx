@@ -44,6 +44,39 @@ const BASE_ROWS = [
   },
 ];
 
+const PRINTING_COST_HIDDEN_TEMPLATE = (index) => [
+  {
+    label: `Цена изделия`,
+    value: (r) => formatPrice(r.printing_cost_reports[index].unit_cost),
+  },
+  {
+    label: `Цена тиража`,
+    value: (r) =>
+      formatPrice(r.printing_cost_reports[index].edition_cost),
+  },
+  {
+    label: `Кол-во изделий на листе`,
+    value: (r) => r.printing_cost_reports[index].items_per_sheet,
+  },
+  {
+    label: `Кол-во печатных листов`,
+    value: (r) => r.printing_cost_reports[index].sheet_count,
+  },
+  {
+    label: `Себестоимость изделия`,
+    value: (r) => formatPrice(r.printing_cost_reports[index].unit_cost_price),
+  },
+  {
+    label: `Прибыль до налога`,
+    value: (r) =>
+      formatPrice(r.printing_cost_reports[index].profit_before_tax),
+  },
+  {
+    label: `Прибыль после налога`,
+    value: (r) =>
+      formatPrice(r.printing_cost_reports[index].profit_after_tax),
+  },
+];
 
 export default function EditionSection({
   formData,
@@ -52,10 +85,29 @@ export default function EditionSection({
 }) {
   const { loading, error, successMsg, execute } = useAsyncAction();
   const [report, setReport] = useState(null);
+  const [hiddenRows, setHiddenRows] = useState([]);
+
+  const buildHiddenRows = (data) => {
+    if (!Array.isArray(data.printing_cost_reports)) {
+      return [];
+    }
+
+    return data.printing_cost_reports.flatMap((_, index) => [
+      {
+        label: `Печать №${index + 1}`,
+        isGroup: true,
+      },
+      ...PRINTING_COST_HIDDEN_TEMPLATE(index),
+    ]);
+  };
 
   const handleCalculate = async () => {
     const data = await execute(`/api/order/cost_report`, formData);
-    if (data) setReport(data);
+
+    if (!data) return;
+
+    setHiddenRows(buildHiddenRows(data));
+    setReport(data);
   };
 
   const handleDelay = async () => {
@@ -95,10 +147,10 @@ export default function EditionSection({
     window.URL.revokeObjectURL(url);
   };
 
-
   return (
     <section className="calculator-container">
       <h2>Тираж</h2>
+
       <FlexForm
         fields={UNIT_FIELDS}
         formData={formData}
@@ -108,7 +160,9 @@ export default function EditionSection({
       {error && (
         <div className="error-message">
           <h3>⚠️ Ошибка</h3>
-          {error.split("\n").map((line, idx) => <div key={idx}>{line}</div>)}
+          {error.split("\n").map((line, idx) => (
+            <div key={idx}>{line}</div>
+          ))}
         </div>
       )}
 
@@ -141,7 +195,14 @@ export default function EditionSection({
           </>
         )}
       </div>
-      <ReportSection report={report} base_rows={BASE_ROWS} />
+
+      {report && (
+        <ReportSection
+          report={report}
+          base_rows={BASE_ROWS}
+          detail_rows={hiddenRows}
+        />
+      )}
     </section>
   );
 }

@@ -26,4 +26,5 @@ class OrderCostReportEntity(Base):
 
     # ВХОДЯЩИЕ ОТНОШЕНИЯ
 
+    printing_cost_reports = relationship('PrintingCostReportEntity', back_populates='order_cost_report', lazy='selectin')
     order = relationship('OrderEntity', back_populates='cost_report', lazy='selectin')

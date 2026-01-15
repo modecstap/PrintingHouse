@@ -39,7 +39,8 @@ class OrderCostReporter:
             unit_cost_price=unit_cost_price,
             unit_cost=unit_cost,
             edition_cost=edition_cost,
-            profit_after_tax=profit_after_tax
+            profit_after_tax=profit_after_tax,
+            printing_cost_reports=self._printing_reports,
         )
 
     def _calculate_printings(self):

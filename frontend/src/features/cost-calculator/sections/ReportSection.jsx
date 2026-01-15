@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 
 
-function ReportRow({ label, value }) {
+function ReportRow({ label, value, isGroup }) {
+  if (isGroup) {
+    return (
+      <tr className="report-group-row">
+        <td colSpan={2}>
+          <strong>{label}</strong>
+        </td>
+      </tr>
+    );
+  }
+
   return (
     <tr>
       <td>{label}</td>
@@ -30,7 +40,8 @@ export default function ReportSection({ report, base_rows, detail_rows = [] }) {
               <ReportRow
                 key={row.label}
                 label={row.label}
-                value={row.value(report)}
+                isGroup={row.isGroup}
+                value={row.isGroup ? null : row.value(report)}
               />
             ))}
           </tbody>
