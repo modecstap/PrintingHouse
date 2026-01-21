@@ -199,7 +199,7 @@ export default function PrintingSection({formData, setFormData}){
     };
 
     return(
-        <section className="calculator-container">
+        <section className="calculator-container" style={{marginTop: "0"}}>
             <h2>Параметры печати</h2>
             {formData.printings.map((_, i) => (
                 <>

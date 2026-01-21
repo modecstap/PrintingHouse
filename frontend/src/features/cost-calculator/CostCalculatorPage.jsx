@@ -124,7 +124,7 @@ export default function CostCalculatorPage({ edition = {}, production = {}, econ
         <FlexForm fields={VisibleFields} formData={formData} setFormData={setFormData} />
   
         <div className="button-row">
-          <button className="btn btn-primary" onClick={handleCalculate} disabled={loading}>
+          <button className="btn btn-accent" onClick={handleCalculate} disabled={loading}>
             {loading ? "Вычисляем..." : "Рассчитать"}
           </button>
   

@@ -168,7 +168,7 @@ export default function EditionSection({
 
       <div className="button-row">
         <button
-          className="btn btn-primary"
+          className="btn btn-accent"
           onClick={handleCalculate}
           disabled={loading}
         >

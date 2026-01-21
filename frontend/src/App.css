@@ -7,6 +7,7 @@
   --highlight: oklch(1 0.03 276);
   --border: oklch(0.6 0.03 276);
   --border-muted: oklch(0.7 0.03 276);
+  --accent: oklch(0.4714 0.1467 27.2);
   --primary: oklch(0.4 0.1 276);
   --secondary: oklch(0.4 0.1 96);
   --danger: oklch(0.5 0.05 30);
