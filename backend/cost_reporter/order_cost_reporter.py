@@ -54,5 +54,5 @@ class OrderCostReporter:
 
         for operation in self._operations:
             self._operation_cost_price += operation.cost * self._unit_count
-            total_markup = (self._economy.markup * (1 / self._economy.tax_rate) / 100)
+            total_markup = ((1 + self._economy.markup / 100) * (1 / self._economy.tax_rate))
             self._operation_cost += self._operation_cost_price * total_markup
