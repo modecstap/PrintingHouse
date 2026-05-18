@@ -3,6 +3,7 @@ import "./MainPage.css";
 import VariableTable from "../features/stuff/Table/VariableTable";
 import CostCalculatorPage from "../features/cost-calculator/CostCalculatorPage";
 import ReferencePage from "../features/reference-system/reference_page";
+import FinancialReporter from "../features/financial/FinancialReporter";
 import MultiLineCalculator from "../features/cost-calculator/MultiLineCalculator";
 
 const MainPage = () => {
@@ -33,6 +34,12 @@ const MainPage = () => {
             Таблица заказов
           </li>
           <li
+            className={`menu-item ${selectedPage === "financial" ? "active" : ""}`}
+            onClick={() => setSelectedPage("financial")}
+          >
+            Финансовый учёт
+          </li>
+          <li
             className={`menu-item ${selectedPage === "reference" ? "active" : ""}`}
             onClick={() => setSelectedPage("reference")}
           >
@@ -46,6 +53,7 @@ const MainPage = () => {
         {selectedPage === "calculator" && <CostCalculatorPage />}
         {selectedPage === "calculator-multi-line" && <MultiLineCalculator />}
         {selectedPage === "reference" && <ReferencePage />}
+        {selectedPage === "financial" && <FinancialReporter />}
         {selectedPage === "orders" && (
           <VariableTable
             endPoint="api/order/"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import FlexForm from "./components/FlexForm";
 import PrintingSection from "./sections/PrintingSection";
 import OperationSection from "./sections/OperationSection";
+import ImportSection from "./sections/ImportSection";
 import EconomicSection from "./sections/EconomicSection";
 import EditionSection from "./sections/EditionSection";
 
@@ -43,6 +44,7 @@ export default function MultiLineCalculator({
 
   return (
     <>
+      <ImportSection setFormData={setFormData}/>
       <PrintingSection formData={formData} setFormData={setFormData} />
       <EditionSection
         formData={formData}
