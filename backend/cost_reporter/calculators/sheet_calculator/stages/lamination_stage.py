@@ -10,18 +10,27 @@ class LaminationStage(IStage):
             self,
             previous_stage: IStage,
             lamination: Lamination,
-            sheet_lamination_cost: Decimal
+            sheet_lamination_cost: Decimal,
+            sheet_count: int
     ):
         self._previous_stage = previous_stage
         self._lamination = lamination
         self._sheet_lamination_cost = sheet_lamination_cost
-        self._lamination_stage_cost = Decimal(0)
+        self._lamination_stage_cost = self._calculate_lamination_cost()
 
-        self._calculate_lamination_cost()
+        initial_price = Decimal(200)/sheet_count
 
         # Стоимость алёнки примерно равна 1/2 от стоимости печати
-        self._cost_price = self._previous_stage.get_cost_price() + self._lamination_stage_cost / 2
-        self._cost = self._previous_stage.get_cost() + self._lamination_stage_cost
+        self._cost_price = (
+                self._previous_stage.get_cost_price()
+                + self._lamination_stage_cost / 2
+                + initial_price
+        )
+        self._cost = (
+                self._previous_stage.get_cost()
+                + self._lamination_stage_cost
+                + initial_price
+        )
 
     def get_cost(self) -> Decimal:
         return self._cost
@@ -29,10 +38,10 @@ class LaminationStage(IStage):
     def get_cost_price(self) -> Decimal:
         return self._cost_price
 
-    def _calculate_lamination_cost(self):
+    def _calculate_lamination_cost(self) -> Decimal:
         if self._lamination == Lamination.DONT:
-            self._lamination_stage_cost = Decimal(0)
+            return Decimal(0)
         if self._lamination == Lamination.ONE_ZERO:
-            self._lamination_stage_cost = self._sheet_lamination_cost
+            return self._sheet_lamination_cost
         if self._lamination == Lamination.ONE_ONE:
-            self._lamination_stage_cost = self._sheet_lamination_cost * 2
+            return self._sheet_lamination_cost * 2

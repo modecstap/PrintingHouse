@@ -6,7 +6,7 @@ from backend.cost_reporter.calculators.sheet_calculator.sheet_calculator import 
 from backend.cost_reporter.calculators.sheet_calculator.sheet_cost_builder import SheetCostBuilder
 from backend.cost_reporter.calculators.tax_calculator import TaxCalculator
 from backend.cost_reporter.printing_cost_reporter import PrintingCostReporter
-from backend.models import Edition, Economy
+from backend.models import Edition, Economy, Lamination
 from backend.models import Production
 
 
@@ -51,16 +51,18 @@ class CostReporterFactory:
             builder
             .with_paper()
             .with_print()
-            .with_lamination()
             .with_cut()
-            .with_markup()
         )
+
+        if self._edition.lamination != Lamination.DONT:
+            builder = builder.with_lamination()
 
         if self._edition.die_cutting:
             builder = builder.with_die_cutting()
 
         builder = (
             builder
+            .with_markup()
             .with_volume_markup()
             .with_tax_compensation()
         )

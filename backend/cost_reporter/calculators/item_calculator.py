@@ -6,13 +6,11 @@ class ItemCalculator:
             self,
             item_count,
             sheet_cost_price,
-            sheet_by_fitting,
             item_per_sheet,
             sheet_cost,
     ):
         self._item_count = item_count
         self._sheet_cost_price = sheet_cost_price
-        self._sheet_by_fitting = sheet_by_fitting
         self._item_per_sheet = item_per_sheet
         self._sheet_cost = sheet_cost
 
