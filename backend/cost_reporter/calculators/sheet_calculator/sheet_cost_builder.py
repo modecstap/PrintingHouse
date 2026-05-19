@@ -36,8 +36,9 @@ class SheetCostBuilder:
         self._placement = placement
         self._calculator = EmptyStage()
         self._sheet_count = math.ceil(
-            self._edition.count /
-            self._placement.get_items_count()
+            self._edition.count
+            / self._placement.get_items_count()
+            + self._production.sheet_by_fitting
         )
 
     def get_calculator(self) -> IStage:
