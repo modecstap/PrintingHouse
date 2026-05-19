@@ -67,7 +67,8 @@ class SheetCostBuilder:
         self._calculator = LaminationStage(
             previous_stage=self._calculator,
             lamination=self._edition.lamination,
-            sheet_lamination_cost=self._production.lamination_cost
+            sheet_lamination_cost=self._production.lamination_cost,
+            sheet_count=self._sheet_count
         )
         return self
 

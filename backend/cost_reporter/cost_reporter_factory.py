@@ -90,7 +90,6 @@ class CostReporterFactory:
         return ItemCalculator(
             sheet_cost=self._sheet_calculator.get_cost(),
             sheet_cost_price=self._sheet_calculator.get_cost_price(),
-            sheet_by_fitting=self._production.sheet_by_fitting,
             item_per_sheet=self._placement.get_items_count(),
             item_count=self._edition.count
         )
