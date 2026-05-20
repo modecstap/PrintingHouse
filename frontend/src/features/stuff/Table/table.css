@@ -1,5 +1,4 @@
-/* Контейнер */
-.materials-container {
+/* .materials-container {
     box-shadow: var(--shadow-light);
 }
 
@@ -32,7 +31,6 @@
     background-color: var(--bg);
 }
 
-/* Заголовок */
 .materials-title {
     font-weight: bold;
     text-align: center;
@@ -40,7 +38,6 @@
     color: var(--text);
 }
 
-/* Таблица */
 .materials-table {
     width: 100%;
     border-collapse: collapse;
@@ -49,7 +46,6 @@
 }
 
 
-/* Загрузка и ошибка */
 .loading,
 .error {
     font-size: 18px;
@@ -60,4 +56,4 @@
 
 .error {
     color: var(--danger);
-}
+} */

@@ -4,6 +4,7 @@ import VariableTable from "../features/stuff/Table/VariableTable";
 import CostCalculatorPage from "../features/cost-calculator/CostCalculatorPage";
 import ReferencePage from "../features/reference-system/reference_page";
 import MultiLineCalculator from "../features/cost-calculator/MultiLineCalculator";
+import OrderPage from "../features/Orders/OrderPage";
 
 const MainPage = () => {
   const [selectedPage, setSelectedPage] = useState("calculator");
@@ -47,11 +48,7 @@ const MainPage = () => {
         {selectedPage === "calculator-multi-line" && <MultiLineCalculator />}
         {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (
-          <VariableTable
-            endPoint="api/order/"
-            title="Заказы"
-            visibleFields={["id", "creation_date", "comment", "status"]}
-          />
+          <OrderPage/>
         )}
       </div>
     </div>

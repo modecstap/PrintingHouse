@@ -1,3 +1,4 @@
+/*
 .item-list {
   margin: 20px auto;
 }
@@ -29,7 +30,6 @@
   background-color: var(--secondary);
 }
   
-/* Пагинация */
 .pagination {
   margin-top: 15px;
   width: 100%;
@@ -107,7 +107,6 @@
   word-break: break-word;
 }
 
-/* === Модалка выбора статуса === */
 .status-modal-form {
   background: var(--bg);
   display: flex;
@@ -163,4 +162,4 @@
 
 .modal-actions button:hover {
   opacity: 0.9;
-}
+}*/
