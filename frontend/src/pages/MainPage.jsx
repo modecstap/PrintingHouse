@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "./MainPage.css";
-import VariableTable from "../features/stuff/Table/VariableTable";
 import CostCalculatorPage from "../features/cost-calculator/CostCalculatorPage";
 import ReferencePage from "../features/reference-system/reference_page";
 import MultiLineCalculator from "../features/cost-calculator/MultiLineCalculator";
