@@ -1,0 +1,60 @@
+.container {
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+.table {
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 4px;
+}
+
+.header {
+  background: var(--primary);
+  color: var(--highlight);
+  font-weight: bold;
+}
+
+.cell {
+  padding: 4px 6px;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination button {
+  background-color: var(--primary);
+  border: none;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination button:hover {
+  background-color: var(--secondary);
+}
+
+.active {
+  background-color: var(--primary);
+  color: var(--highlight);
+  font-weight: bold;
+}

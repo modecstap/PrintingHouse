@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import DataTable from "../Table/dataTable";
+import DataTable from "../Table/DataTable";
 import StatusModal from "./modals/StatusModal";
 import ItemModal from "./modals/ItemModal";
 import "./OrderPage.css"
@@ -71,25 +71,35 @@ const OrderPage = () => {
   const actions = useMemo(
     () => [
       {
-        label: "🖨️",
-        className: "print-button",
-        onClick: (row) => handlePrint(row.id),
+        render: (row) => (
+          <button onClick={() => handlePrint(row.id)}>
+            🖨️
+          </button>
+        ),
       },
       {
-        label: "✏️",
-        className: "edit-button",
-        onClick: (row) => openModal(row, true),
+        render: (row) => (
+          <button onClick={() => openModal(row, true)}>
+            ✏️
+          </button>
+        ),
       },
       {
-        label: "🔄",
-        className: "status-button",
-        onClick: (row) => setStatusTarget(row),
+        render: (row) => (
+          <button onClick={() => setStatusTarget(row)}>
+            🔄
+          </button>
+        ),
       },
       {
-        label: "❌",
-        className: "delete-button",
-        onClick: (row) => handleDelete(row.id),
-        disabled: (row) => processingId === row.id,
+        render: (row) => (
+          <button
+            onClick={() => handleDelete(row.id)}
+            disabled={processingId === row.id}
+          >
+            ❌
+          </button>
+        ),
       },
     ],
     [processingId]

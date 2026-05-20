@@ -1,110 +1,62 @@
-import React, { useState } from "react";
-import "./dataTable.css";
+import React from 'react';
+import styles from './DataTable.module.css';
+import { usePagination } from './hooks/usePagination';
+import { Pagination } from './ui/Pagination';
 
-export default function DataTable({
+const DataTable = ({
   columns,
   data,
   actions,
-  rowsPerPage = 10
-}) {
-  const [page, setPage] = useState(1);
+  rowsPerPage = 10,
+  getRowId = (row) => row.id,
+}) => {
+  const {
+    page,
+    totalPages,
+    paginatedData,
+    changePage,
+  } = usePagination(data, rowsPerPage);
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-
-  const paginatedData = data.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
-
-  const changePage = (p) => {
-    if (p >= 1 && p <= totalPages) {
-      setPage(p);
-    }
-  };
-
-  const renderPages = () => {
-    const pages = [];
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        Math.abs(i - page) <= 2
-      ) {
-        pages.push(
-          <button
-            key={i}
-            onClick={() => changePage(i)}
-            className={i === page ? "active" : ""}
-          >
-            {i}
-          </button>
-        );
-      } else if (
-        (i === page - 3 && i > 1) ||
-        (i === page + 3 && i < totalPages)
-      ) {
-        pages.push(<span key={i}>...</span>);
-      }
-    }
-
-    return pages;
-  };
+  const columnCount = columns.length + (actions ? 1 : 0);
 
   return (
-    <div className="table-container">
-      {/* Table */}
-      <div className="table">
-        {/* Header row */}
+    <div className={styles.container}>
+      <div className={styles.table}>
+        {/* Header */}
         <div
-          className="item-row header-row"
-          style={{
-            gridTemplateColumns: `repeat(${columns.length + (actions ? 1 : 0)}, 1fr)`
-          }}
+          className={`${styles.row} ${styles.header}`}
+          style={{ '--columns': columnCount }}
         >
           {columns.map((col) => (
-            <div key={col.key} className="item-field">
-              <strong>{col.label}</strong>
+            <div key={col.key} className={styles.cell}>
+              {col.label}
             </div>
           ))}
-          {actions && (
-            <div className="item-field">
-              <strong>Actions</strong>
-            </div>
-          )}
+
+          {actions && <div className={styles.cell}>Actions</div>}
         </div>
 
-        {/* Data rows */}
+        {/* Rows */}
         {paginatedData.map((row) => (
           <div
-            key={row.id}
-            className="item-row"
-            style={{
-              gridTemplateColumns: `repeat(${columns.length + (actions ? 1 : 0)}, 1fr)`
-            }}
+            key={getRowId(row)}
+            className={styles.row}
+            style={{ '--columns': columnCount }}
           >
             {columns.map((col) => (
-              <div key={col.key} className="item-field">
-                {row[col.key]}
+              <div key={col.key} className={styles.cell}>
+                {col.render
+                  ? col.render(row[col.key], row)
+                  : row[col.key]}
               </div>
             ))}
 
             {actions && (
-              <div className="item-actions">
+              <div className={styles.actions}>
                 {actions.map((action, idx) => (
-                  action.render ? (
-                    <React.Fragment key={idx}>
-                      {action.render(row)}
-                    </React.Fragment>
-                  ) : (
-                    <button
-                      key={idx}
-                      className={action.className || ""}
-                      onClick={() => action.onClick(row)}
-                    >
-                      {action.icon || action.label}
-                    </button>
-                  )
+                  <React.Fragment key={idx}>
+                    {action.render(row)}
+                  </React.Fragment>
                 ))}
               </div>
             )}
@@ -112,16 +64,13 @@ export default function DataTable({
         ))}
       </div>
 
-      {/* Pagination */}
-      <div className="pagination">
-        <button onClick={() => changePage(1)}>{"<<"}</button>
-        <button onClick={() => changePage(page - 1)}>{"<"}</button>
-
-        {renderPages()}
-
-        <button onClick={() => changePage(page + 1)}>{">"}</button>
-        <button onClick={() => changePage(totalPages)}>{">>"}</button>
-      </div>
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onChange={changePage}
+      />
     </div>
   );
-}
+};
+
+export default DataTable;
