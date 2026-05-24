@@ -1,6 +1,8 @@
 import { useState } from "react";
 import FlexForm from "../components/FlexForm";
 
+import styles from "../CostCalculator.module.css";
+
 
 const ECONOMY_FIELDS = [
   {
@@ -21,10 +23,15 @@ const ECONOMY_FIELDS = [
 
 
 export default function EconomicSection({formData, setFormData}){
-    return(
-    <section className="calculator-container">
-        <h2>Экономика</h2>
-        <FlexForm fields={ECONOMY_FIELDS} formData={formData} setFormData={setFormData} />
+  return (
+    <section className={styles.calculatorContainer}>
+      <h2>Экономика</h2>
+
+      <FlexForm
+        fields={ECONOMY_FIELDS}
+        formData={formData}
+        setFormData={setFormData}
+      />
     </section>
-    )
+  );
 }

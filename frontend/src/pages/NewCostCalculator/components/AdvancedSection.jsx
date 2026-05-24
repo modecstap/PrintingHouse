@@ -1,4 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
+import styles from "../CostCalculator.module.css";
+
+
 
 export default function AdvancedSection({ open, children }) {
   const ref = useRef(null);
@@ -13,7 +16,7 @@ export default function AdvancedSection({ open, children }) {
   return (
     <div
       ref={ref}
-      className="advanced-section"
+      className={styles.advancedSection}
       style={{
         maxHeight: height,
         opacity: open ? 1 : 0,

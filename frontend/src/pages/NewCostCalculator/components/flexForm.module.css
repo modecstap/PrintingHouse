@@ -1,0 +1,46 @@
+.formGrid {
+  padding-top: 20px;
+  display: grid;
+  justify-content: space-between;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.formTile {
+  padding: 0 20px 10px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.formTile label {
+  text-align: left;
+  font-size: 14px;
+  color: var(--text);
+  margin: 3px;
+}
+
+.formInput {
+  border: 0;
+  outline: none;
+  padding: 8px;
+  font-size: 14px;
+  background: var(--bg-light);
+  margin-top: 2px;
+}
+
+.formInput:focus {
+  border-color: var(--border);
+}
+
+/* фикс бага */
+.formTile input,
+.formTile select {
+  border: 0;
+  outline: none;
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

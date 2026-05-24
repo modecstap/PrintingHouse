@@ -1,6 +1,9 @@
-import ReportSection from "../../CostCalculator/sections/ReportSection";
+import ReportSection from "./ReportSection";
 import FlexForm from "../components/FlexForm";
 import { useEdition } from "../hooks/useEdition";
+
+import styles from "../CostCalculator.module.css";
+
 
 export default function EditionSection({
   formData,
@@ -19,7 +22,7 @@ export default function EditionSection({
   } = useEdition(formData);
 
   return (
-    <section className="calculator-container">
+    <section className={styles.calculatorContainer}>
       <h2>Тираж</h2>
 
       <FlexForm
@@ -28,15 +31,32 @@ export default function EditionSection({
         setFormData={setFormData}
       />
 
-      <div className="button-row">
-        <button className="btn btn-accent" onClick={calculate} disabled={loading}>
+      <div className={styles.buttonRow}>
+        <button
+          className={`${styles.btn} ${styles.btnAccent}`}
+          onClick={calculate}
+          disabled={loading}
+        >
           {loading ? "Вычисляем..." : "Рассчитать"}
         </button>
 
         {!hideActionButtons && (
           <>
-            <button className="btn btn-primary" onClick={delay}>Отложить</button>
-            <button className="btn btn-primary" onClick={accept}>В работу</button>
+            <button
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={delay}
+              disabled={loading}
+            >
+              Отложить
+            </button>
+
+            <button
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              onClick={accept}
+              disabled={loading}
+            >
+              В работу
+            </button>
           </>
         )}
       </div>

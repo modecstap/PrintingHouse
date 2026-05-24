@@ -3,6 +3,8 @@ import { BackendIP } from "../../../constants/BackendIP";
 import FlexForm from "../components/FlexForm";
 import AdvancedSection from "../components/AdvancedSection";
 
+import styles from "../CostCalculator.module.css";
+
 
 const printingFields = (index) => [
   {
@@ -199,53 +201,64 @@ export default function PrintingSection({formData, setFormData}){
     };
 
     return(
-        <section className="calculator-container" style={{marginTop: "0"}}>
-            <h2>Параметры печати</h2>
-            {formData.printings.map((_, i) => (
-                <>
-                <div key={i} className="sub-block">
-                    <FlexForm
-                    fields={printingFields(i)}
-                    formData={formData}
-                    setFormData={setFormData}
-                    />
-                    
-                    <div className="button-row">
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => removePrinting(i)}
-                    >
-                        Удалить
-                    </button>
-                    <button
-                        className="btn btn-more"
-                        onClick={() =>
-                        setShowAdvanced(prev =>
-                            prev.map((val, idx) => (idx === i ? !val : val))
-                        )
-                        }
-                    >
-                        {showAdvanced[i] ? "Скрыть" : "Подробнее"}
-                    </button>
-                    </div>
+    <section
+      className={styles.calculatorContainer}
+      style={{ marginTop: 0 }}
+    >
+      <h2>Параметры печати</h2>
 
-                    
-                    <AdvancedSection open={showAdvanced[i]}>
-                    <div className="advanced-content">
-                        <FlexForm
-                        fields={printingHiddenFields(i)}
-                        formData={formData}
-                        setFormData={setFormData}
-                        />
-                    </div>
-                    </AdvancedSection>
-                </div>
-                <div className="separator"></div>
-                </>
-            ))}
-            <button className="btn btn-primary" onClick={addPrinting}>
-                + Добавить печать
-            </button>
-        </section>
+      {formData.printings.map((_, i) => (
+        <div key={i}>
+          <div>
+            <FlexForm
+              fields={printingFields(i)}
+              formData={formData}
+              setFormData={setFormData}
+            />
+
+            <div className={styles.buttonRow}>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
+                onClick={() => removePrinting(i)}
+              >
+                Удалить
+              </button>
+
+              <button
+                className={`${styles.btn} ${styles.btnMore}`}
+                onClick={() =>
+                  setShowAdvanced((prev) =>
+                    prev.map((val, idx) =>
+                      idx === i ? !val : val
+                    )
+                  )
+                }
+              >
+                {showAdvanced[i] ? "Скрыть" : "Подробнее"}
+              </button>
+            </div>
+
+            <AdvancedSection open={showAdvanced[i]}>
+              <div className={styles.advancedContent}>
+                <FlexForm
+                  fields={printingHiddenFields(i)}
+                  formData={formData}
+                  setFormData={setFormData}
+                />
+              </div>
+            </AdvancedSection>
+          </div>
+
+          <div className={styles.separator} />
+        </div>
+      ))}
+
+      <button
+        className={`${styles.btn} ${styles.btnPrimary}`}
+        onClick={addPrinting}
+      >
+        + Добавить печать
+      </button>
+    </section>
     )
 }

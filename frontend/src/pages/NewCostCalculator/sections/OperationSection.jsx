@@ -1,6 +1,8 @@
 import { useState } from "react";
 import FlexForm from "../components/FlexForm";
 
+import styles from "../CostCalculator.module.css";
+
 
 const operationFields = (index) => [
   {
@@ -42,29 +44,38 @@ export default function OperationSection({formData, setFormData}){
     };
 
     return(
-    <section className="calculator-container">
-        <h2>Дополнительные работы</h2>
-        {formData.operations.map((_, i) => (
-            <>
-            <div key={i} className="sub-block">
-                <FlexForm
-                fields={operationFields(i)}
-                formData={formData}
-                setFormData={setFormData}
-                />
-            </div>
-            <button
-                className="btn btn-primary"
+    <section className={styles.calculatorContainer}>
+      <h2>Дополнительные работы</h2>
+
+      {formData.operations.map((_, i) => (
+        <div key={i}>
+          <div>
+            <FlexForm
+              fields={operationFields(i)}
+              formData={formData}
+              setFormData={setFormData}
+            />
+
+            <div className={styles.buttonRow}>
+              <button
+                className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={() => removeOperation(i)}
-            >
+              >
                 Удалить
-            </button>
-            <div className="separator"></div>
-            </>
-        ))}
-        <button className="btn btn-primary" onClick={addOperation}>
-            + Добавить работу
-        </button>
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.separator} />
+        </div>
+      ))}
+
+      <button
+        className={`${styles.btn} ${styles.btnPrimary}`}
+        onClick={addOperation}
+      >
+        + Добавить работу
+      </button>
     </section>
     )
 }

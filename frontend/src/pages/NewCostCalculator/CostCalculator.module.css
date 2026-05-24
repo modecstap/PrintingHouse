@@ -1,0 +1,124 @@
+/* Контейнер */
+.calculatorContainer {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-light);
+}
+
+.calculatorBlock {
+  text-align: left;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.separator {
+  width: 100%;
+  height: 5px;
+  margin: 40px 0;
+  background: var(--primary);
+}
+
+/* Заголовки */
+.pageTitle {
+  text-align: left;
+  margin: 20px 15px;
+  color: var(--text);
+}
+
+/* Кнопки */
+.buttonRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.btn {
+  border: none;
+  padding: 12px 28px;
+  cursor: pointer;
+  font-size: 16px;
+  min-width: 140px;
+}
+
+.btnAccent {
+  background: var(--accent);
+  color: var(--bg-dark);
+}
+
+.btnAccent:hover {
+  background: var(--secondary);
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: var(--bg-dark);
+}
+
+.btnPrimary:hover {
+  background: var(--text-muted);
+}
+
+.btnMore {
+  margin-top: 10px;
+  background: var(--primary);
+  color: var(--bg-dark);
+}
+
+.btnMore:hover {
+  background: var(--text-muted);
+}
+
+/* Доп. параметры */
+.advancedSection {
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.advancedContent {
+  margin: 8px 0;
+  padding-right: 10px;
+}
+
+/* Таблица */
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: var(--shadow-light);
+}
+
+.reportTable th,
+.reportTable td {
+  background: var(--bg-dark);
+  padding: 8px;
+}
+
+.reportTable tr:nth-child(even) td {
+  background: var(--bg-light);
+}
+
+/* Ошибки */
+.errorMessage {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--danger);
+  color: var(--highlight);
+  font-size: 0.95rem;
+  box-shadow: var(--shadow);
+}
+
+.errorMessage h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+/* Мобильная версия */
+@media (max-width: 600px) {
+  .buttonRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

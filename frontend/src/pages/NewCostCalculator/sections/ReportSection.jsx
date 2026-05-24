@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 
+import styles from "../CostCalculator.module.css";
+
 
 function ReportRow({ label, value, isGroup }) {
   if (isGroup) {
     return (
-      <tr className="report-group-row">
+      <tr>
         <td colSpan={2}>
           <strong>{label}</strong>
         </td>
@@ -31,30 +33,34 @@ export default function ReportSection({ report, base_rows, detail_rows = [] }) {
   if (!report) return null;
 
   return (
-    <div className="block">
-      <h2 className="block-title">Результаты</h2>
-      <div>
-        <table className="report-table">
-          <tbody>
-            {rows.map((row) => (
-              <ReportRow
-                key={row.label}
-                label={row.label}
-                isGroup={row.isGroup}
-                value={row.isGroup ? null : row.value(report)}
-              />
-            ))}
-          </tbody>
-        </table>
-        {detail_rows.length != 0 &&(
+    <div className={styles.calculatorBlock}>
+      <h2>Результаты</h2>
+
+      <table className={styles.reportTable}>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.label}>
+              <td>{row.label}</td>
+              <td>
+                {row.isGroup ? (
+                  <strong>{row.label}</strong>
+                ) : (
+                  row.value(report)
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {detail_rows.length !== 0 && (
         <button
-          className="btn btn-more"
+          className={`${styles.btn} ${styles.btnMore}`}
           onClick={() => setShowDetails((v) => !v)}
         >
           {showDetails ? "Скрыть" : "Подробнее"}
         </button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
