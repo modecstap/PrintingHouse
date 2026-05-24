@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./MainPage.css";
 import CostCalculatorPage from "../CostCalculator/CostCalculatorPage";
 import ReferencePage from "../Reference/ReferencePage";
-import MultiLineCalculator from "../CostCalculator/MultiLineCalculator";
+import MultiLineCalculator from "../NewCostCalculator/MultiLineCalculator";
 import OrderPage from "../Orders/OrderPage";
 
 const MainPage = () => {
