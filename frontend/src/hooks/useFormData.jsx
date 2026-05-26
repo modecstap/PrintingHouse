@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { defaultEdition, defaultProduction, defaultEconomy } from "../../../constants/defaults";
-import { BackendIP } from "../../../constants/BackendIP";
+import { defaultEdition, defaultProduction, defaultEconomy } from "../constants/defaults";
+import { BackendIP } from "../constants/BackendIP";
 
 export const useFormData = (
   initialEdition = {},

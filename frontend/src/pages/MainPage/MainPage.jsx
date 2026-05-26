@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "./MainPage.css";
-import CostCalculatorPage from "../CostCalculator/CostCalculatorPage";
 import ReferencePage from "../Reference/ReferencePage";
 import MultiLineCalculator from "../NewCostCalculator/MultiLineCalculator";
 import OrderPage from "../Orders/OrderPage";
@@ -17,12 +16,6 @@ const MainPage = () => {
           <li
             className={`menu-item ${selectedPage === "calculator" ? "active" : ""}`}
             onClick={() => setSelectedPage("calculator")}
-          >
-            Калькулятор однополосный
-          </li>
-          <li
-            className={`menu-item ${selectedPage === "calculator-multi-line" ? "active" : ""}`}
-            onClick={() => setSelectedPage("calculator-multi-line")}
           >
             Калькулятор многополосный
           </li>
@@ -43,12 +36,9 @@ const MainPage = () => {
 
       {/* Правая панель */}
       <div className="form-display">
-        {selectedPage === "calculator" && <CostCalculatorPage />}
-        {selectedPage === "calculator-multi-line" && <MultiLineCalculator />}
+        {selectedPage === "calculator" && <MultiLineCalculator />}
         {selectedPage === "reference" && <ReferencePage />}
-        {selectedPage === "orders" && (
-          <OrderPage/>
-        )}
+        {selectedPage === "orders" && (<OrderPage/>)}
       </div>
     </div>
   );

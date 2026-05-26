@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BackendIP } from "../../../constants/BackendIP";
+import { BackendIP } from "../constants/BackendIP";
 
 export const useAsyncAction = () => {
   const [loading, setLoading] = useState(false);
