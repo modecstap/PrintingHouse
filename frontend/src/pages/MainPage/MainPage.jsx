@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./MainPage.css";
 import ReferencePage from "../Reference/ReferencePage";
-import MultiLineCalculator from "../NewCostCalculator/MultiLineCalculator";
+import CostCalculator from "../CostCalculator/CostCalculator";
 import OrderPage from "../Orders/OrderPage";
 
 const MainPage = () => {
@@ -36,7 +36,7 @@ const MainPage = () => {
 
       {/* Правая панель */}
       <div className="form-display">
-        {selectedPage === "calculator" && <MultiLineCalculator />}
+        {selectedPage === "calculator" && <CostCalculator />}
         {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (<OrderPage/>)}
       </div>

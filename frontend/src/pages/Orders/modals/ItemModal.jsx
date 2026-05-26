@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import Modal from "../../../features/Modal/Modal";
-import MultiLineCalculator from "../../NewCostCalculator/MultiLineCalculator";
+import CostCalculator from "../../CostCalculator/CostCalculator";
 
 const ItemModal = ({ item, onClose, hideActionButtons=true}) => (
   <Modal onClose={onClose} size="large">
-    <MultiLineCalculator
+    <CostCalculator
       initial_data={item}
       hideActionButtons={hideActionButtons}
     />
