@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BackendIP } from "../../../constants/BackendIP";
-import FlexForm from "../components/FlexForm";
+import FlexForm from "../../../features/Form/FlexForm";
 import AdvancedSection from "../components/AdvancedSection";
 
 import styles from "../CostCalculator.module.css";

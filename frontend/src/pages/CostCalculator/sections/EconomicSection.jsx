@@ -1,5 +1,5 @@
 import { useState } from "react";
-import FlexForm from "../components/FlexForm";
+import FlexForm from "../../../features/Form/FlexForm";
 
 import styles from "../CostCalculator.module.css";
 

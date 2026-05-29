@@ -1,5 +1,5 @@
 import ReportSection from "./ReportSection";
-import FlexForm from "../components/FlexForm";
+import FlexForm from "../../../features/Form/FlexForm";
 import { useEdition } from "../hooks/useEdition";
 
 import styles from "../CostCalculator.module.css";
