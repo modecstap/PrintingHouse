@@ -3,6 +3,17 @@ import { calculatorService } from "../services/calculatorService";
 import { buildHiddenRows } from "../utils/reportBuilder";
 import { formatPrice } from "../utils/formatters";
 
+const formatError = (err) => {
+  if (!err?.detail) {
+    return [err?.message || "Неизвестная ошибка"];
+  }
+
+  return err.detail.map((e) => ({
+    path: e.loc.join(" → "),
+    message: e.msg,
+  }));
+};
+
 export const useEdition = (formData) => {
   const UNIT_FIELDS = [
     {
@@ -15,7 +26,7 @@ export const useEdition = (formData) => {
       label: "Комментарий",
       path: "comment",
       type: "text",
-      valueParser: Number,
+      valueParser: (v) => v,
     },
   ];
 
@@ -41,26 +52,61 @@ export const useEdition = (formData) => {
   const [report, setReport] = useState(null);
   const [hiddenRows, setHiddenRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const calculate = async () => {
     setLoading(true);
-    const data = await calculatorService.calculate(formData);
-    setLoading(false);
+    setError(null);
 
-    if (!data) return;
+    try {
+      const res = await calculatorService.calculate(formData);
 
-    setHiddenRows(buildHiddenRows(data));
-    setReport(data);
+      console.log(res);
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(formatError(errData));
+        return;
+      }
+
+      const data = await res.json();
+
+      setHiddenRows(buildHiddenRows(data));
+      setReport(data);
+    } catch (e) {
+      setError("Ошибка сети или сервера");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const delay = () => calculatorService.delay(formData);
+  const delay = async () => {
+    try {
+      const res = await calculatorService.delay(formData);
+
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(formatError(errData));
+      }
+    } catch {
+      setError("Ошибка сети или сервера");
+    }
+  };
 
   const accept = async () => {
-    const res = await calculatorService.accept(formData);
-    if (!res.ok) return;
+    try {
+      const res = await calculatorService.accept(formData);
 
-    const blob = await res.blob();
-    return blob;
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(formatError(errData));
+        return;
+      }
+
+      const blob = await res.blob();
+      return blob;
+    } catch {
+      setError("Ошибка сети или сервера");
+    }
   };
 
   return {
@@ -69,6 +115,7 @@ export const useEdition = (formData) => {
     report,
     hiddenRows,
     loading,
+    error,
     calculate,
     delay,
     accept,

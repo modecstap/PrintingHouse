@@ -3,7 +3,7 @@ import { BackendIP } from "../../../constants/BackendIP";
 export const calculatorService = {
   async getProductionReference() {
     const res = await fetch(`${BackendIP}/api/reference/production`);
-    return res.json();
+    return res;
   },
 
   async calculate(formData) {
@@ -13,7 +13,7 @@ export const calculatorService = {
       headers: { "Content-Type": "application/json" },
     });
 
-    return res.json();
+    return res;
   },
 
   async delay(formData) {

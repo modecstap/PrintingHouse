@@ -4,7 +4,6 @@ import { useEdition } from "../hooks/useEdition";
 
 import styles from "../CostCalculator.module.css";
 
-
 export default function EditionSection({
   formData,
   setFormData,
@@ -16,6 +15,7 @@ export default function EditionSection({
     report,
     hiddenRows,
     loading,
+    error,
     calculate,
     delay,
     accept,
@@ -60,6 +60,22 @@ export default function EditionSection({
           </>
         )}
       </div>
+
+      {error && (
+        <div className={styles.error}>
+          {Array.isArray(error) ? (
+            <ul>
+              {error.map((e, i) => (
+                <li key={i}>
+                  <strong>{e.path}:</strong> {e.message}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            error
+          )}
+        </div>
+      )}
 
       {report && (
         <ReportSection
