@@ -6,7 +6,17 @@ import AdvancedSection from "../components/AdvancedSection";
 import styles from "../CostCalculator.module.css";
 
 
-const printingFields = (index) => [
+// ✅ Пресеты форматов
+const PAPER_PRESETS = {
+  A3: { width: 420, height: 297 },
+  A4: { width: 297, height: 210 },
+  A5: { width: 210, height: 148 },
+  A6: { width: 148, height: 105 },
+  CARD: { width: 90, height: 50 },
+};
+
+
+const firstPrintingFields = (index) => [
   {
     label: "Кол-во листов",
     path: `printings[${index}].edition.count`,
@@ -18,18 +28,6 @@ const printingFields = (index) => [
     path: `printings[${index}].comment`,
     type: "text",
     valueParser: (v) => v,
-  },
-  {
-    label: "Ширина",
-    path: `printings[${index}].edition.list_size.width`,
-    type: "number",
-    valueParser: Number,
-  },
-  {
-    label: "Высота",
-    path: `printings[${index}].edition.list_size.height`,
-    type: "number",
-    valueParser: Number,
   },
   {
     label: "Плотность",
@@ -74,6 +72,21 @@ const printingFields = (index) => [
   },
 ];
 
+const secondPrintingFields = (index) => [
+  {
+    label: "Ширина",
+    path: `printings[${index}].edition.list_size.width`,
+    type: "number",
+    valueParser: Number,
+  },
+  {
+    label: "Высота",
+    path: `printings[${index}].edition.list_size.height`,
+    type: "number",
+    valueParser: Number,
+  },
+];
+
 const printingHiddenFields = (index) => [
   { label: "Вылеты (мм)", path: `printings[${index}].edition.list_size.bleeds` },
   { label: "Стоимость чёрной краски (руб./лист)", path: `printings[${index}].production.black_ink_cost`, step: 0.01 },
@@ -111,6 +124,29 @@ export default function PrintingSection({ formData, setFormData }) {
 
   const [productionRef, setProductionRef] = useState(null);
 
+  // ✅ Установка формата листа
+  const setPaperSize = (index, size) => {
+    const preset = PAPER_PRESETS[size];
+
+    setFormData(prev => {
+      const updated = [...prev.printings];
+
+      updated[index] = {
+        ...updated[index],
+        edition: {
+          ...updated[index].edition,
+          list_size: {
+            ...updated[index].edition.list_size,
+            width: preset.width,
+            height: preset.height,
+          },
+        },
+      };
+
+      return { ...prev, printings: updated };
+    });
+  };
+
   // Загружаем reference один раз
   useEffect(() => {
     fetch(`${BackendIP}/api/reference/production`)
@@ -118,7 +154,6 @@ export default function PrintingSection({ formData, setFormData }) {
       .then(data => {
         setProductionRef(data);
 
-        // Применяем ТОЛЬКО если production пустой
         setFormData(prev => ({
           ...prev,
           printings: prev.printings.map(p => ({
@@ -156,20 +191,32 @@ export default function PrintingSection({ formData, setFormData }) {
   };
 
   return (
-    <section
-      className={styles.calculatorContainer}
-      style={{ marginTop: 0 }}
-    >
+    <section className={styles.calculatorContainer} style={{ marginTop: 0 }}>
       <h2>Параметры печати</h2>
 
       {formData.printings.map((_, i) => (
         <div key={i}>
           <div>
             <FlexForm
-              fields={printingFields(i)}
+              fields={firstPrintingFields(i)}
               formData={formData}
               setFormData={setFormData}
             />
+
+            <div className={styles.buttonRow}>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A3")}>A3</button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A4")}>A4</button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A5")}>A5</button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A5")}>A6</button>
+              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "CARD")}>Визитка</button>
+            </div>
+
+            <FlexForm
+              fields={secondPrintingFields(i)}
+              formData={formData}
+              setFormData={setFormData}
+            />
+
 
             <div className={styles.buttonRow}>
               <button

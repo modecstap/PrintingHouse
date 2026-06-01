@@ -30,7 +30,7 @@ export default function EditionSection({
         formData={formData}
         setFormData={setFormData}
       />
-
+      
       <div className={styles.buttonRow}>
         <button
           className={`${styles.btn} ${styles.btnAccent}`}
