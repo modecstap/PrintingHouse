@@ -204,11 +204,11 @@ export default function PrintingSection({ formData, setFormData }) {
             />
 
             <div className={styles.buttonRow}>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A3")}>A3</button>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A4")}>A4</button>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A5")}>A5</button>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "A5")}>A6</button>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setPaperSize(i, "CARD")}>Визитка</button>
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setPaperSize(i, "A3")}>A3</button>
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setPaperSize(i, "A4")}>A4</button>
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setPaperSize(i, "A5")}>A5</button>
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setPaperSize(i, "A5")}>A6</button>
+              <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={() => setPaperSize(i, "CARD")}>Визитка</button>
             </div>
 
             <FlexForm

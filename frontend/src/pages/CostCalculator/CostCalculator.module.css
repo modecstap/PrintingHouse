@@ -62,6 +62,12 @@
   background: var(--text-muted);
 }
 
+.btnSecondary{
+  margin-top: 10px;
+  background: var(--border);
+  color: var(--bg-dark);
+}
+
 .btnMore {
   margin-top: 10px;
   background: var(--primary);
