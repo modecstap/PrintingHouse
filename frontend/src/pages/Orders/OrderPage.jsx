@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import DataTable from "../../features/Table/DataTable";
 import StatusModal from "./modals/StatusModal";
 import ItemModal from "./modals/ItemModal";
-import "./OrderPage.css"
+import styles from "./OrderPage.module.css"
 
 import { useOrdersData } from "./hooks/useOrdersData";
 import { useOrdersUI } from "./hooks/useOrdersUI";
@@ -110,10 +110,10 @@ const OrderPage = () => {
 
   return (
     <>
-      <div className="calculator-container">
-        <div className="page-title">
-          <h1>Заказы</h1>
-          <button className="refresh-button" onClick={() => reload()}>&#10226;</button>
+      <div className={styles.calculatorContainer}>
+        <div className={styles.pageTitle}>
+          <h1 style={{ marginTop: 0, marginRight: 5 }}>Заказы</h1>
+          <button className={styles.refreshButton} onClick={() => reload()}>&#10226;</button>
         </div>
         <DataTable
           columns={columns}

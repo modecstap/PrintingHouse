@@ -1,0 +1,28 @@
+.calculatorContainer {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow-light);
+}
+
+.pageTitle {
+    display: flex;
+    text-align: left;
+    margin: 20px 15px;
+    color: var(--text);
+}
+
+.refreshButton {
+    background-color: var(--primary);
+    color: var(--highlight);
+    border: none;
+    font-size: 16px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 30px;
+    width: 30px;
+}
+
