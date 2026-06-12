@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import DataTable from "../../features/Table/DataTable";
 import StatusModal from "./modals/StatusModal";
-import ItemModal from "./modals/ItemModal";
+import Modal from "../../features/Modal/Modal";
+import CostCalculator from "../CostCalculator/CostCalculator"
 import styles from "./OrderPage.module.css"
 
 import { useOrdersData } from "./hooks/useOrdersData";
@@ -123,11 +124,12 @@ const OrderPage = () => {
       </div>
 
       {selectedItem && (
-        <ItemModal
-          item={selectedItem.item}
-          onClose={closeModal}
-          hideAcceptButtons={true}
-        />
+        <Modal onClose={closeModal} size="large">
+          <CostCalculator
+            initial_data={selectedItem.item}
+            hideAcceptButtons={true}
+          />
+        </Modal>
       )}
 
       {statusTarget && (
