@@ -126,7 +126,7 @@ const OrderPage = () => {
         <ItemModal
           item={selectedItem.item}
           onClose={closeModal}
-          hideActionButtons={!selectedItem.showActions}
+          hideAcceptButtons={true}
         />
       )}
 

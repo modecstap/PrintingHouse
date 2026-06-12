@@ -7,7 +7,7 @@ import styles from "../CostCalculator.module.css";
 export default function EditionSection({
   formData,
   setFormData,
-  hideActionButtons,
+  hideAcceptButtons,
 }) {
   const {
     UNIT_FIELDS,
@@ -40,7 +40,7 @@ export default function EditionSection({
           {loading ? "Вычисляем..." : "Рассчитать"}
         </button>
 
-        {!hideActionButtons && (
+        {!hideAcceptButtons && (
           <>
             <button
               className={`${styles.btn} ${styles.btnPrimary}`}
