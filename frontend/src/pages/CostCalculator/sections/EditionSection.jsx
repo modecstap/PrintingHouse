@@ -8,6 +8,7 @@ export default function EditionSection({
   formData,
   setFormData,
   hideAcceptButtons,
+  hideUpdateButton,
 }) {
   const {
     UNIT_FIELDS,
@@ -19,6 +20,7 @@ export default function EditionSection({
     calculate,
     delay,
     accept,
+    update,
   } = useEdition(formData);
 
   return (
@@ -58,6 +60,15 @@ export default function EditionSection({
               В работу
             </button>
           </>
+        )}
+        {!hideUpdateButton && (
+          <button
+            className={`${styles.btn} ${styles.btnPrimary}`}
+            onClick={update}
+            disabled={loading}
+          >
+            Обновить
+          </button>
         )}
       </div>
 

@@ -36,7 +36,7 @@ const MainPage = () => {
 
       {/* Правая панель */}
       <div className="form-display">
-        {selectedPage === "calculator" && <CostCalculator />}
+        {selectedPage === "calculator" && <CostCalculator/>}
         {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (<OrderPage/>)}
       </div>

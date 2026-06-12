@@ -109,6 +109,19 @@ export const useEdition = (formData) => {
     }
   };
 
+  const update = async () => {
+    try {
+      const res = await calculatorService.update(formData);
+
+      if (!res.ok) {
+        const errData = await res.json();
+        setError(formatError(errData));
+      }
+    } catch {
+      setError("Ошибка сети или сервера");
+    }
+  };
+
   return {
     UNIT_FIELDS,
     BASE_ROWS,
@@ -119,5 +132,6 @@ export const useEdition = (formData) => {
     calculate,
     delay,
     accept,
+    update,
   };
 };

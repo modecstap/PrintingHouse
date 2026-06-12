@@ -128,6 +128,7 @@ const OrderPage = () => {
           <CostCalculator
             initial_data={selectedItem.item}
             hideAcceptButtons={true}
+            hideUpdateButton={false}
           />
         </Modal>
       )}

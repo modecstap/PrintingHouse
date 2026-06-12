@@ -8,6 +8,7 @@ import PrintingSection from "./sections/PrintingSection";
 export default function MultiLineCalculator({
   initial_data = {},
   hideAcceptButtons = false,
+  hideUpdateButton = true,
 }) {
   const [formData, setFormData] = useState(() => ({
     ...INITIAL_DATA,
@@ -21,6 +22,7 @@ export default function MultiLineCalculator({
         formData={formData}
         setFormData={setFormData}
         hideAcceptButtons={hideAcceptButtons}
+        hideUpdateButton={hideUpdateButton}
       />
       <OperationSection formData={formData} setFormData={setFormData} />
       <EconomicSection formData={formData} setFormData={setFormData} />

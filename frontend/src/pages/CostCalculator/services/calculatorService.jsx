@@ -33,4 +33,14 @@ export const calculatorService = {
 
     return res;
   },
+
+  async update(formData) {
+    const res = await fetch(`${BackendIP}/api/order/${formData.id}`, {
+      method: "PUT",
+      body: JSON.stringify(formData),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    return res;
+  },
 };
