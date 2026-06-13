@@ -23,7 +23,8 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 from backend.storage.tables import OrderEntity, PrintingCostReportEntity, EditionEntity, \
     ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity, \
-    ProductionReferenceEntity, EconomyEntity, OperationEntity, PrintingEntity, OrderCostReportEntity
+    ProductionReferenceEntity, EconomyEntity, OperationEntity, PrintingEntity, \
+    OrderCostReportEntity, UserEntity
 
 OrderEntity()
 PrintingCostReportEntity()
@@ -37,6 +38,7 @@ EconomyEntity()
 OperationEntity()
 PrintingEntity()
 ProductionReferenceEntity()
+UserEntity()
 
 from backend.storage.declarative_base import DeclarativeBase
 target_metadata = DeclarativeBase().base.metadata
@@ -81,10 +83,10 @@ def run_migrations_online() -> None:
     config_section = config.get_section(config.config_ini_section, {})
     db_url = DBConfig(
         user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "maibenben"),
+        password=os.getenv("DB_PASSWORD", "postgres"),
         host=os.getenv("DB_HOST", "localhost"),
         port=int(os.getenv("DB_PORT", 5432)),
-        db_name=os.getenv("DB_NAME", "postgres")
+        db_name=os.getenv("DB_NAME", "PH")
     ).get_db_url("psycopg")
 
     config_section["sqlalchemy.url"] = db_url

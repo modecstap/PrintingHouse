@@ -3,6 +3,7 @@ from datetime import timedelta
 from fastapi import HTTPException, status
 from pydantic import EmailStr, BaseModel
 
+from backend.models.permission import Permission
 from backend.server.auth import AuthService
 from backend.storage.repositories.user_repository import UserRepository
 
@@ -50,12 +51,14 @@ class AuthHandler:
             req.username,
             req.email,
             hashed,
+            permissions=Permission.NONE,
         )
 
         return {
             "id": user.id,
             "username": user.username,
             "email": user.email,
+            "permissions": user.permissions.value,
         }
 
     async def login(self, form: LoginRequest):
@@ -73,7 +76,7 @@ class AuthHandler:
             )
 
         access_token = self.auth.create_access_token(
-            data={"sub": user.username},
+            data={"sub": user.username, "permissions": user.permissions.value},
             expires_delta=timedelta(
                 minutes=self.auth._access_token_expire_minutes,
             ),

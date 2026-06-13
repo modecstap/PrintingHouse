@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from backend.server.handlers.reference_production_handler import ReferenceProductionHandler
+from backend.server.dependencies import get_current_user_with_full_permission, \
+    get_current_user_with_read_permission
 
 
 class ReferenceProductionRouter:
@@ -18,5 +20,5 @@ class ReferenceProductionRouter:
         self._register_routes()
 
     def _register_routes(self):
-        self.router.get("/")(self._handler.get)
-        self.router.put("/")(self._handler.update)
+        self.router.get("/", dependencies=[Depends(get_current_user_with_read_permission)])(self._handler.get)
+        self.router.put("/", dependencies=[Depends(get_current_user_with_full_permission)])(self._handler.update)

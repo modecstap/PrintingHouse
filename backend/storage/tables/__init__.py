@@ -10,3 +10,4 @@ from backend.storage.tables.economy import EconomyEntity
 from backend.storage.tables.operation import OperationEntity
 from backend.storage.tables.printing import PrintingEntity
 from backend.storage.tables.production_reference import ProductionReferenceEntity
+from backend.storage.tables.user import UserEntity

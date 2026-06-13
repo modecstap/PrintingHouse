@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from backend.server.handlers.CostReportHandler import CostReportHandler
+from backend.server.dependencies import get_current_user_with_full_permission
 
 
 class CostReportRouter:
@@ -17,4 +18,4 @@ class CostReportRouter:
         self._register_routes()
 
     def _register_routes(self):
-        self.router.post("")(self._handler.take_report)
+        self.router.post("", dependencies=[Depends(get_current_user_with_full_permission)])(self._handler.take_report)
