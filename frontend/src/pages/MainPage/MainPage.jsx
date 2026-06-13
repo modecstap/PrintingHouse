@@ -3,6 +3,7 @@ import "./MainPage.css";
 import ReferencePage from "../Reference/ReferencePage";
 import CostCalculator from "../CostCalculator/CostCalculator";
 import OrderPage from "../Orders/OrderPage";
+import AuthPage from "../AuthPage/AuthPage";
 
 const MainPage = () => {
   const [selectedPage, setSelectedPage] = useState("calculator");
@@ -31,6 +32,12 @@ const MainPage = () => {
           >
             Справочная система
           </li>
+          <li
+            className={`menu-item ${selectedPage === "auth" ? "active" : ""}`}
+            onClick={() => setSelectedPage("auth")}
+          >
+            Авторизация
+          </li>
         </ul>
       </div>
 
@@ -39,6 +46,7 @@ const MainPage = () => {
         {selectedPage === "calculator" && <CostCalculator/>}
         {selectedPage === "reference" && <ReferencePage />}
         {selectedPage === "orders" && (<OrderPage/>)}
+        {selectedPage === "auth" && <AuthPage/>}
       </div>
     </div>
   );

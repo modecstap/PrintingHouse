@@ -19,10 +19,12 @@ export const useAsyncAction = () => {
     setSuccessMsg(null);
 
     try {
+      const token = localStorage.getItem("access_token");
       const options = {
         method,
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       };
 

@@ -9,15 +9,17 @@ const handleResponse = async (res) => {
 };
 
 export const fetchOrdersApi = async (signal) => {
-  const res = await fetch(`${BackendIP}/api/order/`, { signal });
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BackendIP}/api/order/`, { signal, headers: token ? { Authorization: `Bearer ${token}` } : {} });
   await handleResponse(res);
   return res.json();
 };
 
 export const updateOrderStatusApi = async (orderId, status) => {
+  const token = localStorage.getItem("access_token");
   const res = await fetch(`${BackendIP}/api/order/status`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({
       order_id: orderId,
       new_status: status,
@@ -28,15 +30,18 @@ export const updateOrderStatusApi = async (orderId, status) => {
 };
 
 export const deleteOrderApi = async (orderId) => {
+  const token = localStorage.getItem("access_token");
   const res = await fetch(`${BackendIP}/api/order/${orderId}`, {
     method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
   await handleResponse(res);
 };
 
 export const downloadInstructionApi = async (orderId) => {
-  const res = await fetch(`${BackendIP}/api/instruction/${orderId}`);
+  const token = localStorage.getItem("access_token");
+  const res = await fetch(`${BackendIP}/api/instruction/${orderId}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   await handleResponse(res);
 
   const blob = await res.blob();

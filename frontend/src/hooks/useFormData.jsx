@@ -26,9 +26,10 @@ export const useFormData = (
 
     const loadProduction = async () => {
       try {
+        const token = localStorage.getItem("access_token");
         const response = await fetch(
           `${BackendIP}/api/reference/production`,
-          { method: "GET" }
+          { method: "GET", headers: token ? { Authorization: `Bearer ${token}` } : {} }
         );
 
         if (!response.ok) return;

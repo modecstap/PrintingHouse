@@ -149,7 +149,8 @@ export default function PrintingSection({ formData, setFormData }) {
 
   // Загружаем reference один раз
   useEffect(() => {
-    fetch(`${BackendIP}/api/reference/production`)
+    const token = localStorage.getItem("access_token");
+    fetch(`${BackendIP}/api/reference/production`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(res => res.json())
       .then(data => {
         setProductionRef(data);
