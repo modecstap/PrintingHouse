@@ -2,11 +2,13 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.server.handlers.auth_handler import AuthHandler
 from backend.server.handlers.order_handler import OrderHandler
 from backend.server.routers.CostReportRouter import CostReportRouter
 from backend.server.routers.InstructionRouter import InstructionRouter
 from backend.server.routers.crud_router import CRUDRouter
 from backend.server.routers.order_router import OrderRouter
+from backend.server.routers.auth_router import AuthRouter
 from backend.server.routers.reference_production_router import ReferenceProductionRouter
 from backend.server.server_config import ServerConfig
 
@@ -47,3 +49,4 @@ class FastAPIServer:
         self.app.include_router(ReferenceProductionRouter().router)
         self.app.include_router(CRUDRouter("order", OrderHandler()).router)
         self.app.include_router(OrderRouter("order").router)
+        self.app.include_router(AuthRouter(AuthHandler()).router)
