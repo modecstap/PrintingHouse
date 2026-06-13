@@ -109,8 +109,7 @@ class AuthService:
             raise credentials_exception
 
         user = await self._user_repository.get_by_username(
-            username,
-            None,
+            username
         )
 
         if user is None:
