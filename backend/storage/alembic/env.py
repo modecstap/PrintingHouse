@@ -1,5 +1,5 @@
-import os
 from logging.config import fileConfig
+from pathlib import Path
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -81,12 +81,8 @@ def run_migrations_online() -> None:
 
     """
     config_section = config.get_section(config.config_ini_section, {})
-    db_url = DBConfig(
-        user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASSWORD", "postgres"),
-        host=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", 5432)),
-        db_name=os.getenv("DB_NAME", "PH")
+    db_url = DBConfig.from_dotenv(
+        Path(__file__).resolve().parents[3] / ".env"
     ).get_db_url("psycopg")
 
     config_section["sqlalchemy.url"] = db_url
