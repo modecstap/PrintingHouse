@@ -5,6 +5,8 @@ import CostCalculator from "../CostCalculator/CostCalculator";
 import OrderPage from "../Orders/OrderPage";
 import AuthPage from "../AuthPage/AuthPage";
 
+import logo from "../../media/VSRT-print.png"
+
 const MainPage = () => {
   const [selectedPage, setSelectedPage] = useState("calculator");
 
@@ -39,6 +41,9 @@ const MainPage = () => {
             Авторизация
           </li>
         </ul>
+        <div className="sidebar-footer">
+          <img src={logo} alt="Логотип" className="sidebar-image" />
+        </div>
       </div>
 
       {/* Правая панель */}

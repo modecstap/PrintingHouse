@@ -107,3 +107,18 @@
   background-color: #007bff;
   color: white;
 }
+
+/* Изображение внизу левой панели */
+.sidebar-footer {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.sidebar-image {
+  max-width: 30%;
+  height: auto;
+  object-fit: contain;
+}
