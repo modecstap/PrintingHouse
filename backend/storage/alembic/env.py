@@ -81,9 +81,12 @@ def run_migrations_online() -> None:
 
     """
     config_section = config.get_section(config.config_ini_section, {})
-    db_url = DBConfig.from_dotenv(
-        Path(__file__).resolve().parents[3] / ".env"
-    ).get_db_url("psycopg")
+    try:
+        db_url = DBConfig.from_dotenv(
+            Path(__file__).resolve().parents[3] / ".env"
+        ).get_db_url("psycopg")
+    except Exception as _:
+        db_url = DBConfig.from_env().get_db_url("psycopg")
 
     config_section["sqlalchemy.url"] = db_url
 
