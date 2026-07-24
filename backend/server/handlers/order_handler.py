@@ -59,7 +59,6 @@ class OrderHandler(EntityHandler):
             printing.edition.count /= order.unit_count
         return order
 
-
     async def create(self, data: MODEL) -> MODEL:
         return await super().create(data)
 
@@ -67,7 +66,10 @@ class OrderHandler(EntityHandler):
         return await super().create_bulk(data)
 
     async def update(self, id: int, data: MODEL) -> MODEL:
-        return await super().update(id, data)
+        data.id = id
+        order = self._order_factory.fit_order(data, data.status)
+        updated_models = await self._service.update_models([order])
+        return updated_models[0]
 
     async def update_bulk(self, data: list[MODEL]) -> list[MODEL]:
         return await super().update_bulk(data)
