@@ -26,7 +26,8 @@
 
 .App {
   text-align: center;
+  box-sizing: border-box;
   min-height: 100vh;
-  background: #797d7e;
+  background: var(--bg-dark);
   font-family: 'Roboto', sans-serif;
 }

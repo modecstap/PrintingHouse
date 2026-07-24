@@ -5,18 +5,24 @@
   font-family: Arial, sans-serif;
 }
 
-/* Левая панель (выбор формы) */
+/* Левая панель */
 .sidebar {
   width: 15%;
   background-color: var(--bg-dark);
   color: var(--text);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px;
 }
 
-/* Заголовок панели */
+/* Верх панели */
+.sidebar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Заголовок */
 .sidebar-title {
   font-size: 30px;
   font-weight: bold;
@@ -24,11 +30,24 @@
   margin-top: 35px;
 }
 
+/* Бургер */
+.burger-btn {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 35px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 32px;
+  cursor: pointer;
+}
+
 /* Меню */
 .menu {
   list-style: none;
   padding: 0;
-  width: 100%;
+  width: auto;
 }
 
 .menu-item {
@@ -38,8 +57,7 @@
   font-size: 16px;
   text-align: center;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  transition: box-shadow 0.2s ease-out;
+  transition: background-color .3s ease, box-shadow .2s ease-out;
 }
 
 .menu-item:hover {
@@ -53,7 +71,7 @@
   color: var(--bg-dark);
 }
 
-/* Правая панель (отображение формы) */
+/* Правая часть */
 .form-display {
   flex: 1;
   padding: 20px;
@@ -66,6 +84,21 @@
   margin: 0 auto;
 }
 
+/* Footer */
+.sidebar-footer {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.sidebar-image {
+  max-width: 30%;
+  height: auto;
+}
+
+/* Выпадающее меню */
 .dropdown {
   width: 100%;
 }
@@ -78,7 +111,7 @@
   text-align: center;
   border-radius: 5px;
   background-color: var(--text-muted);
-  transition: background-color 0.3s ease;
+  transition: background-color .3s ease;
   color: var(--bg-dark);
 }
 
@@ -108,17 +141,73 @@
   color: white;
 }
 
-/* Изображение внизу левой панели */
-.sidebar-footer {
-  margin-top: auto;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding-bottom: 20px;
+/* ======================== */
+/* Адаптив */
+/* ======================== */
+
+@media (max-width: 1000px) {
+
+  .main-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sidebar {
+    width: auto;
+  }
+
+  .sidebar-header {
+    justify-content: space-between;
+  }
+
+  .sidebar-title {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .burger-btn {
+    display: block;
+    position: static;
+  }
+
+  .menu {
+    display: none;
+    margin-top: 15px;
+    animation: fade .25s ease;
+  }
+
+  .menu.open {
+    display: block;
+  }
+
+  .menu-item {
+    width: 100%;
+    min-width: auto;
+    margin-bottom: 5px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .form-display {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .form-display > div {
+    min-width: 100%;
+  }
 }
 
-.sidebar-image {
-  max-width: 30%;
-  height: auto;
-  object-fit: contain;
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
