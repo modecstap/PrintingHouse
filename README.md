@@ -32,3 +32,6 @@ BACKEND_URL=http://ph_backend:8080
 Миграции выполняются с помощью Alembic. Для ручного применения:
 
 alembic -c backend/storage/alembic.ini upgrade head
+
+## AI-агенты
+Настройка AI-агентов и структура `.agents/`: [.agents/docs/onboarding.md](.agents/docs/onboarding.md).
