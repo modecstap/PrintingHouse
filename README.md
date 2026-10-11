@@ -10,7 +10,7 @@
 
    docker-compose up --build
 
-3. Backend будет доступен на порту 8080, frontend — на порту 80, PostgreSQL — на хост-порту 9742.
+3. Frontend будет доступен на порту 80. Он обращается к backend через nginx внутри контейнера `ph_ui`: запросы на `/api/` и `/auth/` проксируются на `ph_backend:8080`. Порт 8080 остаётся открытым для прямого доступа к backend и Swagger (`http://<host>:8080/docs`). PostgreSQL — на хост-порту 9742.
 
 > Docker-compose уже выполняет миграции Alembic перед запуском backend.
 
@@ -24,9 +24,8 @@ DB_PASSWORD=ph_password
 DB_HOST=ph_db
 DB_PORT=5432
 DB_NAME=ph_db
-BACKEND_URL=http://ph_backend:8080
 
-Примечание: для локального запуска фронтенда установите REACT_APP_BACKEND_URL, например `http://localhost:8080`.
+Примечание: для локального запуска фронтенда запустите backend на `localhost:8080` и выполните `npm start` в `frontend/`. Dev-сервер CRA проксирует запросы к API на `http://localhost:8080` (поле `proxy` в `frontend/package.json`). Переменные окружения не нужны.
 
 ## Миграции
 Миграции выполняются с помощью Alembic. Для ручного применения:

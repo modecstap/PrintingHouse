@@ -27,10 +27,7 @@ services:
 
   ph_ui:
     container_name: ph_ui
-    build:
-      context: ./frontend
-      args:
-        - REACT_APP_BACKEND_URL=${BACKEND_URL}
+    build: ./frontend
     restart: always
     ports:
       - 80:80
