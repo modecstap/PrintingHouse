@@ -18,6 +18,7 @@ Web app for calculating and managing print orders: FastAPI backend (`backend/`),
 ## Docs
 
 - [Agent setup](.agents/docs/onboarding.md): read when wiring an agent, adding a skill or doc, or changing agent config.
+- [Agent setup](.agents/docs/Index.md): read always.
 
 ## Plans
 
