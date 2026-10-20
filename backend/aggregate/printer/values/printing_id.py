@@ -1,0 +1,2 @@
+class PrintingID:
+    pass
