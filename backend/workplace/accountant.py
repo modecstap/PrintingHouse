@@ -1,11 +1,15 @@
 from decimal import Decimal
 
-from backend.aggregate.printer.values.chroma import Chroma
 from backend.models.economy import Economy
 from backend.models.operation import Operation
 from backend.models.order_cost_report import OrderCostReport
 from backend.models.printing_cost_report import PrintingCostReport
 from backend.workplace.money import Money
+from backend.workplace.pricing.cutting import price_cutting
+from backend.workplace.pricing.die_cutting import price_die_cutting
+from backend.workplace.pricing.lamination import price_lamination
+from backend.workplace.pricing.printing import price_printing
+from backend.workplace.pricing.stage_cost import StageCost
 from backend.workplace.reports import PrintingCase
 
 
@@ -61,33 +65,56 @@ class Accountant:
 
 
 def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
-    cost_price = Money(Decimal(0))
-    cost = Money(Decimal(0))
+    printing = price_printing(
+        case.printing,
+        case.production.paper_cost,
+        case.production.ink_cost,
+        case.production.black_ink_cost,
+        case.production.printer_salary,
+    )
+    cutting = price_cutting(
+        case.cutting,
+        case.production.cutting_cost,
+        case.internal_sheet_count,
+    )
+    if case.lamination is None:
+        lamination = StageCost.zero()
+    else:
+        lamination = price_lamination(
+            case.lamination,
+            case.production.lamination_cost,
+            case.internal_sheet_count,
+        )
 
-    ink, paper, printer_salary = print_report(case)
-    cutter_salary = cutter_report(case)
-    film_cost, film_startup, filmer_salary = film_report(case)
-    die_cutter_salary = die_cutter_report(case)
+    if case.die_cutting is None:
+        die_cutting = StageCost.zero()
+    else:
+        die_cutting = price_die_cutting(
+            case.die_cutting,
+            case.production.die_cutting_cost,
+        )
+    startup = (
+        printing.startup_cost
+        + cutting.startup_cost
+        + lamination.startup_cost
+        + die_cutting.startup_cost
+    )
+    material = (
+        printing.material_cost
+        + cutting.material_cost
+        + lamination.material_cost
+        + die_cutting.material_cost
+    )
+    salary = printing.salary + cutting.salary + lamination.salary + die_cutting.salary
 
     markup = (economy.markup / 100 + 1)
     volume_factor = _volume_factor(case.internal_sheet_count)
     tax_compensation = 1/economy.tax_rate
 
-    cost_price = (
-            cost_price +
-            paper + ink +
-            film_startup + film_cost
-    )
+    cost_price = (startup + material).quantize()
     cost = (
-            cost+
-            paper + ink + printer_salary +
-            cutter_salary +
-            film_startup + film_cost + filmer_salary +
-            die_cutter_salary
-    ) * markup * volume_factor * tax_compensation
-
-    cost = cost.quantize()
-    cost_price = cost_price.quantize()
+        (startup + material + salary) * markup * volume_factor * tax_compensation
+    ).quantize()
 
     items_on_sheet = min(case.items_per_sheet, case.item_count)
     unit_cost = (cost / items_on_sheet).quantize()
@@ -107,58 +134,6 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
         profit_before_tax=profit_before_tax,
         profit_after_tax=profit_after_tax,
     )
-
-
-def die_cutter_report(case):
-    die_cutter_salary = Money.zero()
-    if case.die_cutting is not None:
-        # Число листов высечки не множитель: ставка уже за один лист.
-        die_cutter_salary = Money(case.production.die_cutting_cost)
-    return die_cutter_salary
-
-
-def film_report(case):
-    film_cost = Money.zero()
-    filmer_salary = Money.zero()
-    film_startup = Money.zero()
-    if case.lamination is not None:
-        film = Money(
-            case.production.lamination_cost) * case.lamination.film_sides
-        film_startup = Money(Decimal(200)) / case.internal_sheet_count
-        film_cost = film / 2
-        filmer_salary = film / 2
-    return film_cost, film_startup, filmer_salary
-
-
-def cutter_report(case):
-    cutter_salary = (
-                            Money(
-                                case.production.cutting_cost) * case.cutting.human_cuts
-                    ) / case.internal_sheet_count
-    return cutter_salary
-
-
-def print_report(case):
-    paper = Money(case.production.paper_cost) * case.printing.mass_kg
-    ink = _ink(case)
-    printer_salary = Money.zero()
-    if case.printing.human_operations != 0:
-        # Зарплата печатника входит в цену листа один раз, не умножается на число листов.
-        printer_salary = Money(case.production.printer_salary)
-    return ink, paper, printer_salary
-
-
-def _ink(case: PrintingCase) -> Money:
-    # костыль от старой реализации где на цвета была одна суммарная стоимость
-    # used_ink списывает краску на все листы задания. В цену листа входит один лист.
-    color_price = Money(case.production.ink_cost / 4)
-    black_price = Money(case.production.black_ink_cost)
-    cyan, magenta, yellow, black = case.printing.used_ink
-    total = color_price * (cyan + magenta + yellow) + black_price * black
-    sheets = case.printing.sheet_count
-    if sheets == 0:
-        return Money.zero()
-    return total / sheets
 
 
 def _volume_factor(internal_sheet_count: int) -> Decimal:
