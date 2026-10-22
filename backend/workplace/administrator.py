@@ -64,14 +64,11 @@ class Administrator:
                 cut_count=cut_count,
             )
             lamination = Lamination[printing.edition.lamination.name]
-            if lamination is Lamination.DONT:
-                lamination_report = None
-            else:
-                lamination_report = self.lamination.report(lamination)
-            if printing.edition.die_cutting:
-                die_cutting_report = self.die_cutting.report(sheet_count)
-            else:
-                die_cutting_report = None
+            lamination_report = self.lamination.report(lamination)
+
+            die_cutting = printing.edition.die_cutting
+            die_cutting_report = self.die_cutting.report(sheet_count, die_cutting)
+
             cases.append(
                 PrintingCase(
                     item_count=item_count,

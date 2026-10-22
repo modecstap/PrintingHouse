@@ -17,6 +17,9 @@ def price_die_cutting(report: DieCuttingReport, die_cutting_cost: Decimal) -> St
     if not report:
         return StageCost.zero()
 
+    if report.sheet_count == 0:
+        return StageCost.zero()
+
     salary = Money(die_cutting_cost)
     return StageCost(
         startup_cost=Money.zero(),

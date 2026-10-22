@@ -24,6 +24,9 @@ def price_lamination(
     if not report:
         return StageCost.zero()
 
+    if report.film_sides == 0:
+        return StageCost.zero()
+
     film = Money(lamination_cost) * report.film_sides
     startup_cost = Money(Decimal(200)) / internal_sheet_count
     material_cost = film / 2

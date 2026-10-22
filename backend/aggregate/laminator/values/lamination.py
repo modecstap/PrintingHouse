@@ -12,6 +12,8 @@ class Lamination(Enum):
         Результат: 1, если плёнка с одной стороны, и 2, если с двух.
         Ошибка: ValueError, если ламинации нет.
         """
+        if self is Lamination.DONT:
+            return 0
         if self is Lamination.ONE_ZERO:
             return 1
         if self is Lamination.ONE_ONE:

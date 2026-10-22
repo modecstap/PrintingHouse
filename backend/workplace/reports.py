@@ -35,6 +35,6 @@ class PrintingCase:
     internal_sheet_count: int
     printing: PrintingReport
     cutting: CuttingReport
-    lamination: LaminationReport | None
-    die_cutting: DieCuttingReport | None
+    lamination: LaminationReport
+    die_cutting: DieCuttingReport
     production: Production
