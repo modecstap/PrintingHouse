@@ -117,22 +117,11 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
 
 
 def _ink(case: PrintingCase) -> Money:
-    black = case.production.black_ink_cost
-    color = case.production.ink_cost
-    chroma = case.printing.chroma
-    if chroma is Chroma.ZERO_ZERO:
-        return Money(Decimal(0))
-    if chroma is Chroma.ONE_ZERO:
-        return Money(black)
-    if chroma is Chroma.ONE_ONE:
-        return Money(black) * 2
-    if chroma is Chroma.FOUR_ZERO:
-        return Money(color)
-    if chroma is Chroma.FOUR_ONE:
-        return Money(color) + Money(black)
-    if chroma is Chroma.FOUR_FOUR:
-        return Money(color) * 2
-    return Money(Decimal(0))
+    # костыль от старой реализации где на цвета была одна суммарная стоимость
+    color_price = Money(case.production.ink_cost / 4)
+    black_price = Money(case.production.black_ink_cost)
+    c,m,i,k = case.printing.used_ink
+    return color_price*(c+m+i) + black_price * k
 
 
 def _volume_factor(internal_sheet_count: int) -> Decimal:

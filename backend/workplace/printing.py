@@ -27,13 +27,17 @@ class PrintingWorkplace:
         """
         area_m2 = Decimal(press_sheet.width * press_sheet.height) / Decimal(1_000_000)
         mass_kg = area_m2 * (Decimal(density) / Decimal(1000))
+
         if chroma is Chroma.ZERO_ZERO:
             human_operations = 0
         else:
             human_operations = sheet_count
+
+        used_ink = chroma.consumed_sheets(sheet_count)
+
         return PrintingReport(
             mass_kg=mass_kg,
-            chroma=chroma,
+            used_ink=used_ink,
             sheet_count=sheet_count,
             human_operations=human_operations,
         )

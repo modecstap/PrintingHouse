@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.aggregate.printer.values.chroma import Chroma
 from backend.models.production import Production
 
 
 @dataclass(frozen=True)
 class PrintingReport:
     mass_kg: Decimal
-    chroma: Chroma
+    used_ink: tuple[int, int, int, int]
     sheet_count: int
     human_operations: int
 

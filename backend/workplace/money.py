@@ -4,7 +4,7 @@ from backend.workplace.errors import InvalidPriceException
 
 
 def _decimal_factor(factor: object) -> Decimal | None:
-    if type(factor) is int:
+    if type(factor) is int or float:
         return Decimal(factor)
     if type(factor) is Decimal:
         return factor
@@ -30,6 +30,10 @@ class Money:
                 f"создание цены: сумма {amount!r} должна быть неотрицательным Decimal"
             )
         self.amount = amount
+
+    @classmethod
+    def zero(cls) -> "Money":
+        return Money(Decimal(0))
 
     def __eq__(self, other: object) -> bool:
         if type(other) is not Money:
