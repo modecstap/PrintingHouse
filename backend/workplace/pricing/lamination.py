@@ -21,6 +21,9 @@ def price_lamination(
     Побочные эффекты: нет.
     Ошибки: InvalidPriceException, если сумма меньше нуля.
     """
+    if not report:
+        return StageCost.zero()
+
     film = Money(lamination_cost) * report.film_sides
     startup_cost = Money(Decimal(200)) / internal_sheet_count
     material_cost = film / 2

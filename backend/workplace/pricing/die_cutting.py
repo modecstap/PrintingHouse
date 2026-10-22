@@ -14,7 +14,9 @@ def price_die_cutting(report: DieCuttingReport, die_cutting_cost: Decimal) -> St
     Побочные эффекты: нет.
     Ошибки: InvalidPriceException, если сумма меньше нуля.
     """
-    # Число листов высечки не множитель: ставка уже за один лист.
+    if not report:
+        return StageCost.zero()
+
     salary = Money(die_cutting_cost)
     return StageCost(
         startup_cost=Money.zero(),

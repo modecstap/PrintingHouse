@@ -65,47 +65,33 @@ class Accountant:
 
 
 def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
-    printing = price_printing(
-        case.printing,
-        case.production.paper_cost,
-        case.production.ink_cost,
-        case.production.black_ink_cost,
-        case.production.printer_salary,
-    )
-    cutting = price_cutting(
-        case.cutting,
-        case.production.cutting_cost,
-        case.internal_sheet_count,
-    )
-    if case.lamination is None:
-        lamination = StageCost.zero()
-    else:
-        lamination = price_lamination(
+    prices = [
+         price_printing(
+            case.printing,
+            case.production.paper_cost,
+            case.production.ink_cost,
+            case.production.black_ink_cost,
+            case.production.printer_salary,
+        ),
+         price_cutting(
+            case.cutting,
+            case.production.cutting_cost,
+            case.internal_sheet_count,
+        ),
+        price_lamination(
             case.lamination,
             case.production.lamination_cost,
             case.internal_sheet_count,
-        )
-
-    if case.die_cutting is None:
-        die_cutting = StageCost.zero()
-    else:
-        die_cutting = price_die_cutting(
+        ),
+        price_die_cutting(
             case.die_cutting,
             case.production.die_cutting_cost,
         )
-    startup = (
-        printing.startup_cost
-        + cutting.startup_cost
-        + lamination.startup_cost
-        + die_cutting.startup_cost
-    )
-    material = (
-        printing.material_cost
-        + cutting.material_cost
-        + lamination.material_cost
-        + die_cutting.material_cost
-    )
-    salary = printing.salary + cutting.salary + lamination.salary + die_cutting.salary
+    ]
+
+    startup = sum([price.startup_cost for price in prices], start=Money.zero())
+    material = sum([price.material_cost for price in prices], start=Money.zero())
+    salary = sum([price.salary for price in prices], start=Money.zero())
 
     markup = (economy.markup / 100 + 1)
     volume_factor = _volume_factor(case.internal_sheet_count)
@@ -113,7 +99,8 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
 
     cost_price = (startup + material).quantize()
     cost = (
-        (startup + material + salary) * markup * volume_factor * tax_compensation
+            (startup + material + salary) *
+            markup * volume_factor * tax_compensation
     ).quantize()
 
     items_on_sheet = min(case.items_per_sheet, case.item_count)
@@ -123,7 +110,7 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
     edition_cost_price = (unit_cost_price * case.item_count).quantize()
     # Прибыль остаётся Decimal: Money не хранит отрицательную сумму.
     profit_before_tax = edition_cost.amount - edition_cost_price.amount
-    profit_after_tax = profit_before_tax / tax_compensation
+    profit_after_tax = (profit_before_tax / tax_compensation).quantize(Decimal("0.0001"))
     return PrintingCostReport(
         items_per_sheet=case.items_per_sheet,
         sheet_count=case.sheet_count,
