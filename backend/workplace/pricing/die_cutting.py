@@ -1,11 +1,12 @@
 from decimal import Decimal
 
+from backend.workplace.cost_order import DieCutPricing
 from backend.workplace.money import Money
 from backend.workplace.pricing.stage_cost import StageCost
 from backend.workplace.reports import DieCuttingReport
 
 
-def price_die_cutting(report: DieCuttingReport, die_cutting_cost: Decimal) -> StageCost:
+def price_die_cutting(report: DieCuttingReport, pricing: DieCutPricing) -> StageCost:
     """Считает запуск, материал и зарплату высечки до наценки.
 
     Предусловия: отчёт есть. sheet_count множителем не является.
@@ -20,9 +21,8 @@ def price_die_cutting(report: DieCuttingReport, die_cutting_cost: Decimal) -> St
     if report.sheet_count == 0:
         return StageCost.zero()
 
-    salary = Money(die_cutting_cost)
     return StageCost(
         startup_cost=Money.zero(),
         material_cost=Money.zero(),
-        salary=salary,
+        salary=pricing.salary,
     )

@@ -1,11 +1,15 @@
+from decimal import Decimal
+
 from backend.models.order import Order
 from backend.models.order_cost_report import OrderCostReport
 from backend.models.printing import Printing
 from backend.models.printing_cost_report import PrintingCostReport
 from backend.workplace.administrator import Administrator
 from backend.workplace.chroma import Chroma
-from backend.workplace.cost_order import CostOrder, CostPrinting
+from backend.workplace.cost_order import CostOrder, CostPrinting, PressSheet, \
+    List, PressPricing, CutPricing, LaminationPricing, DieCutPricing
 from backend.workplace.lamination import Lamination
+from backend.workplace.money import Money
 from backend.workplace.reports import CostReport
 
 
@@ -33,27 +37,45 @@ def _cost_order(order: Order) -> CostOrder:
 def _cost_printing(printing: Printing) -> CostPrinting:
     edition = printing.edition
     production = printing.production
+    lamination = Lamination[edition.lamination.name]
+    film_rate = production.lamination_cost / 2
     return CostPrinting(
         count=edition.count,
-        density=edition.density,
         chroma=Chroma[edition.chroma.name],
-        lamination=Lamination[edition.lamination.name],
+        lamination=lamination,
         die_cutting=edition.die_cutting,
         sheet_by_fitting=production.sheet_by_fitting,
         stack_height=production.cutter.stack_height,
-        press_sheet_width=production.press_sheet.width,
-        press_sheet_height=production.press_sheet.height,
-        press_sheet_spacing=production.press_sheet.spacing,
-        list_width=edition.list_size.width,
-        list_height=edition.list_size.height,
-        list_bleeds=edition.list_size.bleeds,
-        paper_cost=production.paper_cost,
-        ink_cost=production.ink_cost,
-        black_ink_cost=production.black_ink_cost,
-        printer_salary=production.printer_salary,
-        cutting_cost=production.cutting_cost,
-        lamination_cost=production.lamination_cost,
-        die_cutting_cost=production.die_cutting_cost,
+        press_sheet=PressSheet(
+            density=edition.density,
+            width=production.press_sheet.width,
+            height=production.press_sheet.height,
+            spacing=production.press_sheet.spacing,
+        ),
+        list=List(
+            width=edition.list_size.width,
+            height=edition.list_size.height,
+            bleeds=edition.list_size.bleeds,
+        ),
+        press_pricing=PressPricing(
+            cyan=Money(production.ink_cost/4),
+            magenta=Money(production.ink_cost/4),
+            yellow=Money(production.ink_cost/4),
+            black=Money(production.black_ink_cost),
+            paper=Money(production.paper_cost),
+            salary=Money(production.printer_salary),
+        ),
+        cut_pricing=CutPricing(
+            salary=Money(production.cutting_cost),
+        ),
+        lamination_pricing=LaminationPricing(
+            startup=Money(Decimal("200")),
+            film_cost=Money(film_rate),
+            salary=Money(film_rate * lamination.film_sides()),
+        ),
+        die_cut_pricing=DieCutPricing(
+            salary=Money(production.die_cutting_cost),
+        ),
     )
 
 

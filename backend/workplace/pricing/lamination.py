@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from backend.workplace.cost_order import LaminationPricing
 from backend.workplace.money import Money
 from backend.workplace.pricing.stage_cost import StageCost
 from backend.workplace.reports import LaminationReport
@@ -7,7 +8,7 @@ from backend.workplace.reports import LaminationReport
 
 def price_lamination(
     report: LaminationReport,
-    lamination_cost: Decimal,
+    pricing: LaminationPricing,
     internal_sheet_count: int,
 ) -> StageCost:
     """Считает запуск, материал и зарплату ламинации до наценки.
@@ -27,10 +28,10 @@ def price_lamination(
     if report.film_sides == 0:
         return StageCost.zero()
 
-    film = Money(lamination_cost) * report.film_sides
     startup_cost = Money(Decimal(200)) / internal_sheet_count
-    material_cost = film / 2
-    salary = film / 2
+    material_cost = pricing.film_cost * report.film_sides
+    salary = pricing.salary
+
     return StageCost(
         startup_cost=startup_cost,
         material_cost=material_cost,

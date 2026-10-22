@@ -1,15 +1,14 @@
 from decimal import Decimal
 
 from backend.workplace.chroma import Chroma
+from backend.workplace.cost_order import PressSheet
 from backend.workplace.reports import PrintingReport
 
 
 class PrintingWorkplace:
+    @staticmethod
     def report(
-        self,
-        width: int,
-        height: int,
-        density: int,
+            press_sheet: PressSheet,
         chroma: Chroma,
         sheet_count: int,
     ) -> PrintingReport:
@@ -25,8 +24,9 @@ class PrintingWorkplace:
         human_operations равен 0 при ZERO_ZERO и sheet_count иначе.
         Побочные эффекты: нет. Аргументы не меняются.
         """
-        area_m2 = Decimal(width * height) / Decimal(1_000_000)
-        mass_kg = area_m2 * (Decimal(density) / Decimal(1000))
+        area_mm2 = Decimal(press_sheet.width * press_sheet.height)
+        area_m2 = area_mm2 / Decimal(1_000_000)
+        mass_kg = area_m2 * (Decimal(press_sheet.density) / Decimal(1000))
 
         if chroma is Chroma.ZERO_ZERO:
             human_operations = 0

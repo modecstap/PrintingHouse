@@ -1,6 +1,8 @@
 from enum import Enum
 
-from backend.workplace.reports import LaminationReport
+# Enum лежит здесь, потому что film_sides нужен маппингу заказа.
+# Импорт enum из workplaces.lamination возвращает цикл.
+# backend.models.lamination не импортировать.
 
 
 class Lamination(Enum):
@@ -21,17 +23,3 @@ class Lamination(Enum):
         if self is Lamination.ONE_ONE:
             return 2
         raise ValueError(f"число сторон плёнки: {self!r}")
-
-
-class LaminationWorkplace:
-    def report(self, lamination: Lamination) -> LaminationReport:
-        """Возвращает число сторон плёнки для одной печати.
-
-        Предусловие: lamination — ONE_ZERO или ONE_ONE.
-        Число 200 и внутреннее число листов в метод не входят.
-        Результат: LaminationReport. film_sides — число сторон плёнки.
-        Ошибка: ValueError value object проходит к вызывающему,
-        если ламинации нет.
-        Побочные эффекты: нет.
-        """
-        return LaminationReport(film_sides=lamination.film_sides())

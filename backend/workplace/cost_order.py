@@ -5,30 +5,6 @@ from backend.workplace.chroma import Chroma
 from backend.workplace.lamination import Lamination
 from backend.workplace.money import Money
 
-
-@dataclass(frozen=True)
-class CostPrinting:
-    count: int
-    density: int
-    chroma: Chroma
-    lamination: Lamination
-    die_cutting: bool
-    sheet_by_fitting: int
-    stack_height: int
-    press_sheet_width: int
-    press_sheet_height: int
-    press_sheet_spacing: int
-    list_width: int
-    list_height: int
-    list_bleeds: int
-    paper_cost: Decimal
-    ink_cost: Decimal
-    black_ink_cost: Decimal
-    printer_salary: Decimal
-    cutting_cost: Decimal
-    lamination_cost: Decimal
-    die_cutting_cost: Decimal
-
 @dataclass(frozen=True)
 class List:
     width: int
@@ -37,6 +13,7 @@ class List:
 
 @dataclass(frozen=True)
 class PressSheet:
+    density: int
     width: int
     height: int
     spacing: int
@@ -47,20 +24,38 @@ class PressPricing:
     magenta: Money
     yellow: Money
     black: Money
-    printer_salary: Money
+    paper: Money
+    salary: Money
 
 @dataclass(frozen=True)
-class CuttingPricing:
+class CutPricing:
     salary: Money
 
 @dataclass(frozen=True)
 class LaminationPricing:
+    startup: Money
     film_cost: Money
     salary: Money
 
 @dataclass(frozen=True)
-class DieCuttingPricing:
+class DieCutPricing:
     salary: Money
+
+@dataclass(frozen=True)
+class CostPrinting:
+    count: int
+    chroma: Chroma
+    lamination: Lamination
+    die_cutting: bool
+    sheet_by_fitting: int
+    stack_height: int
+    press_sheet: PressSheet
+    list: List
+    press_pricing: PressPricing
+    cut_pricing: CutPricing
+    lamination_pricing: LaminationPricing
+    die_cut_pricing: DieCutPricing
+
 
 @dataclass(frozen=True)
 class CostOrder:

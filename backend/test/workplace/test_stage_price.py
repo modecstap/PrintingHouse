@@ -1,5 +1,11 @@
 from decimal import Decimal
 
+from backend.workplace.cost_order import (
+    CutPricing,
+    DieCutPricing,
+    LaminationPricing,
+    PressPricing,
+)
 from backend.workplace.money import Money
 from backend.workplace.pricing.cutting import price_cutting
 from backend.workplace.pricing.die_cutting import price_die_cutting
@@ -23,10 +29,14 @@ def test_printing_price_charges_one_sheet_of_paper_and_ink_and_salary_once():
     )
     result = price_printing(
         report,
-        Decimal("10"),
-        Decimal("8"),
-        Decimal("3"),
-        Decimal("9"),
+        PressPricing(
+            cyan=Money(Decimal("8") / 4),
+            magenta=Money(Decimal("8") / 4),
+            yellow=Money(Decimal("8") / 4),
+            black=Money(Decimal("3")),
+            paper=Money(Decimal("10")),
+            salary=Money(Decimal("9")),
+        ),
     )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
@@ -44,10 +54,14 @@ def test_printing_price_omits_salary_when_human_operations_are_zero():
     )
     result = price_printing(
         report,
-        Decimal("10"),
-        Decimal("8"),
-        Decimal("3"),
-        Decimal("9"),
+        PressPricing(
+            cyan=Money(Decimal("8") / 4),
+            magenta=Money(Decimal("8") / 4),
+            yellow=Money(Decimal("8") / 4),
+            black=Money(Decimal("3")),
+            paper=Money(Decimal("10")),
+            salary=Money(Decimal("9")),
+        ),
     )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
@@ -65,10 +79,14 @@ def test_printing_price_omits_ink_when_sheet_count_is_zero():
     )
     result = price_printing(
         report,
-        Decimal("10"),
-        Decimal("8"),
-        Decimal("3"),
-        Decimal("4"),
+        PressPricing(
+            cyan=Money(Decimal("8") / 4),
+            magenta=Money(Decimal("8") / 4),
+            yellow=Money(Decimal("8") / 4),
+            black=Money(Decimal("3")),
+            paper=Money(Decimal("10")),
+            salary=Money(Decimal("4")),
+        ),
     )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
@@ -78,7 +96,11 @@ def test_printing_price_omits_ink_when_sheet_count_is_zero():
 
 
 def test_cutting_price_divides_cut_rate_by_internal_sheet_count():
-    result = price_cutting(CuttingReport(human_cuts=1), Decimal("1"), 3)
+    result = price_cutting(
+        CuttingReport(human_cuts=1),
+        CutPricing(salary=Money(Decimal("1"))),
+        3,
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
         material_cost=Money(Decimal("0")),
@@ -87,7 +109,11 @@ def test_cutting_price_divides_cut_rate_by_internal_sheet_count():
 
 
 def test_cutting_price_divides_another_cut_rate():
-    result = price_cutting(CuttingReport(human_cuts=3), Decimal("10"), 4)
+    result = price_cutting(
+        CuttingReport(human_cuts=3),
+        CutPricing(salary=Money(Decimal("10"))),
+        4,
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
         material_cost=Money(Decimal("0")),
@@ -96,7 +122,15 @@ def test_cutting_price_divides_another_cut_rate():
 
 
 def test_lamination_price_splits_film_and_does_not_round_startup():
-    result = price_lamination(LaminationReport(film_sides=1), Decimal("1"), 3)
+    result = price_lamination(
+        LaminationReport(film_sides=1),
+        LaminationPricing(
+            startup=Money(Decimal("0")),
+            film_cost=Money(Decimal("1") / 2),
+            salary=Money((Decimal("1") / 2) * 1),
+        ),
+        3,
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("66.66666666666666666666666667")),
         material_cost=Money(Decimal("0.5")),
@@ -105,7 +139,15 @@ def test_lamination_price_splits_film_and_does_not_round_startup():
 
 
 def test_lamination_price_splits_another_film():
-    result = price_lamination(LaminationReport(film_sides=2), Decimal("10"), 4)
+    result = price_lamination(
+        LaminationReport(film_sides=2),
+        LaminationPricing(
+            startup=Money(Decimal("0")),
+            film_cost=Money(Decimal("10") / 2),
+            salary=Money((Decimal("10") / 2) * 2),
+        ),
+        4,
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("50")),
         material_cost=Money(Decimal("10")),
@@ -114,7 +156,10 @@ def test_lamination_price_splits_another_film():
 
 
 def test_die_cutting_price_uses_the_rate_once():
-    result = price_die_cutting(DieCuttingReport(sheet_count=9), Decimal("15"))
+    result = price_die_cutting(
+        DieCuttingReport(sheet_count=9),
+        DieCutPricing(salary=Money(Decimal("15"))),
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
         material_cost=Money(Decimal("0")),
@@ -123,7 +168,10 @@ def test_die_cutting_price_uses_the_rate_once():
 
 
 def test_die_cutting_price_ignores_sheet_count():
-    result = price_die_cutting(DieCuttingReport(sheet_count=100), Decimal("4"))
+    result = price_die_cutting(
+        DieCuttingReport(sheet_count=100),
+        DieCutPricing(salary=Money(Decimal("4"))),
+    )
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
         material_cost=Money(Decimal("0")),

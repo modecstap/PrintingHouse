@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from backend.workplace.cost_order import PressPricing, CutPricing, \
+    LaminationPricing, DieCutPricing
+
 
 @dataclass(frozen=True)
 class PrintingReport:
@@ -35,13 +38,10 @@ class PrintingCase:
     cutting: CuttingReport
     lamination: LaminationReport
     die_cutting: DieCuttingReport
-    paper_cost: Decimal
-    ink_cost: Decimal
-    black_ink_cost: Decimal
-    printer_salary: Decimal
-    cutting_cost: Decimal
-    lamination_cost: Decimal
-    die_cutting_cost: Decimal
+    press_pricing: PressPricing
+    cut_pricing: CutPricing
+    lamination_pricing: LaminationPricing
+    die_cut_pricing: DieCutPricing
 
 
 @dataclass(frozen=True)

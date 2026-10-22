@@ -8,9 +8,9 @@ from backend.models.press_sheet import PressSheet
 from backend.workplace.accountant import Accountant
 from backend.workplace.cost_order import CostOrder
 from backend.workplace.cutting import CuttingWorkplace
-from backend.workplace.die_cutting import DieCuttingWorkplace
-from backend.workplace.lamination import LaminationWorkplace
-from backend.workplace.printing import PrintingWorkplace
+from backend.workplace.workplaces.die_cutting import DieCuttingWorkplace
+from backend.workplace.workplaces.lamination import LaminationWorkplace
+from backend.workplace.workplaces.printing import PrintingWorkplace
 from backend.workplace.reports import CostReport, PrintingCase
 
 
@@ -40,14 +40,14 @@ class Administrator:
             item_count = printing.count * order.unit_count
             placement = PlacementOptimizer(
                 press_sheet=PressSheet(
-                    width=printing.press_sheet_width,
-                    height=printing.press_sheet_height,
-                    spacing=printing.press_sheet_spacing,
+                    width=printing.press_sheet.width,
+                    height=printing.press_sheet.height,
+                    spacing=printing.press_sheet.spacing,
                 ),
                 list_size=ListSize(
-                    width=printing.list_width,
-                    height=printing.list_height,
-                    bleeds=printing.list_bleeds,
+                    width=printing.list.width,
+                    height=printing.list.height,
+                    bleeds=printing.list.bleeds,
                 ),
             ).get_best_solution()
             items_per_sheet = placement.get_items_count()
@@ -59,16 +59,14 @@ class Administrator:
                 item_count / items_per_sheet + printing.sheet_by_fitting
             )
             printing_report = self.printing.report(
-                width=printing.press_sheet_width,
-                height=printing.press_sheet_height,
-                density=printing.density,
+                press_sheet=printing.press_sheet,
                 chroma=printing.chroma,
                 sheet_count=sheet_count,
             )
             cutting_report = self.cutting.report(
                 internal_sheet_count=internal_sheet_count,
                 stack_height=printing.stack_height,
-                density=printing.density,
+                density=printing.press_sheet.density,
                 cut_count=cut_count,
             )
             lamination_report = self.lamination.report(printing.lamination)
@@ -84,13 +82,10 @@ class Administrator:
                     cutting=cutting_report,
                     lamination=lamination_report,
                     die_cutting=die_cutting_report,
-                    paper_cost=printing.paper_cost,
-                    ink_cost=printing.ink_cost,
-                    black_ink_cost=printing.black_ink_cost,
-                    printer_salary=printing.printer_salary,
-                    cutting_cost=printing.cutting_cost,
-                    lamination_cost=printing.lamination_cost,
-                    die_cutting_cost=printing.die_cutting_cost,
+                    press_pricing=printing.press_pricing,
+                    cut_pricing=printing.cut_pricing,
+                    lamination_pricing=printing.lamination_pricing,
+                    die_cut_pricing=printing.die_cut_pricing,
                 )
             )
         return self.accountant.calculate(

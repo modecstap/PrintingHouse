@@ -63,25 +63,22 @@ class Accountant:
 def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> PrintingCost:
     prices = [
          price_printing(
-            case.printing,
-            case.paper_cost,
-            case.ink_cost,
-            case.black_ink_cost,
-            case.printer_salary,
+             case.printing,
+             case.press_pricing
         ),
          price_cutting(
             case.cutting,
-            case.cutting_cost,
+            case.cut_pricing,
             case.internal_sheet_count,
         ),
         price_lamination(
             case.lamination,
-            case.lamination_cost,
+            case.lamination_pricing,
             case.internal_sheet_count,
         ),
         price_die_cutting(
             case.die_cutting,
-            case.die_cutting_cost,
+            case.die_cut_pricing,
         )
     ]
 

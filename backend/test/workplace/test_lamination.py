@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from backend.workplace.lamination import Lamination
+from backend.workplace.workplaces.lamination import Lamination
 
 
 def test_lamination_values_match_the_saved_names():
