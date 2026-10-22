@@ -1,31 +1,31 @@
 from decimal import Decimal
 
-from backend.aggregate.printer.values.chroma import Chroma
-from backend.models.press_sheet import PressSheet
+from backend.workplace.chroma import Chroma
 from backend.workplace.reports import PrintingReport
 
 
 class PrintingWorkplace:
     def report(
         self,
-        press_sheet: PressSheet,
+        width: int,
+        height: int,
         density: int,
         chroma: Chroma,
         sheet_count: int,
     ) -> PrintingReport:
         """Возвращает отчёт одной печати.
 
-        Предусловия: ширина и высота press_sheet в миллиметрах.
+        Предусловия: width и height — ширина и высота печатного листа
+        в миллиметрах. Поля листа в метод не входят.
         density — плотность бумаги в граммах на квадратный метр.
-        chroma — цветность принтера.
+        chroma — цветность модуля.
         sheet_count — число листов задания без приладки.
         Результат: PrintingReport. mass_kg — масса одного листа.
         На число листов и на приладку масса не умножается.
-        human_operations равен 0 при цветности ZERO_ZERO.
-        При остальных цветностях human_operations равен sheet_count.
+        human_operations равен 0 при ZERO_ZERO и sheet_count иначе.
         Побочные эффекты: нет. Аргументы не меняются.
         """
-        area_m2 = Decimal(press_sheet.width * press_sheet.height) / Decimal(1_000_000)
+        area_m2 = Decimal(width * height) / Decimal(1_000_000)
         mass_kg = area_m2 * (Decimal(density) / Decimal(1000))
 
         if chroma is Chroma.ZERO_ZERO:

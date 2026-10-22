@@ -1,4 +1,5 @@
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -191,3 +192,26 @@ def _build_printing(
             cutter=CutterInfo(stack_height=50),
         ),
     )
+
+
+def test_report_cost_rejects_unknown_chroma_name():
+    order = _build_order()
+    order.printings[0].edition.chroma = SimpleNamespace(name="NO_SUCH")
+    with pytest.raises(KeyError, match="NO_SUCH"):
+        report_cost(order)
+
+
+def test_report_cost_rejects_unknown_lamination_name():
+    order = _build_order()
+    order.printings[0].edition.lamination = SimpleNamespace(name="NO_SUCH")
+    with pytest.raises(KeyError, match="NO_SUCH"):
+        report_cost(order)
+
+
+def test_report_matches_fit_order_for_spacing_and_bleeds():
+    printing = _build_printing()
+    printing.edition.list_size = ListSize(width=100, height=100, bleeds=5)
+    printing.production.press_sheet = PressSheet(width=320, height=450, spacing=11)
+    result = _assert_matches_fit_order(_build_order(printings=[printing]))
+    assert result.printing_cost_reports[0].items_per_sheet == 6
+    assert result.printing_cost_reports[0].sheet_count == 2

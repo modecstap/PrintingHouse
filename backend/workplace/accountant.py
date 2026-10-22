@@ -1,52 +1,48 @@
 from decimal import Decimal
 
-from backend.models.economy import Economy
-from backend.models.operation import Operation
-from backend.models.order_cost_report import OrderCostReport
-from backend.models.printing_cost_report import PrintingCostReport
 from backend.workplace.money import Money
 from backend.workplace.pricing.cutting import price_cutting
 from backend.workplace.pricing.die_cutting import price_die_cutting
 from backend.workplace.pricing.lamination import price_lamination
 from backend.workplace.pricing.printing import price_printing
 from backend.workplace.pricing.stage_cost import StageCost
-from backend.workplace.reports import PrintingCase
+from backend.workplace.reports import CostReport, PrintingCase, PrintingCost
 
 
 class Accountant:
     def calculate(
         self,
         printings: list[PrintingCase],
-        operations: list[Operation],
-        economy: Economy,
+        operation_costs: tuple[Decimal, ...],
+        tax_rate: Decimal,
+        markup: Decimal,
         unit_count: int,
-    ) -> OrderCostReport:
+    ) -> CostReport:
         """Собирает стоимость заказа из отчётов мест и ставок.
 
         Предусловия: printings — печати в порядке заказа.
-        Ставки печати лежат в case.production.
-        Наценка и налог лежат в economy.
+        Семь ставок лежат в полях PrintingCase.
+        Наценка и налог переданы аргументами.
+        Стоимости операций — Decimal в исходном порядке, без имени и описания.
         Количества берутся из PrintingCase и отчётов мест.
-        Ламинация None: плёнка и запуск не входят в сумму.
-        Высечка None: плата за высечку не входит в сумму.
         internal_sheet_count, tax_rate, unit_count и делитель изделия не равны нулю.
         Деление на ноль не обрабатывается.
-        Результат: OrderCostReport.
-        Список printing_cost_reports идёт в порядке printings.
-        Пустой список операций оставляет суммы операций нулём.
+        Результат: CostReport.
+        printing_cost_reports идёт в порядке printings.
+        Пустой набор операций оставляет суммы операций нулём.
         Побочные эффекты: нет. Аргументы не меняются.
         """
-        printing_reports: list[PrintingCostReport] = []
+        printing_reports: list[PrintingCost] = []
         editions_cost = Money(Decimal(0))
         editions_cost_price = Money(Decimal(0))
         for case in printings:
-            report = _price_printing(case, economy)
+            report = _price_printing(case, tax_rate, markup)
             printing_reports.append(report)
             editions_cost = editions_cost + Money(report.edition_cost)
             editions_cost_price = editions_cost_price + Money(report.edition_cost_price)
 
         operation_cost, operation_cost_price = _price_operations(
-            operations, economy, unit_count
+            operation_costs, tax_rate, markup, unit_count
         )
         unit_cost_price = (
             (editions_cost_price + operation_cost_price) / unit_count
@@ -55,37 +51,37 @@ class Accountant:
         edition_cost = unit_cost * unit_count
         # Прибыль остаётся Decimal: Money не хранит отрицательную сумму.
         profit_after_tax = edition_cost.amount - (unit_cost_price * unit_count).amount
-        return OrderCostReport(
+        return CostReport(
             unit_cost_price=unit_cost_price.amount,
             unit_cost=unit_cost.amount,
             edition_cost=edition_cost.amount,
             profit_after_tax=profit_after_tax,
-            printing_cost_reports=printing_reports,
+            printing_cost_reports=tuple(printing_reports),
         )
 
 
-def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
+def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> PrintingCost:
     prices = [
          price_printing(
             case.printing,
-            case.production.paper_cost,
-            case.production.ink_cost,
-            case.production.black_ink_cost,
-            case.production.printer_salary,
+            case.paper_cost,
+            case.ink_cost,
+            case.black_ink_cost,
+            case.printer_salary,
         ),
          price_cutting(
             case.cutting,
-            case.production.cutting_cost,
+            case.cutting_cost,
             case.internal_sheet_count,
         ),
         price_lamination(
             case.lamination,
-            case.production.lamination_cost,
+            case.lamination_cost,
             case.internal_sheet_count,
         ),
         price_die_cutting(
             case.die_cutting,
-            case.production.die_cutting_cost,
+            case.die_cutting_cost,
         )
     ]
 
@@ -93,9 +89,9 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
     material = sum([price.material_cost for price in prices], start=Money.zero())
     salary = sum([price.salary for price in prices], start=Money.zero())
 
-    markup = (economy.markup / 100 + 1)
+    markup = (markup / 100 + 1)
     volume_factor = _volume_factor(case.internal_sheet_count)
-    tax_compensation = 1/economy.tax_rate
+    tax_compensation = 1/tax_rate
 
     cost_price = (startup + material).quantize()
     cost = (
@@ -111,7 +107,7 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
     # Прибыль остаётся Decimal: Money не хранит отрицательную сумму.
     profit_before_tax = edition_cost.amount - edition_cost_price.amount
     profit_after_tax = (profit_before_tax / tax_compensation).quantize(Decimal("0.0001"))
-    return PrintingCostReport(
+    return PrintingCost(
         items_per_sheet=case.items_per_sheet,
         sheet_count=case.sheet_count,
         unit_cost_price=unit_cost_price.amount,
@@ -134,15 +130,16 @@ def _volume_factor(internal_sheet_count: int) -> Decimal:
 
 
 def _price_operations(
-    operations: list[Operation],
-    economy: Economy,
+    operation_costs: tuple[Decimal, ...],
+    tax_rate: Decimal,
+    markup: Decimal,
     unit_count: int,
 ) -> tuple[Money, Money]:
     operation_cost_price = Money(Decimal(0))
     operation_cost = Money(Decimal(0))
-    for operation in operations:
-        operation_cost_price = operation_cost_price + Money(operation.cost) * unit_count
-        total_markup = (1 + economy.markup / 100) * (1 / economy.tax_rate)
+    for cost in operation_costs:
+        operation_cost_price = operation_cost_price + Money(cost) * unit_count
+        total_markup = (1 + markup / 100) * (1 / tax_rate)
         # База цены — уже накопленная себестоимость, включая текущую операцию.
         operation_cost = operation_cost + operation_cost_price * total_markup
     return operation_cost, operation_cost_price
