@@ -65,30 +65,41 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
     cost = Money(Decimal(0))
 
     paper = Money(case.production.paper_cost) * case.printing.mass_kg
-    cost_price = cost_price + paper
-    cost = cost + paper
 
     ink = _ink(case)
-    cost_price = cost_price + ink
-    cost = cost + ink
 
+    printer_salary = Money.zero()
     if case.printing.human_operations != 0:
         # Зарплата печатника входит в цену листа один раз, не умножается на число листов.
-        cost = cost + Money(case.production.printer_salary)
+        printer_salary = Money(case.production.printer_salary)
 
-    cost = cost + (
+    cutter_salary = (
         Money(case.production.cutting_cost) * case.cutting.human_cuts
     ) / case.internal_sheet_count
 
+    film_cost = Money.zero()
+    filmer_salary = Money.zero()
+    film_startup = Money.zero()
     if case.lamination is not None:
         film = Money(case.production.lamination_cost) * case.lamination.film_sides
-        startup = Money(Decimal(200)) / case.internal_sheet_count
-        cost_price = cost_price + film / 2 + startup
-        cost = cost + film + startup
+        film_startup = Money(Decimal(200)) / case.internal_sheet_count
+        film_cost =  film / 2
+        filmer_salary = film / 2
 
+
+    die_cutter_salary = Money.zero()
     if case.die_cutting is not None:
         # Число листов высечки не множитель: ставка уже за один лист.
-        cost = cost + Money(case.production.die_cutting_cost)
+        die_cutter_salary = Money(case.production.die_cutting_cost)
+
+    cost_price = cost_price + paper + ink + film_startup + film_cost
+    cost = (
+        cost+
+        paper + ink + printer_salary +
+        cutter_salary +
+        film_startup + film_cost + filmer_salary +
+        die_cutter_salary
+    )
 
     cost = cost * (economy.markup / 100 + 1)
     cost = cost * _volume_factor(case.internal_sheet_count)
@@ -118,10 +129,15 @@ def _price_printing(case: PrintingCase, economy: Economy) -> PrintingCostReport:
 
 def _ink(case: PrintingCase) -> Money:
     # костыль от старой реализации где на цвета была одна суммарная стоимость
+    # used_ink списывает краску на все листы задания. В цену листа входит один лист.
     color_price = Money(case.production.ink_cost / 4)
     black_price = Money(case.production.black_ink_cost)
-    c,m,i,k = case.printing.used_ink
-    return color_price*(c+m+i) + black_price * k
+    cyan, magenta, yellow, black = case.printing.used_ink
+    total = color_price * (cyan + magenta + yellow) + black_price * black
+    sheets = case.printing.sheet_count
+    if sheets == 0:
+        return Money.zero()
+    return total / sheets
 
 
 def _volume_factor(internal_sheet_count: int) -> Decimal:
