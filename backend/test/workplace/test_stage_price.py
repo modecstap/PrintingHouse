@@ -12,9 +12,7 @@ from backend.workplace.pricing.die_cutting import price_die_cutting
 from backend.workplace.pricing.lamination import price_lamination
 from backend.workplace.pricing.printing import price_printing
 from backend.workplace.pricing.stage_cost import StageCost
-from backend.workplace.reports import (
-    CuttingReport,
-)
+from backend.workplace.workplaces.cutting.models import CuttingReport
 from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
 from backend.workplace.workplaces.lamination.models import LaminationReport
 from backend.workplace.workplaces.printing.models import PrintingReport

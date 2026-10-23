@@ -1,6 +1,6 @@
 import math
 
-from backend.workplace.reports import CuttingReport
+from backend.workplace.workplaces.cutting.models import CuttingReport
 
 
 class CuttingWorkplace:

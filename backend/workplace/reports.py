@@ -3,14 +3,10 @@ from decimal import Decimal
 
 from backend.workplace.cost_order import PressPricing, CutPricing, \
     LaminationPricing, DieCutPricing
+from backend.workplace.workplaces.cutting.models import CuttingReport
 from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
 from backend.workplace.workplaces.lamination.models import LaminationReport
 from backend.workplace.workplaces.printing.models import PrintingReport
-
-
-@dataclass(frozen=True)
-class CuttingReport:
-    human_cuts: int
 
 
 @dataclass(frozen=True)

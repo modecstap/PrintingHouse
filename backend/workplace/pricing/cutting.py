@@ -1,9 +1,7 @@
-from decimal import Decimal
-
 from backend.workplace.cost_order import CutPricing
 from backend.workplace.money import Money
 from backend.workplace.pricing.stage_cost import StageCost
-from backend.workplace.reports import CuttingReport
+from backend.workplace.workplaces.cutting.models import CuttingReport
 
 
 def price_cutting(

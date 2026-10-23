@@ -7,9 +7,9 @@ from backend.models.list_size import ListSize
 from backend.models.press_sheet import PressSheet
 from backend.workplace.accountant import Accountant
 from backend.workplace.cost_order import CostOrder
-from backend.workplace.cutting import CuttingWorkplace
 from backend.workplace.reports import CostReport, PrintingCase, PressCase, \
     LaminationCase, DieCuttingCase, CuttingCase
+from backend.workplace.workplaces.cutting.cutting import CuttingWorkplace
 from backend.workplace.workplaces.die_cutting.die_cutting import \
     DieCuttingWorkplace
 from backend.workplace.workplaces.lamination.lamination import \
