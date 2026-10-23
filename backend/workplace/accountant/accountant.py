@@ -1,13 +1,6 @@
 from decimal import Decimal
 
 from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting.cutting import price_cutting
-from backend.workplace.accountant.pricing.die_cutting.die_cutting import \
-    price_die_cutting
-from backend.workplace.accountant.pricing.lamination.lamination import \
-    price_lamination
-from backend.workplace.accountant.pricing.printing.printing import \
-    price_printing
 from backend.workplace.reports import CostReport, PrintingCase, PrintingCost
 
 
@@ -23,7 +16,7 @@ class Accountant:
         """Собирает стоимость заказа из отчётов мест и ставок.
 
         Предусловия: printings — печати в порядке заказа.
-        Семь ставок лежат в полях PrintingCase.
+        В PrintingCase лежат четыре расчёта: печать, рез, ламинация и высечка. Отчёт каждого уже прикреплён.
         Наценка и налог переданы аргументами.
         Стоимости операций — Decimal в исходном порядке, без имени и описания.
         Количества берутся из PrintingCase и отчётов мест.
@@ -64,24 +57,10 @@ class Accountant:
 
 def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> PrintingCost:
     prices = [
-         price_printing(
-            case.press.printing,
-            case.press.press_pricing
-         ),
-         price_cutting(
-            case.cutting.cutting,
-            case.cutting.cut_pricing,
-            case.internal_sheet_count,
-        ),
-        price_lamination(
-            case.lamination.lamination,
-            case.lamination.lamination_pricing,
-            case.internal_sheet_count,
-        ),
-        price_die_cutting(
-            case.die_cutting.die_cutting,
-            case.die_cutting.die_cut_pricing,
-        )
+        case.press.calculate(),
+        case.cutting.calculate(),
+        case.lamination.calculate(),
+        case.die_cutting.calculate(),
     ]
 
     startup = sum([price.startup_cost for price in prices], start=Money.zero())

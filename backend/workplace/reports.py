@@ -1,36 +1,14 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.accountant.pricing.cutting.models import CutPricing
-from backend.workplace.accountant.pricing.lamination.models import \
-    LaminationPricing
-from backend.workplace.accountant.pricing.printing.models import PressPricing
-from backend.workplace.cost_order import DieCutPricing
-from backend.workplace.workplaces.cutting.models import CuttingReport
-from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
-from backend.workplace.workplaces.lamination.models import LaminationReport
-from backend.workplace.workplaces.printing.models import PrintingReport
+from backend.workplace.accountant.pricing.cutting import CuttingCalculation
+from backend.workplace.accountant.pricing.die_cutting import \
+    DieCuttingCalculation
+from backend.workplace.accountant.pricing.lamination import \
+    LaminationCalculation
+from backend.workplace.accountant.pricing.printing import \
+    PrintingCalculation
 
-
-@dataclass(frozen=True)
-class PressCase:
-    printing: PrintingReport
-    press_pricing: PressPricing
-
-@dataclass(frozen=True)
-class CuttingCase:
-    cutting: CuttingReport
-    cut_pricing: CutPricing
-
-@dataclass(frozen=True)
-class LaminationCase:
-    lamination: LaminationReport
-    lamination_pricing: LaminationPricing
-
-@dataclass(frozen=True)
-class DieCuttingCase:
-    die_cutting: DieCuttingReport
-    die_cut_pricing: DieCutPricing
 
 @dataclass(frozen=True)
 class PrintingCase:
@@ -39,10 +17,10 @@ class PrintingCase:
     sheet_count: int
     internal_sheet_count: int
 
-    press: PressCase
-    cutting: CuttingCase
-    lamination: LaminationCase
-    die_cutting: DieCuttingCase
+    press: PrintingCalculation
+    cutting: CuttingCalculation
+    lamination: LaminationCalculation
+    die_cutting: DieCuttingCalculation
 
 
 @dataclass(frozen=True)

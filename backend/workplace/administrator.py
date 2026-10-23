@@ -6,9 +6,10 @@ from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculato
 from backend.models.list_size import ListSize
 from backend.models.press_sheet import PressSheet
 from backend.workplace.accountant.accountant import Accountant
+from backend.workplace.accountant.pricing.printing import \
+    PrintingCalculation
 from backend.workplace.cost_order import CostOrder
-from backend.workplace.reports import CostReport, PrintingCase, PressCase, \
-    LaminationCase, DieCuttingCase, CuttingCase
+from backend.workplace.reports import CostReport, PrintingCase
 from backend.workplace.workplaces.cutting.cutting import CuttingWorkplace
 from backend.workplace.workplaces.die_cutting.die_cutting import \
     DieCuttingWorkplace
@@ -81,22 +82,14 @@ class Administrator:
                     items_per_sheet=items_per_sheet,
                     sheet_count=sheet_count,
                     internal_sheet_count=internal_sheet_count,
-                    press=PressCase(
-                        printing=printing_report,
-                        press_pricing=printing.press_pricing,
+                    press=printing.press_pricing.attach(printing_report),
+                    cutting=printing.cut_pricing.attach(
+                        cutting_report, internal_sheet_count
                     ),
-                    cutting=CuttingCase(
-                        cutting=cutting_report,
-                        cut_pricing=printing.cut_pricing,
+                    lamination=printing.lamination_pricing.attach(
+                        lamination_report, internal_sheet_count
                     ),
-                    lamination=LaminationCase(
-                        lamination=lamination_report,
-                        lamination_pricing=printing.lamination_pricing,
-                    ),
-                    die_cutting=DieCuttingCase(
-                        die_cutting=die_cutting_report, 
-                        die_cut_pricing=printing.die_cut_pricing,
-                    ),
+                    die_cutting=printing.die_cut_pricing.attach(die_cutting_report),
                 )
             )
         return self.accountant.calculate(

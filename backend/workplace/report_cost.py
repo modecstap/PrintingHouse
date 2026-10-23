@@ -4,9 +4,16 @@ from backend.models.order import Order
 from backend.models.order_cost_report import OrderCostReport
 from backend.models.printing import Printing
 from backend.models.printing_cost_report import PrintingCostReport
+from backend.workplace.accountant.pricing.cutting import CuttingCalculation
+from backend.workplace.accountant.pricing.die_cutting import \
+    DieCuttingCalculation
+from backend.workplace.accountant.pricing.lamination import \
+    LaminationCalculation
+from backend.workplace.accountant.pricing.printing import \
+    PrintingCalculation
 from backend.workplace.administrator import Administrator
 from backend.workplace.cost_order import CostOrder, CostPrinting, PressSheet, \
-    List, PressPricing, CutPricing, LaminationPricing, DieCutPricing
+    List
 from backend.workplace.accountant.money import Money
 from backend.workplace.reports import CostReport
 from backend.workplace.workplaces.lamination.models import Lamination
@@ -57,7 +64,7 @@ def _cost_printing(printing: Printing) -> CostPrinting:
             height=edition.list_size.height,
             bleeds=edition.list_size.bleeds,
         ),
-        press_pricing=PressPricing(
+        press_pricing=PrintingCalculation(
             cyan=Money(production.ink_cost/4),
             magenta=Money(production.ink_cost/4),
             yellow=Money(production.ink_cost/4),
@@ -65,15 +72,15 @@ def _cost_printing(printing: Printing) -> CostPrinting:
             paper=Money(production.paper_cost),
             salary=Money(production.printer_salary),
         ),
-        cut_pricing=CutPricing(
+        cut_pricing=CuttingCalculation(
             salary=Money(production.cutting_cost),
         ),
-        lamination_pricing=LaminationPricing(
+        lamination_pricing=LaminationCalculation(
             startup=Money(Decimal("200")),
             film_cost=Money(film_rate),
             salary=Money(film_rate * lamination.film_sides()),
         ),
-        die_cut_pricing=DieCutPricing(
+        die_cut_pricing=DieCuttingCalculation(
             salary=Money(production.die_cutting_cost),
         ),
     )
