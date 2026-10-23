@@ -7,9 +7,9 @@ from backend.models.printing_cost_report import PrintingCostReport
 from backend.workplace.administrator import Administrator
 from backend.workplace.cost_order import CostOrder, CostPrinting, PressSheet, \
     List, PressPricing, CutPricing, LaminationPricing, DieCutPricing
-from backend.workplace.lamination import Lamination
 from backend.workplace.money import Money
 from backend.workplace.reports import CostReport
+from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma
 
 

@@ -1,6 +1,5 @@
-# Повторный экспорт: test_lamination импортирует Lamination отсюда.
-from backend.workplace.lamination import Lamination
-from backend.workplace.workplaces.lamination.models import LaminationReport
+from backend.workplace.workplaces.lamination.models import LaminationReport, \
+    Lamination
 
 
 class LaminationWorkplace:

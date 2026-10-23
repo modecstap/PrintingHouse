@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.lamination import Lamination
 from backend.workplace.money import Money
+from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import PressSheet, Chroma
 
 
