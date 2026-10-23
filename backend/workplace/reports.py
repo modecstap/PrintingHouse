@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.cost_order import PressPricing, CutPricing, \
-    LaminationPricing, DieCutPricing
+from backend.workplace.accountant.pricing.cutting.models import CutPricing
+from backend.workplace.accountant.pricing.lamination.models import \
+    LaminationPricing
+from backend.workplace.accountant.pricing.printing.models import PressPricing
+from backend.workplace.cost_order import DieCutPricing
 from backend.workplace.workplaces.cutting.models import CuttingReport
 from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
 from backend.workplace.workplaces.lamination.models import LaminationReport

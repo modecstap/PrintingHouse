@@ -1,6 +1,8 @@
-from backend.workplace.cost_order import DieCutPricing
-from backend.workplace.money import Money
-from backend.workplace.pricing.stage_cost import StageCost
+
+from backend.workplace.accountant.money import Money
+from backend.workplace.accountant.pricing.die_cutting.models import \
+    DieCutPricing
+from backend.workplace.accountant.pricing.stage_cost import StageCost
 from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
 
 

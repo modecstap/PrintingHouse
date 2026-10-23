@@ -5,7 +5,7 @@ from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculato
 )
 from backend.models.list_size import ListSize
 from backend.models.press_sheet import PressSheet
-from backend.workplace.accountant import Accountant
+from backend.workplace.accountant.accountant import Accountant
 from backend.workplace.cost_order import CostOrder
 from backend.workplace.reports import CostReport, PrintingCase, PressCase, \
     LaminationCase, DieCuttingCase, CuttingCase

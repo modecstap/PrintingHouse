@@ -1,8 +1,9 @@
 from decimal import Decimal
 
-from backend.workplace.cost_order import LaminationPricing
-from backend.workplace.money import Money
-from backend.workplace.pricing.stage_cost import StageCost
+from backend.workplace.accountant.money import Money
+from backend.workplace.accountant.pricing.lamination.models import \
+    LaminationPricing
+from backend.workplace.accountant.pricing.stage_cost import StageCost
 from backend.workplace.workplaces.lamination.models import LaminationReport
 
 

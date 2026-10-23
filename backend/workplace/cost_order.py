@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.money import Money
+from backend.workplace.accountant.pricing.cutting.models import CutPricing
+from backend.workplace.accountant.pricing.die_cutting.models import \
+    DieCutPricing
+from backend.workplace.accountant.pricing.lamination.models import \
+    LaminationPricing
+from backend.workplace.accountant.pricing.printing.models import PressPricing
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import PressSheet, Chroma
 
@@ -11,29 +16,6 @@ class List:
     width: int
     height: int
     bleeds: int
-
-@dataclass(frozen=True)
-class PressPricing:
-    cyan: Money
-    magenta: Money
-    yellow: Money
-    black: Money
-    paper: Money
-    salary: Money
-
-@dataclass(frozen=True)
-class CutPricing:
-    salary: Money
-
-@dataclass(frozen=True)
-class LaminationPricing:
-    startup: Money
-    film_cost: Money
-    salary: Money
-
-@dataclass(frozen=True)
-class DieCutPricing:
-    salary: Money
 
 @dataclass(frozen=True)
 class CostPrinting:

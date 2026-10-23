@@ -1,6 +1,7 @@
-from backend.workplace.cost_order import PressPricing
-from backend.workplace.money import Money
-from backend.workplace.pricing.stage_cost import StageCost
+
+from backend.workplace.accountant.money import Money
+from backend.workplace.accountant.pricing.printing.models import PressPricing
+from backend.workplace.accountant.pricing.stage_cost import StageCost
 from backend.workplace.workplaces.printing.models import PrintingReport
 
 

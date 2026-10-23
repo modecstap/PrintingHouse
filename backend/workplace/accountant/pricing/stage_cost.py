@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from backend.workplace.money import Money
+from backend.workplace.accountant.money import Money
 
 
 @dataclass(frozen=True)
