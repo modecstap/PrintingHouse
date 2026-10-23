@@ -82,14 +82,16 @@ class Administrator:
                     items_per_sheet=items_per_sheet,
                     sheet_count=sheet_count,
                     internal_sheet_count=internal_sheet_count,
-                    press=printing.press_pricing.attach(printing_report),
-                    cutting=printing.cut_pricing.attach(
-                        cutting_report, internal_sheet_count
-                    ),
-                    lamination=printing.lamination_pricing.attach(
-                        lamination_report, internal_sheet_count
-                    ),
-                    die_cutting=printing.die_cut_pricing.attach(die_cutting_report),
+                    calculations=(
+                        printing.press_pricing.attach(printing_report),
+                        printing.cut_pricing.attach(
+                            cutting_report, internal_sheet_count
+                        ),
+                        printing.lamination_pricing.attach(
+                            lamination_report, internal_sheet_count
+                        ),
+                        printing.die_cut_pricing.attach(die_cutting_report),
+                    )
                 )
             )
         return self.accountant.calculate(

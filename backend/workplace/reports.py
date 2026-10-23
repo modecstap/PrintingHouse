@@ -1,13 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import \
-    DieCuttingCalculation
-from backend.workplace.accountant.pricing.lamination import \
-    LaminationCalculation
-from backend.workplace.accountant.pricing.printing import \
-    PrintingCalculation
+from backend.workplace.accountant.pricing.calculatable import Calculatable
 
 
 @dataclass(frozen=True)
@@ -16,11 +10,7 @@ class PrintingCase:
     items_per_sheet: int
     sheet_count: int
     internal_sheet_count: int
-
-    press: PrintingCalculation
-    cutting: CuttingCalculation
-    lamination: LaminationCalculation
-    die_cutting: DieCuttingCalculation
+    calculations: tuple[Calculatable, ...]
 
 
 @dataclass(frozen=True)

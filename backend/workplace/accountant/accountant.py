@@ -56,12 +56,7 @@ class Accountant:
 
 
 def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> PrintingCost:
-    prices = [
-        case.press.calculate(),
-        case.cutting.calculate(),
-        case.lamination.calculate(),
-        case.die_cutting.calculate(),
-    ]
+    prices = [calculation.calculate() for calculation in case.calculations]
 
     startup = sum([price.startup_cost for price in prices], start=Money.zero())
     material = sum([price.material_cost for price in prices], start=Money.zero())
