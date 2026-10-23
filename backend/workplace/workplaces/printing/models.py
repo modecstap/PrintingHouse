@@ -1,8 +1,24 @@
+from dataclasses import dataclass
+from decimal import Decimal
 from enum import Enum
 
 
-# Отдельная копия: consumed_sheets нужен ещё принтеру.
-# backend/aggregate/printer/values/chroma.py не импортировать и не менять.
+@dataclass(frozen=True)
+class PrintingReport:
+    mass_kg: Decimal
+    used_ink: tuple[int, int, int, int]
+    sheet_count: int
+    human_operations: int
+
+
+@dataclass(frozen=True)
+class PressSheet:
+    density: int
+    width: int
+    height: int
+    spacing: int
+
+
 class Chroma(Enum):
     ZERO_ZERO = 0
     ONE_ZERO = 1
@@ -33,3 +49,4 @@ _FACTORS: dict[Chroma, tuple[int, int, int, int]] = {
     Chroma.FOUR_ONE: (1, 1, 1, 2),
     Chroma.FOUR_FOUR: (2, 2, 2, 2),
 }
+

@@ -5,12 +5,12 @@ from backend.models.order_cost_report import OrderCostReport
 from backend.models.printing import Printing
 from backend.models.printing_cost_report import PrintingCostReport
 from backend.workplace.administrator import Administrator
-from backend.workplace.chroma import Chroma
 from backend.workplace.cost_order import CostOrder, CostPrinting, PressSheet, \
     List, PressPricing, CutPricing, LaminationPricing, DieCutPricing
 from backend.workplace.lamination import Lamination
 from backend.workplace.money import Money
 from backend.workplace.reports import CostReport
+from backend.workplace.workplaces.printing.models import Chroma
 
 
 def report_cost(order: Order) -> OrderCostReport:

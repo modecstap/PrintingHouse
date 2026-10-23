@@ -8,10 +8,13 @@ from backend.models.press_sheet import PressSheet
 from backend.workplace.accountant import Accountant
 from backend.workplace.cost_order import CostOrder
 from backend.workplace.cutting import CuttingWorkplace
-from backend.workplace.workplaces.die_cutting import DieCuttingWorkplace
-from backend.workplace.workplaces.lamination import LaminationWorkplace
-from backend.workplace.workplaces.printing import PrintingWorkplace
-from backend.workplace.reports import CostReport, PrintingCase
+from backend.workplace.reports import CostReport, PrintingCase, PressCase, \
+    LaminationCase, DieCuttingCase, CuttingCase
+from backend.workplace.workplaces.die_cutting.die_cutting import \
+    DieCuttingWorkplace
+from backend.workplace.workplaces.lamination.lamination import \
+    LaminationWorkplace
+from backend.workplace.workplaces.printing.printing import PrintingWorkplace
 
 
 class Administrator:
@@ -78,14 +81,22 @@ class Administrator:
                     items_per_sheet=items_per_sheet,
                     sheet_count=sheet_count,
                     internal_sheet_count=internal_sheet_count,
-                    printing=printing_report,
-                    cutting=cutting_report,
-                    lamination=lamination_report,
-                    die_cutting=die_cutting_report,
-                    press_pricing=printing.press_pricing,
-                    cut_pricing=printing.cut_pricing,
-                    lamination_pricing=printing.lamination_pricing,
-                    die_cut_pricing=printing.die_cut_pricing,
+                    press=PressCase(
+                        printing=printing_report,
+                        press_pricing=printing.press_pricing,
+                    ),
+                    cutting=CuttingCase(
+                        cutting=cutting_report,
+                        cut_pricing=printing.cut_pricing,
+                    ),
+                    lamination=LaminationCase(
+                        lamination=lamination_report,
+                        lamination_pricing=printing.lamination_pricing,
+                    ),
+                    die_cutting=DieCuttingCase(
+                        die_cutting=die_cutting_report, 
+                        die_cut_pricing=printing.die_cut_pricing,
+                    ),
                 )
             )
         return self.accountant.calculate(

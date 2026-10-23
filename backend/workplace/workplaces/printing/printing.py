@@ -1,14 +1,13 @@
 from decimal import Decimal
 
-from backend.workplace.chroma import Chroma
-from backend.workplace.cost_order import PressSheet
-from backend.workplace.reports import PrintingReport
+from backend.workplace.workplaces.printing.models import PrintingReport, Chroma, \
+    PressSheet
 
 
 class PrintingWorkplace:
     @staticmethod
     def report(
-            press_sheet: PressSheet,
+        press_sheet: PressSheet,
         chroma: Chroma,
         sheet_count: int,
     ) -> PrintingReport:

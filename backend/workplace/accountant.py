@@ -5,7 +5,6 @@ from backend.workplace.pricing.cutting import price_cutting
 from backend.workplace.pricing.die_cutting import price_die_cutting
 from backend.workplace.pricing.lamination import price_lamination
 from backend.workplace.pricing.printing import price_printing
-from backend.workplace.pricing.stage_cost import StageCost
 from backend.workplace.reports import CostReport, PrintingCase, PrintingCost
 
 
@@ -63,22 +62,22 @@ class Accountant:
 def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> PrintingCost:
     prices = [
          price_printing(
-             case.printing,
-             case.press_pricing
-        ),
+            case.press.printing,
+            case.press.press_pricing
+         ),
          price_cutting(
-            case.cutting,
-            case.cut_pricing,
+            case.cutting.cutting,
+            case.cutting.cut_pricing,
             case.internal_sheet_count,
         ),
         price_lamination(
-            case.lamination,
-            case.lamination_pricing,
+            case.lamination.lamination,
+            case.lamination.lamination_pricing,
             case.internal_sheet_count,
         ),
         price_die_cutting(
-            case.die_cutting,
-            case.die_cut_pricing,
+            case.die_cutting.die_cutting,
+            case.die_cutting.die_cut_pricing,
         )
     ]
 

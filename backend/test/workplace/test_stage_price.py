@@ -14,10 +14,10 @@ from backend.workplace.pricing.printing import price_printing
 from backend.workplace.pricing.stage_cost import StageCost
 from backend.workplace.reports import (
     CuttingReport,
-    DieCuttingReport,
-    LaminationReport,
-    PrintingReport,
 )
+from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
+from backend.workplace.workplaces.lamination.models import LaminationReport
+from backend.workplace.workplaces.printing.models import PrintingReport
 
 
 def test_printing_price_charges_one_sheet_of_paper_and_ink_and_salary_once():

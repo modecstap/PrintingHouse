@@ -1,4 +1,4 @@
-from backend.workplace.reports import DieCuttingReport
+from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
 
 
 class DieCuttingWorkplace:

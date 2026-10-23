@@ -3,7 +3,7 @@ from decimal import Decimal
 from backend.workplace.cost_order import LaminationPricing
 from backend.workplace.money import Money
 from backend.workplace.pricing.stage_cost import StageCost
-from backend.workplace.reports import LaminationReport
+from backend.workplace.workplaces.lamination.models import LaminationReport
 
 
 def price_lamination(
