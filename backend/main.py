@@ -1,10 +1,10 @@
 import asyncio
 import os
 
+from backend.server.app import serve
+from backend.server.server_config import ServerConfig
 from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
-from server.fast_api_server import FastAPIServer
-from server.server_config import ServerConfig
 
 
 async def main():
@@ -24,10 +24,7 @@ async def start_server():
         host=host,
         port=port
     )
-    server = FastAPIServer(
-        config=config
-    )
-    await server.start()
+    await serve(config)
 
 
 if __name__ == "__main__":

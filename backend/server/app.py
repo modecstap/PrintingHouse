@@ -1,0 +1,46 @@
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from backend.storage.database import Database
+from backend.storage.db_config import DBConfig
+
+# Репозитории маршрутов вызывают Database(None) и берут синглтон.
+# Раньше его создавал create_db до сборки сервера. Импорт app теперь
+# раньше create_db, поэтому синглтон собирается здесь из тех же env.
+Database(DBConfig.from_env())
+
+from backend.server.auth.routes import router as auth_router
+from backend.server.costs_report import router as costs_report_router
+from backend.server.instruction import router as instruction_router
+from backend.server.order import router as order_router
+from backend.server.production_reference import router as production_reference_router
+from backend.server.server_config import ServerConfig
+
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(costs_report_router)
+app.include_router(instruction_router)
+app.include_router(production_reference_router)
+app.include_router(order_router)
+app.include_router(auth_router)
+
+
+async def serve(config: ServerConfig) -> None:
+    """Слушает HTTP на host и port из config, пока процесс не остановят.
+
+    Побочные эффекты: блокирует текущую задачу на uvicorn.
+    """
+    server = uvicorn.Config(
+        app,
+        host=config.host,
+        port=config.port,
+        loop="asyncio",
+    )
+    await uvicorn.Server(server).serve()
