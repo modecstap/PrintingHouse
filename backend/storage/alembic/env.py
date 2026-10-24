@@ -41,7 +41,12 @@ ProductionReferenceEntity()
 UserEntity()
 
 from backend.storage.declarative_base import DeclarativeBase
-target_metadata = DeclarativeBase().base.metadata
+from backend.workplace_order_db.tables import Base
+
+target_metadata = [
+    DeclarativeBase().base.metadata,
+    Base.metadata,
+]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
