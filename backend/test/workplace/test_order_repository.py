@@ -1,10 +1,11 @@
 import re
-from collections.abc import Iterator
+import threading
+from collections.abc import Callable, Iterator
 from dataclasses import fields
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import bindparam, text
+from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
 
 from backend.workplace.accountant.money import Money
@@ -17,7 +18,10 @@ from backend.workplace.accountant.pricing.lamination import (
 )
 from backend.workplace.accountant.pricing.printing import PrintingCalculation
 from backend.workplace.cost_order import List, Order, Printing, Status
-from backend.workplace.order_repository import OrderNotFound
+from backend.workplace.order_repository import (
+    OrderNotFound,
+    OrderStoreUnavailable,
+)
 from backend.workplace.reports import CostReport, PrintingCost
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
@@ -132,6 +136,46 @@ def _bare_order(order_id: int | None = None) -> Order:
         printings=(),
         id=order_id,
     )
+
+
+def _sized_order(
+    order_id: int, comment: str, printings: tuple[Printing, ...]
+) -> Order:
+    return Order(
+        unit_count=1,
+        tax_rate=Decimal("0"),
+        markup=Decimal("0"),
+        operation_costs=(),
+        printings=printings,
+        id=order_id,
+        comment=comment,
+    )
+
+
+def _join_pair(
+    first: Callable[[], None], second: Callable[[], None]
+) -> None:
+    barrier = threading.Barrier(2)
+    errors: list[BaseException] = []
+
+    def run(action: Callable[[], None]) -> None:
+        try:
+            barrier.wait(10)
+            action()
+        except BaseException as error:
+            errors.append(error)
+
+    threads = [
+        threading.Thread(target=run, args=(action,), daemon=True)
+        for action in (first, second)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+    assert not threads[0].is_alive()
+    assert not threads[1].is_alive()
+    assert errors == []
 
 
 def _report_a() -> CostReport:
@@ -469,3 +513,88 @@ def test_upgrade_adds_workplace_tables_and_keeps_old_order_rows(
     before = _count_rows(engine, '"order"')
     _save(store, saved_ids, _bare_order())
     assert _count_rows(engine, '"order"') == before
+
+
+def test_concurrent_saves_keep_one_complete_order(
+    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+) -> None:
+    store, saved_ids = repository
+    order_id = _save(store, saved_ids, _bare_order())
+    printings = _full_order().printings
+    _join_pair(
+        lambda: store.save(_sized_order(order_id, "A", printings[:1])),
+        lambda: store.save(_sized_order(order_id, "B", printings)),
+    )
+    taken = store.take(order_id)
+    assert taken.comment in {"A", "B"}
+    expected = 1 if taken.comment == "A" else 2
+    assert len(taken.printings) == expected
+
+
+def test_concurrent_attaches_keep_both_reports(
+    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+) -> None:
+    store, saved_ids = repository
+    order_id = _save(store, saved_ids, _bare_order())
+    report_a = _report_a()
+    report_b = _report_b()
+    _join_pair(
+        lambda: store.attach(report_a, order_id),
+        lambda: store.attach(report_b, order_id),
+    )
+    found = store.reports(order_id)
+    assert len(found) == 2
+    assert report_a in found
+    assert report_b in found
+
+
+def test_repeated_saves_return_the_connection(
+    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+) -> None:
+    _store, saved_ids = repository
+    source = create_sync_engine()
+    local = create_engine(
+        source.url,
+        pool_size=1,
+        max_overflow=0,
+        pool_timeout=2,
+    )
+    source.dispose()
+    store = SqlWorkplaceOrderRepository(local)
+    try:
+        for _ in range(5):
+            order_id = store.save(_bare_order())
+            saved_ids.append(order_id)
+            assert store.take(order_id).id == order_id
+    finally:
+        local.dispose()
+
+
+def test_unreachable_database_is_store_unavailable() -> None:
+    local = create_engine(
+        "postgresql+psycopg://postgres:secret-token@127.0.0.1:1/postgres",
+        connect_args={"connect_timeout": 2},
+    )
+    try:
+        store = SqlWorkplaceOrderRepository(local)
+        order = Order(
+            unit_count=1,
+            tax_rate=Decimal("0"),
+            markup=Decimal("0"),
+            operation_costs=(),
+            printings=(),
+            comment="order-body-marker",
+        )
+        with pytest.raises(OrderStoreUnavailable) as caught:
+            store.save(order)
+        error = caught.value
+        assert error.__cause__ is not None
+        assert type(error) is not OrderNotFound
+        assert type(error.__cause__) is not OrderNotFound
+        message = str(error)
+        assert "secret-token" not in message
+        assert "127.0.0.1" not in message
+        assert "postgresql" not in message
+        assert "order-body-marker" not in message
+    finally:
+        local.dispose()
