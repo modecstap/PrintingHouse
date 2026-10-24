@@ -13,6 +13,11 @@ class DieCuttingCalculation(Calculatable):
         self._report = None
         self._salary = salary
 
+    @property
+    def salary(self) -> Money:
+        """Возвращает ставку salary, переданную в конструктор."""
+        return self._salary
+
     def attach(self, report: DieCuttingReport) -> "DieCuttingCalculation":
         """Прикрепляет отчёт высечки.
 

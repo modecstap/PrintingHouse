@@ -15,6 +15,21 @@ class LaminationCalculation(Calculatable):
         self._film_cost = film_cost
         self._salary = salary
 
+    @property
+    def startup(self) -> Money:
+        """Возвращает ставку startup, переданную в конструктор."""
+        return self._startup
+
+    @property
+    def film_cost(self) -> Money:
+        """Возвращает ставку film_cost, переданную в конструктор."""
+        return self._film_cost
+
+    @property
+    def salary(self) -> Money:
+        """Возвращает ставку salary, переданную в конструктор."""
+        return self._salary
+
     def attach(
         self, report: LaminationReport, internal_sheet_count: int
     ) -> "LaminationCalculation":

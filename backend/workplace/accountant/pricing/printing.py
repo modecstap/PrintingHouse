@@ -22,6 +22,36 @@ class PrintingCalculation(Calculatable):
         self._paper = paper
         self._salary = salary
 
+    @property
+    def cyan(self) -> Money:
+        """Возвращает ставку cyan, переданную в конструктор."""
+        return self._cyan
+
+    @property
+    def magenta(self) -> Money:
+        """Возвращает ставку magenta, переданную в конструктор."""
+        return self._magenta
+
+    @property
+    def yellow(self) -> Money:
+        """Возвращает ставку yellow, переданную в конструктор."""
+        return self._yellow
+
+    @property
+    def black(self) -> Money:
+        """Возвращает ставку black, переданную в конструктор."""
+        return self._black
+
+    @property
+    def paper(self) -> Money:
+        """Возвращает ставку paper, переданную в конструктор."""
+        return self._paper
+
+    @property
+    def salary(self) -> Money:
+        """Возвращает ставку salary, переданную в конструктор."""
+        return self._salary
+
     def attach(self, report: PrintingReport) -> "PrintingCalculation":
         if self._report is not None:
             raise RuntimeError("Report is already attached")
