@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import Enum
 
 from backend.workplace.accountant.pricing.cutting import CuttingCalculation
 from backend.workplace.accountant.pricing.die_cutting import \
@@ -34,6 +35,12 @@ class Printing:
     die_cut_pricing: DieCuttingCalculation
 
 
+class Status(Enum):
+    SAVED = "Отложен"
+    IN_WORK = "В работе"
+    DONE = "Завершён"
+
+
 @dataclass(frozen=True)
 class Order:
     unit_count: int
@@ -41,3 +48,6 @@ class Order:
     markup: Decimal
     operation_costs: tuple[Decimal, ...]
     printings: tuple[Printing, ...]
+    id: int | None = None
+    comment: str = ""
+    status: Status = Status.SAVED
