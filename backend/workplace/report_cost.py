@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from backend.models.order import Order
+from backend.models.order import Order as OldOrder
 from backend.models.order_cost_report import OrderCostReport
 from backend.models.printing import Printing
 from backend.models.printing_cost_report import PrintingCostReport
@@ -12,7 +12,7 @@ from backend.workplace.accountant.pricing.lamination import \
 from backend.workplace.accountant.pricing.printing import \
     PrintingCalculation
 from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import CostOrder, CostPrinting, PressSheet, \
+from backend.workplace.cost_order import Order, Printing, PressSheet, \
     List
 from backend.workplace.accountant.money import Money
 from backend.workplace.reports import CostReport
@@ -20,7 +20,7 @@ from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma
 
 
-def report_cost(order: Order) -> OrderCostReport:
+def report_cost(order: OldOrder) -> OrderCostReport:
     """Считает стоимость заказа в памяти.
 
     Предусловие: заказ, который fit_order считает без деления на ноль.
@@ -31,8 +31,8 @@ def report_cost(order: Order) -> OrderCostReport:
     return _saved_report(Administrator().report_cost(_cost_order(order)))
 
 
-def _cost_order(order: Order) -> CostOrder:
-    return CostOrder(
+def _cost_order(order: OldOrder) -> Order:
+    return Order(
         unit_count=order.unit_count,
         tax_rate=order.economy.tax_rate,
         markup=order.economy.markup,
@@ -41,12 +41,12 @@ def _cost_order(order: Order) -> CostOrder:
     )
 
 
-def _cost_printing(printing: Printing) -> CostPrinting:
+def _cost_printing(printing: Printing) -> Printing:
     edition = printing.edition
     production = printing.production
     lamination = Lamination[edition.lamination.name]
     film_rate = production.lamination_cost / 2
-    return CostPrinting(
+    return Printing(
         count=edition.count,
         chroma=Chroma[edition.chroma.name],
         lamination=lamination,

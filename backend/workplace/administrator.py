@@ -6,9 +6,7 @@ from backend.cost_reporter.calculators.sheet_calculator.item_placement_calculato
 from backend.models.list_size import ListSize
 from backend.models.press_sheet import PressSheet
 from backend.workplace.accountant.accountant import Accountant
-from backend.workplace.accountant.pricing.printing import \
-    PrintingCalculation
-from backend.workplace.cost_order import CostOrder
+from backend.workplace.cost_order import Order
 from backend.workplace.reports import CostReport, PrintingCase
 from backend.workplace.workplaces.cutting.cutting import CuttingWorkplace
 from backend.workplace.workplaces.die_cutting.die_cutting import \
@@ -31,7 +29,7 @@ class Administrator:
         self.die_cutting = DieCuttingWorkplace()
         self.accountant = Accountant()
 
-    def report_cost(self, order: CostOrder) -> CostReport:
+    def report_cost(self, order: Order) -> CostReport:
         """Считает стоимость заказа в памяти.
 
         Предусловие: данные, которые fit_order считает без деления на ноль.

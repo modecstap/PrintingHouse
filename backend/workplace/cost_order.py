@@ -19,7 +19,7 @@ class List:
     bleeds: int
 
 @dataclass(frozen=True)
-class CostPrinting:
+class Printing:
     count: int
     chroma: Chroma
     lamination: Lamination
@@ -35,9 +35,9 @@ class CostPrinting:
 
 
 @dataclass(frozen=True)
-class CostOrder:
+class Order:
     unit_count: int
     tax_rate: Decimal
     markup: Decimal
     operation_costs: tuple[Decimal, ...]
-    printings: tuple[CostPrinting, ...]
+    printings: tuple[Printing, ...]
