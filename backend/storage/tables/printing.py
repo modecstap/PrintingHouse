@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, Date, text, Sequence, ForeignKey, Enum, String
+from sqlalchemy import Column, BigInteger, Date, ForeignKey, Enum, String, Identity
 from sqlalchemy.orm import relationship
 
 from backend.models.status import Status
@@ -14,9 +14,8 @@ class PrintingEntity(Base):
 
     id = Column(
         BigInteger,
-        Sequence('order_id_seq', start=1, increment=1),
+        Identity(start=1),
         primary_key=True,
-        server_default=text("nextval('order_id_seq')")
     )
     order_id = Column(ForeignKey('order.id', onupdate="CASCADE", ondelete="CASCADE"))
     production_id = Column(ForeignKey('production.id', onupdate="CASCADE", ondelete="CASCADE"))

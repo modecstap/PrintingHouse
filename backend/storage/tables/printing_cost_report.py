@@ -13,9 +13,9 @@ class PrintingCostReportEntity(Base):
 
     id = Column(
         BigInteger,
-        Sequence('cost_report_id_seq', start=1, increment=1),
+        Sequence('printing_cost_report_id_seq', start=1, increment=1),
         primary_key=True,
-        server_default=text("nextval('cost_report_id_seq')")
+        server_default=text("nextval('printing_cost_report_id_seq')")
     )
     order_cost_report_id = Column(ForeignKey('order_cost_report.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
     items_per_sheet = Column(Integer, nullable=False)

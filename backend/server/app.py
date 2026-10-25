@@ -6,8 +6,8 @@ from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
 
 # Репозитории маршрутов вызывают Database(None) и берут синглтон.
-# Раньше его создавал create_db до сборки сервера. Импорт app теперь
-# раньше create_db, поэтому синглтон собирается здесь из тех же env.
+# Синглтон собирается здесь из env. main перед serve только ждёт
+# соединение и таблицы не создаёт.
 Database(DBConfig.from_env())
 
 from backend.server.auth.routes import router as auth_router

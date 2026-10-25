@@ -1,5 +1,6 @@
 import time
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
@@ -31,6 +32,21 @@ class Database(metaclass=Singleton):
     def create_connection(self):
         self.async_engine = create_async_engine(self.db_url)
         self.async_session_maker = sessionmaker(self.async_engine, expire_on_commit=False, class_=AsyncSession)
+
+    async def wait_for_connection(self) -> None:
+        """Ждёт, пока база примет соединение.
+
+        Побочные эффекты: при ошибке пишет её в stdout и повторяет
+        попытку через 10 секунд. Таблицы не создаёт.
+        """
+        while True:
+            try:
+                async with self.async_engine.connect() as connection:
+                    await connection.execute(text("SELECT 1"))
+                return
+            except Exception as error:
+                print(f"error connect to DB: {str(error)}")
+                time.sleep(10)
 
     async def create_all(self):
         while not self._is_connection:

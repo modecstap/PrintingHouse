@@ -8,13 +8,13 @@ from backend.storage.db_config import DBConfig
 
 
 async def main():
-    await create_db()
+    await wait_for_database()
     await start_server()
 
 
-async def create_db():
+async def wait_for_database():
     config = DBConfig.from_env()
-    await Database(config).create_all()
+    await Database(config).wait_for_connection()
 
 
 async def start_server():

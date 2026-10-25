@@ -113,6 +113,43 @@ def upgrade() -> None:
         ),
         sa.UniqueConstraint("cost_report_id", "position"),
     )
+    op.execute(sa.text(
+        """ALTER TABLE \"order\" ALTER COLUMN id SET DEFAULT nextval('order_id_seq')"""
+    ))
+    # На заполненной базе счётчик может отставать от max(id); двигать его только вперёд. setval не откатывается вместе с транзакцией Alembic. Повтор блока этого не портит: после продвижения следующее значение уже больше максимума, и второй проход ничего не меняет.
+    _advance_lagging_sequence("order_id_seq", '"order"')
+    _advance_lagging_sequence("printing_id_seq", "printing")
+    _advance_lagging_sequence("printing_cost_report_id_seq", "printing_cost_report")
+
+
+def _advance_lagging_sequence(sequence_name: str, table_name: str) -> None:
+    op.execute(sa.text(
+        f"""
+        DO $$
+        DECLARE
+            max_id bigint;
+            seq_last bigint;
+            seq_called boolean;
+            next_value bigint;
+        BEGIN
+            SELECT MAX(id) INTO max_id FROM {table_name};
+            IF max_id IS NULL THEN
+                RETURN;
+            END IF;
+            SELECT last_value, is_called
+                INTO seq_last, seq_called
+            FROM {sequence_name};
+            IF seq_called THEN
+                next_value := seq_last + 1;
+            ELSE
+                next_value := seq_last;
+            END IF;
+            IF next_value <= max_id THEN
+                PERFORM setval('{sequence_name}', max_id, true);
+            END IF;
+        END $$;
+        """
+    ))
 
 
 def downgrade() -> None:
