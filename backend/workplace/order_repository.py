@@ -5,11 +5,21 @@ from backend.workplace.reports import CostReport
 
 OrderId = int
 
+StoreOperation = Literal[
+    "save",
+    "take",
+    "attach",
+    "reports",
+    "delete",
+    "take_all",
+    "save_with_report",
+]
+
 
 class OrderNotFound(Exception):
     def __init__(
         self,
-        operation: Literal["save", "take", "attach", "reports"],
+        operation: StoreOperation,
         order_id: OrderId,
     ) -> None:
         """Сообщает, что заказа с этим id нет.
@@ -22,7 +32,7 @@ class OrderNotFound(Exception):
 class OrderStoreUnavailable(Exception):
     def __init__(
         self,
-        operation: Literal["save", "take", "attach", "reports"],
+        operation: StoreOperation,
         order_id: OrderId | None,
     ) -> None:
         """Сообщает, что нет соединения с базой.
@@ -84,5 +94,45 @@ class WorkplaceOrderRepository(Protocol):
         Иначе отчёты в порядке успешных attach, с самого раннего.
         Ошибки: OrderNotFound, если заказа нет.
         OrderStoreUnavailable, если нет соединения с базой.
+        """
+        ...
+
+    def take_all(self) -> list[Order]:
+        """Возвращает все строки workplace_order, без CostReport.
+
+        Результат: каждая строка один раз, по убыванию id.
+        Строк нет: пустой список. Заказы таблицы order не читаются.
+        Ошибки: OrderStoreUnavailable, если нет соединения с базой.
+        OrderNotFound не бросает.
+        """
+        ...
+
+    def delete(self, order_id: OrderId) -> None:
+        """Удаляет этот заказ.
+
+        Результат: ничего не возвращает.
+        Побочные эффекты: строки расчёта и отчёты уходят каскадом
+        базы.
+        Ошибки: OrderNotFound, если заказа нет, база не меняется.
+        OrderStoreUnavailable, если нет соединения с базой.
+        """
+        ...
+
+    def save_with_report(
+        self, order: Order, report: CostReport
+    ) -> OrderId:
+        """Сохраняет заказ и дописывает отчёт в одной транзакции.
+
+        Результат: id сохранённого заказа. Пустой id вставляет
+        заказ, и id назначает база. Существующий id обновляет
+        эту строку и возвращается тем же.
+        Побочные эффекты: уже прикреплённые отчёты остаются,
+        новый становится последним. Переданный Order не меняется.
+        Любая ошибка внутри транзакции откатывает и заказ, и отчёт
+        этого вызова.
+        Ошибки: OrderNotFound, если заданный id без строки:
+        новая строка не появляется, отчёт не пишется. Текст
+        собирает save. OrderStoreUnavailable, если нет соединения
+        с базой.
         """
         ...

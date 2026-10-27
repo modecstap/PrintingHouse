@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Literal, TypeVar
+from typing import TypeVar
 
 from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
@@ -11,6 +11,7 @@ from backend.workplace.order_repository import (
     OrderId,
     OrderNotFound,
     OrderStoreUnavailable,
+    StoreOperation,
     WorkplaceOrderRepository,
 )
 from backend.workplace.reports import CostReport
@@ -94,9 +95,63 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
             lambda session: self._reports(session, order_id),
         )
 
+    def take_all(self) -> list[Order]:
+        """Возвращает все строки workplace_order, без CostReport.
+
+        Результат: каждая строка один раз, по убыванию id.
+        Строк нет: пустой список. Заказы таблицы order не читаются.
+        Ошибки: OrderStoreUnavailable, если нет соединения с базой.
+        OrderNotFound не бросает.
+        """
+        return self._call(
+            "take_all",
+            None,
+            lambda session: self._take_all(session),
+        )
+
+    def delete(self, order_id: OrderId) -> None:
+        """Удаляет этот заказ.
+
+        Результат: ничего не возвращает.
+        Побочные эффекты: строки расчёта и отчёты уходят каскадом
+        базы.
+        Ошибки: OrderNotFound, если заказа нет, база не меняется.
+        OrderStoreUnavailable, если нет соединения с базой.
+        """
+        self._call(
+            "delete",
+            order_id,
+            lambda session: self._delete(session, order_id),
+        )
+
+    def save_with_report(
+        self, order: Order, report: CostReport
+    ) -> OrderId:
+        """Сохраняет заказ и дописывает отчёт в одной транзакции.
+
+        Результат: id сохранённого заказа. Пустой id вставляет
+        заказ, и id назначает база. Существующий id обновляет
+        эту строку и возвращается тем же.
+        Побочные эффекты: уже прикреплённые отчёты остаются,
+        новый становится последним. Переданный Order не меняется.
+        Любая ошибка внутри транзакции откатывает и заказ, и отчёт
+        этого вызова.
+        Ошибки: OrderNotFound, если заданный id без строки:
+        новая строка не появляется, отчёт не пишется. Текст
+        собирает save. OrderStoreUnavailable, если нет соединения
+        с базой.
+        """
+        return self._call(
+            "save_with_report",
+            order.id,
+            lambda session: self._save_with_report(
+                session, order, report
+            ),
+        )
+
     def _call(
         self,
-        operation: Literal["save", "take", "attach", "reports"],
+        operation: StoreOperation,
         order_id: int | None,
         action: Callable[[Session], _T],
     ) -> _T:
@@ -147,3 +202,26 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         if row is None:
             raise OrderNotFound("reports", order_id)
         return read_reports(session, order_id)
+
+    def _take_all(self, session: Session) -> list[Order]:
+        rows = session.scalars(
+            select(WorkplaceOrderRow).order_by(
+                WorkplaceOrderRow.id.desc()
+            )
+        ).all()
+        return [read_order(session, row) for row in rows]
+
+    def _delete(self, session: Session, order_id: OrderId) -> None:
+        row = session.get(
+            WorkplaceOrderRow, order_id, with_for_update=True
+        )
+        if row is None:
+            raise OrderNotFound("delete", order_id)
+        session.delete(row)
+
+    def _save_with_report(
+        self, session: Session, order: Order, report: CostReport
+    ) -> OrderId:
+        order_id = self._save(session, order)
+        self._attach(session, report, order_id)
+        return order_id
