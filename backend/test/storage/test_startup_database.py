@@ -67,7 +67,7 @@ def test_main_waits_for_the_database_and_does_not_create_tables() -> None:
 
     database = Database(DBConfig.from_env())
     assert database.async_engine.pool.checkedout() == 0
-    assert database.async_engine.pool.checkedin() == 0
+    idle_connections = database.async_engine.pool.checkedin()
     called = {"wait": 0, "serve": 0, "create_all": 0}
 
     async def wait(self) -> None:
@@ -86,3 +86,5 @@ def test_main_waits_for_the_database_and_does_not_create_tables() -> None:
     ):
         asyncio.run(main.main())
     assert called == {"wait": 1, "serve": 1, "create_all": 0}
+    assert database.async_engine.pool.checkedout() == 0
+    assert database.async_engine.pool.checkedin() == idle_connections

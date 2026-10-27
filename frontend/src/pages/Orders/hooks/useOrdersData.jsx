@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   fetchOrdersApi,
   updateOrderStatusApi,
@@ -9,6 +9,8 @@ export const useOrdersData = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const ordersRef = useRef(orders);
+  ordersRef.current = orders;
 
   const load = useCallback(async (signal) => {
     try {
@@ -27,7 +29,7 @@ export const useOrdersData = () => {
   }, []);
 
   const updateStatus = async (id, status) => {
-    const prev = orders;
+    const prev = ordersRef.current;
 
     setOrders((o) =>
       o.map((item) => (item.id === id ? { ...item, status } : item))
@@ -42,7 +44,7 @@ export const useOrdersData = () => {
   };
 
   const remove = async (id) => {
-    const prev = orders;
+    const prev = ordersRef.current;
 
     setOrders((o) => o.filter((item) => item.id !== id));
 
