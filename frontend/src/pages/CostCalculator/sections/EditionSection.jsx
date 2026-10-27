@@ -21,7 +21,7 @@ export default function EditionSection({
     delay,
     accept,
     update,
-  } = useEdition(formData);
+  } = useEdition(formData, setFormData);
 
   return (
     <section className={styles.calculatorContainer}>

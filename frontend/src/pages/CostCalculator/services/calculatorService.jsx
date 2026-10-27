@@ -1,51 +1,45 @@
 import { BackendIP } from "../../../constants/BackendIP";
+import { toWorkplaceOrder } from "../../../lib/workplaceOrder";
+
+function jsonHeaders() {
+  const token = localStorage.getItem("access_token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+function postOrder(path, formData) {
+  return fetch(`${BackendIP}${path}`, {
+    method: "POST",
+    body: JSON.stringify(toWorkplaceOrder(formData)),
+    headers: jsonHeaders(),
+  });
+}
 
 export const calculatorService = {
-  async getProductionReference() {
+  async getProductionReference(signal) {
     const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BackendIP}/api/reference/production`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const res = await fetch(`${BackendIP}/api/v2/reference/`, {
+      signal,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     return res;
   },
 
-  async calculate(formData) {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BackendIP}/api/order/cost_report`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    });
-
-    return res;
+  calculate(formData) {
+    return postOrder("/api/v2/order/cost_report", formData);
   },
 
-  async delay(formData) {
-    const token = localStorage.getItem("access_token");
-    await fetch(`${BackendIP}/api/order/delay`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    });
+  delay(formData) {
+    return postOrder("/api/v2/order/delay", formData);
   },
 
-  async accept(formData) {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BackendIP}/api/order/accept`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    });
-
-    return res;
+  accept(formData) {
+    return postOrder("/api/v2/order/accept", formData);
   },
 
-  async update(formData) {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BackendIP}/api/order/${formData.id}`, {
-      method: "PUT",
-      body: JSON.stringify(formData),
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    });
-
-    return res;
+  update(formData) {
+    return postOrder("/api/v2/order/", formData);
   },
 };

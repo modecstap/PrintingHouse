@@ -1,5 +1,4 @@
 export const INITIAL_DATA = {
-    creation_date: new Date().toISOString(),
     comment: "",
     unit_count: 1,
     printings: [

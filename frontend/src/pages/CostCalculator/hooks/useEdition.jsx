@@ -4,17 +4,32 @@ import { buildHiddenRows } from "../utils/reportBuilder";
 import { formatPrice } from "../utils/formatters";
 
 const formatError = (err) => {
-  if (!err?.detail) {
-    return [err?.message || "Неизвестная ошибка"];
+  const detail = err?.detail;
+
+  if (typeof detail === "string") return detail;
+
+  if (Array.isArray(detail)) {
+    return detail.map((e) => ({
+      path: e.loc.join(" → "),
+      message: e.msg,
+    }));
   }
 
-  return err.detail.map((e) => ({
-    path: e.loc.join(" → "),
-    message: e.msg,
-  }));
+  return err?.message || "Неизвестная ошибка";
 };
 
-export const useEdition = (formData) => {
+const readError = async (res) => {
+  const text = await res.text();
+  if (!text) return "Неизвестная ошибка";
+
+  try {
+    return formatError(JSON.parse(text));
+  } catch {
+    return text;
+  }
+};
+
+export const useEdition = (formData, setFormData) => {
   const UNIT_FIELDS = [
     {
       label: "Количество изделий",
@@ -63,8 +78,7 @@ export const useEdition = (formData) => {
 
       console.log(res);
       if (!res.ok) {
-        const errData = await res.json();
-        setError(formatError(errData));
+        setError(await readError(res));
         return;
       }
 
@@ -80,42 +94,51 @@ export const useEdition = (formData) => {
   };
 
   const delay = async () => {
+    setError(null);
+
     try {
       const res = await calculatorService.delay(formData);
 
       if (!res.ok) {
-        const errData = await res.json();
-        setError(formatError(errData));
+        setError(await readError(res));
+        return;
       }
+
+      const data = await res.json();
+      setFormData((prev) => ({ ...prev, id: data.id }));
     } catch {
       setError("Ошибка сети или сервера");
     }
   };
 
   const accept = async () => {
+    setError(null);
+
     try {
       const res = await calculatorService.accept(formData);
 
       if (!res.ok) {
-        const errData = await res.json();
-        setError(formatError(errData));
+        setError(await readError(res));
         return;
       }
 
-      const blob = await res.blob();
-      return blob;
+      const data = await res.json();
+      setFormData((prev) => ({ ...prev, id: data.id }));
+      setHiddenRows(buildHiddenRows(data.cost_report));
+      setReport(data.cost_report);
     } catch {
       setError("Ошибка сети или сервера");
     }
   };
 
   const update = async () => {
+    setError(null);
+
     try {
       const res = await calculatorService.update(formData);
 
       if (!res.ok) {
-        const errData = await res.json();
-        setError(formatError(errData));
+        setError(await readError(res));
       }
     } catch {
       setError("Ошибка сети или сервера");

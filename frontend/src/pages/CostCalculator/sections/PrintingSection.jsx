@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { BackendIP } from "../../../constants/BackendIP";
 import FlexForm from "../../../features/Form/FlexForm";
 import AdvancedSection from "../components/AdvancedSection";
+import { referenceProduction } from "../../../lib/workplaceOrder";
+import { calculatorService } from "../services/calculatorService";
 
 import styles from "../CostCalculator.module.css";
 
@@ -89,9 +90,13 @@ const secondPrintingFields = (index) => [
 
 const printingHiddenFields = (index) => [
   { label: "Вылеты (мм)", path: `printings[${index}].edition.list_size.bleeds` },
+  { label: "Стоимость голубой краски (руб./лист)", path: `printings[${index}].production.cyan`, step: 0.01 },
+  { label: "Стоимость пурпурной краски (руб./лист)", path: `printings[${index}].production.magenta`, step: 0.01 },
+  { label: "Стоимость жёлтой краски (руб./лист)", path: `printings[${index}].production.yellow`, step: 0.01 },
   { label: "Стоимость чёрной краски (руб./лист)", path: `printings[${index}].production.black_ink_cost`, step: 0.01 },
-  { label: "Стоимость всех красок (руб./лист)", path: `printings[${index}].production.ink_cost`, step: 0.01 },
-  { label: "Цена ламинации (руб./лист)", path: `printings[${index}].production.lamination_cost`, step: 0.01 },
+  { label: "Запуск ламинации (руб.)", path: `printings[${index}].production.lamination_startup`, step: 0.01 },
+  { label: "Цена плёнки (руб.)", path: `printings[${index}].production.film_cost`, step: 0.01 },
+  { label: "Зарплата за ламинацию (руб.)", path: `printings[${index}].production.lamination_salary`, step: 0.01 },
   { label: "Стоимость высечки (руб./лист)", path: `printings[${index}].production.die_cutting_cost`, step: 0.01 },
   { label: "Стоимость бумаги (руб./кг)", path: `printings[${index}].production.paper_cost`, step: 0.01 },
   { label: "Высота печатного листа (мм)", path: `printings[${index}].production.press_sheet.height` },
@@ -102,6 +107,24 @@ const printingHiddenFields = (index) => [
   { label: "Цена 1 реза (руб.)", path: `printings[${index}].production.cutting_cost`, step: 0.01 },
   { label: "Зарплата печатнику за 1 лист (руб.)", path: `printings[${index}].production.printer_salary`, step: 0.01 },
 ];
+
+function hasProduction(production) {
+  return production != null && Object.keys(production).length > 0;
+}
+
+async function referenceFailureText(res) {
+  const text = await res.text();
+  if (!text) return "Не удалось загрузить справочник";
+
+  try {
+    const data = JSON.parse(text);
+    if (typeof data?.detail === "string") return data.detail;
+  } catch {
+    return text;
+  }
+
+  return "Не удалось загрузить справочник";
+}
 
 const newPrinting = () => ({
   edition: {
@@ -122,7 +145,8 @@ export default function PrintingSection({ formData, setFormData }) {
     formData.printings.map(() => false)
   );
 
-  const [productionRef, setProductionRef] = useState(null);
+  const [referenceRates, setReferenceRates] = useState(null);
+  const [referenceError, setReferenceError] = useState(null);
 
   // ✅ Установка формата листа
   const setPaperSize = (index, size) => {
@@ -147,32 +171,47 @@ export default function PrintingSection({ formData, setFormData }) {
     });
   };
 
-  // Загружаем reference один раз
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    fetch(`${BackendIP}/api/reference/production`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then(res => res.json())
-      .then(data => {
-        setProductionRef(data);
+    const controller = new AbortController();
 
-        setFormData(prev => ({
+    calculatorService
+      .getProductionReference(controller.signal)
+      .then(async (res) => {
+        if (controller.signal.aborted) return;
+
+        if (!res.ok) {
+          setReferenceError(await referenceFailureText(res));
+          return;
+        }
+
+        const order = await res.json();
+        if (controller.signal.aborted) return;
+
+        const rates = referenceProduction(order);
+        setReferenceRates(rates);
+        setFormData((prev) => ({
           ...prev,
-          printings: prev.printings.map(p => ({
-            ...p,
-            production:
-              p.production && Object.keys(p.production).length > 0
-                ? p.production
-                : data,
+          printings: prev.printings.map((printing) => ({
+            ...printing,
+            production: hasProduction(printing.production)
+              ? printing.production
+              : rates,
           })),
         }));
+      })
+      .catch((error) => {
+        if (error?.name === "AbortError") return;
+        setReferenceError(error?.message || "Не удалось загрузить справочник");
       });
-  }, []);
+
+    return () => controller.abort();
+  }, [setFormData]);
 
   const addPrinting = () => {
-    const newP = {
-      ...newPrinting(),
-      production: productionRef || {},
-    };
+    const newP = newPrinting();
+    if (referenceRates) {
+      newP.production = referenceRates;
+    }
 
     setFormData(d => ({
       ...d,
@@ -194,6 +233,8 @@ export default function PrintingSection({ formData, setFormData }) {
   return (
     <section className={styles.calculatorContainer} style={{ marginTop: 0 }}>
       <h2>Параметры печати</h2>
+
+      {referenceError && <div className="error">{referenceError}</div>}
 
       {formData.printings.map((_, i) => (
         <div key={i}>

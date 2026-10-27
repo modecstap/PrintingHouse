@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import DataTable from "../../features/Table/DataTable";
+import DataTable from "../../features/Table/dataTable";
 import StatusModal from "./modals/StatusModal";
 import Modal from "../../features/Modal/Modal";
 import CostCalculator from "../CostCalculator/CostCalculator"
