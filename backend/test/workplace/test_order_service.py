@@ -8,7 +8,7 @@ from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
 
 from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import Order, Status
+from backend.workplace.cost_order import Operation, Order, Status
 from backend.workplace.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
@@ -46,7 +46,7 @@ _Bundle = tuple[
 def _order(
     *,
     unit_count: int = 1,
-    operation_costs: tuple[Decimal, ...] = (),
+    operations: tuple[Operation, ...] = (),
     order_id: int | None = None,
     comment: str = "",
     status: Status = Status.SAVED,
@@ -55,7 +55,7 @@ def _order(
         unit_count=unit_count,
         tax_rate=Decimal("1"),
         markup=Decimal("0"),
-        operation_costs=operation_costs,
+        operations=operations,
         printings=(),
         id=order_id,
         comment=comment,
@@ -71,7 +71,7 @@ def _operation_order(
 ) -> Order:
     return _order(
         unit_count=2,
-        operation_costs=(Decimal("3"),),
+        operations=(Operation("", Decimal("3"), ""),),
         order_id=order_id,
         comment=comment,
         status=status,
@@ -172,7 +172,7 @@ def test_should_save_a_new_order_and_return_its_id(
     assert taken.comment == "заметка"
     assert taken.status is Status.DONE
     assert taken.unit_count == 1
-    assert taken.operation_costs == ()
+    assert taken.operations == ()
     assert orders.reports(order_id) == []
 
 
@@ -228,7 +228,7 @@ def test_should_return_one_saved_order_from_take(
     assert taken.unit_count == order.unit_count
     assert taken.tax_rate == order.tax_rate
     assert taken.markup == order.markup
-    assert taken.operation_costs == ()
+    assert taken.operations == ()
     assert taken.printings == ()
     assert orders.reports(order_id) == []
 
@@ -442,14 +442,14 @@ def test_should_change_only_the_status(workplace: _Bundle) -> None:
     saved_ids.append(order_id)
     assert order == held
     assert report == _OPERATION_REPORT
-    stored_costs = order.operation_costs
+    stored_costs = order.operations
     stored_comment = order.comment
     stored_reports = orders.reports(order_id)
     assert stored_reports == [_OPERATION_REPORT]
     service.change_status(order_id, Status.DONE)
     taken = service.take(order_id)
     assert taken.status is Status.DONE
-    assert taken.operation_costs == stored_costs
+    assert taken.operations == stored_costs
     assert taken.comment == stored_comment
     assert taken.unit_count == 2
     assert orders.reports(order_id) == stored_reports
@@ -515,7 +515,7 @@ def test_should_keep_both_reports_when_two_accepts_run_together(
     assert taken.unit_count == 1
     assert taken.tax_rate == Decimal("1")
     assert taken.markup == Decimal("0")
-    assert taken.operation_costs == ()
+    assert taken.operations == ()
     assert taken.printings == ()
 
 

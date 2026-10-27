@@ -94,7 +94,7 @@ class Administrator:
             )
         return self.accountant.calculate(
             cases,
-            order.operation_costs,
+            tuple(operation.cost for operation in order.operations),
             order.tax_rate,
             order.markup,
             order.unit_count,

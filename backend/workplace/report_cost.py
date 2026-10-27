@@ -12,8 +12,13 @@ from backend.workplace.accountant.pricing.lamination import \
 from backend.workplace.accountant.pricing.printing import \
     PrintingCalculation
 from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import Order, Printing, PressSheet, \
-    List
+from backend.workplace.cost_order import (
+    List,
+    Operation as WorkplaceOperation,
+    Order,
+    Printing,
+    PressSheet,
+)
 from backend.workplace.accountant.money import Money
 from backend.workplace.reports import CostReport
 from backend.workplace.workplaces.lamination.models import Lamination
@@ -36,7 +41,10 @@ def _cost_order(order: OldOrder) -> Order:
         unit_count=order.unit_count,
         tax_rate=order.economy.tax_rate,
         markup=order.economy.markup,
-        operation_costs=tuple(operation.cost for operation in order.operations),
+        operations=tuple(
+            WorkplaceOperation(item.name, item.cost, item.description)
+            for item in order.operations
+        ),
         printings=tuple(_cost_printing(printing) for printing in order.printings),
     )
 

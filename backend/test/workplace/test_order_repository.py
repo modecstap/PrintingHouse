@@ -2,6 +2,7 @@ import re
 import threading
 from collections.abc import Callable, Iterator
 from dataclasses import fields
+from datetime import date
 from decimal import Decimal
 
 import pytest
@@ -17,7 +18,13 @@ from backend.workplace.accountant.pricing.lamination import (
     LaminationCalculation,
 )
 from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import List, Order, Printing, Status
+from backend.workplace.cost_order import (
+    List,
+    Operation,
+    Order,
+    Printing,
+    Status,
+)
 from backend.workplace.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
@@ -50,6 +57,7 @@ def _printing(
     cut: Decimal,
     lamination_rates: tuple[Decimal, Decimal, Decimal],
     die_cut: Decimal,
+    comment: str = "",
 ) -> Printing:
     startup, film_cost, salary = lamination_rates
     return Printing(
@@ -76,6 +84,7 @@ def _printing(
             _money(salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(die_cut)),
+        comment=comment,
     )
 
 
@@ -101,6 +110,7 @@ def _full_order() -> Order:
         Decimal("7.70"),
         (Decimal("200"), Decimal("8.80"), Decimal("9.90")),
         Decimal("10.10"),
+        comment="кромка",
     )
     second = _printing(
         1,
@@ -120,7 +130,10 @@ def _full_order() -> Order:
         unit_count=12,
         tax_rate=Decimal("0.93"),
         markup=Decimal("20"),
-        operation_costs=(Decimal("10.5"), Decimal("-1.25")),
+        operations=(
+            Operation("", Decimal("10.5"), ""),
+            Operation("", Decimal("-1.25"), ""),
+        ),
         printings=(first, second),
         comment="а" * 501,
         status=Status.IN_WORK,
@@ -132,7 +145,7 @@ def _bare_order(order_id: int | None = None) -> Order:
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
-        operation_costs=(),
+        operations=(),
         printings=(),
         id=order_id,
     )
@@ -145,7 +158,7 @@ def _sized_order(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
-        operation_costs=(),
+        operations=(),
         printings=printings,
         id=order_id,
         comment=comment,
@@ -259,6 +272,7 @@ def _assert_printing(taken: Printing, original: Printing) -> None:
     salary = taken.lamination_pricing.salary
     assert salary == original.lamination_pricing.salary
     assert taken.die_cut_pricing.salary == original.die_cut_pricing.salary
+    assert taken.comment == original.comment
 
 
 def _assert_full_order(
@@ -268,7 +282,7 @@ def _assert_full_order(
     assert taken.unit_count == original.unit_count
     assert taken.tax_rate == original.tax_rate
     assert taken.markup == original.markup
-    assert taken.operation_costs == original.operation_costs
+    assert taken.operations == original.operations
     assert taken.comment == original.comment
     assert len(taken.comment) == 501
     assert taken.status is original.status
@@ -315,7 +329,7 @@ def test_order_without_identity_starts_unsaved() -> None:
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
-        operation_costs=(),
+        operations=(),
         printings=(),
     )
     assert order.id is None
@@ -325,11 +339,12 @@ def test_order_without_identity_starts_unsaved() -> None:
         "unit_count",
         "tax_rate",
         "markup",
-        "operation_costs",
+        "operations",
         "printings",
         "id",
         "comment",
         "status",
+        "creation_date",
     }
 
 
@@ -377,7 +392,7 @@ def test_empty_collections_round_trip(
     store, saved_ids = repository
     order_id = _save(store, saved_ids, _bare_order())
     taken = store.take(order_id)
-    assert taken.operation_costs == ()
+    assert taken.operations == ()
     assert taken.printings == ()
     assert taken.comment == ""
     assert taken.status is Status.SAVED
@@ -400,6 +415,7 @@ def test_second_save_replaces_order_and_keeps_reports(
 ) -> None:
     store, saved_ids = repository
     order_id = _save(store, saved_ids, _full_order())
+    created_on = store.take(order_id).creation_date
     report_a = _report_a()
     report_b = _report_b()
     store.attach(report_a, order_id)
@@ -408,7 +424,7 @@ def test_second_save_replaces_order_and_keeps_reports(
         unit_count=7,
         tax_rate=Decimal("1"),
         markup=Decimal("0"),
-        operation_costs=(),
+        operations=(),
         printings=(),
         id=order_id,
         comment="второй",
@@ -417,12 +433,14 @@ def test_second_save_replaces_order_and_keeps_reports(
     assert store.save(second) == order_id
     taken = store.take(order_id)
     assert taken.id == order_id
+    assert taken.creation_date == created_on
+    assert created_on == date.today()
     assert taken.comment == "второй"
     assert taken.status is Status.DONE
     assert taken.unit_count == 7
     assert taken.tax_rate == Decimal("1")
     assert taken.markup == Decimal("0")
-    assert taken.operation_costs == ()
+    assert taken.operations == ()
     assert taken.printings == ()
     assert store.reports(order_id) == [report_a, report_b]
 
@@ -468,7 +486,7 @@ def test_attach_keeps_report_when_printing_cost_count_differs(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
-        operation_costs=(),
+        operations=(),
         printings=(_full_order().printings[0],),
     )
     order_id = _save(store, saved_ids, order)
@@ -581,7 +599,7 @@ def test_unreachable_database_is_store_unavailable() -> None:
             unit_count=1,
             tax_rate=Decimal("0"),
             markup=Decimal("0"),
-            operation_costs=(),
+            operations=(),
             printings=(),
             comment="order-body-marker",
         )

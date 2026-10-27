@@ -2,6 +2,7 @@ import ast
 import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
+from decimal import Decimal
 from pathlib import Path
 
 from alembic import command
@@ -49,6 +50,7 @@ _WORKPLACE_TABLES = (
     "workplace_printing",
     "workplace_cost_report",
     "workplace_printing_cost",
+    "workplace_reference",
 )
 _EXPECTED_TABLES = {name.strip('"') for name in _OLD_TABLES}
 _EXPECTED_TABLES.update(_WORKPLACE_TABLES)
@@ -274,7 +276,7 @@ def test_should_create_the_production_schema_when_the_database_is_empty() -> Non
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            assert version == "733171f352dd"
+            assert version == "b6d4e2a81c05"
             assert _public_tables(connection) == _EXPECTED_TABLES
             assert _row_counts(connection, _OLD_TABLES) == {table: 0 for table in _OLD_TABLES}
             assert _next_value(connection, "order_id_seq") == 1
@@ -521,7 +523,7 @@ def test_should_not_move_sequences_or_delete_old_rows_when_the_workplace_revisio
                 _next_value(connection, "printing_cost_report_id_seq"),
             )
             counts = _row_counts(connection, _OLD_TABLES)
-        command.downgrade(config, "-1")
+        command.downgrade(config, "53a756fbc804")
         with engine.connect() as connection:
             names = _public_tables(connection)
             for name in _WORKPLACE_TABLES:
@@ -538,7 +540,74 @@ def test_should_not_move_sequences_or_delete_old_rows_when_the_workplace_revisio
             assert _row_counts(connection, _OLD_TABLES) == counts
 
 
-def test_versions_directory_keeps_only_the_baseline_and_the_workplace_revision() -> None:
+def test_should_fill_creation_date_and_empty_texts_when_old_workplace_rows_upgrade() -> None:
+    with _migration_database() as (config, engine):
+        command.upgrade(config, "733171f352dd")
+        with engine.begin() as connection:
+            order_id = connection.execute(text(
+                """
+                INSERT INTO workplace_order
+                    (comment, status, unit_count, tax_rate, markup)
+                VALUES ('старый', 'SAVED', 1, 0, 0)
+                RETURNING id
+                """
+            )).scalar_one()
+            connection.execute(text(
+                """
+                INSERT INTO workplace_operation_cost
+                    (order_id, position, amount)
+                VALUES (:order_id, 0, 10.5)
+                """
+            ), {"order_id": order_id})
+            connection.execute(text(
+                """
+                INSERT INTO workplace_printing (
+                    order_id, position, count, sheet_by_fitting,
+                    stack_height, press_sheet_density, press_sheet_width,
+                    press_sheet_height, press_sheet_spacing, list_width,
+                    list_height, list_bleeds, chroma, lamination,
+                    die_cutting, press_cyan, press_magenta, press_yellow,
+                    press_black, press_paper, press_salary, cut_salary,
+                    lamination_startup, lamination_film_cost,
+                    lamination_salary, die_cut_salary
+                ) VALUES (
+                    :order_id, 0, 1, 0,
+                    0, 80, 100,
+                    100, 0, 10,
+                    20, 0, 'ZERO_ZERO', 'DONT',
+                    false, 0, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0,
+                    0, 0
+                )
+                """
+            ), {"order_id": order_id})
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            same_day = connection.execute(text(
+                "SELECT creation_date = CURRENT_DATE "
+                "FROM workplace_order WHERE id = :id"
+            ), {"id": order_id}).scalar_one()
+            assert same_day is True
+            operation = connection.execute(text(
+                "SELECT name, description, amount "
+                "FROM workplace_operation_cost WHERE order_id = :id"
+            ), {"id": order_id}).one()
+            assert operation.name == ""
+            assert operation.description == ""
+            assert operation.amount == Decimal("10.5")
+            comment = connection.execute(text(
+                "SELECT comment FROM workplace_printing "
+                "WHERE order_id = :id"
+            ), {"id": order_id}).scalar_one()
+            assert comment == ""
+            reference_count = connection.execute(text(
+                "SELECT count(*) FROM workplace_reference"
+            )).scalar_one()
+            assert reference_count == 0
+
+
+def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields() -> None:
     paths = list(_VERSIONS.glob("*.py"))
     revisions: list[tuple[str, object]] = []
     for path in paths:
@@ -559,6 +628,7 @@ def test_versions_directory_keeps_only_the_baseline_and_the_workplace_revision()
             if target in {"revision", "down_revision"} and value is not None:
                 values[target] = ast.literal_eval(value)
         revisions.append((str(values["revision"]), values["down_revision"]))
-    assert len(paths) == 2
+    assert len(paths) == 3
     assert ("53a756fbc804", None) in revisions
     assert ("733171f352dd", "53a756fbc804") in revisions
+    assert ("b6d4e2a81c05", "733171f352dd") in revisions

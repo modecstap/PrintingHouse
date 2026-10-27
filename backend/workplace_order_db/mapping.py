@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import delete, select
@@ -12,7 +13,13 @@ from backend.workplace.accountant.pricing.lamination import (
     LaminationCalculation,
 )
 from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import List, Order, Printing, Status
+from backend.workplace.cost_order import (
+    List,
+    Operation,
+    Order,
+    Printing,
+    Status,
+)
 from backend.workplace.reports import CostReport, PrintingCost
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
@@ -34,6 +41,17 @@ def _as_decimal(value: object) -> Decimal:
 
 def _money(value: object) -> Money:
     return Money(_as_decimal(value))
+
+
+def _as_date(value: object) -> date:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    raise TypeError(
+        "creation_date: ожидается date, пришло "
+        f"{type(value).__name__}"
+    )
 
 
 def _fill_header(row: WorkplaceOrderRow, order: Order) -> None:
@@ -75,6 +93,7 @@ def _printing_row(order_id: int, position: int, printing: Printing) -> PrintingR
         lamination_film_cost=printing.lamination_pricing.film_cost.amount,
         lamination_salary=printing.lamination_pricing.salary.amount,
         die_cut_salary=printing.die_cut_pricing.salary.amount,
+        comment=printing.comment,
     )
 
 
@@ -83,12 +102,14 @@ def _replace_calculation(session: Session, order_id: int, order: Order) -> None:
         delete(OperationCostRow).where(OperationCostRow.order_id == order_id)
     )
     session.execute(delete(PrintingRow).where(PrintingRow.order_id == order_id))
-    for position, amount in enumerate(order.operation_costs):
+    for position, operation in enumerate(order.operations):
         session.add(
             OperationCostRow(
                 order_id=order_id,
                 position=position,
-                amount=amount,
+                amount=operation.cost,
+                name=operation.name,
+                description=operation.description,
             )
         )
     for position, printing in enumerate(order.printings):
@@ -126,6 +147,7 @@ def _printing_from_row(row: PrintingRow) -> Printing:
             _money(row.lamination_salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(row.die_cut_salary)),
+        comment=row.comment,
     )
 
 
@@ -160,11 +182,13 @@ def insert_order(session: Session, order: Order) -> int:
     """Вставляет шапку заказа и детей расчёта.
 
     Результат: id, который назначила база.
-    Побочные эффекты: строки CostReport не пишет.
+    Побочные эффекты: creation_date равен date.today() процесса.
+    order.creation_date не читается. Строки CostReport не пишет.
     Переданный Order не меняет.
     """
     row = WorkplaceOrderRow()
     _fill_header(row, order)
+    row.creation_date = date.today()
     session.add(row)
     session.flush()
     _replace_calculation(session, row.id, order)
@@ -177,9 +201,9 @@ def update_order(
     """Заменяет шапку и детей расчёта у существующей строки.
 
     Предусловия: row уже есть в базе.
-    Побочные эффекты: удаляет стоимости операций и печати этого
-    заказа и вставляет их заново. Строки CostReport не меняет.
-    Переданный Order не меняет.
+    Побочные эффекты: creation_date не меняет. Удаляет операции
+    и печати этого заказа и вставляет их заново. Строки CostReport
+    не меняет. Переданный Order не меняет.
     """
     _fill_header(row, order)
     _replace_calculation(session, row.id, order)
@@ -188,7 +212,8 @@ def update_order(
 def read_order(session: Session, row: WorkplaceOrderRow) -> Order:
     """Собирает заказ из шапки и детей расчёта.
 
-    Результат: новый Order с id строки. Отчёты рабочих мест
+    Результат: новый Order с id строки и creation_date колонки.
+    Если драйвер вернул datetime, берётся date. Отчёты рабочих мест
     к ставкам не прикрепляет. Список CostReport не читает.
     """
     costs = session.scalars(
@@ -205,11 +230,15 @@ def read_order(session: Session, row: WorkplaceOrderRow) -> Order:
         unit_count=row.unit_count,
         tax_rate=_as_decimal(row.tax_rate),
         markup=_as_decimal(row.markup),
-        operation_costs=tuple(_as_decimal(item.amount) for item in costs),
+        operations=tuple(
+            Operation(item.name, _as_decimal(item.amount), item.description)
+            for item in costs
+        ),
         printings=tuple(_printing_from_row(item) for item in printings),
         id=row.id,
         comment=row.comment,
         status=Status[row.status],
+        creation_date=_as_date(row.creation_date),
     )
 
 

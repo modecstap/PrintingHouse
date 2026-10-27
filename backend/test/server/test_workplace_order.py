@@ -1,4 +1,6 @@
+import re
 from collections.abc import Iterator
+from datetime import date
 from decimal import Decimal
 from typing import NamedTuple
 from uuid import uuid4
@@ -33,11 +35,12 @@ _ORDER_KEYS = {
     "unit_count",
     "tax_rate",
     "markup",
-    "operation_costs",
+    "operations",
     "printings",
     "id",
     "comment",
     "status",
+    "creation_date",
 }
 _PRINTING_KEYS = {
     "count",
@@ -52,7 +55,9 @@ _PRINTING_KEYS = {
     "cut_pricing",
     "lamination_pricing",
     "die_cut_pricing",
+    "comment",
 }
+_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _ZERO_REPORT = {
     "unit_cost_price": "0.00",
     "unit_cost": "0.00",
@@ -109,7 +114,7 @@ def _empty_order(**overrides: object) -> dict[str, object]:
         "unit_count": 1,
         "tax_rate": "1",
         "markup": "0",
-        "operation_costs": [],
+        "operations": [],
         "printings": [],
     }
     body.update(overrides)
@@ -119,7 +124,11 @@ def _empty_order(**overrides: object) -> dict[str, object]:
 def _operation_order(**overrides: object) -> dict[str, object]:
     return _empty_order(
         unit_count=2,
-        operation_costs=["3"],
+        operations=[{
+            "name": "рез",
+            "cost": "3",
+            "description": "кромка",
+        }],
         **overrides,
     )
 
@@ -137,6 +146,7 @@ def _printing(
     cut: str,
     film: dict[str, str],
     die_cut: str,
+    comment: str = "",
 ) -> dict[str, object]:
     return {
         "count": 2,
@@ -156,6 +166,7 @@ def _printing(
         "cut_pricing": {"salary": cut},
         "lamination_pricing": film,
         "die_cut_pricing": {"salary": die_cut},
+        "comment": comment,
     }
 
 
@@ -171,6 +182,7 @@ def _first_printing() -> dict[str, object]:
         cut="3",
         film={"startup": "4", "film_cost": "5", "salary": "6"},
         die_cut="7",
+        comment="кромка",
     )
 
 
@@ -295,6 +307,8 @@ def _assert_printing(
         actual["die_cut_pricing"]["salary"],
         expected["die_cut_pricing"]["salary"],
     )
+    assert type(actual["comment"]) is str
+    assert actual["comment"] == expected["comment"]
 
 
 @pytest.fixture(scope="module")
@@ -364,7 +378,8 @@ def test_should_create_an_order_and_return_only_its_id(api: _Api) -> None:
     assert type(body["markup"]) is str
     assert Decimal(body["tax_rate"]) == Decimal("1")
     assert Decimal(body["markup"]) == Decimal("0")
-    assert body["operation_costs"] == []
+    assert body["operations"] == []
+    assert body["creation_date"] == date.today().isoformat()
     assert body["printings"] == []
     assert _reports(api, order_id) == []
 
@@ -375,6 +390,9 @@ def test_should_update_the_same_order_without_a_report(api: _Api) -> None:
         "/api/v2/order/", headers=headers, json=_empty_order()
     )
     order_id = _remember(api, created)
+    created_on = api.client.get(
+        f"/api/v2/order/{order_id}", headers=headers
+    ).json()["creation_date"]
     reports_before = _count_rows(api.engine, "workplace_cost_report")
     updated = api.client.post(
         "/api/v2/order/",
@@ -390,6 +408,7 @@ def test_should_update_the_same_order_without_a_report(api: _Api) -> None:
     )
     assert loaded.json()["comment"] == "стало"
     assert loaded.json()["status"] == "Завершён"
+    assert loaded.json()["creation_date"] == created_on
     assert _reports(api, order_id) == []
     assert (
         _count_rows(api.engine, "workplace_cost_report") == reports_before
@@ -458,6 +477,7 @@ def test_should_list_created_orders_by_descending_id(api: _Api) -> None:
     assert ids.index(max(first, second)) < ids.index(min(first, second))
     for item in body:
         assert "cost_report" not in item
+        assert _DATE.fullmatch(item["creation_date"])
 
 
 def test_should_return_an_empty_list_when_the_service_has_no_orders(
@@ -568,6 +588,10 @@ def test_should_accept_or_delay_and_append_the_report(
     order_id = body["id"]
     assert type(order_id) is int
     api.saved_ids.append(order_id)
+    rows_after_first = _count_rows(api.engine, "workplace_order")
+    created_on = api.client.get(
+        f"/api/v2/order/{order_id}", headers=headers
+    ).json()["creation_date"]
     second = api.client.post(
         path,
         headers=headers,
@@ -576,14 +600,19 @@ def test_should_accept_or_delay_and_append_the_report(
     assert second.status_code == 200
     assert second.json()["id"] == order_id
     assert second.json()["cost_report"] == _OPERATION_REPORT
+    assert _count_rows(api.engine, "workplace_order") == rows_after_first
     loaded = api.client.get(
         f"/api/v2/order/{order_id}", headers=headers
     ).json()
     assert loaded["status"] == status_text
     assert loaded["unit_count"] == 2
-    assert len(loaded["operation_costs"]) == 1
-    assert type(loaded["operation_costs"][0]) is str
-    assert Decimal(loaded["operation_costs"][0]) == Decimal("3")
+    assert loaded["creation_date"] == created_on
+    assert len(loaded["operations"]) == 1
+    operation = loaded["operations"][0]
+    assert operation["name"] == "рез"
+    assert type(operation["cost"]) is str
+    assert Decimal(operation["cost"]) == Decimal("3")
+    assert operation["description"] == "кромка"
     assert _reports(api, order_id) == [_ZERO_COST, _OPERATION_COST]
 
 
@@ -632,6 +661,9 @@ def test_should_change_only_the_status(api: _Api) -> None:
     )
     order_id = accepted.json()["id"]
     api.saved_ids.append(order_id)
+    created_on = api.client.get(
+        f"/api/v2/order/{order_id}", headers=headers
+    ).json()["creation_date"]
     changed = api.client.post(
         "/api/v2/order/status",
         headers=headers,
@@ -645,6 +677,7 @@ def test_should_change_only_the_status(api: _Api) -> None:
     assert loaded["status"] == "Завершён"
     assert loaded["comment"] == "заметка"
     assert loaded["unit_count"] == 2
+    assert loaded["creation_date"] == created_on
     assert _reports(api, order_id) == [_OPERATION_COST]
 
 
@@ -686,22 +719,44 @@ def test_should_refuse_to_change_status_of_an_unknown_id(api: _Api) -> None:
     assert _count_rows(api.engine, "workplace_order") == before
 
 
-def test_should_save_a_negative_operation_cost(api: _Api) -> None:
+def test_should_reject_a_negative_operation_cost(api: _Api) -> None:
+    headers = _token(api, "FULL")
+    before = _count_rows(api.engine, "workplace_order")
+    response = api.client.post(
+        "/api/v2/order/",
+        headers=headers,
+        json=_empty_order(operations=[{
+            "name": "",
+            "cost": "-1.25",
+            "description": "",
+        }]),
+    )
+    assert response.status_code == 500
+    assert _internal_error(response) == "Internal Server Error"
+    assert _count_rows(api.engine, "workplace_order") == before
+
+
+def test_should_save_a_zero_operation_cost(api: _Api) -> None:
     headers = _token(api, "FULL")
     order_id = _remember(
         api,
         api.client.post(
             "/api/v2/order/",
             headers=headers,
-            json=_empty_order(operation_costs=["-1.25"]),
+            json=_empty_order(operations=[{
+                "name": "",
+                "cost": "0",
+                "description": "",
+            }]),
         ),
     )
     loaded = api.client.get(
         f"/api/v2/order/{order_id}", headers=headers
     ).json()
-    assert len(loaded["operation_costs"]) == 1
-    assert type(loaded["operation_costs"][0]) is str
-    assert Decimal(loaded["operation_costs"][0]) == Decimal("-1.25")
+    assert len(loaded["operations"]) == 1
+    cost = loaded["operations"][0]["cost"]
+    assert type(cost) is str
+    assert Decimal(cost) == Decimal("0")
 
 
 def test_should_refuse_a_negative_money_rate(api: _Api) -> None:
@@ -756,6 +811,24 @@ def test_should_reject_a_decimal_sent_as_a_number(api: _Api) -> None:
         "/api/v2/order/",
         headers=headers,
         json=_empty_order(tax_rate=1),
+    )
+    assert response.status_code == 422
+    assert _count_rows(api.engine, "workplace_order") == before
+
+
+def test_should_reject_an_operation_cost_sent_as_a_number(
+    api: _Api,
+) -> None:
+    headers = _token(api, "FULL")
+    before = _count_rows(api.engine, "workplace_order")
+    response = api.client.post(
+        "/api/v2/order/",
+        headers=headers,
+        json=_empty_order(operations=[{
+            "name": "",
+            "cost": 3,
+            "description": "",
+        }]),
     )
     assert response.status_code == 422
     assert _count_rows(api.engine, "workplace_order") == before

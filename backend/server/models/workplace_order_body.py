@@ -1,9 +1,16 @@
 from collections.abc import Callable
+from datetime import date
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import Annotated, TypeVar
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, PlainSerializer
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    PlainSerializer,
+    model_serializer,
+)
 
 from backend.workplace.accountant.money import Money
 from backend.workplace.accountant.pricing.cutting import CuttingCalculation
@@ -14,7 +21,14 @@ from backend.workplace.accountant.pricing.lamination import (
     LaminationCalculation,
 )
 from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import List, Order, Printing, Status
+from backend.workplace.cost_order import (
+    List,
+    Operation,
+    Order,
+    Printing,
+    Status,
+)
+from backend.workplace.errors import InvalidPriceException
 from backend.workplace.reports import CostReport, PrintingCost
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
@@ -182,6 +196,15 @@ class WorkplacePrintingBody(BaseModel):
     cut_pricing: WorkplaceCutPricingBody
     lamination_pricing: WorkplaceLaminationPricingBody
     die_cut_pricing: WorkplaceDieCutPricingBody
+    comment: str = ""
+
+
+class WorkplaceOperationBody(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    cost: JsonDecimal
+    description: str
 
 
 class WorkplaceOrderBody(BaseModel):
@@ -190,11 +213,24 @@ class WorkplaceOrderBody(BaseModel):
     unit_count: StrictInt
     tax_rate: JsonDecimal
     markup: JsonDecimal
-    operation_costs: list[JsonDecimal]
+    operations: list[WorkplaceOperationBody]
     printings: list[WorkplacePrintingBody]
     id: OptionalOrderId = None
     comment: str = ""
     status: JsonStatus = Status.SAVED
+    creation_date: date | None = None
+
+    @model_serializer(mode="wrap", when_used="json")
+    def _omit_empty_creation_date(
+        self,
+        handler: Callable[["WorkplaceOrderBody"], dict[str, object]],
+    ) -> dict[str, object]:
+        # Ключ creation_date убирается только когда даты нет.
+        # id: null в этом же ответе остаётся.
+        data = handler(self)
+        if data.get("creation_date") is None:
+            data.pop("creation_date")
+        return data
 
 
 class WorkplacePrintingCostBody(BaseModel):
@@ -243,16 +279,27 @@ class WorkplaceStatusChangeBody(BaseModel):
 def order_from_body(body: WorkplaceOrderBody) -> Order:
     """Собирает заказ рабочего места из принятого тела.
 
-    Результат: Order с теми же данными расчёта, id, comment и status.
-    operation_costs остаётся кортежем Decimal. Каждая ставка — Money
+    Результат: Order с данными расчёта, id, comment и status.
+    creation_date у результата всегда None: дату ставит вставка.
+    operations — кортеж Operation. Каждая ставка печати — Money
     от Decimal этого поля.
-    Ошибки: InvalidPriceException, если ставка меньше нуля.
+    Ошибки: InvalidPriceException, если ставка меньше нуля
+    или стоимость операции меньше нуля. Ноль допустим.
     """
+    for item in body.operations:
+        if item.cost < 0:
+            raise InvalidPriceException(
+                "сборка заказа: операция "
+                f"{item.name!r} стоит {item.cost}, меньше нуля"
+            )
     return Order(
         unit_count=body.unit_count,
         tax_rate=body.tax_rate,
         markup=body.markup,
-        operation_costs=tuple(body.operation_costs),
+        operations=tuple(
+            Operation(item.name, item.cost, item.description)
+            for item in body.operations
+        ),
         printings=tuple(
             _printing_from_body(item) for item in body.printings
         ),
@@ -265,20 +312,30 @@ def order_from_body(body: WorkplaceOrderBody) -> Order:
 def body_from_order(order: Order) -> WorkplaceOrderBody:
     """Собирает тело заказа из заказа рабочего места.
 
-    Результат: те же поля. Порядок operation_costs и printings
-    сохраняется. Ставка в поле — amount, не объект Money.
+    Результат: те же поля. Порядок operations и printings
+    сохраняется. Стоимость операции и ставка в поле — Decimal,
+    не объект Money. creation_date копируется. Пустая дата
+    не попадает в JSON.
     """
     return WorkplaceOrderBody(
         unit_count=order.unit_count,
         tax_rate=order.tax_rate,
         markup=order.markup,
-        operation_costs=list(order.operation_costs),
+        operations=[
+            WorkplaceOperationBody(
+                name=item.name,
+                cost=item.cost,
+                description=item.description,
+            )
+            for item in order.operations
+        ],
         printings=[
             _body_from_printing(item) for item in order.printings
         ],
         id=order.id,
         comment=order.comment,
         status=order.status,
+        creation_date=order.creation_date,
     )
 
 
@@ -339,6 +396,7 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             Money(body.die_cut_pricing.salary)
         ),
+        comment=body.comment,
     )
 
 
@@ -384,6 +442,7 @@ def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
         die_cut_pricing=WorkplaceDieCutPricingBody(
             salary=printing.die_cut_pricing.salary.amount
         ),
+        comment=printing.comment,
     )
 
 

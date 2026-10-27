@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from enum import Enum
 
@@ -33,6 +34,7 @@ class Printing:
     cut_pricing: CuttingCalculation
     lamination_pricing: LaminationCalculation
     die_cut_pricing: DieCuttingCalculation
+    comment: str = ""
 
 
 class Status(Enum):
@@ -42,12 +44,20 @@ class Status(Enum):
 
 
 @dataclass(frozen=True)
+class Operation:
+    name: str
+    cost: Decimal
+    description: str
+
+
+@dataclass(frozen=True)
 class Order:
     unit_count: int
     tax_rate: Decimal
     markup: Decimal
-    operation_costs: tuple[Decimal, ...]
+    operations: tuple[Operation, ...]
     printings: tuple[Printing, ...]
     id: int | None = None
     comment: str = ""
     status: Status = Status.SAVED
+    creation_date: date | None = None

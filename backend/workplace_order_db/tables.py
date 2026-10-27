@@ -1,16 +1,21 @@
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
+    Date,
     ForeignKey,
     Identity,
     Integer,
     Numeric,
+    SmallInteger,
     String,
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -27,6 +32,7 @@ class WorkplaceOrderRow(Base):
     unit_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
     tax_rate: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     markup: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    creation_date: Mapped[date] = mapped_column(Date, nullable=False)
 
 
 class OperationCostRow(Base):
@@ -41,6 +47,8 @@ class OperationCostRow(Base):
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class PrintingRow(Base):
@@ -84,6 +92,20 @@ class PrintingRow(Base):
     )
     lamination_salary: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     die_cut_salary: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    comment: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class WorkplaceReferenceRow(Base):
+    __tablename__ = "workplace_reference"
+    __table_args__ = (
+        CheckConstraint("id = 1", name="ck_workplace_reference_id"),
+    )
+
+    id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    # jsonb без схемы: состав документа задаёт шаг справочника
+    document: Mapped[dict[str, object]] = mapped_column(
+        JSONB, nullable=False
+    )
 
 
 class CostReportRow(Base):
