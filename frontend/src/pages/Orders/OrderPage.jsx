@@ -7,7 +7,6 @@ import styles from "./OrderPage.module.css"
 
 import { useOrdersData } from "./hooks/useOrdersData";
 import { useOrdersUI } from "./hooks/useOrdersUI";
-import { downloadFile } from "./utils/downloadFile";
 
 const OrderPage = () => {
   const {
@@ -16,7 +15,6 @@ const OrderPage = () => {
     error,
     updateStatus,
     remove,
-    downloadInstruction,
     reload,
   } = useOrdersData();
 
@@ -53,15 +51,6 @@ const OrderPage = () => {
     }
   };
 
-  const handlePrint = async (id) => {
-    try {
-      const { blob, fileName } = await downloadInstruction(id);
-      downloadFile(blob, fileName);
-    } catch (e) {
-      alert("Ошибка загрузки файла");
-    }
-  };
-
   const columns = [
     { key: "id", label: "ID" },
     { key: "creation_date", label: "Создан" },
@@ -71,13 +60,6 @@ const OrderPage = () => {
 
   const actions = useMemo(
     () => [
-      {
-        render: (row) => (
-          <button onClick={() => handlePrint(row.id)}>
-            🖨️
-          </button>
-        ),
-      },
       {
         render: (row) => (
           <button onClick={() => openModal(row, true)}>

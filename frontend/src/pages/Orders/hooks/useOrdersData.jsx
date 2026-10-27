@@ -3,7 +3,6 @@ import {
   fetchOrdersApi,
   updateOrderStatusApi,
   deleteOrderApi,
-  downloadInstructionApi,
 } from "../services/ordersApi";
 
 export const useOrdersData = () => {
@@ -55,10 +54,6 @@ export const useOrdersData = () => {
     }
   };
 
-  const downloadInstruction = async (id) => {
-    return downloadInstructionApi(id);
-  };
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -74,6 +69,5 @@ export const useOrdersData = () => {
     reload: load,
     updateStatus,
     remove,
-    downloadInstruction,
   };
 };
