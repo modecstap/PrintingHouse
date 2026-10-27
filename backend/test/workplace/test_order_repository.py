@@ -1,3 +1,4 @@
+import json
 import re
 import threading
 from collections.abc import Callable, Iterator
@@ -238,6 +239,49 @@ def _count_rows(engine: Engine, table: str) -> int:
             text(f"SELECT count(*) FROM {table}")
         ).scalar_one()
     return int(count)
+
+
+def _reference_document(engine: Engine) -> object:
+    with engine.connect() as connection:
+        return connection.execute(
+            text(
+                "SELECT document FROM workplace_reference WHERE id = 1"
+            )
+        ).scalar_one_or_none()
+
+
+def _restore_reference(engine: Engine, document: object) -> None:
+    with engine.begin() as connection:
+        if document is None:
+            connection.execute(
+                text("DELETE FROM workplace_reference WHERE id = 1")
+            )
+            return
+        connection.execute(
+            text(
+                "INSERT INTO workplace_reference (id, document) "
+                "VALUES (1, CAST(:document AS jsonb)) "
+                "ON CONFLICT (id) DO UPDATE "
+                "SET document = EXCLUDED.document"
+            ),
+            {"document": json.dumps(document)},
+        )
+
+
+def _assert_reference(taken: Order, expected: Order) -> None:
+    assert taken.id is None
+    assert taken.creation_date is None
+    assert taken.unit_count == expected.unit_count
+    assert taken.tax_rate == expected.tax_rate
+    assert taken.markup == expected.markup
+    assert taken.operations == expected.operations
+    assert taken.comment == expected.comment
+    assert taken.status is expected.status
+    assert len(taken.printings) == len(expected.printings)
+    for taken_printing, expected_printing in zip(
+        taken.printings, expected.printings, strict=True
+    ):
+        _assert_printing(taken_printing, expected_printing)
 
 
 def _public_table_names(engine: Engine) -> set[str]:
@@ -616,3 +660,47 @@ def test_unreachable_database_is_store_unavailable() -> None:
         assert "order-body-marker" not in message
     finally:
         local.dispose()
+
+
+def test_should_keep_one_complete_reference_when_two_writes_race(
+    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
+) -> None:
+    store, _saved_ids = repository
+    full = _full_order()
+    left = Order(
+        unit_count=2,
+        tax_rate=Decimal("0.1"),
+        markup=Decimal("1"),
+        operations=(Operation("рез", Decimal("3"), "кромка"),),
+        printings=full.printings[:1],
+        comment="A",
+        status=Status.IN_WORK,
+    )
+    right = Order(
+        unit_count=9,
+        tax_rate=Decimal("0.2"),
+        markup=Decimal("4"),
+        operations=(
+            Operation("биговка", Decimal("0"), ""),
+            Operation("рез", Decimal("-1.25"), "вторая"),
+        ),
+        printings=full.printings,
+        comment="B",
+        status=Status.DONE,
+    )
+    previous = _reference_document(engine)
+    before = _count_rows(engine, "workplace_order")
+    try:
+        _join_pair(
+            lambda: store.set_reference(left),
+            lambda: store.set_reference(right),
+        )
+        taken = store.reference()
+        assert taken is not None
+        assert taken.comment in {"A", "B"}
+        expected = left if taken.comment == "A" else right
+        _assert_reference(taken, expected)
+        assert _count_rows(engine, "workplace_order") == before
+    finally:
+        _restore_reference(engine, previous)

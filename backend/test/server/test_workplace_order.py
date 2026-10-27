@@ -1,3 +1,4 @@
+import json
 import re
 from collections.abc import Iterator
 from datetime import date
@@ -211,6 +212,77 @@ def _counts(api: _Api) -> tuple[int, int]:
         _count_rows(api.engine, "workplace_order"),
         _count_rows(api.engine, "workplace_cost_report"),
     )
+
+
+def _reference_document(engine: Engine) -> object:
+    with engine.connect() as connection:
+        return connection.execute(
+            text(
+                "SELECT document FROM workplace_reference WHERE id = 1"
+            )
+        ).scalar_one_or_none()
+
+
+def _restore_reference(engine: Engine, document: object) -> None:
+    with engine.begin() as connection:
+        if document is None:
+            connection.execute(
+                text("DELETE FROM workplace_reference WHERE id = 1")
+            )
+            return
+        connection.execute(
+            text(
+                "INSERT INTO workplace_reference (id, document) "
+                "VALUES (1, CAST(:document AS jsonb)) "
+                "ON CONFLICT (id) DO UPDATE "
+                "SET document = EXCLUDED.document"
+            ),
+            {"document": json.dumps(document)},
+        )
+
+
+def _zero_printing() -> dict[str, object]:
+    return {
+        "count": 0,
+        "chroma": "ZERO_ZERO",
+        "lamination": "DONT",
+        "die_cutting": False,
+        "sheet_by_fitting": 0,
+        "stack_height": 0,
+        "press_sheet": {
+            "density": 0,
+            "width": 0,
+            "height": 0,
+            "spacing": 0,
+        },
+        "list": {"width": 0, "height": 0, "bleeds": 0},
+        "press_pricing": _zero_rates(),
+        "cut_pricing": {"salary": "0"},
+        "lamination_pricing": {
+            "startup": "0",
+            "film_cost": "0",
+            "salary": "0",
+        },
+        "die_cut_pricing": {"salary": "0"},
+        "comment": "",
+    }
+
+
+def _reference_body(cyan: str, comment: str) -> dict[str, object]:
+    printing = _zero_printing()
+    press = _zero_rates()
+    press["cyan"] = cyan
+    printing["press_pricing"] = press
+    return {
+        "unit_count": 1,
+        "tax_rate": "0",
+        "markup": "0",
+        "operations": [],
+        "printings": [printing],
+        "id": _MISSING_ID,
+        "comment": comment,
+        "status": "Отложен",
+    }
 
 
 def _reports(api: _Api, order_id: int) -> list[CostReport]:
@@ -855,6 +927,9 @@ def test_should_refuse_a_list_without_read_permission(api: _Api) -> None:
     listed = api.client.get("/api/v2/order/", headers=headers)
     assert listed.status_code == 403
     assert listed.json()["detail"] == _READ_DENIED
+    reference = api.client.get("/api/v2/reference/", headers=headers)
+    assert reference.status_code == 403
+    assert reference.json()["detail"] == _READ_DENIED
 
 
 @pytest.mark.parametrize(
@@ -866,6 +941,7 @@ def test_should_refuse_a_list_without_read_permission(api: _Api) -> None:
         ("post", "/api/v2/order/delay", "empty"),
         ("post", "/api/v2/order/accept", "empty"),
         ("post", "/api/v2/order/status", "status"),
+        ("post", "/api/v2/reference/", "empty"),
     ],
 )
 def test_should_refuse_a_write_without_full_permission(
@@ -882,13 +958,22 @@ def test_should_refuse_a_write_without_full_permission(
         }
     else:
         payload = None
-    before = _counts(api)
-    response = api.client.request(
-        method, path, headers=headers, json=payload
+    previous = (
+        _reference_document(api.engine)
+        if path == "/api/v2/reference/"
+        else None
     )
-    assert response.status_code == 403
-    assert response.json()["detail"] == _FULL_DENIED
-    assert _counts(api) == before
+    before = _counts(api)
+    try:
+        response = api.client.request(
+            method, path, headers=headers, json=payload
+        )
+        assert response.status_code == 403
+        assert response.json()["detail"] == _FULL_DENIED
+        assert _counts(api) == before
+    finally:
+        if path == "/api/v2/reference/":
+            _restore_reference(api.engine, previous)
 
 
 def test_should_not_save_on_routes_outside_the_contract(api: _Api) -> None:
@@ -923,3 +1008,114 @@ def test_should_report_store_unavailable_without_secrets(api: _Api) -> None:
     assert "secret-token" not in response.text
     assert "127.0.0.1" not in response.text
     assert "postgresql" not in response.text
+
+
+class _EmptyReference:
+    def reference(self) -> None:
+        return None
+
+
+def test_should_return_a_zero_order_when_the_reference_is_missing(
+    api: _Api,
+) -> None:
+    headers = _token(api, "READ")
+    service = WorkplaceOrderService(_EmptyReference(), Administrator())
+    app.dependency_overrides[get_workplace_order_service] = lambda: service
+    response = api.client.get("/api/v2/reference/", headers=headers)
+    assert response.status_code == 200
+    body = response.json()
+    assert "creation_date" not in body
+    assert set(body) == _ORDER_KEYS - {"creation_date"}
+    assert body["id"] is None
+    assert body["status"] == "Отложен"
+    assert body["operations"] == []
+    assert body["comment"] == ""
+    assert type(body["unit_count"]) is int
+    assert body["unit_count"] == 1
+    _assert_money(body["tax_rate"], "0")
+    _assert_money(body["markup"], "0")
+    printings = body["printings"]
+    assert type(printings) is list
+    assert len(printings) == 1
+    _assert_printing(printings[0], _zero_printing())
+
+
+def test_should_replace_the_reference_without_adding_an_order(
+    api: _Api,
+) -> None:
+    full = _token(api, "FULL")
+    read = _token(api, "READ")
+    comment = f"reference-{uuid4().hex}"
+    previous = _reference_document(api.engine)
+    before = _count_rows(api.engine, "workplace_order")
+    try:
+        saved = api.client.post(
+            "/api/v2/reference/",
+            headers=full,
+            json=_reference_body("1.5", comment),
+        )
+        assert saved.status_code == 200
+        assert saved.content == b""
+        loaded = api.client.get("/api/v2/reference/", headers=read)
+        assert loaded.status_code == 200
+        body = loaded.json()
+        assert body["id"] is None
+        assert "creation_date" not in body
+        assert body["printings"][0]["press_pricing"]["cyan"] == "1.5"
+        assert _count_rows(api.engine, "workplace_order") == before
+        missing = api.client.get(
+            f"/api/v2/order/{_MISSING_ID}", headers=read
+        )
+        assert missing.status_code == 404
+        replaced = api.client.post(
+            "/api/v2/reference/",
+            headers=full,
+            json=_reference_body("2.5", comment),
+        )
+        assert replaced.status_code == 200
+        assert replaced.content == b""
+        again = api.client.get("/api/v2/reference/", headers=read)
+        assert again.status_code == 200
+        stored = again.json()
+        assert stored["id"] is None
+        assert "creation_date" not in stored
+        assert stored["printings"][0]["press_pricing"]["cyan"] == "2.5"
+        listed = api.client.get("/api/v2/order/", headers=read)
+        assert listed.status_code == 200
+        assert all(
+            item["comment"] != comment for item in listed.json()
+        )
+        assert _count_rows(api.engine, "workplace_order") == before
+    finally:
+        _restore_reference(api.engine, previous)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        _empty_order(operations=[{
+            "name": "",
+            "cost": "-1",
+            "description": "",
+        }]),
+        _empty_order(printings=[{
+            **_second_printing(),
+            "press_pricing": {**_zero_rates(), "cyan": "-1"},
+        }]),
+    ],
+)
+def test_should_keep_the_reference_when_a_rate_is_negative(
+    api: _Api, payload: dict[str, object]
+) -> None:
+    headers = _token(api, "FULL")
+    previous = _reference_document(api.engine)
+    try:
+        response = api.client.post(
+            "/api/v2/reference/",
+            headers=headers,
+            json=payload,
+        )
+        assert response.status_code == 500
+        assert _reference_document(api.engine) == previous
+    finally:
+        _restore_reference(api.engine, previous)

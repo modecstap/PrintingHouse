@@ -18,8 +18,10 @@ from backend.workplace.reports import CostReport
 from backend.workplace_order_db.mapping import (
     insert_order,
     read_order,
+    read_reference,
     read_reports,
     update_order,
+    write_reference,
     write_report,
 )
 from backend.workplace_order_db.tables import CostReportRow, WorkplaceOrderRow
@@ -150,6 +152,38 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
             lambda session: self._save_with_report(
                 session, order, report
             ),
+        )
+
+    def reference(self) -> Order | None:
+        """Возвращает справочник, если строка есть.
+
+        Результат: заказ с id None и без creation_date.
+        Строки нет: None. OrderNotFound не бросает.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой.
+        """
+        return self._call(
+            "reference",
+            None,
+            lambda session: read_reference(session),
+        )
+
+    def set_reference(self, order: Order) -> None:
+        """Заменяет единственную запись справочника.
+
+        Результат: ничего не возвращает.
+        Побочные эффекты: id аргумента не выбирает запись.
+        creation_date в документ не пишется. Строка
+        workplace_order не появляется. Два параллельных
+        вызова оставляют один целый документ. Переданный
+        Order не меняется.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой. Чужой id не даёт OrderNotFound.
+        """
+        self._call(
+            "set_reference",
+            None,
+            lambda session: write_reference(session, order),
         )
 
     def _call(

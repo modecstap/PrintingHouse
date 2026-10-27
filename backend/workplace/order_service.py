@@ -1,7 +1,11 @@
 from dataclasses import replace
 
 from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import Order, Status
+from backend.workplace.cost_order import (
+    Order,
+    Status,
+    empty_reference_order,
+)
 from backend.workplace.order_repository import (
     OrderId,
     WorkplaceOrderRepository,
@@ -57,6 +61,34 @@ class WorkplaceOrderService:
         OrderNotFound не бросает.
         """
         return self._orders.take_all()
+
+    def reference(self) -> Order:
+        """Возвращает справочник или нулевой заказ.
+
+        Результат: строка справочника, если она есть.
+        Строки нет: заказ empty_reference_order.
+        Побочные эффекты: базу не меняет.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой. OrderNotFound не бросает.
+        """
+        stored = self._orders.reference()
+        if stored is None:
+            return empty_reference_order()
+        return stored
+
+    def set_reference(self, order: Order) -> None:
+        """Заменяет справочник этим заказом.
+
+        Предусловия: ставку уже проверил вызывающий.
+        Результат: ничего не возвращает.
+        Побочные эффекты: вызывает только set_reference.
+        save не вызывается. id заменяется на None и не
+        выбирает запись. Переданный Order не меняется.
+        Строка workplace_order не появляется.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой. OrderNotFound не бросает.
+        """
+        self._orders.set_reference(replace(order, id=None))
 
     def delete(self, order_id: OrderId) -> None:
         """Удаляет заказ, его расчёт и его отчёты.

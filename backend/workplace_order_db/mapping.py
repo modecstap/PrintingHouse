@@ -2,6 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import delete, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from backend.workplace.accountant.money import Money
@@ -29,6 +30,7 @@ from backend.workplace_order_db.tables import (
     PrintingCostRow,
     PrintingRow,
     WorkplaceOrderRow,
+    WorkplaceReferenceRow,
 )
 
 
@@ -293,3 +295,262 @@ def read_reports(session: Session, order_id: int) -> list[CostReport]:
         .order_by(CostReportRow.position)
     ).all()
     return [_cost_report(session, row) for row in rows]
+
+
+def _text_money(value: Money) -> str:
+    return str(value.amount)
+
+
+def _object_field(
+    document: dict[str, object], key: str
+) -> dict[str, object]:
+    value = document[key]
+    if type(value) is not dict:
+        raise TypeError(
+            f"справочник: {key} ожидается объект, "
+            f"пришло {type(value).__name__}"
+        )
+    # Ключи JSON-объекта — строки.
+    return {str(item_key): item for item_key, item in value.items()}
+
+
+def _list_field(document: dict[str, object], key: str) -> list[object]:
+    value = document[key]
+    if type(value) is not list:
+        raise TypeError(
+            f"справочник: {key} ожидается список, "
+            f"пришло {type(value).__name__}"
+        )
+    return value
+
+
+def _str_field(document: dict[str, object], key: str) -> str:
+    value = document[key]
+    if type(value) is not str:
+        raise TypeError(
+            f"справочник: {key} ожидается строка, "
+            f"пришло {type(value).__name__}"
+        )
+    return value
+
+
+def _int_field(document: dict[str, object], key: str) -> int:
+    value = document[key]
+    if type(value) is not int:
+        raise TypeError(
+            f"справочник: {key} ожидается целое, "
+            f"пришло {type(value).__name__}"
+        )
+    return value
+
+
+def _bool_field(document: dict[str, object], key: str) -> bool:
+    value = document[key]
+    if type(value) is not bool:
+        raise TypeError(
+            f"справочник: {key} ожидается булево, "
+            f"пришло {type(value).__name__}"
+        )
+    return value
+
+
+def _decimal_field(document: dict[str, object], key: str) -> Decimal:
+    return Decimal(_str_field(document, key))
+
+
+def _money_field(document: dict[str, object], key: str) -> Money:
+    return Money(_decimal_field(document, key))
+
+
+def _printing_document(printing: Printing) -> dict[str, object]:
+    press = printing.press_pricing
+    page = printing.list
+    sheet = printing.press_sheet
+    lamination = printing.lamination_pricing
+    return {
+        "count": printing.count,
+        "chroma": printing.chroma.name,
+        "lamination": printing.lamination.name,
+        "die_cutting": printing.die_cutting,
+        "sheet_by_fitting": printing.sheet_by_fitting,
+        "stack_height": printing.stack_height,
+        "press_sheet": {
+            "density": sheet.density,
+            "width": sheet.width,
+            "height": sheet.height,
+            "spacing": sheet.spacing,
+        },
+        "list": {
+            "width": page.width,
+            "height": page.height,
+            "bleeds": page.bleeds,
+        },
+        "press_pricing": {
+            "cyan": _text_money(press.cyan),
+            "magenta": _text_money(press.magenta),
+            "yellow": _text_money(press.yellow),
+            "black": _text_money(press.black),
+            "paper": _text_money(press.paper),
+            "salary": _text_money(press.salary),
+        },
+        "cut_pricing": {
+            "salary": _text_money(printing.cut_pricing.salary),
+        },
+        "lamination_pricing": {
+            "startup": _text_money(lamination.startup),
+            "film_cost": _text_money(lamination.film_cost),
+            "salary": _text_money(lamination.salary),
+        },
+        "die_cut_pricing": {
+            "salary": _text_money(printing.die_cut_pricing.salary),
+        },
+        "comment": printing.comment,
+    }
+
+
+def _printing_from_document(value: object) -> Printing:
+    if type(value) is not dict:
+        raise TypeError(
+            "справочник: печать ожидается объектом, "
+            f"пришло {type(value).__name__}"
+        )
+    item = {str(key): nested for key, nested in value.items()}
+    sheet = _object_field(item, "press_sheet")
+    page = _object_field(item, "list")
+    press = _object_field(item, "press_pricing")
+    cut = _object_field(item, "cut_pricing")
+    lamination = _object_field(item, "lamination_pricing")
+    die_cut = _object_field(item, "die_cut_pricing")
+    return Printing(
+        count=_int_field(item, "count"),
+        chroma=Chroma[_str_field(item, "chroma")],
+        lamination=Lamination[_str_field(item, "lamination")],
+        die_cutting=_bool_field(item, "die_cutting"),
+        sheet_by_fitting=_int_field(item, "sheet_by_fitting"),
+        stack_height=_int_field(item, "stack_height"),
+        press_sheet=PressSheet(
+            _int_field(sheet, "density"),
+            _int_field(sheet, "width"),
+            _int_field(sheet, "height"),
+            _int_field(sheet, "spacing"),
+        ),
+        list=List(
+            _int_field(page, "width"),
+            _int_field(page, "height"),
+            _int_field(page, "bleeds"),
+        ),
+        press_pricing=PrintingCalculation(
+            _money_field(press, "cyan"),
+            _money_field(press, "magenta"),
+            _money_field(press, "yellow"),
+            _money_field(press, "black"),
+            _money_field(press, "paper"),
+            _money_field(press, "salary"),
+        ),
+        cut_pricing=CuttingCalculation(_money_field(cut, "salary")),
+        lamination_pricing=LaminationCalculation(
+            _money_field(lamination, "startup"),
+            _money_field(lamination, "film_cost"),
+            _money_field(lamination, "salary"),
+        ),
+        die_cut_pricing=DieCuttingCalculation(
+            _money_field(die_cut, "salary")
+        ),
+        comment=_str_field(item, "comment"),
+    )
+
+
+def _reference_document(order: Order) -> dict[str, object]:
+    # id всегда null. creation_date в документ не входит:
+    # дата есть только у строки заказа.
+    return {
+        "id": None,
+        "unit_count": order.unit_count,
+        "tax_rate": str(order.tax_rate),
+        "markup": str(order.markup),
+        "operations": [
+            {
+                "name": item.name,
+                "cost": str(item.cost),
+                "description": item.description,
+            }
+            for item in order.operations
+        ],
+        "printings": [
+            _printing_document(item) for item in order.printings
+        ],
+        "comment": order.comment,
+        "status": order.status.name,
+    }
+
+
+def _order_from_document(document: object) -> Order:
+    if type(document) is not dict:
+        raise TypeError(
+            "справочник: документ ожидается объектом, "
+            f"пришло {type(document).__name__}"
+        )
+    body = {str(key): value for key, value in document.items()}
+    operations = _list_field(body, "operations")
+    printings = _list_field(body, "printings")
+    return Order(
+        unit_count=_int_field(body, "unit_count"),
+        tax_rate=_decimal_field(body, "tax_rate"),
+        markup=_decimal_field(body, "markup"),
+        operations=tuple(
+            _operation_from_document(item) for item in operations
+        ),
+        printings=tuple(
+            _printing_from_document(item) for item in printings
+        ),
+        id=None,
+        comment=_str_field(body, "comment"),
+        status=Status[_str_field(body, "status")],
+        creation_date=None,
+    )
+
+
+def _operation_from_document(value: object) -> Operation:
+    if type(value) is not dict:
+        raise TypeError(
+            "справочник: операция ожидается объектом, "
+            f"пришло {type(value).__name__}"
+        )
+    item = {str(key): nested for key, nested in value.items()}
+    return Operation(
+        _str_field(item, "name"),
+        _decimal_field(item, "cost"),
+        _str_field(item, "description"),
+    )
+
+
+def write_reference(session: Session, order: Order) -> None:
+    """Заменяет документ справочника одним upsert.
+
+    Побочные эффекты: пишет строку id = 1. Коммит не делает:
+    транзакция принадлежит вызывающему. creation_date
+    не пишет. id в документе всегда null. Переданный
+    Order не меняет. Строку workplace_order не пишет.
+    """
+    statement = insert(WorkplaceReferenceRow).values(
+        id=1,
+        document=_reference_document(order),
+    )
+    session.execute(
+        statement.on_conflict_do_update(
+            index_elements=[WorkplaceReferenceRow.id],
+            set_={"document": statement.excluded.document},
+        )
+    )
+
+
+def read_reference(session: Session) -> Order | None:
+    """Собирает заказ из документа справочника.
+
+    Результат: None, если строки нет. Иначе Order с id None
+    и creation_date None. Ключ id документа не читается.
+    """
+    row = session.get(WorkplaceReferenceRow, 1)
+    if row is None:
+        return None
+    return _order_from_document(row.document)

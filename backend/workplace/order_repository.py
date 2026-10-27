@@ -13,6 +13,8 @@ StoreOperation = Literal[
     "delete",
     "take_all",
     "save_with_report",
+    "reference",
+    "set_reference",
 ]
 
 
@@ -137,5 +139,29 @@ class WorkplaceOrderRepository(Protocol):
         новая строка не появляется, отчёт не пишется. Текст
         собирает save. OrderStoreUnavailable, если нет соединения
         с базой.
+        """
+        ...
+
+    def reference(self) -> Order | None:
+        """Возвращает справочник, если строка есть.
+
+        Результат: заказ с id None и без creation_date.
+        Строки нет: None. OrderNotFound не бросает.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой.
+        """
+        ...
+
+    def set_reference(self, order: Order) -> None:
+        """Заменяет единственную запись справочника.
+
+        Результат: ничего не возвращает.
+        Побочные эффекты: id аргумента не выбирает запись.
+        creation_date в документ не пишется. Строка
+        workplace_order не появляется. Два параллельных
+        вызова оставляют один целый документ. Переданный
+        Order не меняется.
+        Ошибки: OrderStoreUnavailable, если нет соединения
+        с базой. Чужой id не даёт OrderNotFound.
         """
         ...

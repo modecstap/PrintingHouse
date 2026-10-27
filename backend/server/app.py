@@ -20,6 +20,9 @@ from backend.server.workplace_order import (
     bind_workplace_order_service,
     router as workplace_order_router,
 )
+from backend.server.workplace_reference import (
+    router as workplace_reference_router,
+)
 from backend.workplace.administrator import Administrator
 from backend.workplace.order_service import WorkplaceOrderService
 from backend.workplace_order_db import (
@@ -49,6 +52,7 @@ app.include_router(instruction_router)
 app.include_router(production_reference_router)
 app.include_router(order_router)
 app.include_router(workplace_order_router)
+app.include_router(workplace_reference_router)
 app.include_router(auth_router)
 
 
