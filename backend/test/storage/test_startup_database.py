@@ -1,42 +1,16 @@
 import asyncio
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
-from backend.storage.tables import (
-    OrderCostReportEntity,
-    OrderEntity,
-    PrintingCostReportEntity,
-    PrintingEntity,
-)
-
-_PRINTING_SOURCE = (
-    Path(__file__).resolve().parents[2] / "storage" / "tables" / "printing.py"
-)
+from backend.storage.declarative_base import DeclarativeBase
 
 
-def test_printing_id_uses_the_printing_identity() -> None:
-    column = PrintingEntity.__table__.c.id
-    assert column.identity is not None
-    assert column.identity.start == 1
-    assert "order_id_seq" not in _PRINTING_SOURCE.read_text(encoding="utf-8")
+def test_storage_tables_metadata_contains_only_the_user_table() -> None:
+    import backend.storage.tables
 
-
-def test_printing_cost_report_id_uses_its_own_sequence() -> None:
-    column = PrintingCostReportEntity.__table__.c.id
-    assert str(column.server_default.arg) == "nextval('printing_cost_report_id_seq')"
-    assert column.default.name == "printing_cost_report_id_seq"
-
-
-def test_order_id_keeps_order_id_seq() -> None:
-    column = OrderEntity.__table__.c.id
-    assert str(column.server_default.arg) == "nextval('order_id_seq')"
-
-
-def test_order_cost_report_id_keeps_cost_report_id_seq() -> None:
-    column = OrderCostReportEntity.__table__.c.id
-    assert str(column.server_default.arg) == "nextval('cost_report_id_seq')"
+    assert set(DeclarativeBase().base.metadata.tables) == {"user"}
+    assert backend.storage.tables.UserEntity.__tablename__ == "user"
 
 
 def test_wait_for_connection_retries_then_opens_without_creating_tables() -> None:

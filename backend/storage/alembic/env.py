@@ -21,23 +21,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from backend.storage.tables import OrderEntity, PrintingCostReportEntity, EditionEntity, \
-    ListSizeEntity, CutterInfoEntity, ProductionEntity, PressSheetEntity, \
-    ProductionReferenceEntity, EconomyEntity, OperationEntity, PrintingEntity, \
-    OrderCostReportEntity, UserEntity
+from backend.storage.tables import UserEntity
 
-OrderEntity()
-PrintingCostReportEntity()
-OrderCostReportEntity()
-EditionEntity()
-ListSizeEntity()
-PressSheetEntity()
-CutterInfoEntity()
-ProductionEntity()
-EconomyEntity()
-OperationEntity()
-PrintingEntity()
-ProductionReferenceEntity()
 UserEntity()
 
 from backend.storage.declarative_base import DeclarativeBase

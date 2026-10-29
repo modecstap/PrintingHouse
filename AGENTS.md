@@ -13,7 +13,7 @@ Web app for calculating and managing print orders: FastAPI backend (`backend/`),
 ## Structure
 
 - Backend code imports by absolute package path `backend.*`; repo root must be on `PYTHONPATH`.
-- `backend/`: `server/` (FastAPI routers, handlers), `storage/` (SQLAlchemy tables, repositories, Alembic), `models/` (domain models), `cost_reporter/` (cost calculation), `instruction_maker/` (production instructions), `test/` (pytest).
+- `backend/`: `server/` (FastAPI routers, handlers), `storage/` (SQLAlchemy tables, repositories, Alembic), `models/` (domain models), `test/` (pytest).
 
 ## Docs
 

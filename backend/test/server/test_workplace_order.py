@@ -906,13 +906,12 @@ def test_should_reject_an_operation_cost_sent_as_a_number(
     assert _count_rows(api.engine, "workplace_order") == before
 
 
-def test_should_match_the_old_list_when_the_token_is_missing(
+def test_should_refuse_the_list_when_the_token_is_missing(
     api: _Api,
 ) -> None:
-    new = api.client.get("/api/v2/order/")
-    old = api.client.get("/api/order/")
-    assert new.status_code == old.status_code
-    assert new.json()["detail"] == old.json()["detail"]
+    response = api.client.get("/api/v2/order/")
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Not authenticated"
 
 
 def test_should_allow_a_read_token_to_list_orders(api: _Api) -> None:

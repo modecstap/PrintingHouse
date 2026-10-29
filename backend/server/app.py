@@ -11,10 +11,6 @@ from backend.storage.db_config import DBConfig
 Database(DBConfig.from_env())
 
 from backend.server.auth.routes import router as auth_router
-from backend.server.costs_report import router as costs_report_router
-from backend.server.instruction import router as instruction_router
-from backend.server.order import router as order_router
-from backend.server.production_reference import router as production_reference_router
 from backend.server.server_config import ServerConfig
 from backend.server.workplace_order import (
     bind_workplace_order_service,
@@ -47,10 +43,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(costs_report_router)
-app.include_router(instruction_router)
-app.include_router(production_reference_router)
-app.include_router(order_router)
 app.include_router(workplace_order_router)
 app.include_router(workplace_reference_router)
 app.include_router(auth_router)
