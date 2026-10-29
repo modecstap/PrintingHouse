@@ -32,5 +32,7 @@ DB_NAME=ph_db
 
 alembic -c backend/storage/alembic.ini upgrade head
 
+Upgrade копирует строки старых заказов в таблицы Workplace, если в `"order"` есть строки, а таблицы Workplace пустые. Если в таблицах Workplace уже есть строки, upgrade останавливается и старые таблицы не меняет.
+
 ## AI-агенты
 Настройка AI-агентов и структура `.agents/`: [.agents/docs/onboarding.md](.agents/docs/onboarding.md).

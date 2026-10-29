@@ -276,7 +276,7 @@ def test_should_create_the_production_schema_when_the_database_is_empty() -> Non
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            assert version == "b6d4e2a81c05"
+            assert version == "2f55f813c842"
             assert _public_tables(connection) == _EXPECTED_TABLES
             assert _row_counts(connection, _OLD_TABLES) == {table: 0 for table in _OLD_TABLES}
             assert _next_value(connection, "order_id_seq") == 1
@@ -628,7 +628,8 @@ def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields
             if target in {"revision", "down_revision"} and value is not None:
                 values[target] = ast.literal_eval(value)
         revisions.append((str(values["revision"]), values["down_revision"]))
-    assert len(paths) == 3
+    assert len(paths) == 4
     assert ("53a756fbc804", None) in revisions
     assert ("733171f352dd", "53a756fbc804") in revisions
     assert ("b6d4e2a81c05", "733171f352dd") in revisions
+    assert ("2f55f813c842", "b6d4e2a81c05") in revisions
