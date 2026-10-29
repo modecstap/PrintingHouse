@@ -185,11 +185,73 @@ def _row_counts(connection: Connection, tables: tuple[str, ...]) -> dict[str, in
     }
 
 
+_LEGACY_TABLES = (
+    "cutter_info",
+    "economy",
+    "list_size",
+    "edition",
+    "press_sheet",
+    "production",
+    "production_reference",
+    "order_cost_report",
+    "printing_cost_report",
+    "order",
+    "operation",
+    "printing",
+)
+_LEGACY_SEQUENCES = (
+    "cost_report_id_seq",
+    "cutter_info_id_seq",
+    "edition_id_seq",
+    "list_size_id_seq",
+    "order_id_seq",
+    "press_sheet_id_seq",
+    "printing_cost_report_id_seq",
+    "production_id_seq",
+    "printing_id_seq",
+)
+_LEGACY_ENUMS = ("chroma", "lamination", "order_status")
+
+
 def _public_tables(connection: Connection) -> set[str]:
     rows = connection.execute(
         text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
     ).scalars()
     return set(rows)
+
+
+def _public_sequences(connection: Connection) -> set[str]:
+    rows = connection.execute(
+        text("SELECT sequencename FROM pg_sequences WHERE schemaname = 'public'")
+    ).scalars()
+    return set(rows)
+
+
+def _public_enums(connection: Connection) -> set[str]:
+    rows = connection.execute(
+        text(
+            """
+            SELECT typ.typname
+            FROM pg_type AS typ
+            JOIN pg_namespace AS ns ON ns.oid = typ.typnamespace
+            WHERE ns.nspname = 'public'
+              AND typ.typtype = 'e'
+            """
+        )
+    ).scalars()
+    return set(rows)
+
+
+def _assert_legacy_objects_absent(connection: Connection) -> None:
+    assert set(_LEGACY_TABLES).isdisjoint(_public_tables(connection))
+    assert set(_LEGACY_SEQUENCES).isdisjoint(_public_sequences(connection))
+    assert set(_LEGACY_ENUMS).isdisjoint(_public_enums(connection))
+
+
+def _assert_legacy_objects_present(connection: Connection) -> None:
+    assert set(_LEGACY_TABLES) <= _public_tables(connection)
+    assert set(_LEGACY_SEQUENCES) <= _public_sequences(connection)
+    assert set(_LEGACY_ENUMS) <= _public_enums(connection)
 
 
 def _column_default(connection: Connection, table: str, column: str) -> str:
@@ -271,7 +333,7 @@ def _prepare_stamped_database(
 
 def test_should_create_the_production_schema_when_the_database_is_empty() -> None:
     with _migration_database() as (config, engine):
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
@@ -452,7 +514,7 @@ def test_should_keep_existing_rows_and_advance_only_lagging_sequences_when_the_d
         )
         with engine.connect() as connection:
             before = _row_counts(connection, _OLD_TABLES)
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             assert _row_counts(connection, _OLD_TABLES) == before
             names = _public_tables(connection)
@@ -490,6 +552,13 @@ def test_should_keep_existing_rows_and_advance_only_lagging_sequences_when_the_d
             assert _next_value(connection, "order_id_seq") == 894
             assert _next_value(connection, "printing_id_seq") == 894
             assert _next_value(connection, "printing_cost_report_id_seq") == 1641
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            _assert_legacy_objects_absent(connection)
+            names = _public_tables(connection)
+            assert "user" in names
+            for name in _WORKPLACE_TABLES:
+                assert name in names
 
 
 def test_should_leave_an_empty_table_sequence_where_it_is_when_the_repair_runs() -> None:
@@ -500,11 +569,14 @@ def test_should_leave_an_empty_table_sequence_where_it_is_when_the_repair_runs()
             rows=False,
             next_values=(5, 7, 9),
         )
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             assert _next_value(connection, "order_id_seq") == 5
             assert _next_value(connection, "printing_id_seq") == 7
             assert _next_value(connection, "printing_cost_report_id_seq") == 9
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            _assert_legacy_objects_absent(connection)
 
 
 def test_should_not_move_sequences_or_delete_old_rows_when_the_workplace_revision_runs_again() -> None:
@@ -515,7 +587,7 @@ def test_should_not_move_sequences_or_delete_old_rows_when_the_workplace_revisio
             rows=True,
             next_values=(894, 108, 1),
         )
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             remembered = (
                 _next_value(connection, "order_id_seq"),
@@ -530,7 +602,7 @@ def test_should_not_move_sequences_or_delete_old_rows_when_the_workplace_revisio
                 assert name not in names
             assert _row_counts(connection, _OLD_TABLES) == counts
             assert "order_id_seq" in _column_default(connection, "order", "id")
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             assert (
                 _next_value(connection, "order_id_seq"),
@@ -628,8 +700,28 @@ def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields
             if target in {"revision", "down_revision"} and value is not None:
                 values[target] = ast.literal_eval(value)
         revisions.append((str(values["revision"]), values["down_revision"]))
-    assert len(paths) == 4
+    assert len(paths) == 5
     assert ("53a756fbc804", None) in revisions
     assert ("733171f352dd", "53a756fbc804") in revisions
     assert ("b6d4e2a81c05", "733171f352dd") in revisions
     assert ("2f55f813c842", "b6d4e2a81c05") in revisions
+    assert ("e7b3c91a04d6", "2f55f813c842") in revisions
+
+
+def test_should_drop_legacy_objects_when_an_empty_database_reaches_head() -> None:
+    with _migration_database() as (config, engine):
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            version = connection.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).scalar_one()
+            assert version == "e7b3c91a04d6"
+            _assert_legacy_objects_absent(connection)
+            tables = _public_tables(connection)
+            sequences = _public_sequences(connection)
+            enums = _public_enums(connection)
+            assert "user" in tables
+            assert "user_id_seq" in sequences
+            assert "permission" in enums
+            for name in _WORKPLACE_TABLES:
+                assert name in tables

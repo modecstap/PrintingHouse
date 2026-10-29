@@ -13,7 +13,11 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 
 from backend.storage.db_config import DBConfig
-from backend.test.storage.test_schema_migration import _migration_database
+from backend.test.storage.test_schema_migration import (
+    _assert_legacy_objects_absent,
+    _assert_legacy_objects_present,
+    _migration_database,
+)
 from backend.workplace.administrator import Administrator
 from backend.workplace.cost_order import List, Order, Status
 from backend.workplace.order_service import WorkplaceOrderService
@@ -179,7 +183,7 @@ def _upgraded_legacy() -> Iterator[tuple[Engine, dict[str, int]]]:
         with engine.begin() as connection:
             _insert_legacy(connection)
             before = _counts(connection, _KEPT)
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         yield engine, before
 
 
@@ -408,13 +412,13 @@ def test_should_copy_again_after_downgrade_when_legacy_rows_remain() -> None:
         with engine.begin() as connection:
             _insert_legacy(connection)
             before = _counts(connection, _KEPT)
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         command.downgrade(config, "b6d4e2a81c05")
         with engine.connect() as connection:
             assert _count(connection, "workplace_order") == 0
             assert _count(connection, "workplace_reference") == 0
             assert _counts(connection, _KEPT) == before
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             order_ids = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
             reference_rows = _count(connection, "workplace_reference")
@@ -493,7 +497,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
         _restore_dump(str(engine.url.database))
         with engine.connect() as connection:
             before = _counts(connection, _DUMP_KEPT)
-        command.upgrade(config, "head")
+        command.upgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             span = connection.execute(text(
                 "SELECT count(*), min(id), max(id) FROM workplace_order"
@@ -576,6 +580,11 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
                 """)
             after = _counts(connection, _DUMP_KEPT)
             workplace_orders = _count(connection, "workplace_order")
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            head_orders = _count(connection, "workplace_order")
+            head_users = _count(connection, '"user"')
+            _assert_legacy_objects_absent(connection)
         service = _service(engine)
         _assert_reference(service.reference())
         taken = service.take_all()
@@ -611,3 +620,33 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
     assert after == before
     assert before == {'"order"': 234, "production_reference": 1, '"user"': 3}
     assert saved_id > 890
+    assert head_orders == 234
+    assert head_users == 3
+
+
+def test_should_keep_copied_rows_and_restore_empty_legacy_tables_when_head_is_downgraded() -> None:
+    with _migration_database() as (config, engine):
+        command.upgrade(config, "b6d4e2a81c05")
+        with engine.begin() as connection:
+            _insert_legacy(connection)
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            copied = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
+            users = _count(connection, '"user"')
+            _assert_legacy_objects_absent(connection)
+        assert copied == [(6,), (50,)]
+        assert users == 1
+        command.downgrade(config, "2f55f813c842")
+        with engine.connect() as connection:
+            _assert_legacy_objects_present(connection)
+            assert _count(connection, '"order"') == 0
+            assert _count(connection, "printing") == 0
+            assert _count(connection, "production_reference") == 0
+            assert _count(connection, '"user"') == 1
+            restored = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
+        assert restored == [(6,), (50,)]
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            again = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
+            _assert_legacy_objects_absent(connection)
+        assert again == [(6,), (50,)]
