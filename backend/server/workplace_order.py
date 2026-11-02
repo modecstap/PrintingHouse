@@ -26,7 +26,7 @@ from backend.core.order_service import WorkplaceOrderService
 
 _T = TypeVar("_T")
 
-router = APIRouter(prefix="/api/v2/core", tags=["core-core"])
+router = APIRouter(prefix="/api/v2/order", tags=["core-order"])
 _service: WorkplaceOrderService | None = None
 
 

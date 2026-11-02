@@ -245,7 +245,7 @@ def _reference_document(engine: Engine) -> object:
     with engine.connect() as connection:
         return connection.execute(
             text(
-                "SELECT document FROM workplace_reference WHERE id = 1"
+                "SELECT document FROM reference WHERE id = 1"
             )
         ).scalar_one_or_none()
 
@@ -254,12 +254,12 @@ def _restore_reference(engine: Engine, document: object) -> None:
     with engine.begin() as connection:
         if document is None:
             connection.execute(
-                text("DELETE FROM workplace_reference WHERE id = 1")
+                text("DELETE FROM reference WHERE id = 1")
             )
             return
         connection.execute(
             text(
-                "INSERT INTO workplace_reference (id, document) "
+                "INSERT INTO reference (id, document) "
                 "VALUES (1, CAST(:document AS jsonb)) "
                 "ON CONFLICT (id) DO UPDATE "
                 "SET document = EXCLUDED.document"
@@ -362,7 +362,7 @@ def repository(
         if not saved_ids:
             return
         statement = text(
-            "DELETE FROM workplace_order WHERE id IN :ids"
+            'DELETE FROM "order" WHERE id IN :ids'
         ).bindparams(bindparam("ids", expanding=True))
         with engine.begin() as connection:
             connection.execute(statement, {"ids": saved_ids})
@@ -448,10 +448,10 @@ def test_save_unknown_id_raises_and_writes_nothing(
     engine: Engine,
 ) -> None:
     store, _saved_ids = repository
-    before = _count_rows(engine, "workplace_order")
+    before = _count_rows(engine, '"order"')
     with pytest.raises(OrderNotFound, match=_raises_missing()):
         store.save(_bare_order(_MISSING_ID))
-    assert _count_rows(engine, "workplace_order") == before
+    assert _count_rows(engine, '"order"') == before
 
 
 def test_second_save_replaces_order_and_keeps_reports(
@@ -502,10 +502,10 @@ def test_attach_unknown_id_raises_and_writes_nothing(
     engine: Engine,
 ) -> None:
     store, _saved_ids = repository
-    before = _count_rows(engine, "workplace_cost_report")
+    before = _count_rows(engine, "cost_report")
     with pytest.raises(OrderNotFound, match=_raises_missing()):
         store.attach(_report_a(), _MISSING_ID)
-    assert _count_rows(engine, "workplace_cost_report") == before
+    assert _count_rows(engine, "cost_report") == before
 
 
 def test_reports_return_attached_reports_in_call_order(
@@ -624,7 +624,7 @@ def test_unreachable_database_is_store_unavailable() -> None:
             markup=Decimal("0"),
             operations=(),
             printings=(),
-            comment="core-body-marker",
+            comment="order-body-marker",
         )
         with pytest.raises(OrderStoreUnavailable) as caught:
             store.save(order)
@@ -636,7 +636,7 @@ def test_unreachable_database_is_store_unavailable() -> None:
         assert "secret-token" not in message
         assert "127.0.0.1" not in message
         assert "postgresql" not in message
-        assert "core-body-marker" not in message
+        assert "order-body-marker" not in message
     finally:
         local.dispose()
 
@@ -669,7 +669,7 @@ def test_should_keep_one_complete_reference_when_two_writes_race(
         status=Status.DONE,
     )
     previous = _reference_document(engine)
-    before = _count_rows(engine, "workplace_order")
+    before = _count_rows(engine, '"order"')
     try:
         _join_pair(
             lambda: store.set_reference(left),
@@ -680,6 +680,6 @@ def test_should_keep_one_complete_reference_when_two_writes_race(
         assert taken.comment in {"A", "B"}
         expected = left if taken.comment == "A" else right
         _assert_reference(taken, expected)
-        assert _count_rows(engine, "workplace_order") == before
+        assert _count_rows(engine, '"order"') == before
     finally:
         _restore_reference(engine, previous)

@@ -53,7 +53,7 @@ class WorkplaceOrderService:
         return self._orders.take(order_id)
 
     def take_all(self) -> list[Order]:
-        """Возвращает каждый заказ workplace_order один раз.
+        """Возвращает каждый заказ order один раз.
 
         Результат: заказы по убыванию id, без отчётов.
         Строк нет: пустой список.
@@ -84,7 +84,7 @@ class WorkplaceOrderService:
         Побочные эффекты: вызывает только set_reference.
         save не вызывается. id заменяется на None и не
         выбирает запись. Переданный Order не меняется.
-        Строка workplace_order не появляется.
+        Строка order не появляется.
         Ошибки: OrderStoreUnavailable, если нет соединения
         с базой. OrderNotFound не бросает.
         """

@@ -24,7 +24,7 @@ class Base(DeclarativeBase):
 
 
 class WorkplaceOrderRow(Base):
-    __tablename__ = "workplace_order"
+    __tablename__ = "order"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     comment: Mapped[str] = mapped_column(Text, nullable=False)
@@ -36,13 +36,13 @@ class WorkplaceOrderRow(Base):
 
 
 class OperationCostRow(Base):
-    __tablename__ = "workplace_operation_cost"
+    __tablename__ = "operation_cost"
     __table_args__ = (UniqueConstraint("order_id", "position"),)
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     order_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("workplace_order.id", ondelete="CASCADE"),
+        ForeignKey("order.id", ondelete="CASCADE"),
         nullable=False,
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -52,13 +52,13 @@ class OperationCostRow(Base):
 
 
 class PrintingRow(Base):
-    __tablename__ = "workplace_printing"
+    __tablename__ = "printing"
     __table_args__ = (UniqueConstraint("order_id", "position"),)
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     order_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("workplace_order.id", ondelete="CASCADE"),
+        ForeignKey("order.id", ondelete="CASCADE"),
         nullable=False,
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -96,9 +96,9 @@ class PrintingRow(Base):
 
 
 class WorkplaceReferenceRow(Base):
-    __tablename__ = "workplace_reference"
+    __tablename__ = "reference"
     __table_args__ = (
-        CheckConstraint("id = 1", name="ck_workplace_reference_id"),
+        CheckConstraint("id = 1", name="ck_reference_id"),
     )
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
@@ -109,13 +109,13 @@ class WorkplaceReferenceRow(Base):
 
 
 class CostReportRow(Base):
-    __tablename__ = "workplace_cost_report"
+    __tablename__ = "cost_report"
     __table_args__ = (UniqueConstraint("order_id", "position"),)
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     order_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("workplace_order.id", ondelete="CASCADE"),
+        ForeignKey("order.id", ondelete="CASCADE"),
         nullable=False,
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -126,13 +126,13 @@ class CostReportRow(Base):
 
 
 class PrintingCostRow(Base):
-    __tablename__ = "workplace_printing_cost"
+    __tablename__ = "printing_cost"
     __table_args__ = (UniqueConstraint("cost_report_id", "position"),)
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
     cost_report_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("workplace_cost_report.id", ondelete="CASCADE"),
+        ForeignKey("cost_report.id", ondelete="CASCADE"),
         nullable=False,
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)

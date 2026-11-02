@@ -1,4 +1,4 @@
-"""add core core fields
+"""add workplace order fields
 
 Revision ID: b6d4e2a81c05
 Revises: 733171f352dd

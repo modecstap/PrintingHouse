@@ -1,4 +1,4 @@
-"""Базовая схема до таблиц core.
+"""Базовая схема до таблиц workplace.
 
 Revision ID: 53a756fbc804
 Revises:
@@ -260,7 +260,7 @@ def upgrade() -> None:
         "OWNED BY printing_cost_report.id"
     ))
     op.create_table(
-        "core",
+        "order",
         _sequence_id("order_id_seq"),
         sa.Column("creation_date", sa.Date(), nullable=False),
         sa.Column("status", _enum("order_status", _ORDER_STATUS), nullable=False),
@@ -298,7 +298,7 @@ def upgrade() -> None:
             nullable=True,
             comment="Описание операции",
         ),
-        _foreign_key("operation_order_id_fkey", "order_id", "core.id"),
+        _foreign_key("operation_order_id_fkey", "order_id", "order.id"),
         sa.PrimaryKeyConstraint("id", name="operation_pkey"),
     )
     op.create_table(
@@ -309,7 +309,7 @@ def upgrade() -> None:
         sa.Column("edition_id", sa.BigInteger(), nullable=True),
         sa.Column("printing_cost_report_id", sa.BigInteger(), nullable=True),
         sa.Column("comment", sa.String(length=500), nullable=False),
-        _foreign_key("printing_order_id_fkey", "order_id", "core.id"),
+        _foreign_key("printing_order_id_fkey", "order_id", "order.id"),
         _foreign_key("printing_production_id_fkey", "production_id", "production.id"),
         _foreign_key("printing_edition_id_fkey", "edition_id", "edition.id"),
         _foreign_key(
@@ -352,7 +352,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("printing")
     op.drop_table("operation")
-    op.drop_table("core")
+    op.drop_table("order")
     op.drop_table("printing_cost_report")
     op.drop_table("order_cost_report")
     op.drop_table("production_reference")

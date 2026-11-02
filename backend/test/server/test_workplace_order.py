@@ -209,8 +209,8 @@ def _count_rows(engine: Engine, table: str) -> int:
 
 def _counts(api: _Api) -> tuple[int, int]:
     return (
-        _count_rows(api.engine, "workplace_order"),
-        _count_rows(api.engine, "workplace_cost_report"),
+        _count_rows(api.engine, '"order"'),
+        _count_rows(api.engine, "cost_report"),
     )
 
 
@@ -218,7 +218,7 @@ def _reference_document(engine: Engine) -> object:
     with engine.connect() as connection:
         return connection.execute(
             text(
-                "SELECT document FROM workplace_reference WHERE id = 1"
+                "SELECT document FROM reference WHERE id = 1"
             )
         ).scalar_one_or_none()
 
@@ -227,12 +227,12 @@ def _restore_reference(engine: Engine, document: object) -> None:
     with engine.begin() as connection:
         if document is None:
             connection.execute(
-                text("DELETE FROM workplace_reference WHERE id = 1")
+                text("DELETE FROM reference WHERE id = 1")
             )
             return
         connection.execute(
             text(
-                "INSERT INTO workplace_reference (id, document) "
+                "INSERT INTO reference (id, document) "
                 "VALUES (1, CAST(:document AS jsonb)) "
                 "ON CONFLICT (id) DO UPDATE "
                 "SET document = EXCLUDED.document"
@@ -411,7 +411,7 @@ def api(engine: Engine, client: TestClient) -> Iterator[_Api]:
         app.dependency_overrides.pop(get_workplace_order_service, None)
         if saved_ids:
             statement = text(
-                "DELETE FROM workplace_order WHERE id IN :ids"
+                'DELETE FROM "order" WHERE id IN :ids'
             ).bindparams(bindparam("ids", expanding=True))
             with engine.begin() as connection:
                 connection.execute(statement, {"ids": saved_ids})
@@ -429,14 +429,14 @@ def test_should_create_an_order_and_return_only_its_id(api: _Api) -> None:
     full = _token(api, "FULL")
     read = _token(api, "READ")
     created = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=full,
         json=_empty_order(creation_date="2020-01-01", economy=1),
     )
     assert created.status_code == 200
     order_id = _remember(api, created)
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=read
+        f"/api/v2/order/{order_id}", headers=read
     )
     assert loaded.status_code == 200
     body = loaded.json()
@@ -459,15 +459,15 @@ def test_should_create_an_order_and_return_only_its_id(api: _Api) -> None:
 def test_should_update_the_same_order_without_a_report(api: _Api) -> None:
     headers = _token(api, "FULL")
     created = api.client.post(
-        "/api/v2/core/", headers=headers, json=_empty_order()
+        "/api/v2/order/", headers=headers, json=_empty_order()
     )
     order_id = _remember(api, created)
     created_on = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()["creation_date"]
-    reports_before = _count_rows(api.engine, "workplace_cost_report")
+    reports_before = _count_rows(api.engine, "cost_report")
     updated = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(
             id=order_id, comment="стало", status="Завершён"
@@ -476,22 +476,22 @@ def test_should_update_the_same_order_without_a_report(api: _Api) -> None:
     assert updated.status_code == 200
     assert updated.json()["id"] == order_id
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     )
     assert loaded.json()["comment"] == "стало"
     assert loaded.json()["status"] == "Завершён"
     assert loaded.json()["creation_date"] == created_on
     assert _reports(api, order_id) == []
     assert (
-        _count_rows(api.engine, "workplace_cost_report") == reports_before
+        _count_rows(api.engine, "cost_report") == reports_before
     )
 
 
 def test_should_refuse_to_save_an_unknown_id(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(id=_MISSING_ID),
     )
@@ -502,7 +502,7 @@ def test_should_refuse_to_save_an_unknown_id(api: _Api) -> None:
     assert "secret" not in response.json()["detail"]
     assert "localhost" not in response.json()["detail"]
     assert "postgresql" not in response.json()["detail"]
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_round_trip_printings_in_request_order(api: _Api) -> None:
@@ -510,13 +510,13 @@ def test_should_round_trip_printings_in_request_order(api: _Api) -> None:
     first = _first_printing()
     second = _second_printing()
     created = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(printings=[first, second]),
     )
     order_id = _remember(api, created)
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     )
     printings = loaded.json()["printings"]
     assert len(printings) == 2
@@ -530,16 +530,16 @@ def test_should_list_created_orders_by_descending_id(api: _Api) -> None:
     first = _remember(
         api,
         api.client.post(
-            "/api/v2/core/", headers=full, json=_empty_order()
+            "/api/v2/order/", headers=full, json=_empty_order()
         ),
     )
     second = _remember(
         api,
         api.client.post(
-            "/api/v2/core/", headers=full, json=_empty_order()
+            "/api/v2/order/", headers=full, json=_empty_order()
         ),
     )
-    listed = api.client.get("/api/v2/core/", headers=read)
+    listed = api.client.get("/api/v2/order/", headers=read)
     assert listed.status_code == 200
     body = listed.json()
     assert type(body) is list
@@ -558,7 +558,7 @@ def test_should_return_an_empty_list_when_the_service_has_no_orders(
     headers = _token(api, "READ")
     service = WorkplaceOrderService(_EmptyCatalog(), Administrator())
     app.dependency_overrides[get_workplace_order_service] = lambda: service
-    listed = api.client.get("/api/v2/core/", headers=headers)
+    listed = api.client.get("/api/v2/order/", headers=headers)
     assert listed.status_code == 200
     assert listed.json() == []
 
@@ -568,16 +568,16 @@ def test_should_delete_an_order_with_an_empty_body(api: _Api) -> None:
     order_id = _remember(
         api,
         api.client.post(
-            "/api/v2/core/", headers=headers, json=_empty_order()
+            "/api/v2/order/", headers=headers, json=_empty_order()
         ),
     )
     deleted = api.client.delete(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     )
     assert deleted.status_code == 200
     assert deleted.content == b""
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     )
     assert loaded.status_code == 404
     assert loaded.json()["detail"] == (
@@ -590,15 +590,15 @@ def test_should_delete_an_order_with_an_empty_body(api: _Api) -> None:
 
 def test_should_refuse_to_delete_an_unknown_id(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     deleted = api.client.delete(
-        f"/api/v2/core/{_MISSING_ID}", headers=headers
+        f"/api/v2/order/{_MISSING_ID}", headers=headers
     )
     assert deleted.status_code == 404
     assert deleted.json()["detail"] == (
         f"delete: заказа нет, id={_MISSING_ID}"
     )
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_return_a_cost_report_and_write_nothing(api: _Api) -> None:
@@ -609,7 +609,7 @@ def test_should_return_a_cost_report_and_write_nothing(api: _Api) -> None:
         (_operation_order(), _OPERATION_REPORT),
     ):
         response = api.client.post(
-            "/api/v2/core/cost_report", headers=headers, json=payload
+            "/api/v2/order/cost_report", headers=headers, json=payload
         )
         assert response.status_code == 200
         assert response.headers["content-type"].startswith(
@@ -626,7 +626,7 @@ def test_should_answer_500_and_write_nothing_when_calculation_fails(
     headers = _token(api, "FULL")
     before = _counts(api)
     response = api.client.post(
-        "/api/v2/core/cost_report",
+        "/api/v2/order/cost_report",
         headers=headers,
         json=_empty_order(unit_count=0),
     )
@@ -638,8 +638,8 @@ def test_should_answer_500_and_write_nothing_when_calculation_fails(
 @pytest.mark.parametrize(
     ("path", "status_text"),
     [
-        ("/api/v2/core/accept", "В работе"),
-        ("/api/v2/core/delay", "Отложен"),
+        ("/api/v2/order/accept", "В работе"),
+        ("/api/v2/order/delay", "Отложен"),
     ],
 )
 def test_should_accept_or_delay_and_append_the_report(
@@ -660,9 +660,9 @@ def test_should_accept_or_delay_and_append_the_report(
     order_id = body["id"]
     assert type(order_id) is int
     api.saved_ids.append(order_id)
-    rows_after_first = _count_rows(api.engine, "workplace_order")
+    rows_after_first = _count_rows(api.engine, '"order"')
     created_on = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()["creation_date"]
     second = api.client.post(
         path,
@@ -672,9 +672,9 @@ def test_should_accept_or_delay_and_append_the_report(
     assert second.status_code == 200
     assert second.json()["id"] == order_id
     assert second.json()["cost_report"] == _OPERATION_REPORT
-    assert _count_rows(api.engine, "workplace_order") == rows_after_first
+    assert _count_rows(api.engine, '"order"') == rows_after_first
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()
     assert loaded["status"] == status_text
     assert loaded["unit_count"] == 2
@@ -690,7 +690,7 @@ def test_should_accept_or_delay_and_append_the_report(
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/v2/core/accept", "/api/v2/core/delay"],
+    ["/api/v2/order/accept", "/api/v2/order/delay"],
 )
 def test_should_answer_500_and_write_nothing_when_accept_or_delay_cannot_calculate(
     api: _Api, path: str
@@ -707,7 +707,7 @@ def test_should_answer_500_and_write_nothing_when_accept_or_delay_cannot_calcula
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/v2/core/accept", "/api/v2/core/delay"],
+    ["/api/v2/order/accept", "/api/v2/order/delay"],
 )
 def test_should_refuse_to_accept_or_delay_an_unknown_id(
     api: _Api, path: str
@@ -727,24 +727,24 @@ def test_should_refuse_to_accept_or_delay_an_unknown_id(
 def test_should_change_only_the_status(api: _Api) -> None:
     headers = _token(api, "FULL")
     accepted = api.client.post(
-        "/api/v2/core/accept",
+        "/api/v2/order/accept",
         headers=headers,
         json=_operation_order(comment="заметка"),
     )
     order_id = accepted.json()["id"]
     api.saved_ids.append(order_id)
     created_on = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()["creation_date"]
     changed = api.client.post(
-        "/api/v2/core/status",
+        "/api/v2/order/status",
         headers=headers,
         json={"order_id": order_id, "new_status": "Завершён"},
     )
     assert changed.status_code == 200
     assert changed.content == b""
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()
     assert loaded["status"] == "Завершён"
     assert loaded["comment"] == "заметка"
@@ -758,29 +758,29 @@ def test_should_refuse_an_unknown_status(api: _Api) -> None:
     order_id = _remember(
         api,
         api.client.post(
-            "/api/v2/core/", headers=headers, json=_empty_order()
+            "/api/v2/order/", headers=headers, json=_empty_order()
         ),
     )
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/status",
+        "/api/v2/order/status",
         headers=headers,
         json={"order_id": order_id, "new_status": "SAVED"},
     )
     assert response.status_code == 422
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     )
     assert loaded.json()["status"] == "Отложен"
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
     assert _reports(api, order_id) == []
 
 
 def test_should_refuse_to_change_status_of_an_unknown_id(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/status",
+        "/api/v2/order/status",
         headers=headers,
         json={"order_id": _MISSING_ID, "new_status": "Завершён"},
     )
@@ -788,14 +788,14 @@ def test_should_refuse_to_change_status_of_an_unknown_id(api: _Api) -> None:
     assert response.json()["detail"] == (
         f"take: заказа нет, id={_MISSING_ID}"
     )
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_reject_a_negative_operation_cost(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(operations=[{
             "name": "",
@@ -805,7 +805,7 @@ def test_should_reject_a_negative_operation_cost(api: _Api) -> None:
     )
     assert response.status_code == 500
     assert _internal_error(response) == "Internal Server Error"
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_save_a_zero_operation_cost(api: _Api) -> None:
@@ -813,7 +813,7 @@ def test_should_save_a_zero_operation_cost(api: _Api) -> None:
     order_id = _remember(
         api,
         api.client.post(
-            "/api/v2/core/",
+            "/api/v2/order/",
             headers=headers,
             json=_empty_order(operations=[{
                 "name": "",
@@ -823,7 +823,7 @@ def test_should_save_a_zero_operation_cost(api: _Api) -> None:
         ),
     )
     loaded = api.client.get(
-        f"/api/v2/core/{order_id}", headers=headers
+        f"/api/v2/order/{order_id}", headers=headers
     ).json()
     assert len(loaded["operations"]) == 1
     cost = loaded["operations"][0]["cost"]
@@ -838,63 +838,63 @@ def test_should_refuse_a_negative_money_rate(api: _Api) -> None:
         **printing["press_pricing"],
         "cyan": "-1",
     }
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(printings=[printing]),
     )
     assert response.status_code == 500
     assert response.status_code not in (422, 404)
     assert _internal_error(response) == "Internal Server Error"
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_reject_a_status_name(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(status="SAVED"),
     )
     assert response.status_code == 422
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_reject_a_chroma_number(api: _Api) -> None:
     headers = _token(api, "FULL")
     printing = _first_printing()
     printing["chroma"] = 0
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(printings=[printing]),
     )
     assert response.status_code == 422
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_reject_a_decimal_sent_as_a_number(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(tax_rate=1),
     )
     assert response.status_code == 422
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_reject_an_operation_cost_sent_as_a_number(
     api: _Api,
 ) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     response = api.client.post(
-        "/api/v2/core/",
+        "/api/v2/order/",
         headers=headers,
         json=_empty_order(operations=[{
             "name": "",
@@ -903,27 +903,27 @@ def test_should_reject_an_operation_cost_sent_as_a_number(
         }]),
     )
     assert response.status_code == 422
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_refuse_the_list_when_the_token_is_missing(
     api: _Api,
 ) -> None:
-    response = api.client.get("/api/v2/core/")
+    response = api.client.get("/api/v2/order/")
     assert response.status_code == 403
     assert response.json()["detail"] == "Not authenticated"
 
 
 def test_should_allow_a_read_token_to_list_orders(api: _Api) -> None:
     headers = _token(api, "READ")
-    listed = api.client.get("/api/v2/core/", headers=headers)
+    listed = api.client.get("/api/v2/order/", headers=headers)
     assert listed.status_code == 200
     assert type(listed.json()) is list
 
 
 def test_should_refuse_a_list_without_read_permission(api: _Api) -> None:
     headers = _token(api, "NONE")
-    listed = api.client.get("/api/v2/core/", headers=headers)
+    listed = api.client.get("/api/v2/order/", headers=headers)
     assert listed.status_code == 403
     assert listed.json()["detail"] == _READ_DENIED
     reference = api.client.get("/api/v2/reference/", headers=headers)
@@ -934,12 +934,12 @@ def test_should_refuse_a_list_without_read_permission(api: _Api) -> None:
 @pytest.mark.parametrize(
     ("method", "path", "kind"),
     [
-        ("post", "/api/v2/core/", "empty"),
-        ("delete", f"/api/v2/core/{_MISSING_ID}", "none"),
-        ("post", "/api/v2/core/cost_report", "empty"),
-        ("post", "/api/v2/core/delay", "empty"),
-        ("post", "/api/v2/core/accept", "empty"),
-        ("post", "/api/v2/core/status", "status"),
+        ("post", "/api/v2/order/", "empty"),
+        ("delete", f"/api/v2/order/{_MISSING_ID}", "none"),
+        ("post", "/api/v2/order/cost_report", "empty"),
+        ("post", "/api/v2/order/delay", "empty"),
+        ("post", "/api/v2/order/accept", "empty"),
+        ("post", "/api/v2/order/status", "status"),
         ("post", "/api/v2/reference/", "empty"),
     ],
 )
@@ -977,21 +977,21 @@ def test_should_refuse_a_write_without_full_permission(
 
 def test_should_not_save_on_routes_outside_the_contract(api: _Api) -> None:
     headers = _token(api, "FULL")
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     calls = (
-        api.client.put("/api/v2/core/1", headers=headers),
+        api.client.put("/api/v2/order/1", headers=headers),
         api.client.post(
-            "/api/v2/core/1", headers=headers, json=_empty_order()
+            "/api/v2/order/1", headers=headers, json=_empty_order()
         ),
         api.client.post(
-            "/api/v2/core/bulk",
+            "/api/v2/order/bulk",
             headers=headers,
             json=[_empty_order()],
         ),
     )
     for response in calls:
         assert response.status_code not in (200, 201)
-    assert _count_rows(api.engine, "workplace_order") == before
+    assert _count_rows(api.engine, '"order"') == before
 
 
 def test_should_report_store_unavailable_without_secrets(api: _Api) -> None:
@@ -999,7 +999,7 @@ def test_should_report_store_unavailable_without_secrets(api: _Api) -> None:
     app.dependency_overrides[get_workplace_order_service] = (
         lambda: _UnavailableTake()
     )
-    response = api.client.get("/api/v2/core/5", headers=headers)
+    response = api.client.get("/api/v2/order/5", headers=headers)
     assert response.status_code == 503
     assert response.json()["detail"] == (
         "take: нет соединения с базой, id=5"
@@ -1046,7 +1046,7 @@ def test_should_replace_the_reference_without_adding_an_order(
     read = _token(api, "READ")
     comment = f"reference-{uuid4().hex}"
     previous = _reference_document(api.engine)
-    before = _count_rows(api.engine, "workplace_order")
+    before = _count_rows(api.engine, '"order"')
     try:
         saved = api.client.post(
             "/api/v2/reference/",
@@ -1061,9 +1061,9 @@ def test_should_replace_the_reference_without_adding_an_order(
         assert body["id"] is None
         assert "creation_date" not in body
         assert body["printings"][0]["press_pricing"]["cyan"] == "1.5"
-        assert _count_rows(api.engine, "workplace_order") == before
+        assert _count_rows(api.engine, '"order"') == before
         missing = api.client.get(
-            f"/api/v2/core/{_MISSING_ID}", headers=read
+            f"/api/v2/order/{_MISSING_ID}", headers=read
         )
         assert missing.status_code == 404
         replaced = api.client.post(
@@ -1079,12 +1079,12 @@ def test_should_replace_the_reference_without_adding_an_order(
         assert stored["id"] is None
         assert "creation_date" not in stored
         assert stored["printings"][0]["press_pricing"]["cyan"] == "2.5"
-        listed = api.client.get("/api/v2/core/", headers=read)
+        listed = api.client.get("/api/v2/order/", headers=read)
         assert listed.status_code == 200
         assert all(
             item["comment"] != comment for item in listed.json()
         )
-        assert _count_rows(api.engine, "workplace_order") == before
+        assert _count_rows(api.engine, '"order"') == before
     finally:
         _restore_reference(api.engine, previous)
 

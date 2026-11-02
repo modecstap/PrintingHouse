@@ -34,5 +34,7 @@ alembic -c backend/storage/alembic.ini upgrade head
 
 Upgrade копирует строки старых заказов в таблицы Workplace, если в `"order"` есть строки, а таблицы Workplace пустые. Если в таблицах Workplace уже есть строки, upgrade останавливается и старые таблицы не меняет.
 
+Следующие ревизии удаляют старые таблицы и убирают префикс `workplace_`: на head заказы лежат в `"order"`, `operation_cost`, `printing`, `cost_report`, `printing_cost`, а справочник — в `reference`.
+
 ## AI-агенты
 Настройка AI-агентов и структура `.agents/`: [.agents/docs/onboarding.md](.agents/docs/onboarding.md).

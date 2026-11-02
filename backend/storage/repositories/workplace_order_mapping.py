@@ -185,7 +185,7 @@ def insert_order(session: Session, order: Order) -> int:
 
     Результат: id, который назначила база.
     Побочные эффекты: creation_date равен date.today() процесса.
-    core.creation_date не читается. Строки CostReport не пишет.
+    order.creation_date не читается. Строки CostReport не пишет.
     Переданный Order не меняет.
     """
     row = WorkplaceOrderRow()
@@ -460,7 +460,12 @@ def _printing_from_document(value: object) -> Printing:
     )
 
 
-def _reference_document(order: Order) -> dict[str, object]:
+def reference_document(order: Order) -> dict[str, object]:
+    """Строит документ справочника из заказа.
+
+    Результат: JSON-документ справочника. id всегда null.
+    creation_date в документ не входит. Переданный Order не меняет.
+    """
     # id всегда null. creation_date в документ не входит:
     # дата есть только у строки заказа.
     return {
@@ -530,11 +535,11 @@ def write_reference(session: Session, order: Order) -> None:
     Побочные эффекты: пишет строку id = 1. Коммит не делает:
     транзакция принадлежит вызывающему. creation_date
     не пишет. id в документе всегда null. Переданный
-    Order не меняет. Строку workplace_order не пишет.
+    Order не меняет. Строку order не пишет.
     """
     statement = insert(WorkplaceReferenceRow).values(
         id=1,
-        document=_reference_document(order),
+        document=reference_document(order),
     )
     session.execute(
         statement.on_conflict_do_update(

@@ -9,12 +9,13 @@ from pathlib import Path
 
 import pytest
 from alembic import command
+from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 
 from backend.storage.db_config import DBConfig
 from backend.test.storage.test_schema_migration import (
-    _assert_legacy_objects_absent,
+    _assert_head_objects,
     _assert_legacy_objects_present,
     _migration_database,
 )
@@ -35,13 +36,13 @@ _DUMP = (
 )
 _COLOR = Decimal("4.533333333333333333333333333")
 _KEPT = (
-    '"core"',
+    '"order"',
     "production_reference",
     '"user"',
     "operation",
     "printing",
 )
-_DUMP_KEPT = ('"core"', "production_reference", '"user"')
+_DUMP_KEPT = ('"order"', "production_reference", '"user"')
 _FILM_SIDES = {"DONT": 0, "ONE_ZERO": 1, "ONE_ONE": 2}
 
 
@@ -143,7 +144,7 @@ def _insert_legacy(connection: Connection) -> None:
     ))
     connection.execute(text(
         """
-        INSERT INTO "core" (
+        INSERT INTO "order" (
             id, creation_date, status, comment, economy_id,
             order_cost_report_id, unit_count
         ) VALUES
@@ -179,14 +180,14 @@ def _insert_legacy(connection: Connection) -> None:
 
 
 @contextmanager
-def _upgraded_legacy() -> Iterator[tuple[Engine, dict[str, int]]]:
+def _upgraded_legacy() -> Iterator[tuple[Config, Engine, dict[str, int]]]:
     with _migration_database() as (config, engine):
         command.upgrade(config, "b6d4e2a81c05")
         with engine.begin() as connection:
             _insert_legacy(connection)
             before = _counts(connection, _KEPT)
         command.upgrade(config, "2f55f813c842")
-        yield engine, before
+        yield config, engine, before
 
 
 def _assert_reference(order: Order) -> None:
@@ -223,7 +224,7 @@ def _assert_reference(order: Order) -> None:
 
 
 def test_should_copy_order_headers_and_advance_the_id_when_legacy_orders_are_upgraded() -> None:
-    with _upgraded_legacy() as (engine, _before):
+    with _upgraded_legacy() as (config, engine, _before):
         with engine.connect() as connection:
             headers = _rows(connection, """
                 SELECT id, creation_date, status, comment, unit_count, markup, tax_rate
@@ -234,12 +235,13 @@ def test_should_copy_order_headers_and_advance_the_id_when_legacy_orders_are_upg
             (6, date(2024, 3, 15), "DONE", "", 11, Decimal("80.0000"), Decimal("0.9300")),
             (50, date(2020, 1, 2), "SAVED", "заметка", 2, Decimal("0.0000"), Decimal("1.0000")),
         ]
+        command.upgrade(config, "head")
         saved_id = _service(engine).save(_blank_order())
         assert saved_id == 51
 
 
 def test_should_copy_operations_and_printing_rates_when_legacy_rows_are_upgraded() -> None:
-    with _upgraded_legacy() as (engine, _before):
+    with _upgraded_legacy() as (_config, engine, _before):
         with engine.connect() as connection:
             operations = _rows(connection, """
                 SELECT position, name, amount, description
@@ -297,7 +299,7 @@ def test_should_copy_operations_and_printing_rates_when_legacy_rows_are_upgraded
 
 
 def test_should_copy_only_reports_of_orders_that_have_one_when_the_database_is_upgraded() -> None:
-    with _upgraded_legacy() as (engine, _before):
+    with _upgraded_legacy() as (_config, engine, _before):
         with engine.connect() as connection:
             reports = _rows(connection, """
                 SELECT order_id, position, unit_cost_price, unit_cost,
@@ -350,10 +352,7 @@ def test_should_copy_only_reports_of_orders_that_have_one_when_the_database_is_u
 
 
 def test_should_write_the_reference_without_an_order_row_when_legacy_orders_are_upgraded() -> None:
-    with _upgraded_legacy() as (engine, before):
-        service = _service(engine)
-        _assert_reference(service.reference())
-        assert sorted(order.id for order in service.take_all()) == [6, 50]
+    with _upgraded_legacy() as (config, engine, before):
         with engine.connect() as connection:
             assert _count(connection, "workplace_order") == 2
             assert _count(connection, "workplace_reference") == 1
@@ -361,10 +360,14 @@ def test_should_write_the_reference_without_an_order_row_when_legacy_orders_are_
                 "SELECT document FROM workplace_reference WHERE id = 1"
             )).scalar_one()
             assert _counts(connection, _KEPT) == before
+        command.upgrade(config, "head")
+        service = _service(engine)
+        _assert_reference(service.reference())
+        assert sorted(order.id for order in service.take_all()) == [6, 50]
     assert document["id"] is None
     assert "creation_date" not in document
     assert before == {
-        '"core"': 2,
+        '"order"': 2,
         "production_reference": 1,
         '"user"': 1,
         "operation": 3,
@@ -381,7 +384,7 @@ def test_should_refuse_the_copy_when_workplace_tables_are_not_empty() -> None:
             ))
             connection.execute(text(
                 """
-                INSERT INTO "core" (
+                INSERT INTO "order" (
                     id, creation_date, status, comment, economy_id, unit_count
                 ) VALUES (6, DATE '2024-03-15', 'DONE', '', 1, 11)
                 """
@@ -393,13 +396,13 @@ def test_should_refuse_the_copy_when_workplace_tables_are_not_empty() -> None:
                 ) VALUES (1, 'держатель', 'SAVED', 1, 0, 0, DATE '2024-01-01')
                 """
             ))
-        with pytest.raises(Exception, match="core tables are not empty"):
+        with pytest.raises(Exception, match="workplace tables are not empty"):
             command.upgrade(config, "head")
         with engine.connect() as connection:
             version = connection.execute(text(
                 "SELECT version_num FROM alembic_version"
             )).scalar_one()
-            order_ids = _rows(connection, 'SELECT id FROM "core"')
+            order_ids = _rows(connection, 'SELECT id FROM "order"')
             holder = _rows(connection, "SELECT id, comment FROM workplace_order")
             printings = _count(connection, "workplace_printing")
     assert version == "b6d4e2a81c05"
@@ -509,7 +512,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             header_gap = _mismatch_count(connection, """
                 SELECT o.id, o.creation_date, o.comment, o.status::text,
                        o.unit_count, e.markup, e.tax_rate
-                FROM "core" AS o
+                FROM "order" AS o
                 JOIN economy AS e ON e.id = o.economy_id
                 EXCEPT
                 SELECT id, creation_date, comment, status, unit_count, markup, tax_rate
@@ -544,18 +547,18 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             report_rows = _count(connection, "workplace_cost_report")
             printing_cost_rows = _count(connection, "workplace_printing_cost")
             orders_without_report = _count(
-                connection, '"core"', "order_cost_report_id IS NULL"
+                connection, '"order"', "order_cost_report_id IS NULL"
             )
             copied_empty_reports = _mismatch_count(connection, """
                 SELECT o.id
-                FROM "core" AS o
+                FROM "order" AS o
                 JOIN workplace_cost_report AS report ON report.order_id = o.id
                 WHERE o.order_cost_report_id IS NULL
                 """)
             report_gap = _mismatch_count(connection, """
                 SELECT o.id, r.unit_cost_price, r.unit_cost,
                        r.edition_cost, r.profit_after_tax
-                FROM "core" AS o
+                FROM "order" AS o
                 JOIN order_cost_report AS r ON r.id = o.order_cost_report_id
                 EXCEPT
                 SELECT order_id, unit_cost_price, unit_cost,
@@ -569,7 +572,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
                        c.edition_cost_price, c.edition_cost,
                        c.profit_before_tax, c.profit_after_tax
                 FROM printing AS p
-                JOIN "core" AS o ON o.id = p.order_id
+                JOIN "order" AS o ON o.id = p.order_id
                 JOIN printing_cost_report AS c ON c.id = p.printing_cost_report_id
                 WHERE o.order_cost_report_id IS NOT NULL
                 EXCEPT
@@ -584,9 +587,9 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             workplace_orders = _count(connection, "workplace_order")
         command.upgrade(config, "head")
         with engine.connect() as connection:
-            head_orders = _count(connection, "workplace_order")
+            head_orders = _count(connection, '"order"')
             head_users = _count(connection, '"user"')
-            _assert_legacy_objects_absent(connection)
+            _assert_head_objects(connection)
         service = _service(engine)
         _assert_reference(service.reference())
         taken = service.take_all()
@@ -620,7 +623,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
     assert all(order.id is not None for order in taken)
     assert workplace_orders == 234
     assert after == before
-    assert before == {'"core"': 234, "production_reference": 1, '"user"': 3}
+    assert before == {'"order"': 234, "production_reference": 1, '"user"': 3}
     assert saved_id > 890
     assert head_orders == 234
     assert head_users == 3
@@ -633,15 +636,15 @@ def test_should_keep_copied_rows_and_restore_empty_legacy_tables_when_head_is_do
             _insert_legacy(connection)
         command.upgrade(config, "head")
         with engine.connect() as connection:
-            copied = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
+            copied = _rows(connection, 'SELECT id FROM "order" ORDER BY id')
             users = _count(connection, '"user"')
-            _assert_legacy_objects_absent(connection)
+            _assert_head_objects(connection)
         assert copied == [(6,), (50,)]
         assert users == 1
         command.downgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             _assert_legacy_objects_present(connection)
-            assert _count(connection, '"core"') == 0
+            assert _count(connection, '"order"') == 0
             assert _count(connection, "printing") == 0
             assert _count(connection, "production_reference") == 0
             assert _count(connection, '"user"') == 1
@@ -649,6 +652,6 @@ def test_should_keep_copied_rows_and_restore_empty_legacy_tables_when_head_is_do
         assert restored == [(6,), (50,)]
         command.upgrade(config, "head")
         with engine.connect() as connection:
-            again = _rows(connection, "SELECT id FROM workplace_order ORDER BY id")
-            _assert_legacy_objects_absent(connection)
+            again = _rows(connection, 'SELECT id FROM "order" ORDER BY id')
+            _assert_head_objects(connection)
         assert again == [(6,), (50,)]

@@ -98,8 +98,8 @@ def _count_rows(engine: Engine, table: str) -> int:
 
 def _order_and_report_counts(engine: Engine) -> tuple[int, int]:
     return (
-        _count_rows(engine, "workplace_order"),
-        _count_rows(engine, "workplace_cost_report"),
+        _count_rows(engine, '"order"'),
+        _count_rows(engine, "cost_report"),
     )
 
 
@@ -151,7 +151,7 @@ def workplace(
         if not saved_ids:
             return
         statement = text(
-            "DELETE FROM workplace_order WHERE id IN :ids"
+            'DELETE FROM "order" WHERE id IN :ids'
         ).bindparams(bindparam("ids", expanding=True))
         with engine.begin() as connection:
             connection.execute(statement, {"ids": saved_ids})
@@ -204,10 +204,10 @@ def test_should_refuse_to_save_an_unknown_id(
     service, _orders, _saved_ids = workplace
     order = _order(order_id=_MISSING_ID)
     held = replace(order)
-    before = _count_rows(engine, "workplace_order")
+    before = _count_rows(engine, '"order"')
     with pytest.raises(OrderNotFound, match=_MISSING_TEXT):
         service.save(order)
-    assert _count_rows(engine, "workplace_order") == before
+    assert _count_rows(engine, '"order"') == before
     assert order == held
 
 
@@ -474,10 +474,10 @@ def test_should_refuse_to_change_status_of_an_unknown_id(
     workplace: _Bundle, engine: Engine
 ) -> None:
     service, _orders, _saved_ids = workplace
-    before = _count_rows(engine, "workplace_order")
+    before = _count_rows(engine, '"order"')
     with pytest.raises(OrderNotFound, match=_MISSING_TEXT):
         service.change_status(_MISSING_ID, Status.DONE)
-    assert _count_rows(engine, "workplace_order") == before
+    assert _count_rows(engine, '"order"') == before
 
 
 def test_should_calculate_without_using_the_database() -> None:
@@ -576,7 +576,7 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
             lambda: service.save(_order()),
             lambda: service.delete(_MISSING_ID),
             lambda: service.take_all(),
-            lambda: service.accept(_order(comment="core-body-marker")),
+            lambda: service.accept(_order(comment="order-body-marker")),
         ]
         for call in calls:
             with pytest.raises(OrderStoreUnavailable) as caught:
@@ -588,6 +588,6 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
             assert "secret-token" not in message
             assert "127.0.0.1" not in message
             assert "postgresql" not in message
-            assert "core-body-marker" not in message
+            assert "order-body-marker" not in message
     finally:
         local.dispose()

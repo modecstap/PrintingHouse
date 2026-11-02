@@ -103,10 +103,10 @@ class WorkplaceOrderRepository(Protocol):
         ...
 
     def take_all(self) -> list[Order]:
-        """Возвращает все строки workplace_order, без CostReport.
+        """Возвращает все строки order, без CostReport.
 
         Результат: каждая строка один раз, по убыванию id.
-        Строк нет: пустой список. Заказы таблицы core не читаются.
+        Строк нет: пустой список.
         Ошибки: OrderStoreUnavailable, если нет соединения с базой.
         OrderNotFound не бросает.
         """
@@ -158,7 +158,7 @@ class WorkplaceOrderRepository(Protocol):
         Результат: ничего не возвращает.
         Побочные эффекты: id аргумента не выбирает запись.
         creation_date в документ не пишется. Строка
-        workplace_order не появляется. Два параллельных
+        order не появляется. Два параллельных
         вызова оставляют один целый документ. Переданный
         Order не меняется.
         Ошибки: OrderStoreUnavailable, если нет соединения
