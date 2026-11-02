@@ -1,15 +1,15 @@
 import math
 
-from backend.workplace.accountant.accountant import Accountant
-from backend.workplace.cost_order import Order
-from backend.workplace.placement import place_on_sheet
-from backend.workplace.reports import CostReport, PrintingCase
-from backend.workplace.workplaces.cutting.cutting import CuttingWorkplace
-from backend.workplace.workplaces.die_cutting.die_cutting import \
+from backend.core.accountant.accountant import Accountant
+from backend.core.order import Order
+from backend.core.placement import place_on_sheet
+from backend.core.reports import CostReport, PrintingCase
+from backend.core.workplaces.cutting.cutting import CuttingWorkplace
+from backend.core.workplaces.die_cutting.die_cutting import \
     DieCuttingWorkplace
-from backend.workplace.workplaces.lamination.lamination import \
+from backend.core.workplaces.lamination.lamination import \
     LaminationWorkplace
-from backend.workplace.workplaces.printing.printing import PrintingWorkplace
+from backend.core.workplaces.printing.printing import PrintingWorkplace
 
 
 class Administrator:

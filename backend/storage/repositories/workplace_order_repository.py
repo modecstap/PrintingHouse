@@ -6,15 +6,15 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import InterfaceError, OperationalError
 from sqlalchemy.orm import Session
 
-from backend.workplace.cost_order import Order
-from backend.workplace.order_repository import (
+from backend.core.order import Order
+from backend.core.order_repository import (
     OrderId,
     OrderNotFound,
     OrderStoreUnavailable,
     StoreOperation,
     WorkplaceOrderRepository,
 )
-from backend.workplace.reports import CostReport
+from backend.core.reports import CostReport
 from backend.storage.repositories.workplace_order_mapping import (
     insert_order,
     read_order,
@@ -104,7 +104,7 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         """Возвращает все строки workplace_order, без CostReport.
 
         Результат: каждая строка один раз, по убыванию id.
-        Строк нет: пустой список. Заказы таблицы order не читаются.
+        Строк нет: пустой список. Заказы таблицы core не читаются.
         Ошибки: OrderStoreUnavailable, если нет соединения с базой.
         OrderNotFound не бросает.
         """

@@ -2,19 +2,19 @@ from decimal import Decimal
 
 import pytest
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import (
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import (
     DieCuttingCalculation,
 )
-from backend.workplace.accountant.pricing.lamination import (
+from backend.core.accountant.pricing.lamination import (
     LaminationCalculation,
 )
-from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import List, Order, Printing
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import Chroma, PressSheet
+from backend.core.accountant.pricing.printing import PrintingCalculation
+from backend.core.administrator import Administrator
+from backend.core.order import List, Order, Printing
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma, PressSheet
 
 
 def _order(

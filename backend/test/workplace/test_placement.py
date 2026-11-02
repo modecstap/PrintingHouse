@@ -1,8 +1,8 @@
 import pytest
 
-from backend.workplace.cost_order import List
-from backend.workplace.placement import place_on_sheet
-from backend.workplace.workplaces.printing.models import PressSheet
+from backend.core.order import List
+from backend.core.placement import place_on_sheet
+from backend.core.workplaces.printing.models import PressSheet
 
 
 @pytest.mark.parametrize(

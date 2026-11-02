@@ -1,4 +1,4 @@
-"""copy legacy orders into workplace tables
+"""copy legacy orders into core tables
 
 Revision ID: 2f55f813c842
 Revises: b6d4e2a81c05
@@ -13,18 +13,18 @@ from alembic import op
 from sqlalchemy.engine import Connection, RowMapping
 from sqlalchemy.orm import Session
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import (
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import (
     DieCuttingCalculation,
 )
-from backend.workplace.accountant.pricing.lamination import (
+from backend.core.accountant.pricing.lamination import (
     LaminationCalculation,
 )
-from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import List, Order, Printing, Status
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import Chroma, PressSheet
+from backend.core.accountant.pricing.printing import PrintingCalculation
+from backend.core.order import List, Order, Printing, Status
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma, PressSheet
 from backend.storage.repositories.workplace_order_mapping import write_reference
 
 
@@ -47,7 +47,7 @@ _COUNT_CHECKS = (
     (
         "workplace_order",
         "SELECT count(*) FROM workplace_order",
-        'SELECT count(*) FROM "order"',
+        'SELECT count(*) FROM "core"',
     ),
     (
         "workplace_printing",
@@ -62,7 +62,7 @@ _COUNT_CHECKS = (
     (
         "workplace_cost_report",
         "SELECT count(*) FROM workplace_cost_report",
-        'SELECT count(*) FROM "order" WHERE order_cost_report_id IS NOT NULL',
+        'SELECT count(*) FROM "core" WHERE order_cost_report_id IS NOT NULL',
     ),
     (
         "workplace_printing_cost",
@@ -70,7 +70,7 @@ _COUNT_CHECKS = (
         """
         SELECT count(*)
         FROM printing AS p
-        JOIN "order" AS o ON o.id = p.order_id
+        JOIN "core" AS o ON o.id = p.order_id
         WHERE o.order_cost_report_id IS NOT NULL
         """,
     ),
@@ -79,10 +79,10 @@ _COUNT_CHECKS = (
 
 def upgrade() -> None:
     connection = op.get_bind()
-    # Урезанная таблица order в тестах схемы содержит только id. Без колонки comment читать экономику и печать нельзя.
+    # Урезанная таблица core в тестах схемы содержит только id. Без колонки comment читать экономику и печать нельзя.
     if not _order_has_comment(connection):
         return
-    if _scalar(connection, 'SELECT count(*) FROM "order"') == 0:
+    if _scalar(connection, 'SELECT count(*) FROM "core"') == 0:
         return
     _require_empty_workplace(connection)
     _require_one_production_reference(connection)
@@ -108,7 +108,7 @@ def _order_has_comment(connection: Connection) -> bool:
         SELECT 1
         FROM information_schema.columns
         WHERE table_schema = 'public'
-          AND table_name = 'order'
+          AND table_name = 'core'
           AND column_name = 'comment'
         """
     )).first()
@@ -124,7 +124,7 @@ def _require_empty_workplace(connection: Connection) -> None:
     for table in _WORKPLACE_TABLES:
         if _scalar(connection, f"SELECT count(*) FROM {table}") > 0:
             raise RuntimeError(
-                "copy legacy orders: workplace tables are not empty"
+                "copy legacy orders: core tables are not empty"
             )
 
 
@@ -144,7 +144,7 @@ def _copy_orders(connection: Connection) -> None:
         )
         SELECT o.id, o.comment, o.status::text, o.unit_count,
                e.tax_rate, e.markup, o.creation_date
-        FROM "order" AS o
+        FROM "core" AS o
         JOIN economy AS e ON e.id = o.economy_id
         ORDER BY o.id
         """
@@ -292,7 +292,7 @@ def _copy_cost_reports(connection: Connection) -> None:
         )
         SELECT o.id, 0, r.unit_cost_price, r.unit_cost,
                r.edition_cost, r.profit_after_tax
-        FROM "order" AS o
+        FROM "core" AS o
         JOIN order_cost_report AS r ON r.id = o.order_cost_report_id
         """
     ))
@@ -325,7 +325,7 @@ def _copy_printing_costs(connection: Connection) -> None:
             FROM printing AS p
             WHERE p.order_id IS NOT NULL
         ) AS ranked
-        JOIN "order" AS o ON o.id = ranked.order_id
+        JOIN "core" AS o ON o.id = ranked.order_id
         JOIN workplace_cost_report AS report
           ON report.order_id = o.id AND report.position = 0
         JOIN printing_cost_report AS cost

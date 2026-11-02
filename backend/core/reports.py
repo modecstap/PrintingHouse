@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.workplace.accountant.pricing.calculatable import Calculatable
+from backend.core.accountant.pricing.calculatable import Calculatable
 
 
 @dataclass(frozen=True)

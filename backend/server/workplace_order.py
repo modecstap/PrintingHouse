@@ -18,15 +18,15 @@ from backend.server.models.workplace_order_body import (
     body_from_report,
     order_from_body,
 )
-from backend.workplace.order_repository import (
+from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
 )
-from backend.workplace.order_service import WorkplaceOrderService
+from backend.core.order_service import WorkplaceOrderService
 
 _T = TypeVar("_T")
 
-router = APIRouter(prefix="/api/v2/order", tags=["workplace-order"])
+router = APIRouter(prefix="/api/v2/core", tags=["core-core"])
 _service: WorkplaceOrderService | None = None
 
 

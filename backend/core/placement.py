@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from backend.workplace.cost_order import List
-from backend.workplace.workplaces.printing.models import PressSheet
+from backend.core.order import List
+from backend.core.workplaces.printing.models import PressSheet
 
 
 @dataclass(frozen=True)

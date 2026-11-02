@@ -1,7 +1,7 @@
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.calculatable import Calculatable
-from backend.workplace.accountant.pricing.stage_cost import StageCost
-from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.calculatable import Calculatable
+from backend.core.accountant.pricing.stage_cost import StageCost
+from backend.core.workplaces.die_cutting.models import DieCuttingReport
 
 
 class DieCuttingCalculation(Calculatable):

@@ -19,8 +19,8 @@ from backend.server.workplace_order import (
 from backend.server.workplace_reference import (
     router as workplace_reference_router,
 )
-from backend.workplace.administrator import Administrator
-from backend.workplace.order_service import WorkplaceOrderService
+from backend.core.administrator import Administrator
+from backend.core.order_service import WorkplaceOrderService
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )

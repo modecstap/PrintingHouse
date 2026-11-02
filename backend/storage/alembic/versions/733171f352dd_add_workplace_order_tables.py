@@ -1,4 +1,4 @@
-"""add workplace order tables
+"""add core core tables
 
 Revision ID: 733171f352dd
 Revises: 53a756fbc804
@@ -114,10 +114,10 @@ def upgrade() -> None:
         sa.UniqueConstraint("cost_report_id", "position"),
     )
     op.execute(sa.text(
-        """ALTER TABLE \"order\" ALTER COLUMN id SET DEFAULT nextval('order_id_seq')"""
+        """ALTER TABLE \"core\" ALTER COLUMN id SET DEFAULT nextval('order_id_seq')"""
     ))
     # На заполненной базе счётчик может отставать от max(id); двигать его только вперёд. setval не откатывается вместе с транзакцией Alembic. Повтор блока этого не портит: после продвижения следующее значение уже больше максимума, и второй проход ничего не меняет.
-    _advance_lagging_sequence("order_id_seq", '"order"')
+    _advance_lagging_sequence("order_id_seq", '"core"')
     _advance_lagging_sequence("printing_id_seq", "printing")
     _advance_lagging_sequence("printing_cost_report_id_seq", "printing_cost_report")
 

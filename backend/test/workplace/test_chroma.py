@@ -1,6 +1,6 @@
 import pytest
 
-from backend.workplace.workplaces.printing.models import Chroma
+from backend.core.workplaces.printing.models import Chroma
 
 
 def test_chroma_values_match_the_saved_names():

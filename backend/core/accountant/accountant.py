@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.reports import CostReport, PrintingCase, PrintingCost
+from backend.core.accountant.money import Money
+from backend.core.reports import CostReport, PrintingCase, PrintingCost
 
 
 class Accountant:

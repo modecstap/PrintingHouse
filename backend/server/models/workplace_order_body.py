@@ -12,26 +12,26 @@ from pydantic import (
     model_serializer,
 )
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import (
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import (
     DieCuttingCalculation,
 )
-from backend.workplace.accountant.pricing.lamination import (
+from backend.core.accountant.pricing.lamination import (
     LaminationCalculation,
 )
-from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import (
+from backend.core.accountant.pricing.printing import PrintingCalculation
+from backend.core.order import (
     List,
     Operation,
     Order,
     Printing,
     Status,
 )
-from backend.workplace.errors import InvalidPriceException
-from backend.workplace.reports import CostReport, PrintingCost
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import Chroma, PressSheet
+from backend.core.errors import InvalidPriceException
+from backend.core.reports import CostReport, PrintingCost
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma, PressSheet
 
 _EnumT = TypeVar("_EnumT", bound=Enum)
 

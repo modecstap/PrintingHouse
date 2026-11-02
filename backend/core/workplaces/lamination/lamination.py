@@ -1,4 +1,4 @@
-from backend.workplace.workplaces.lamination.models import LaminationReport, \
+from backend.core.workplaces.lamination.models import LaminationReport, \
     Lamination
 
 

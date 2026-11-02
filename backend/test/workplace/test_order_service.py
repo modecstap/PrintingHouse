@@ -7,14 +7,14 @@ import pytest
 from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
 
-from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import Operation, Order, Status
-from backend.workplace.order_repository import (
+from backend.core.administrator import Administrator
+from backend.core.order import Operation, Order, Status
+from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
 )
-from backend.workplace.order_service import WorkplaceOrderService
-from backend.workplace.reports import CostReport
+from backend.core.order_service import WorkplaceOrderService
+from backend.core.reports import CostReport
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -576,7 +576,7 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
             lambda: service.save(_order()),
             lambda: service.delete(_MISSING_ID),
             lambda: service.take_all(),
-            lambda: service.accept(_order(comment="order-body-marker")),
+            lambda: service.accept(_order(comment="core-body-marker")),
         ]
         for call in calls:
             with pytest.raises(OrderStoreUnavailable) as caught:
@@ -588,6 +588,6 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
             assert "secret-token" not in message
             assert "127.0.0.1" not in message
             assert "postgresql" not in message
-            assert "order-body-marker" not in message
+            assert "core-body-marker" not in message
     finally:
         local.dispose()

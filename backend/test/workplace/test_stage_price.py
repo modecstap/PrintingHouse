@@ -2,19 +2,19 @@ from decimal import Decimal
 
 import pytest
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import \
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import \
     DieCuttingCalculation
-from backend.workplace.accountant.pricing.lamination import \
+from backend.core.accountant.pricing.lamination import \
     LaminationCalculation
-from backend.workplace.accountant.pricing.printing import \
+from backend.core.accountant.pricing.printing import \
     PrintingCalculation
-from backend.workplace.accountant.pricing.stage_cost import StageCost
-from backend.workplace.workplaces.cutting.models import CuttingReport
-from backend.workplace.workplaces.die_cutting.models import DieCuttingReport
-from backend.workplace.workplaces.lamination.models import LaminationReport
-from backend.workplace.workplaces.printing.models import PrintingReport
+from backend.core.accountant.pricing.stage_cost import StageCost
+from backend.core.workplaces.cutting.models import CuttingReport
+from backend.core.workplaces.die_cutting.models import DieCuttingReport
+from backend.core.workplaces.lamination.models import LaminationReport
+from backend.core.workplaces.printing.models import PrintingReport
 
 
 def test_printing_price_charges_one_sheet_of_paper_and_ink_and_salary_once():

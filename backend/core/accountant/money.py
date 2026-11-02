@@ -1,6 +1,6 @@
 from decimal import ROUND_HALF_UP, Decimal
 
-from backend.workplace.errors import InvalidPriceException
+from backend.core.errors import InvalidPriceException
 
 
 def _decimal_factor(factor: object) -> Decimal | None:

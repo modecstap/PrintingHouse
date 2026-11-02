@@ -14,15 +14,15 @@ from backend.server.models.workplace_order_body import (
     order_from_body,
 )
 from backend.server.workplace_order import get_workplace_order_service
-from backend.workplace.order_repository import (
+from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
 )
-from backend.workplace.order_service import WorkplaceOrderService
+from backend.core.order_service import WorkplaceOrderService
 
 _T = TypeVar("_T")
 
-router = APIRouter(prefix="/api/v2/reference", tags=["workplace-reference"])
+router = APIRouter(prefix="/api/v2/reference", tags=["core-reference"])
 
 
 def _call(action: Callable[[], _T]) -> _T:

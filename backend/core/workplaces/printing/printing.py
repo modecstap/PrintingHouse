@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from backend.workplace.workplaces.printing.models import PrintingReport, Chroma, \
+from backend.core.workplaces.printing.models import PrintingReport, Chroma, \
     PressSheet
 
 

@@ -1,7 +1,7 @@
 from typing import Literal, Protocol
 
-from backend.workplace.cost_order import Order
-from backend.workplace.reports import CostReport
+from backend.core.order import Order
+from backend.core.reports import CostReport
 
 OrderId = int
 
@@ -106,7 +106,7 @@ class WorkplaceOrderRepository(Protocol):
         """Возвращает все строки workplace_order, без CostReport.
 
         Результат: каждая строка один раз, по убыванию id.
-        Строк нет: пустой список. Заказы таблицы order не читаются.
+        Строк нет: пустой список. Заказы таблицы core не читаются.
         Ошибки: OrderStoreUnavailable, если нет соединения с базой.
         OrderNotFound не бросает.
         """

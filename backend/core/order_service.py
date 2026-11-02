@@ -1,16 +1,16 @@
 from dataclasses import replace
 
-from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import (
+from backend.core.administrator import Administrator
+from backend.core.order import (
     Order,
     Status,
     empty_reference_order,
 )
-from backend.workplace.order_repository import (
+from backend.core.order_repository import (
     OrderId,
     WorkplaceOrderRepository,
 )
-from backend.workplace.reports import CostReport
+from backend.core.reports import CostReport
 
 
 class WorkplaceOrderService:

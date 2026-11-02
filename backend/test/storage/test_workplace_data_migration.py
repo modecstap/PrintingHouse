@@ -18,11 +18,11 @@ from backend.test.storage.test_schema_migration import (
     _assert_legacy_objects_present,
     _migration_database,
 )
-from backend.workplace.administrator import Administrator
-from backend.workplace.cost_order import List, Order, Status
-from backend.workplace.order_service import WorkplaceOrderService
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import Chroma, PressSheet
+from backend.core.administrator import Administrator
+from backend.core.order import List, Order, Status
+from backend.core.order_service import WorkplaceOrderService
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma, PressSheet
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -35,13 +35,13 @@ _DUMP = (
 )
 _COLOR = Decimal("4.533333333333333333333333333")
 _KEPT = (
-    '"order"',
+    '"core"',
     "production_reference",
     '"user"',
     "operation",
     "printing",
 )
-_DUMP_KEPT = ('"order"', "production_reference", '"user"')
+_DUMP_KEPT = ('"core"', "production_reference", '"user"')
 _FILM_SIDES = {"DONT": 0, "ONE_ZERO": 1, "ONE_ONE": 2}
 
 
@@ -143,7 +143,7 @@ def _insert_legacy(connection: Connection) -> None:
     ))
     connection.execute(text(
         """
-        INSERT INTO "order" (
+        INSERT INTO "core" (
             id, creation_date, status, comment, economy_id,
             order_cost_report_id, unit_count
         ) VALUES
@@ -364,7 +364,7 @@ def test_should_write_the_reference_without_an_order_row_when_legacy_orders_are_
     assert document["id"] is None
     assert "creation_date" not in document
     assert before == {
-        '"order"': 2,
+        '"core"': 2,
         "production_reference": 1,
         '"user"': 1,
         "operation": 3,
@@ -381,7 +381,7 @@ def test_should_refuse_the_copy_when_workplace_tables_are_not_empty() -> None:
             ))
             connection.execute(text(
                 """
-                INSERT INTO "order" (
+                INSERT INTO "core" (
                     id, creation_date, status, comment, economy_id, unit_count
                 ) VALUES (6, DATE '2024-03-15', 'DONE', '', 1, 11)
                 """
@@ -393,13 +393,13 @@ def test_should_refuse_the_copy_when_workplace_tables_are_not_empty() -> None:
                 ) VALUES (1, 'держатель', 'SAVED', 1, 0, 0, DATE '2024-01-01')
                 """
             ))
-        with pytest.raises(Exception, match="workplace tables are not empty"):
+        with pytest.raises(Exception, match="core tables are not empty"):
             command.upgrade(config, "head")
         with engine.connect() as connection:
             version = connection.execute(text(
                 "SELECT version_num FROM alembic_version"
             )).scalar_one()
-            order_ids = _rows(connection, 'SELECT id FROM "order"')
+            order_ids = _rows(connection, 'SELECT id FROM "core"')
             holder = _rows(connection, "SELECT id, comment FROM workplace_order")
             printings = _count(connection, "workplace_printing")
     assert version == "b6d4e2a81c05"
@@ -509,7 +509,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             header_gap = _mismatch_count(connection, """
                 SELECT o.id, o.creation_date, o.comment, o.status::text,
                        o.unit_count, e.markup, e.tax_rate
-                FROM "order" AS o
+                FROM "core" AS o
                 JOIN economy AS e ON e.id = o.economy_id
                 EXCEPT
                 SELECT id, creation_date, comment, status, unit_count, markup, tax_rate
@@ -544,18 +544,18 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             report_rows = _count(connection, "workplace_cost_report")
             printing_cost_rows = _count(connection, "workplace_printing_cost")
             orders_without_report = _count(
-                connection, '"order"', "order_cost_report_id IS NULL"
+                connection, '"core"', "order_cost_report_id IS NULL"
             )
             copied_empty_reports = _mismatch_count(connection, """
                 SELECT o.id
-                FROM "order" AS o
+                FROM "core" AS o
                 JOIN workplace_cost_report AS report ON report.order_id = o.id
                 WHERE o.order_cost_report_id IS NULL
                 """)
             report_gap = _mismatch_count(connection, """
                 SELECT o.id, r.unit_cost_price, r.unit_cost,
                        r.edition_cost, r.profit_after_tax
-                FROM "order" AS o
+                FROM "core" AS o
                 JOIN order_cost_report AS r ON r.id = o.order_cost_report_id
                 EXCEPT
                 SELECT order_id, unit_cost_price, unit_cost,
@@ -569,7 +569,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
                        c.edition_cost_price, c.edition_cost,
                        c.profit_before_tax, c.profit_after_tax
                 FROM printing AS p
-                JOIN "order" AS o ON o.id = p.order_id
+                JOIN "core" AS o ON o.id = p.order_id
                 JOIN printing_cost_report AS c ON c.id = p.printing_cost_report_id
                 WHERE o.order_cost_report_id IS NOT NULL
                 EXCEPT
@@ -620,7 +620,7 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
     assert all(order.id is not None for order in taken)
     assert workplace_orders == 234
     assert after == before
-    assert before == {'"order"': 234, "production_reference": 1, '"user"': 3}
+    assert before == {'"core"': 234, "production_reference": 1, '"user"': 3}
     assert saved_id > 890
     assert head_orders == 234
     assert head_users == 3
@@ -641,7 +641,7 @@ def test_should_keep_copied_rows_and_restore_empty_legacy_tables_when_head_is_do
         command.downgrade(config, "2f55f813c842")
         with engine.connect() as connection:
             _assert_legacy_objects_present(connection)
-            assert _count(connection, '"order"') == 0
+            assert _count(connection, '"core"') == 0
             assert _count(connection, "printing") == 0
             assert _count(connection, "production_reference") == 0
             assert _count(connection, '"user"') == 1

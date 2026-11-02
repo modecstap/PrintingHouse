@@ -3,16 +3,16 @@ from datetime import date
 from decimal import Decimal
 from enum import Enum
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import \
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import \
     DieCuttingCalculation
-from backend.workplace.accountant.pricing.lamination import \
+from backend.core.accountant.pricing.lamination import \
     LaminationCalculation
-from backend.workplace.accountant.pricing.printing import \
+from backend.core.accountant.pricing.printing import \
     PrintingCalculation
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import PressSheet, Chroma
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import PressSheet, Chroma
 
 
 @dataclass(frozen=True)

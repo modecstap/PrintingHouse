@@ -5,25 +5,25 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from backend.workplace.accountant.money import Money
-from backend.workplace.accountant.pricing.cutting import CuttingCalculation
-from backend.workplace.accountant.pricing.die_cutting import (
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import (
     DieCuttingCalculation,
 )
-from backend.workplace.accountant.pricing.lamination import (
+from backend.core.accountant.pricing.lamination import (
     LaminationCalculation,
 )
-from backend.workplace.accountant.pricing.printing import PrintingCalculation
-from backend.workplace.cost_order import (
+from backend.core.accountant.pricing.printing import PrintingCalculation
+from backend.core.order import (
     List,
     Operation,
     Order,
     Printing,
     Status,
 )
-from backend.workplace.reports import CostReport, PrintingCost
-from backend.workplace.workplaces.lamination.models import Lamination
-from backend.workplace.workplaces.printing.models import Chroma, PressSheet
+from backend.core.reports import CostReport, PrintingCost
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma, PressSheet
 from backend.storage.tables.workplace_order import (
     CostReportRow,
     OperationCostRow,
@@ -185,7 +185,7 @@ def insert_order(session: Session, order: Order) -> int:
 
     Результат: id, который назначила база.
     Побочные эффекты: creation_date равен date.today() процесса.
-    order.creation_date не читается. Строки CostReport не пишет.
+    core.creation_date не читается. Строки CostReport не пишет.
     Переданный Order не меняет.
     """
     row = WorkplaceOrderRow()
