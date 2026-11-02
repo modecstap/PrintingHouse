@@ -31,21 +31,21 @@ _service: WorkplaceOrderService | None = None
 
 
 def bind_workplace_order_service(service: WorkplaceOrderService) -> None:
-    """Запоминает сервис заказа рабочего места для маршрутов.
+    """Remembers the workplace order service for the routes.
 
-    Побочные эффекты: следующий get_workplace_order_service
-    возвращает этот сервис. Engine не создаёт.
+    :param service:
     """
     global _service
     _service = service
 
 
 def get_workplace_order_service() -> WorkplaceOrderService:
-    """Возвращает сервис, который запомнила сборка приложения.
+    """Returns the service that application startup remembered.
 
-    Результат: WorkplaceOrderService этого процесса.
-    Ошибки: RuntimeError «сервис заказа рабочего места не собран»,
-    если bind ещё не вызывали.
+    :raises RuntimeError:
+    "сервис заказа рабочего места не собран" if bind has not been called yet.
+
+    :return: the WorkplaceOrderService of this process.
     """
     if _service is None:
         raise RuntimeError("сервис заказа рабочего места не собран")
@@ -68,11 +68,14 @@ def _call(action: Callable[[], _T]) -> _T:
 def list_orders(
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> list[WorkplaceOrderBody]:
-    """Возвращает заказы рабочего места через take_all.
+    """Returns workplace orders through take_all.
 
-    Результат: HTTP 200 и JSON-массив заказов без отчётов.
-    Пустой результат сервиса даёт [].
-    Ошибки: HTTP 503, если нет соединения с базой.
+    :param service:
+
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and a JSON array of orders without reports.
+    An empty service result gives [].
     """
     return _call(
         lambda: [body_from_order(order) for order in service.take_all()]
@@ -87,14 +90,17 @@ def save_order(
     body: WorkplaceOrderBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceSavedOrderBody:
-    """Сохраняет заказ рабочего места через save.
+    """Saves a workplace order through save.
 
-    Результат: HTTP 200 и JSON с одним ключом id.
-    Побочные эффекты: новая строка или обновление существующей.
-    Отчёт не пишется.
-    Ошибки: HTTP 404, если заданного id нет. HTTP 422, если тело
-    не принято. HTTP 500, если ставка денег отрицательная.
-    HTTP 503, если нет соединения с базой.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 404 if the given id does not exist.
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 500 if a money rate is negative.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and JSON with a single key id.
     """
     saved_id = _call(lambda: service.save(order_from_body(body)))
     return WorkplaceSavedOrderBody(id=saved_id)
@@ -108,11 +114,15 @@ def cost_report(
     body: WorkplaceOrderBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceCostReportBody:
-    """Считает стоимость через calculate и в базу не пишет.
+    """Calculates the cost through calculate and does not write to the database.
 
-    Результат: HTTP 200 и JSON CostReport без обёртки.
-    Ошибки: HTTP 422, если тело не принято. HTTP 500, если расчёт
-    или ставка денег не проходит.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 500 if the calculation or a money rate fails.
+
+    :return: HTTP 200 and the CostReport JSON without a wrapper.
     """
     return _call(
         lambda: body_from_report(
@@ -129,14 +139,17 @@ def delay_order(
     body: WorkplaceOrderBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceAcceptedOrderBody:
-    """Откладывает заказ через delay.
+    """Delays the order through delay.
 
-    Результат: HTTP 200 и JSON с id и cost_report этого расчёта.
-    Побочные эффекты: заказ сохраняется со статусом «Отложен»,
-    отчёт дописывается в конец.
-    Ошибки: HTTP 404, если заданного id нет. HTTP 422, если тело
-    не принято. HTTP 500, если расчёт или ставка не проходит
-    и запись не начинается. HTTP 503, если нет соединения с базой.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 404 if the given id does not exist.
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 500 if the calculation or the rate fails.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and JSON with the id and the cost_report of this calculation.
     """
     saved_id, report = _call(lambda: service.delay(order_from_body(body)))
     return WorkplaceAcceptedOrderBody(
@@ -153,14 +166,17 @@ def accept_order(
     body: WorkplaceOrderBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceAcceptedOrderBody:
-    """Принимает заказ через accept.
+    """Accepts the order through accept.
 
-    Результат: HTTP 200 и JSON с id и cost_report этого расчёта.
-    Побочные эффекты: заказ сохраняется со статусом «В работе»,
-    отчёт дописывается в конец.
-    Ошибки: HTTP 404, если заданного id нет. HTTP 422, если тело
-    не принято. HTTP 500, если расчёт или ставка не проходит
-    и запись не начинается. HTTP 503, если нет соединения с базой.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 404 if the given id does not exist.
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 500 if the calculation or the rate fails.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and JSON with the id and the cost_report of this calculation.
     """
     saved_id, report = _call(
         lambda: service.accept(order_from_body(body))
@@ -180,12 +196,16 @@ def change_status(
     body: WorkplaceStatusChangeBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> Response:
-    """Меняет статус заказа через change_status.
+    """Changes the order status through change_status.
 
-    Результат: HTTP 200 без тела.
-    Побочные эффекты: меняется только статус. Отчёт не пишется.
-    Ошибки: HTTP 404, если заказа нет. HTTP 422, если тело
-    не принято. HTTP 503, если нет соединения с базой.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 404 if the order does not exist.
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 with no body.
     """
     _call(lambda: service.change_status(body.order_id, body.new_status))
     return Response(status_code=200)
@@ -199,11 +219,16 @@ def get_order(
     id: int,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceOrderBody:
-    """Возвращает заказ рабочего места через take.
+    """Returns the workplace order through take.
 
-    Результат: HTTP 200 и JSON заказа без отчётов.
-    Ошибки: HTTP 404, если заказа нет. HTTP 422, если id пути
-    не целое. HTTP 503, если нет соединения с базой.
+    :param id:
+    :param service:
+
+    :raises HTTPException: status 404 if the order does not exist.
+    :raises HTTPException: status 422 if the path id is not an integer.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and the order JSON without reports.
     """
     return _call(lambda: body_from_order(service.take(id)))
 
@@ -217,12 +242,16 @@ def delete_order(
     id: int,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> Response:
-    """Удаляет заказ рабочего места через delete.
+    """Deletes the workplace order through delete.
 
-    Результат: HTTP 200 без тела.
-    Побочные эффекты: заказ, расчёт и отчёты удаляются.
-    Ошибки: HTTP 404, если заказа нет. HTTP 422, если id пути
-    не целое. HTTP 503, если нет соединения с базой.
+    :param id:
+    :param service:
+
+    :raises HTTPException: status 404 if the order does not exist.
+    :raises HTTPException: status 422 if the path id is not an integer.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 with no body.
     """
     _call(lambda: service.delete(id))
     return Response(status_code=200)

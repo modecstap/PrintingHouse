@@ -6,9 +6,11 @@ from backend.core.workplaces.lamination.models import LaminationReport
 
 class LaminationCalculation(Calculatable):
     def __init__(self, startup: Money, film_cost: Money, salary: Money):
-        """Запоминает ставки запуска, плёнки и зарплаты.
+        """Remembers the startup, film, and salary rates.
 
-        Побочные эффекты: отчёт ещё не прикреплён.
+        :param startup:
+        :param film_cost:
+        :param salary:
         """
         self._report = None
         self._startup = startup
@@ -17,29 +19,31 @@ class LaminationCalculation(Calculatable):
 
     @property
     def startup(self) -> Money:
-        """Возвращает ставку startup, переданную в конструктор."""
+        """Returns the startup rate passed to the constructor."""
         return self._startup
 
     @property
     def film_cost(self) -> Money:
-        """Возвращает ставку film_cost, переданную в конструктор."""
+        """Returns the film_cost rate passed to the constructor."""
         return self._film_cost
 
     @property
     def salary(self) -> Money:
-        """Возвращает ставку salary, переданную в конструктор."""
+        """Returns the salary rate passed to the constructor."""
         return self._salary
 
     def attach(
         self, report: LaminationReport, internal_sheet_count: int
     ) -> "LaminationCalculation":
-        """Прикрепляет отчёт ламинации и внутреннее число листов.
+        """Attaches the lamination report and the internal sheet count.
 
-        Предусловия: отчёт ещё не прикреплён.
-        Результат: этот же объект.
-        Побочные эффекты: запоминает отчёт и internal_sheet_count.
-        Ошибки: RuntimeError с текстом Report is already attached,
-        если отчёт уже прикреплён.
+        :param report:
+        :param internal_sheet_count:
+
+        :raises RuntimeError:
+        "Report is already attached" if the report is already attached.
+
+        :return: this same object.
         """
         if self._report is not None:
             raise RuntimeError("Report is already attached")
@@ -49,20 +53,16 @@ class LaminationCalculation(Calculatable):
         return self
 
     def calculate(self) -> StageCost:
-        """Считает запуск, материал и зарплату ламинации до наценки.
+        """Calculates the lamination startup, material, and salary before markup.
 
-        Предусловия: отчёт прикреплён. При film_sides не ноль
-        internal_sheet_count не ноль. Деление на ноль не обрабатывается.
-        Результат: при film_sides 0 — StageCost.zero(), и
-        internal_sheet_count в этой ветке не читается, даже если ставка
-        запуска задана. Иначе запуск — ставка startup, делённая на
-        internal_sheet_count. Материал — film_cost умножить на film_sides.
-        Зарплата равна ставке salary и на film_sides повторно не умножается.
-        Запуск берётся из ставки, без отдельного числа в расчёте.
-        Без округления до копейки.
-        Побочные эффекты: нет.
-        Ошибки: RuntimeError с текстом Report is not attach, если отчёт
-        не прикреплён. InvalidPriceException, если сумма меньше нуля.
+        :raises RuntimeError: "Report is not attach" if the report is not attached.
+        :raises InvalidPriceException: if the amount is below zero.
+
+        :return: when film_sides is 0, StageCost.zero().
+        Otherwise startup is the startup rate divided by internal_sheet_count.
+        Material is film_cost multiplied by film_sides. Salary equals the salary rate
+        and is not multiplied by film_sides again. Startup is taken from the rate,
+        with no separate count in the calculation. No rounding to a kopeck.
         """
         if not self._report:
             raise RuntimeError("Report is not attach")

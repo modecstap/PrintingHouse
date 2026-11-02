@@ -10,7 +10,7 @@ Steps for writing and changing code inside a module. The rules behind them: [ref
 4. Annotate the types of all parameters and the result. Avoid imprecise types. If one is unavoidable, add a justification next to it.
 5. Check preconditions that belong to this method's responsibility.
 6. Define the error contract. See [Define an Error Contract](#define-an-error-contract).
-7. Write the docstring: purpose, preconditions, result, side effects, errors. See [Docstrings](reference.md#docstrings).
+7. Write the production docstring in the :param / :raises / :return form. See [Docstrings](reference.md#docstrings).
 8. Add comments only for non-obvious reasons and constraints.
 
 ## Review a Growing Method
@@ -30,13 +30,13 @@ Sign: a method returns data and also changes state.
 1. Extract the state change into a command method named after the action.
 2. Leave the query method returning data only.
 3. Update callers to call the command explicitly where the state change is needed.
-4. If the operation must be atomic (read and change in one step), keep it combined and state the side effect in the docstring.
+4. If the operation must be atomic (read and change in one step), keep it combined. Record the side effect for tests, not for production code.
 
 ## Define an Error Contract
 
 1. List the failures the caller can react to differently: not found, conflict, invalid input, unavailable.
 2. Give each failure a type named in terms of the interface: `OrderNotFound`, not `SqlNoRows`.
-3. List the error types in the docstring of the public method or interface.
+3. List the error types in the docstring of the public method or interface. In production code, each type is a :raises line.
 4. In each implementation, convert low-level exceptions into these types. See [Convert an Exception at an Abstraction Boundary](#convert-an-exception-at-an-abstraction-boundary).
 5. Let unexpected failures (bugs, broken invariants) propagate unchanged.
 
@@ -68,7 +68,7 @@ catch (e: ConnectionError) {
 2. If all changes go to one store, apply them in one transaction.
 3. If not, order the steps so a failure leaves a valid state: validate first, then change.
 4. For steps that cannot be rolled back, define compensation or a recovery marker.
-5. Describe partial-execution behavior in the docstring.
+5. Describe partial-execution behavior for tests, not for production code.
 
 ## Write an Error Message
 

@@ -11,9 +11,10 @@ security = HTTPBearer()
 async def get_current_user_with_read_permission(
         credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
-    """
-    Зависимость для проверки, что пользователь имеет права READ.
-    Используется на всех защищённых эндпоинтах кроме auth.
+    """Checks that the user has the READ permission.
+    Used on every protected endpoint except auth.
+
+    :param credentials:
     """
     auth_service = AuthService(UserRepository())
 
@@ -30,9 +31,10 @@ async def get_current_user_with_read_permission(
 async def get_current_user_with_full_permission(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
-    """
-    Зависимость для проверки, что пользователь имеет права FULL.
-    Используется на всех защищённых эндпоинтах кроме auth.
+    """Checks that the user has the FULL permission.
+    Used on every protected endpoint except auth.
+
+    :param credentials:
     """
     auth_service = AuthService(UserRepository())
     

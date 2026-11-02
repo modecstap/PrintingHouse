@@ -19,57 +19,56 @@ class WorkplaceOrderService:
         orders: WorkplaceOrderRepository,
         administrator: Administrator,
     ) -> None:
-        """Запоминает репозиторий заказов и администратора.
+        """Remembers the order repository and the administrator.
 
-        Побочные эффекты: Engine не создаёт, переменные окружения
-        не читает, репозиторий не конструирует.
+        :param orders:
+        :param administrator:
         """
         self._orders = orders
         self._administrator = administrator
 
     def save(self, order: Order) -> OrderId:
-        """Пишет данные расчёта, comment и переданный статус.
+        """Writes the calculation data, comment, and the passed status.
 
-        Результат: id сохранённой строки. Пустой id вставляет заказ,
-        ставит дату процесса, и id назначает база. Существующий id
-        обновляет ту же строку, дату не меняет и возвращается тем же.
-        Дата аргумента Order не читается.
-        Побочные эффекты: CostReport не пишет. Расчёт не вызывает.
-        Переданный Order не меняется. Чужой id новую строку
-        не создаёт.
-        Ошибки: OrderNotFound, если заданный id без строки.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order:
+
+        :raises OrderNotFound: if the given id has no row.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the id of the saved row. An empty id is assigned by the database.
+        An existing id is returned unchanged.
         """
         return self._orders.save(order)
 
     def take(self, order_id: OrderId) -> Order:
-        """Возвращает один заказ без списка CostReport.
+        """Returns one order without the CostReport list.
 
-        Результат: заказ с данными расчёта, comment, status и датой
-        вставки.
-        Ошибки: OrderNotFound, если строки нет.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+
+        :raises OrderNotFound: if there is no row.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the order with calculation data, comment, status,
+        and the insertion date.
         """
         return self._orders.take(order_id)
 
     def take_all(self) -> list[Order]:
-        """Возвращает каждый заказ order один раз.
+        """Returns each order row once.
 
-        Результат: заказы по убыванию id, без отчётов.
-        Строк нет: пустой список.
-        Ошибки: OrderStoreUnavailable, если нет соединения с базой.
-        OrderNotFound не бросает.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the orders by descending id, without reports. No rows: an empty list.
         """
         return self._orders.take_all()
 
     def reference(self) -> Order:
-        """Возвращает справочник или нулевой заказ.
+        """Returns the reference or an empty order.
 
-        Результат: строка справочника, если она есть.
-        Строки нет: заказ empty_reference_order.
-        Побочные эффекты: базу не меняет.
-        Ошибки: OrderStoreUnavailable, если нет соединения
-        с базой. OrderNotFound не бросает.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the reference row, if it exists. No row:
+        the order from empty_reference_order.
         """
         stored = self._orders.reference()
         if stored is None:
@@ -77,90 +76,80 @@ class WorkplaceOrderService:
         return stored
 
     def set_reference(self, order: Order) -> None:
-        """Заменяет справочник этим заказом.
+        """Replaces the reference with this order.
 
-        Предусловия: ставку уже проверил вызывающий.
-        Результат: ничего не возвращает.
-        Побочные эффекты: вызывает только set_reference.
-        save не вызывается. id заменяется на None и не
-        выбирает запись. Переданный Order не меняется.
-        Строка order не появляется.
-        Ошибки: OrderStoreUnavailable, если нет соединения
-        с базой. OrderNotFound не бросает.
+        :param order:
+
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
         """
         self._orders.set_reference(replace(order, id=None))
 
     def delete(self, order_id: OrderId) -> None:
-        """Удаляет заказ, его расчёт и его отчёты.
+        """Deletes the order, its calculation, and its reports.
 
-        Результат: ничего не возвращает. После удаления take
-        этот id не находит.
-        Побочные эффекты: строка заказа и связанные строки уходят.
-        Ошибки: OrderNotFound, если строки нет, база не меняется.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+
+        :raises OrderNotFound: if there is no row.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing. After the deletion, take does not find this id.
         """
         self._orders.delete(order_id)
 
     def calculate(self, order: Order) -> CostReport:
-        """Возвращает результат report_cost для этого заказа.
+        """Returns the report_cost result for this order.
 
-        Результат: CostReport этого расчёта.
-        Побочные эффекты: в базу не пишет. Переданный Order
-        не меняется.
-        Ошибки: ошибка расчёта, включая деление на ноль,
-        выходит к вызывающему. OrderStoreUnavailable из-за базы
-        не бросает.
+        :param order:
+
+        :return: the CostReport of this calculation.
         """
         return self._administrator.report_cost(order)
 
     def accept(self, order: Order) -> tuple[OrderId, CostReport]:
-        """Сохраняет заказ со статусом «В работе» и отчёт расчёта.
+        """Saves the order with status В работе and the calculation report.
 
-        Результат: id сохранённой строки и отчёт этого расчёта.
-        Статус сохранённого заказа IN_WORK, даже если у переданного
-        заказа статус другой. Данные расчёта и comment берутся
-        из переданного заказа. Второй элемент пары — отчёт этого
-        расчёта, не отчёт, прочитанный из базы.
-        Побочные эффекты: сначала расчёт. После расчёта заказ
-        и отчёт пишутся вместе. Прежние отчёты остаются, новый
-        последний. Переданный Order не меняется.
-        Ошибки: ошибка расчёта ничего не пишет. OrderNotFound,
-        если заданного id нет: отчёт не пишется, новая строка
-        не появляется. Неудачная запись не оставляет заказ этого
-        вызова без отчёта этого расчёта и не меняет уже сохранённые
-        заказы и отчёты. OrderStoreUnavailable, если нет соединения
-        с базой.
+        :param order:
+
+        :raises OrderNotFound: if the given id does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the id of the saved row and the report of this calculation.
+        The saved order's status is IN_WORK,
+        even if the passed order has another status. Calculation data
+        and comment come from the passed order.
+        The second element of the pair is the report of this calculation,
+        not a report read from the database.
         """
         return self._keep(order, Status.IN_WORK)
 
     def delay(self, order: Order) -> tuple[OrderId, CostReport]:
-        """Сохраняет заказ со статусом «Отложен» и отчёт расчёта.
+        """Saves the order with status Отложен and the calculation report.
 
-        Результат: id сохранённой строки и отчёт этого расчёта.
-        Статус сохранённого заказа SAVED, даже если у переданного
-        заказа статус другой. Данные расчёта и comment берутся
-        из переданного заказа. Второй элемент пары — отчёт этого
-        расчёта, не отчёт, прочитанный из базы.
-        Побочные эффекты: сначала расчёт. После расчёта заказ
-        и отчёт пишутся вместе. Прежние отчёты остаются, новый
-        последний. Переданный Order не меняется.
-        Ошибки: ошибка расчёта ничего не пишет. OrderNotFound,
-        если заданного id нет: отчёт не пишется, новая строка
-        не появляется. Неудачная запись не оставляет заказ этого
-        вызова без отчёта этого расчёта и не меняет уже сохранённые
-        заказы и отчёты. OrderStoreUnavailable, если нет соединения
-        с базой.
+        :param order:
+
+        :raises OrderNotFound: if the given id does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the id of the saved row and the report of this calculation.
+        The saved order's status is SAVED, even if the passed order has another status.
+        Calculation data and comment come from the passed order.
+        The second element of the pair is the report of this calculation,
+        not a report read from the database.
         """
         return self._keep(order, Status.SAVED)
 
     def change_status(self, order_id: OrderId, status: Status) -> None:
-        """Меняет только статус заказа.
+        """Changes only the order status.
 
-        Результат: ничего не возвращает.
-        Побочные эффекты: расчёт не выполняется. Данные расчёта,
-        comment, дата вставки и отчёты остаются.
-        Ошибки: OrderNotFound, если заказа нет.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+        :param status:
+
+        :raises OrderNotFound: if the order does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
         """
         current = self._orders.take(order_id)
         self._orders.save(replace(current, status=status))

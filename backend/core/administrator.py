@@ -14,11 +14,7 @@ from backend.core.workplaces.printing.printing import PrintingWorkplace
 
 class Administrator:
     def __init__(self) -> None:
-        """Создаёт рабочие места и бухгалтера.
-
-        Побочные эффекты: запоминает печать, резку, ламинацию,
-        высечку и бухгалтера. Другого состояния нет.
-        """
+        """Creates the workplaces and the accountant."""
         self.printing = PrintingWorkplace()
         self.cutting = CuttingWorkplace()
         self.lamination = LaminationWorkplace()
@@ -26,13 +22,14 @@ class Administrator:
         self.accountant = Accountant()
 
     def report_cost(self, order: Order) -> CostReport:
-        """Считает стоимость заказа в памяти.
+        """Calculates the order cost in memory.
 
-        Предусловие: нет.
-        Результат: CostReport. Печати в нём идут в порядке printings.
-        Аргумент не меняется.
-        Нулевая сторона клетки и ноль изделий на листе поднимают
-        ZeroDivisionError. Метод это не ловит.
+        :param order:
+
+        :raises ZeroDivisionError: if a cell side is zero
+        or the number of items on the sheet is zero. The method does not catch it.
+
+        :return: a CostReport. The printings in it follow the order of printings.
         """
         cases: list[PrintingCase] = []
         for printing in order.printings:

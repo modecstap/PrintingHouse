@@ -32,11 +32,7 @@ class Database(metaclass=Singleton):
         self.async_session_maker = sessionmaker(self.async_engine, expire_on_commit=False, class_=AsyncSession)
 
     async def wait_for_connection(self) -> None:
-        """Ждёт, пока база примет соединение.
-
-        Побочные эффекты: при ошибке пишет её в stdout и повторяет
-        попытку через 10 секунд. Таблицы не создаёт.
-        """
+        """Waits until the database accepts a connection."""
         while True:
             try:
                 async with self.async_engine.connect() as connection:

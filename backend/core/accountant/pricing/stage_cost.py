@@ -11,10 +11,7 @@ class StageCost:
 
     @classmethod
     def zero(cls) -> "StageCost":
-        """Возвращает нулевой запуск, нулевой материал и нулевую зарплату.
-
-        Побочные эффекты: нет.
-        """
+        """Returns zero startup, zero material, and zero salary."""
         return cls(
             startup_cost=Money.zero(),
             material_cost=Money.zero(),

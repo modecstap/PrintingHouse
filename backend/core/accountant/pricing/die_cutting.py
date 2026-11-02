@@ -6,26 +6,27 @@ from backend.core.workplaces.die_cutting.models import DieCuttingReport
 
 class DieCuttingCalculation(Calculatable):
     def __init__(self, salary: Money):
-        """Запоминает ставку зарплаты высечки.
+        """Remembers the die-cutting salary rate.
 
-        Побочные эффекты: отчёт ещё не прикреплён.
+        :param salary:
         """
         self._report = None
         self._salary = salary
 
     @property
     def salary(self) -> Money:
-        """Возвращает ставку salary, переданную в конструктор."""
+        """Returns the salary rate passed to the constructor."""
         return self._salary
 
     def attach(self, report: DieCuttingReport) -> "DieCuttingCalculation":
-        """Прикрепляет отчёт высечки.
+        """Attaches the die-cutting report.
 
-        Предусловия: отчёт ещё не прикреплён.
-        Результат: этот же объект.
-        Побочные эффекты: запоминает отчёт.
-        Ошибки: RuntimeError с текстом Report is already attached,
-        если отчёт уже прикреплён.
+        :param report:
+
+        :raises RuntimeError:
+        "Report is already attached" if the report is already attached.
+
+        :return: this same object.
         """
         if self._report is not None:
             raise RuntimeError("Report is already attached")
@@ -34,15 +35,14 @@ class DieCuttingCalculation(Calculatable):
         return self
 
     def calculate(self) -> StageCost:
-        """Считает запуск, материал и зарплату высечки до наценки.
+        """Calculates the die-cutting startup, material, and salary before markup.
 
-        Предусловия: отчёт прикреплён. sheet_count множителем не является.
-        Результат: при sheet_count 0 — StageCost.zero().
-        Иначе запуск и материал — ноль, зарплата равна ставке один раз.
-        Без округления до копейки.
-        Побочные эффекты: нет.
-        Ошибки: RuntimeError с текстом Report is not attach, если отчёт
-        не прикреплён. InvalidPriceException, если сумма меньше нуля.
+        :raises RuntimeError: "Report is not attach" if the report is not attached.
+        :raises InvalidPriceException: if the amount is below zero.
+
+        :return: when sheet_count is 0, StageCost.zero(). Otherwise startup
+        and material are zero, and the salary equals the rate once.
+        No rounding to a kopeck.
         """
         if not self._report:
             raise RuntimeError("Report is not attach")

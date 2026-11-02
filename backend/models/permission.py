@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class Permission(str, Enum):
-    """Перечисление доступных прав пользователя."""
+    """Enumeration of the user's available permissions."""
     FULL = "FULL"
     READ = "READ"
     WRITE = "WRITE"

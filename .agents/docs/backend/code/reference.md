@@ -72,7 +72,26 @@ func markOrderViewed(id): void { ... }
 
 ### Docstrings
 
-Every public method has a docstring. It describes:
+Every public method has a docstring. It does not retell the implementation.
+
+Production code uses a purpose paragraph, then only the groups that have something to say, in this order, with a blank line between groups. Omit an empty group. `self` and `cls` have no `:param` line. Each raised error is a `:raises` line with its condition.
+
+```text
+def foo(self, param1: str, param2: str, param3: str = "") -> str:
+    """
+    show example docstring
+
+    :param param1: description1
+    :param param2: description2
+    :param param3: description3
+
+    :raises UserNotFoundError: if the user does not exist.
+
+    :return: description
+    """
+```
+
+Tests use this labeled form, not production code. Sections without content are omitted.
 
 | Section        | Content                                                           |
 | -------------- | ----------------------------------------------------------------- |
@@ -81,8 +100,6 @@ Every public method has a docstring. It describes:
 | Result         | What is returned, including empty and boundary cases              |
 | Side effects   | State changes, I/O, events                                        |
 | Errors         | Expected exceptions and when they occur                           |
-
-Sections without content are omitted. The docstring does not retell the implementation.
 
 ```text
 /**
@@ -198,7 +215,9 @@ catch (e: ConnectionError) { throw StorageUnavailable(cause: e) }
 ### Failure of State-Changing Operations
 
 * An operation that changes state preserves invariants when it fails.
-* If full atomicity is impossible, the behavior on partial execution is defined: what has been applied, what has not, and how to recover. This is stated in the docstring.
+* If full atomicity is impossible, the behavior on partial execution is defined: what has been applied, what has not, and how to recover. Record this for tests, not for production code.
+
+Test record:
 
 ```text
 /**

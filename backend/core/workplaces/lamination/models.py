@@ -12,10 +12,11 @@ class Lamination(Enum):
     ONE_ONE = 3
 
     def film_sides(self) -> int:
-        """Возвращает число сторон плёнки.
+        """Returns the number of film sides.
 
-        Результат: 1, если плёнка с одной стороны, и 2, если с двух.
-        Ошибка: ValueError, если ламинации нет.
+        :raises ValueError: if there is no lamination.
+
+        :return: 1 if the film is on one side, and 2 if it is on two sides.
         """
         if self is Lamination.DONT:
             return 0

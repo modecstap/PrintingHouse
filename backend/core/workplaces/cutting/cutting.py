@@ -11,17 +11,15 @@ class CuttingWorkplace:
         density: int,
         cut_count: int,
     ) -> CuttingReport:
-        """Возвращает число резов человека для одной печати.
+        """Returns the number of human cuts for one printing.
 
-        Предусловия: internal_sheet_count — внутреннее число листов
-        с приладкой. stack_height — высота стопки резака.
-        density — плотность бумаги в граммах на квадратный метр.
-        cut_count — число резов раскладки.
-        Ставка реза в метод не входит.
-        Результат: CuttingReport. human_cuts — число резов человека.
-        Плата за резы на число листов не делится.
-        Деление на ноль не обрабатывается.
-        Побочные эффекты: нет. Аргументы не меняются.
+        :param internal_sheet_count: the internal sheet count, including fitting.
+        :param stack_height: the cutter stack height.
+        :param density: the paper density in grams per square meter.
+        :param cut_count: the number of layout cuts.
+
+        :return: a CuttingReport. human_cuts is the number of human cuts.
+        The charge for cuts is not divided by the sheet count.
         """
         sheet_in_stack = max(math.ceil(stack_height * 1200 / density), 0)
         human_cuts = math.ceil(internal_sheet_count / sheet_in_stack) * cut_count

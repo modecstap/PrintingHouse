@@ -11,13 +11,13 @@ class SheetPlacement:
 
 
 def place_on_sheet(press_sheet: PressSheet, item: List) -> SheetPlacement:
-    """Считает число изделий на листе и число резов.
+    """Counts the number of items on the sheet and the number of cuts.
 
-    Предусловие: сторона клетки изделия не равна нулю.
-    Результат: SheetPlacement. items_per_sheet — число изделий.
-    cut_count — число резов. Ноль изделий возвращается как 0.
-    Побочные эффекты: нет. Аргументы не меняются.
-    Деление на ноль не обрабатывается.
+    :param press_sheet:
+    :param item: the item cell side is not zero.
+
+    :return: a SheetPlacement. items_per_sheet is the number of items.
+    cut_count is the number of cuts. Zero items is returned as 0.
     """
     usable_width = press_sheet.width - 2 * press_sheet.spacing
     usable_height = press_sheet.height - 2 * press_sheet.spacing

@@ -11,17 +11,16 @@ class PrintingWorkplace:
         chroma: Chroma,
         sheet_count: int,
     ) -> PrintingReport:
-        """Возвращает отчёт одной печати.
+        """Returns the report of one printing.
 
-        Предусловия: width и height — ширина и высота печатного листа
-        в миллиметрах. Поля листа в метод не входят.
-        density — плотность бумаги в граммах на квадратный метр.
-        chroma — цветность модуля.
-        sheet_count — число листов задания без приладки.
-        Результат: PrintingReport. mass_kg — масса одного листа.
-        На число листов и на приладку масса не умножается.
-        human_operations равен 0 при ZERO_ZERO и sheet_count иначе.
-        Побочные эффекты: нет. Аргументы не меняются.
+        :param press_sheet: width and height are the press sheet width
+        and height in millimeters.
+        :param chroma: the module's chroma.
+        :param sheet_count: the job sheet count without fitting.
+
+        :return: a PrintingReport. mass_kg is the mass of one sheet.
+        The mass is not multiplied by the sheet count or by the fitting.
+        human_operations is 0 for ZERO_ZERO and sheet_count otherwise.
         """
         area_mm2 = Decimal(press_sheet.width * press_sheet.height)
         area_m2 = area_mm2 / Decimal(1_000_000)

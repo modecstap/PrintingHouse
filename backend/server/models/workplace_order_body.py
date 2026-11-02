@@ -277,14 +277,17 @@ class WorkplaceStatusChangeBody(BaseModel):
 
 
 def order_from_body(body: WorkplaceOrderBody) -> Order:
-    """Собирает заказ рабочего места из принятого тела.
+    """Builds a workplace order from the accepted body.
 
-    Результат: Order с данными расчёта, id, comment и status.
-    creation_date у результата всегда None: дату ставит вставка.
-    operations — кортеж Operation. Каждая ставка печати — Money
-    от Decimal этого поля.
-    Ошибки: InvalidPriceException, если ставка меньше нуля
-    или стоимость операции меньше нуля. Ноль допустим.
+    :param body:
+
+    :raises InvalidPriceException: if a rate is below zero
+    or an operation cost is below zero. Zero is allowed.
+
+    :return: an Order with calculation data, id, comment, and status.
+    creation_date of the result is always None: the insert sets the date.
+    operations is a tuple of Operation.
+    Each printing rate is a Money from the Decimal of that field.
     """
     for item in body.operations:
         if item.cost < 0:
@@ -310,12 +313,13 @@ def order_from_body(body: WorkplaceOrderBody) -> Order:
 
 
 def body_from_order(order: Order) -> WorkplaceOrderBody:
-    """Собирает тело заказа из заказа рабочего места.
+    """Builds an order body from a workplace order.
 
-    Результат: те же поля. Порядок operations и printings
-    сохраняется. Стоимость операции и ставка в поле — Decimal,
-    не объект Money. creation_date копируется. Пустая дата
-    не попадает в JSON.
+    :param order:
+
+    :return: the same fields. The order of operations and printings is kept.
+    An operation cost and a rate in a field are Decimal, not a Money object.
+    creation_date is copied. An empty date is not included in the JSON.
     """
     return WorkplaceOrderBody(
         unit_count=order.unit_count,
@@ -340,9 +344,11 @@ def body_from_order(order: Order) -> WorkplaceOrderBody:
 
 
 def body_from_report(report: CostReport) -> WorkplaceCostReportBody:
-    """Собирает тело отчёта из CostReport.
+    """Builds a report body from a CostReport.
 
-    Результат: те же суммы. Порядок printing_cost_reports сохраняется.
+    :param report:
+
+    :return: the same sums. The order of printing_cost_reports is kept.
     """
     return WorkplaceCostReportBody(
         unit_cost_price=report.unit_cost_price,

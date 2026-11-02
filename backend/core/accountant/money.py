@@ -15,15 +15,16 @@ class Money:
     amount: Decimal
 
     def __init__(self, amount: Decimal) -> None:
-        """Сохраняет неотрицательную сумму.
+        """Stores a non-negative amount.
 
-        Предусловия: amount имеет тип Decimal и не меньше нуля.
-        Результат: объект с полем amount, равным переданному Decimal.
-        Сложение принимает другой Money.
-        Умножение и деление принимают Decimal или int.
-        Каждое действие возвращает новый Money и не меняет amount.
-        Отрицательный результат действия отвергается здесь.
-        Ошибки: InvalidPriceException, если тип не Decimal или сумма меньше нуля.
+        :param amount: the type is Decimal and the amount is not below zero.
+
+        :raises InvalidPriceException: if the type is not Decimal
+        or the amount is below zero.
+
+        :return: an object whose amount field equals the passed Decimal.
+        Addition accepts another Money. Multiplication and division accept Decimal
+        or int. Each operation returns a new Money.
         """
         if type(amount) is not Decimal or amount < 0:
             raise InvalidPriceException(

@@ -13,19 +13,19 @@ class Accountant:
         markup: Decimal,
         unit_count: int,
     ) -> CostReport:
-        """Собирает стоимость заказа из отчётов мест и ставок.
+        """Builds the order cost from workplace reports and rates.
 
-        Предусловия: printings — печати в порядке заказа.
-        В PrintingCase лежат четыре расчёта: печать, рез, ламинация и высечка. Отчёт каждого уже прикреплён.
-        Наценка и налог переданы аргументами.
-        Стоимости операций — Decimal в исходном порядке, без имени и описания.
-        Количества берутся из PrintingCase и отчётов мест.
-        internal_sheet_count, tax_rate, unit_count и делитель изделия не равны нулю.
-        Деление на ноль не обрабатывается.
-        Результат: CostReport.
-        printing_cost_reports идёт в порядке printings.
-        Пустой набор операций оставляет суммы операций нулём.
-        Побочные эффекты: нет. Аргументы не меняются.
+        :param printings: the printings in the order's sequence.
+        A PrintingCase holds four calculations: printing, cutting, lamination,
+        and die cutting. Each report is already attached.
+        :param operation_costs: Decimals in the original order, without a name
+        and without a description.
+        :param tax_rate: not zero.
+        :param markup:
+        :param unit_count: not zero.
+
+        :return: a CostReport. printing_cost_reports follows the order of printings.
+        An empty set of operations leaves the operation sums at zero.
         """
         printing_reports: list[PrintingCost] = []
         editions_cost = Money(Decimal(0))

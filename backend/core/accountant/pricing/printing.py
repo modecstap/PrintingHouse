@@ -24,32 +24,32 @@ class PrintingCalculation(Calculatable):
 
     @property
     def cyan(self) -> Money:
-        """Возвращает ставку cyan, переданную в конструктор."""
+        """Returns the cyan rate passed to the constructor."""
         return self._cyan
 
     @property
     def magenta(self) -> Money:
-        """Возвращает ставку magenta, переданную в конструктор."""
+        """Returns the magenta rate passed to the constructor."""
         return self._magenta
 
     @property
     def yellow(self) -> Money:
-        """Возвращает ставку yellow, переданную в конструктор."""
+        """Returns the yellow rate passed to the constructor."""
         return self._yellow
 
     @property
     def black(self) -> Money:
-        """Возвращает ставку black, переданную в конструктор."""
+        """Returns the black rate passed to the constructor."""
         return self._black
 
     @property
     def paper(self) -> Money:
-        """Возвращает ставку paper, переданную в конструктор."""
+        """Returns the paper rate passed to the constructor."""
         return self._paper
 
     @property
     def salary(self) -> Money:
-        """Возвращает ставку salary, переданную в конструктор."""
+        """Returns the salary rate passed to the constructor."""
         return self._salary
 
     def attach(self, report: PrintingReport) -> "PrintingCalculation":

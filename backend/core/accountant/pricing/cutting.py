@@ -6,28 +6,30 @@ from backend.core.workplaces.cutting.models import CuttingReport
 
 class CuttingCalculation(Calculatable):
     def __init__(self, salary: Money):
-        """Запоминает ставку зарплаты реза.
+        """Remembers the cutting salary rate.
 
-        Побочные эффекты: отчёт ещё не прикреплён.
+        :param salary:
         """
         self._report = None
         self._salary = salary
 
     @property
     def salary(self) -> Money:
-        """Возвращает ставку salary, переданную в конструктор."""
+        """Returns the salary rate passed to the constructor."""
         return self._salary
 
     def attach(
         self, report: CuttingReport, internal_sheet_count: int
     ) -> "CuttingCalculation":
-        """Прикрепляет отчёт реза и внутреннее число листов.
+        """Attaches the cutting report and the internal sheet count.
 
-        Предусловия: отчёт ещё не прикреплён.
-        Результат: этот же объект.
-        Побочные эффекты: запоминает отчёт и internal_sheet_count.
-        Ошибки: RuntimeError с текстом Report is already attached,
-        если отчёт уже прикреплён.
+        :param report:
+        :param internal_sheet_count:
+
+        :raises RuntimeError:
+        "Report is already attached" if the report is already attached.
+
+        :return: this same object.
         """
         if self._report is not None:
             raise RuntimeError("Report is already attached")
@@ -37,18 +39,15 @@ class CuttingCalculation(Calculatable):
         return self
 
     def calculate(self) -> StageCost:
-        """Считает запуск, материал и зарплату реза до наценки.
+        """Calculates the cutting startup, material, and salary before markup.
 
-        Предусловия: отчёт прикреплён. internal_sheet_count не ноль.
-        Деление на ноль не обрабатывается.
-        Результат: запуск и материал — ноль.
-        Зарплата — ставка умножить на human_cuts и разделить
-        на internal_sheet_count.
-        Ноль резов даёт нулевую зарплату умножением, без отдельной ветки.
-        Без округления до копейки.
-        Побочные эффекты: нет.
-        Ошибки: RuntimeError с текстом Report is not attach, если отчёт
-        не прикреплён. InvalidPriceException, если сумма меньше нуля.
+        :raises RuntimeError: "Report is not attach" if the report is not attached.
+        :raises InvalidPriceException: if the amount is below zero.
+
+        :return: startup and material are zero.
+        Salary is the rate multiplied by human_cuts and divided by internal_sheet_count.
+        Zero cuts give a zero salary by multiplication, with no separate branch.
+        No rounding to a kopeck.
         """
         if not self._report:
             raise RuntimeError("Report is not attach")

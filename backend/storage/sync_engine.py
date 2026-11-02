@@ -5,11 +5,9 @@ from backend.storage.db_config import DBConfig
 
 
 def create_sync_engine() -> Engine:
-    """Создаёт новый синхронный Engine из DB_*.
+    """Creates a new synchronous Engine from DB_*.
 
-    Результат: Engine на postgresql+psycopg. Не singleton.
-    Побочные эффекты: читает DB_USER, DB_PASSWORD, DB_HOST,
-    DB_PORT и DB_NAME через DBConfig.from_env.
+    :return: an Engine on postgresql+psycopg. It is not a singleton.
     """
     url = DBConfig.from_env().get_db_url("psycopg")
     return create_engine(url)

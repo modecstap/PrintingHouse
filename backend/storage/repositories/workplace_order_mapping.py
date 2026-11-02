@@ -181,12 +181,12 @@ def _cost_report(session: Session, row: CostReportRow) -> CostReport:
 
 
 def insert_order(session: Session, order: Order) -> int:
-    """Вставляет шапку заказа и детей расчёта.
+    """Inserts the order header and the calculation children.
 
-    Результат: id, который назначила база.
-    Побочные эффекты: creation_date равен date.today() процесса.
-    order.creation_date не читается. Строки CostReport не пишет.
-    Переданный Order не меняет.
+    :param session:
+    :param order:
+
+    :return: the id that the database assigned.
     """
     row = WorkplaceOrderRow()
     _fill_header(row, order)
@@ -200,23 +200,24 @@ def insert_order(session: Session, order: Order) -> int:
 def update_order(
     session: Session, row: WorkplaceOrderRow, order: Order
 ) -> None:
-    """Заменяет шапку и детей расчёта у существующей строки.
+    """Replaces the header and the calculation children of an existing row.
 
-    Предусловия: row уже есть в базе.
-    Побочные эффекты: creation_date не меняет. Удаляет операции
-    и печати этого заказа и вставляет их заново. Строки CostReport
-    не меняет. Переданный Order не меняет.
+    :param session:
+    :param row: the row is already in the database.
+    :param order:
     """
     _fill_header(row, order)
     _replace_calculation(session, row.id, order)
 
 
 def read_order(session: Session, row: WorkplaceOrderRow) -> Order:
-    """Собирает заказ из шапки и детей расчёта.
+    """Builds an order from the header and the calculation children.
 
-    Результат: новый Order с id строки и creation_date колонки.
-    Если драйвер вернул datetime, берётся date. Отчёты рабочих мест
-    к ставкам не прикрепляет. Список CostReport не читает.
+    :param session:
+    :param row:
+
+    :return: a new Order with the row's id and the column's creation_date.
+    If the driver returned a datetime, the date is taken.
     """
     costs = session.scalars(
         select(OperationCostRow)
@@ -250,11 +251,12 @@ def write_report(
     order_id: int,
     position: int,
 ) -> None:
-    """Пишет один отчёт и его PrintingCost.
+    """Writes one report and its PrintingCost.
 
-    Предусловия: position уже вычислен.
-    Побочные эффекты: добавляет шапку отчёта и PrintingCost
-    с позицией, равной индексу в кортеже.
+    :param session:
+    :param report:
+    :param order_id:
+    :param position: already calculated.
     """
     row = CostReportRow(
         order_id=order_id,
@@ -284,10 +286,13 @@ def write_report(
 
 
 def read_reports(session: Session, order_id: int) -> list[CostReport]:
-    """Возвращает отчёты заказа по position по возрастанию.
+    """Returns the order's reports by position, ascending.
 
-    Результат: пустой список, если отчётов нет. Пустой набор
-    PrintingCost даёт пустой кортеж.
+    :param session:
+    :param order_id:
+
+    :return: an empty list if there are no reports.
+    An empty PrintingCost set gives an empty tuple.
     """
     rows = session.scalars(
         select(CostReportRow)
@@ -461,10 +466,12 @@ def _printing_from_document(value: object) -> Printing:
 
 
 def reference_document(order: Order) -> dict[str, object]:
-    """Строит документ справочника из заказа.
+    """Builds a reference document from an order.
 
-    Результат: JSON-документ справочника. id всегда null.
-    creation_date в документ не входит. Переданный Order не меняет.
+    :param order:
+
+    :return: the reference JSON document. id is always null.
+    creation_date is not in the document.
     """
     # id всегда null. creation_date в документ не входит:
     # дата есть только у строки заказа.
@@ -530,12 +537,10 @@ def _operation_from_document(value: object) -> Operation:
 
 
 def write_reference(session: Session, order: Order) -> None:
-    """Заменяет документ справочника одним upsert.
+    """Replaces the reference document with one upsert.
 
-    Побочные эффекты: пишет строку id = 1. Коммит не делает:
-    транзакция принадлежит вызывающему. creation_date
-    не пишет. id в документе всегда null. Переданный
-    Order не меняет. Строку order не пишет.
+    :param session:
+    :param order:
     """
     statement = insert(WorkplaceReferenceRow).values(
         id=1,
@@ -550,10 +555,12 @@ def write_reference(session: Session, order: Order) -> None:
 
 
 def read_reference(session: Session) -> Order | None:
-    """Собирает заказ из документа справочника.
+    """Builds an order from the reference document.
 
-    Результат: None, если строки нет. Иначе Order с id None
-    и creation_date None. Ключ id документа не читается.
+    :param session:
+
+    :return: None if there is no row. Otherwise an Order with id None
+    and creation_date None.
     """
     row = session.get(WorkplaceReferenceRow, 1)
     if row is None:

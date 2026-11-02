@@ -4,13 +4,13 @@ from backend.core.workplaces.lamination.models import LaminationReport, \
 
 class LaminationWorkplace:
     def report(self, lamination: Lamination) -> LaminationReport:
-        """Возвращает число сторон плёнки для одной печати.
+        """Returns the number of film sides for one printing.
 
-        Предусловие: lamination — ONE_ZERO или ONE_ONE.
-        Число 200 и внутреннее число листов в метод не входят.
-        Результат: LaminationReport. film_sides — число сторон плёнки.
-        Ошибка: ValueError value object проходит к вызывающему,
-        если ламинации нет.
-        Побочные эффекты: нет.
+        :param lamination: ONE_ZERO or ONE_ONE.
+
+        :raises ValueError: if there is no lamination,
+        the value object's ValueError passes to the caller.
+
+        :return: a LaminationReport. film_sides is the number of film sides.
         """
         return LaminationReport(film_sides=lamination.film_sides())

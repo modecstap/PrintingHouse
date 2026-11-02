@@ -28,9 +28,11 @@ class Chroma(Enum):
     FOUR_FOUR = 5
 
     def consumed_sheets(self, sheet_count: int) -> tuple[int, int, int, int]:
-        """Возвращает списание cyan, magenta, yellow и black.
+        """Returns the cyan, magenta, yellow, and black consumption.
 
-        Результат: четыре целых в порядке cyan, magenta, yellow, black.
+        :param sheet_count:
+
+        :return: four integers in the order cyan, magenta, yellow, black.
         """
         cyan_factor, magenta_factor, yellow_factor, black_factor = _FACTORS[self]
         return (

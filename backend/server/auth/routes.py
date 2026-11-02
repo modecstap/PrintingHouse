@@ -31,12 +31,16 @@ _auth_service = AuthService(_user_repository)
 
 @router.post("/register", status_code=201, response_model=None)
 async def register(req: RegisterRequest) -> dict:
-    """Регистрирует пользователя с правами NONE.
+    """Registers a user with NONE permissions.
 
-    Сначала проверяет имя, потом email: при обоих дублях ответ про имя.
-    Результат: словарь id, username, email и permissions.value.
-    Побочные эффекты: новая строка пользователя.
-    Ошибки: HTTP 400 «Username already registered» или «Email already registered».
+    :param req:
+
+    :raises HTTPException: status 400 and detail "Username already registered".
+    The name is checked before the email: if both are duplicates,
+    the response is about the name.
+    :raises HTTPException: status 400 and detail "Email already registered".
+
+    :return: a dictionary with id, username, email, and permissions.value.
     """
     existing = await _user_repository.get_by_username(req.username)
     if existing:
@@ -69,10 +73,14 @@ async def register(req: RegisterRequest) -> dict:
 
 @router.post("/token", response_model=TokenResponse)
 async def login(form: LoginRequest) -> TokenResponse:
-    """Выдаёт access token по имени и паролю.
+    """Issues an access token from the name and password.
 
-    Результат: TokenResponse. token_type остаётся bearer.
-    Ошибки: HTTP 401 «Incorrect username or password», без заголовка WWW-Authenticate.
+    :param form:
+
+    :raises HTTPException: status 401 and detail "Incorrect username or password",
+    with no WWW-Authenticate header.
+
+    :return: a TokenResponse. token_type stays bearer.
     """
     user = await _user_repository.get_by_username(form.username)
     if not user or not _auth_service.verify_password(

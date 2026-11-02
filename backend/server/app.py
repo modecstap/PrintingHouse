@@ -49,9 +49,9 @@ app.include_router(auth_router)
 
 
 async def serve(config: ServerConfig) -> None:
-    """Слушает HTTP на host и port из config, пока процесс не остановят.
+    """Listens for HTTP on the host and port from config until the process is stopped.
 
-    Побочные эффекты: блокирует текущую задачу на uvicorn.
+    :param config: the host and port.
     """
     server = uvicorn.Config(
         app,

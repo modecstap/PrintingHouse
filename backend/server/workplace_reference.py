@@ -41,11 +41,14 @@ def _call(action: Callable[[], _T]) -> _T:
 def read_reference(
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> WorkplaceOrderBody:
-    """Возвращает справочник через reference.
+    """Returns the reference through reference.
 
-    Результат: HTTP 200 и JSON заказа. Пустое хранилище
-    даёт нулевой заказ. Ключа creation_date нет, id равен null.
-    Ошибки: HTTP 503, если нет соединения с базой.
+    :param service:
+
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 and the order JSON. An empty store gives an empty order.
+    There is no creation_date key, and id is null.
     """
     return _call(lambda: body_from_order(service.reference()))
 
@@ -59,16 +62,16 @@ def replace_reference(
     body: WorkplaceOrderBody,
     service: WorkplaceOrderService = Depends(get_workplace_order_service),
 ) -> Response:
-    """Заменяет справочник через set_reference.
+    """Replaces the reference through set_reference.
 
-    Результат: HTTP 200 без тела.
-    Побочные эффекты: документ справочника заменяется целиком.
-    Строка order не появляется. id тела не выбирает
-    заказ. Неверное тело до записи не доходит.
-    Ошибки: HTTP 422, если тело не принято. HTTP 500, если
-    ставка денег или стоимость операции отрицательная, и
-    прежний документ остаётся. HTTP 503, если нет соединения
-    с базой.
+    :param body:
+    :param service:
+
+    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 500 if a money rate or an operation cost is negative.
+    :raises HTTPException: status 503 if there is no connection to the database.
+
+    :return: HTTP 200 with no body.
     """
     _call(lambda: service.set_reference(order_from_body(body)))
     return Response(status_code=200)

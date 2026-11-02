@@ -65,12 +65,11 @@ class Order:
 
 
 def empty_reference_order() -> Order:
-    """Возвращает заказ пустого справочника.
+    """Returns the order of an empty reference.
 
-    Результат: unit_count 1, налог и наценка ноль, операций нет,
-    одна печать с нулевыми числами и ставками, статус «Отложен».
-    id и creation_date пустые.
-    Побочные эффекты: базу не читает и не пишет.
+    :return: unit_count is 1, tax and markup are zero, there are no operations,
+    and one printing has zero numbers and zero rates. The status is Отложен. id
+    and creation_date are empty.
     """
     zero = Decimal("0")
     rate = Money(zero)

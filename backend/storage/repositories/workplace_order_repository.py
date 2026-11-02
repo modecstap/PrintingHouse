@@ -31,24 +31,23 @@ _T = TypeVar("_T")
 
 class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
     def __init__(self, engine: Engine) -> None:
-        """Запоминает Engine. Переменные окружения не читает."""
+        """Remembers the Engine.
+
+        :param engine:
+        """
         self._engine = engine
 
     def save(self, order: Order) -> OrderId:
-        """Сохраняет данные расчёта, comment и status заказа.
+        """Saves the order's calculation data, comment, and status.
 
-        Результат: id сохранённого заказа. Пустой id назначает база,
-        и он известен только из возврата. Существующий id возвращается
-        тем же.
-        Побочные эффекты: пустой id вставляет строку, ставит дату
-        процесса и не пишет CostReport. Существующий id заменяет
-        данные расчёта, comment и status и дату не меняет. Дата
-        аргумента Order не читается. Уже прикреплённые отчёты
-        не удаляются и не меняют порядок. Переданный Order не меняется.
-        Неудачное сохранение оставляет уже сохранённые заказы и отчёты
-        как были.
-        Ошибки: OrderNotFound, если заданный id без строки, база
-        не меняется. OrderStoreUnavailable, если нет соединения.
+        :param order:
+
+        :raises OrderNotFound: if the given id has no row.
+        :raises OrderStoreUnavailable: if there is no connection.
+
+        :return: the id of the saved order. When the id is empty,
+        the database assigns it, and it is known only from the return.
+        When the id already exists, that same id is returned.
         """
         return self._call(
             "save",
@@ -57,12 +56,15 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def take(self, order_id: OrderId) -> Order:
-        """Возвращает весь заказ с этим id, без списка CostReport.
+        """Returns the whole order with this id, without the CostReport list.
 
-        Результат: заказ с данными расчёта, comment, status и датой
-        вставки.
-        Ошибки: OrderNotFound, если строки нет.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+
+        :raises OrderNotFound: if there is no row.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the order with calculation data, comment, status,
+        and the insertion date.
         """
         return self._call(
             "take",
@@ -71,14 +73,15 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def attach(self, report: CostReport, order_id: OrderId) -> None:
-        """Дописывает один отчёт в конец списка отчётов заказа.
+        """Appends one report to the end of the order's report list.
 
-        Результат: ничего не возвращает.
-        Побочные эффекты: число PrintingCost с числом печатей
-        не сверяется. Неудачное прикрепление оставляет уже
-        сохранённые заказы и отчёты как были.
-        Ошибки: OrderNotFound, если заказа нет, отчёт не пишется.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param report:
+        :param order_id:
+
+        :raises OrderNotFound: if the order does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
         """
         self._call(
             "attach",
@@ -87,12 +90,16 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def reports(self, order_id: OrderId) -> list[CostReport]:
-        """Возвращает прикреплённые отчёты заказа.
+        """Returns the order's attached reports.
 
-        Результат: пустой список, если attach ещё не было.
-        Иначе отчёты в порядке успешных attach, с самого раннего.
-        Ошибки: OrderNotFound, если заказа нет.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+
+        :raises OrderNotFound: if the order does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: an empty list if attach has not happened yet.
+        Otherwise the reports are in the order of successful attach calls,
+        from the earliest.
         """
         return self._call(
             "reports",
@@ -101,12 +108,11 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def take_all(self) -> list[Order]:
-        """Возвращает все строки order, без CostReport.
+        """Returns every order row, without CostReport.
 
-        Результат: каждая строка один раз, по убыванию id.
-        Строк нет: пустой список.
-        Ошибки: OrderStoreUnavailable, если нет соединения с базой.
-        OrderNotFound не бросает.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: each row once, by descending id. No rows: an empty list.
         """
         return self._call(
             "take_all",
@@ -115,13 +121,14 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def delete(self, order_id: OrderId) -> None:
-        """Удаляет этот заказ.
+        """Deletes this order.
 
-        Результат: ничего не возвращает.
-        Побочные эффекты: строки расчёта и отчёты уходят каскадом
-        базы.
-        Ошибки: OrderNotFound, если заказа нет, база не меняется.
-        OrderStoreUnavailable, если нет соединения с базой.
+        :param order_id:
+
+        :raises OrderNotFound: if the order does not exist.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
         """
         self._call(
             "delete",
@@ -132,19 +139,16 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
     def save_with_report(
         self, order: Order, report: CostReport
     ) -> OrderId:
-        """Сохраняет заказ и дописывает отчёт в одной транзакции.
+        """Saves the order and appends the report in one transaction.
 
-        Результат: id сохранённого заказа. Пустой id вставляет
-        заказ, и id назначает база. Существующий id обновляет
-        эту строку и возвращается тем же.
-        Побочные эффекты: уже прикреплённые отчёты остаются,
-        новый становится последним. Переданный Order не меняется.
-        Любая ошибка внутри транзакции откатывает и заказ, и отчёт
-        этого вызова.
-        Ошибки: OrderNotFound, если заданный id без строки:
-        новая строка не появляется, отчёт не пишется. Текст
-        собирает save. OrderStoreUnavailable, если нет соединения
-        с базой.
+        :param order:
+        :param report:
+
+        :raises OrderNotFound: if the given id has no row. The text is built by save.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: the id of the saved order. An empty id is assigned by the database.
+        An existing id is returned unchanged.
         """
         return self._call(
             "save_with_report",
@@ -155,12 +159,11 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def reference(self) -> Order | None:
-        """Возвращает справочник, если строка есть.
+        """Returns the reference if the row exists.
 
-        Результат: заказ с id None и без creation_date.
-        Строки нет: None. OrderNotFound не бросает.
-        Ошибки: OrderStoreUnavailable, если нет соединения
-        с базой.
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: an order with id None and no creation_date. No row: None.
         """
         return self._call(
             "reference",
@@ -169,16 +172,13 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         )
 
     def set_reference(self, order: Order) -> None:
-        """Заменяет единственную запись справочника.
+        """Replaces the single reference record.
 
-        Результат: ничего не возвращает.
-        Побочные эффекты: id аргумента не выбирает запись.
-        creation_date в документ не пишется. Строка
-        order не появляется. Два параллельных
-        вызова оставляют один целый документ. Переданный
-        Order не меняется.
-        Ошибки: OrderStoreUnavailable, если нет соединения
-        с базой. Чужой id не даёт OrderNotFound.
+        :param order:
+
+        :raises OrderStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
         """
         self._call(
             "set_reference",
