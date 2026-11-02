@@ -24,7 +24,7 @@ from backend.workplace.cost_order import (
 from backend.workplace.reports import CostReport, PrintingCost
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
-from backend.workplace_order_db.tables import (
+from backend.storage.tables.workplace_order import (
     CostReportRow,
     OperationCostRow,
     PrintingCostRow,

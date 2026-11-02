@@ -15,7 +15,7 @@ from backend.workplace.order_repository import (
     WorkplaceOrderRepository,
 )
 from backend.workplace.reports import CostReport
-from backend.workplace_order_db.mapping import (
+from backend.storage.repositories.workplace_order_mapping import (
     insert_order,
     read_order,
     read_reference,
@@ -24,7 +24,7 @@ from backend.workplace_order_db.mapping import (
     write_reference,
     write_report,
 )
-from backend.workplace_order_db.tables import CostReportRow, WorkplaceOrderRow
+from backend.storage.tables.workplace_order import CostReportRow, WorkplaceOrderRow
 
 _T = TypeVar("_T")
 

@@ -22,10 +22,10 @@ from backend.workplace.order_repository import (
 )
 from backend.workplace.order_service import WorkplaceOrderService
 from backend.workplace.reports import CostReport
-from backend.workplace_order_db import (
+from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
-    create_sync_engine,
 )
+from backend.storage.sync_engine import create_sync_engine
 
 _MISSING_ID = 9_000_000_000_001
 _PASSWORD = "test-password"

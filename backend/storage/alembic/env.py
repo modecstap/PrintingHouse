@@ -26,7 +26,7 @@ from backend.storage.tables import UserEntity
 UserEntity()
 
 from backend.storage.declarative_base import DeclarativeBase
-from backend.workplace_order_db.tables import Base
+from backend.storage.tables.workplace_order import Base
 
 target_metadata = [
     DeclarativeBase().base.metadata,

@@ -25,7 +25,7 @@ from backend.workplace.accountant.pricing.printing import PrintingCalculation
 from backend.workplace.cost_order import List, Order, Printing, Status
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
-from backend.workplace_order_db.mapping import write_reference
+from backend.storage.repositories.workplace_order_mapping import write_reference
 
 
 # revision identifiers, used by Alembic.

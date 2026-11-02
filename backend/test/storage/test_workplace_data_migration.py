@@ -23,7 +23,9 @@ from backend.workplace.cost_order import List, Order, Status
 from backend.workplace.order_service import WorkplaceOrderService
 from backend.workplace.workplaces.lamination.models import Lamination
 from backend.workplace.workplaces.printing.models import Chroma, PressSheet
-from backend.workplace_order_db import SqlWorkplaceOrderRepository
+from backend.storage.repositories.workplace_order_repository import (
+    SqlWorkplaceOrderRepository,
+)
 
 _DUMP = (
     Path(__file__).resolve().parents[3]
