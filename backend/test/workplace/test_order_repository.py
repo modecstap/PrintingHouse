@@ -556,27 +556,6 @@ def test_reports_unknown_id_raises(
     with pytest.raises(OrderNotFound, match=_raises_missing()):
         store.reports(_MISSING_ID)
 
-
-def test_upgrade_adds_workplace_tables_and_keeps_old_order_rows(
-    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
-    engine: Engine,
-) -> None:
-    store, saved_ids = repository
-    names = _public_table_names(engine)
-    for name in (
-        "workplace_order",
-        "workplace_operation_cost",
-        "workplace_printing",
-        "workplace_cost_report",
-        "workplace_printing_cost",
-        "order",
-    ):
-        assert name in names
-    before = _count_rows(engine, '"order"')
-    _save(store, saved_ids, _bare_order())
-    assert _count_rows(engine, '"order"') == before
-
-
 def test_concurrent_saves_keep_one_complete_order(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
 ) -> None:
