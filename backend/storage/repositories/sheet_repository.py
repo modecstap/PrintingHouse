@@ -4,6 +4,7 @@ from typing import TypeVar
 
 from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
+from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, InterfaceError, OperationalError
 from sqlalchemy.orm import Session
 
@@ -58,6 +59,13 @@ def _is_printing_sheet_fk(error: IntegrityError) -> bool:
     return _constraint_name(error) == _SHEET_FK
 
 
+def _is_new_tuple_conflict(error: IntegrityError) -> bool:
+    orig = error.orig
+    if isinstance(orig, UniqueViolation):
+        return True
+    return getattr(orig, "sqlstate", None) == "23505"
+
+
 def _reference_uses_sheet(session: Session, sheet_id: int) -> bool:
     row = session.get(WorkplaceReferenceRow, 1, with_for_update=True)
     if row is None:
@@ -108,13 +116,30 @@ class SqlSheetRepository(SheetRepository):
         :raises SheetStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved sheet. A new id comes from the database.
-        An existing id is returned unchanged.
+        An existing id is returned unchanged. If the insert loses to a row
+        with the same height, width, density, and cost, that stored id is
+        returned and the stored row is not changed.
         """
-        return self._call(
-            "save",
-            sheet.id,
-            lambda session: self._save(session, sheet),
-        )
+        try:
+            return self._call(
+                "save",
+                sheet.id,
+                lambda session: self._save(session, sheet),
+            )
+        except IntegrityError as error:
+            # Две вставки одной четвёрки: индекс отклоняет вторую.
+            # Проигравшая транзакция уже откатилась, строка победителя на месте.
+            if sheet.id is not None or not _is_new_tuple_conflict(error):
+                raise
+            stored = self.find_same(
+                sheet.format.height,
+                sheet.format.width,
+                sheet.density,
+                sheet.cost,
+            )
+            if stored is None or stored.id is None:
+                raise
+            return stored.id
 
     def take(self, sheet_id: int) -> Sheet:
         """Returns the whole sheet with this id.

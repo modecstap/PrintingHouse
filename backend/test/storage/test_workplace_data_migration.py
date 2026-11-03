@@ -29,6 +29,9 @@ from backend.core.sheet.sheet import Sheet
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
 from backend.core.workplaces.printing.printing import PrintingWorkplace
+from backend.storage.repositories.sheet_repository import (
+    SqlSheetRepository,
+)
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -72,8 +75,11 @@ def _mismatch_count(connection: Connection, statement: str) -> int:
 
 
 def _service(engine: Engine) -> WorkplaceOrderService:
-    repository = SqlWorkplaceOrderRepository(engine)
-    return WorkplaceOrderService(repository, Administrator())
+    return WorkplaceOrderService(
+        SqlWorkplaceOrderRepository(engine),
+        SqlSheetRepository(engine),
+        Administrator(),
+    )
 
 
 def _blank_order() -> Order:

@@ -21,16 +21,21 @@ from backend.server.workplace_reference import (
 )
 from backend.core.administrator import Administrator
 from backend.core.order_service import WorkplaceOrderService
+from backend.storage.repositories.sheet_repository import (
+    SqlSheetRepository,
+)
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
 from backend.storage.sync_engine import create_sync_engine
 
 # Маршруты не импортируют backend.storage.sync_engine, поэтому Engine
-# создаётся здесь, один раз на процесс.
+# создаётся здесь, один раз на процесс. Тот же Engine идёт в справочник листа.
+_engine = create_sync_engine()
 bind_workplace_order_service(
     WorkplaceOrderService(
-        SqlWorkplaceOrderRepository(create_sync_engine()),
+        SqlWorkplaceOrderRepository(_engine),
+        SqlSheetRepository(_engine),
         Administrator(),
     )
 )

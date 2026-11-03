@@ -96,7 +96,9 @@ class SheetRepository(Protocol):
         :raises SheetStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved sheet. A new id comes from the database.
-        An existing id is returned unchanged.
+        An existing id is returned unchanged. If the insert loses to a row
+        with the same height, width, density, and cost, that stored id is
+        returned and the stored row is not changed.
         """
         ...
 

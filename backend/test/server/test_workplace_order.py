@@ -102,6 +102,10 @@ class _EmptyCatalog:
         return []
 
 
+class _NoSheets:
+    pass
+
+
 class _UnavailableTake:
     def take(self, order_id: int) -> Order:
         cause = RuntimeError(
@@ -556,7 +560,9 @@ def test_should_return_an_empty_list_when_the_service_has_no_orders(
     api: _Api,
 ) -> None:
     headers = _token(api, "READ")
-    service = WorkplaceOrderService(_EmptyCatalog(), Administrator())
+    service = WorkplaceOrderService(
+        _EmptyCatalog(), _NoSheets(), Administrator()
+    )
     app.dependency_overrides[get_workplace_order_service] = lambda: service
     listed = api.client.get("/api/v2/order/", headers=headers)
     assert listed.status_code == 200
@@ -1018,7 +1024,9 @@ def test_should_return_a_zero_order_when_the_reference_is_missing(
     api: _Api,
 ) -> None:
     headers = _token(api, "READ")
-    service = WorkplaceOrderService(_EmptyReference(), Administrator())
+    service = WorkplaceOrderService(
+        _EmptyReference(), _NoSheets(), Administrator()
+    )
     app.dependency_overrides[get_workplace_order_service] = lambda: service
     response = api.client.get("/api/v2/reference/", headers=headers)
     assert response.status_code == 200

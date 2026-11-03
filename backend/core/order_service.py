@@ -3,31 +3,36 @@ from dataclasses import replace
 from backend.core.administrator import Administrator
 from backend.core.order import (
     Order,
-    Printing,
     Status,
     empty_reference_order,
 )
-from backend.core.sheet.format import SheetFormat
-from backend.core.sheet.sheet import Sheet
 from backend.core.order_repository import (
     OrderId,
     WorkplaceOrderRepository,
 )
 from backend.core.reports import CostReport
+from backend.core.sheet.repository import (
+    SheetIdEmpty,
+    SheetRepository,
+)
+from backend.core.sheet.sheet import Sheet
 
 
 class WorkplaceOrderService:
     def __init__(
         self,
         orders: WorkplaceOrderRepository,
+        sheets: SheetRepository,
         administrator: Administrator,
     ) -> None:
-        """Remembers the order repository and the administrator.
+        """Remembers the order repository, the sheet repository, and the administrator.
 
         :param orders:
+        :param sheets:
         :param administrator:
         """
         self._orders = orders
+        self._sheets = sheets
         self._administrator = administrator
 
     def save(self, order: Order) -> OrderId:
@@ -35,12 +40,19 @@ class WorkplaceOrderService:
 
         :param order:
 
+        :raises SheetIdEmpty: if a printing has no sheet id.
+        The order is not written.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order is not written.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+        The order is not written.
         :raises OrderNotFound: if the given id has no row.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved row. An empty id is assigned by the database.
         An existing id is returned unchanged.
         """
+        self._load_sheets(order, "save")
         return self._orders.save(order)
 
     def take(self, order_id: OrderId) -> Order:
@@ -83,10 +95,17 @@ class WorkplaceOrderService:
 
         :param order:
 
+        :raises SheetIdEmpty: if a printing has no sheet id.
+        The reference is not replaced.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The reference is not replaced.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+        The reference is not replaced.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
         :return: returns nothing.
         """
+        self._load_sheets(order, "set_reference")
         self._orders.set_reference(replace(order, id=None))
 
     def delete(self, order_id: OrderId) -> None:
@@ -106,16 +125,30 @@ class WorkplaceOrderService:
 
         :param order:
 
-        :return: the CostReport of this calculation.
+        :raises SheetIdEmpty: if a printing has no sheet id.
+        There is no report and the order is not written.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        There is no report and the order is not written.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+        There is no report and the order is not written.
+
+        :return: the CostReport of this calculation. The order is not written.
+        Each printing is priced from the loaded sheet.
         """
-        priced, sheets = _calculation_sheets(order)
-        return self._administrator.report_cost(priced, sheets)
+        sheets = self._load_sheets(order, "calculate")
+        return self._administrator.report_cost(order, sheets)
 
     def accept(self, order: Order) -> tuple[OrderId, CostReport]:
         """Saves the order with status В работе and the calculation report.
 
         :param order:
 
+        :raises SheetIdEmpty: if a printing has no sheet id.
+        The order is not written and there is no report.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order is not written and there is no report.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+        The order is not written and there is no report.
         :raises OrderNotFound: if the given id does not exist.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
@@ -125,14 +158,21 @@ class WorkplaceOrderService:
         and comment come from the passed order.
         The second element of the pair is the report of this calculation,
         not a report read from the database.
+        The sheet check runs before the calculation and before the save.
         """
-        return self._keep(order, Status.IN_WORK)
+        return self._keep(order, Status.IN_WORK, "accept")
 
     def delay(self, order: Order) -> tuple[OrderId, CostReport]:
         """Saves the order with status Отложен and the calculation report.
 
         :param order:
 
+        :raises SheetIdEmpty: if a printing has no sheet id.
+        The order is not written and there is no report.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order is not written and there is no report.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+        The order is not written and there is no report.
         :raises OrderNotFound: if the given id does not exist.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
@@ -141,8 +181,9 @@ class WorkplaceOrderService:
         Calculation data and comment come from the passed order.
         The second element of the pair is the report of this calculation,
         not a report read from the database.
+        The sheet check runs before the calculation and before the save.
         """
-        return self._keep(order, Status.SAVED)
+        return self._keep(order, Status.SAVED, "delay")
 
     def change_status(self, order_id: OrderId, status: Status) -> None:
         """Changes only the order status.
@@ -155,49 +196,27 @@ class WorkplaceOrderService:
 
         :return: returns nothing.
         """
+        # Уже сохранённый заказ. Пустой лист здесь не проверяется:
+        # метод меняет только статус.
         current = self._orders.take(order_id)
         self._orders.save(replace(current, status=status))
 
     def _keep(
-        self, order: Order, status: Status
+        self, order: Order, status: Status, operation: str
     ) -> tuple[OrderId, CostReport]:
-        priced, sheets = _calculation_sheets(order)
-        report = self._administrator.report_cost(priced, sheets)
+        sheets = self._load_sheets(order, operation)
+        report = self._administrator.report_cost(order, sheets)
         order_id = self._orders.save_with_report(
             replace(order, status=status), report
         )
         return order_id, report
 
-
-def _calculation_sheets(order: Order) -> tuple[Order, dict[int, Sheet]]:
-    # Справочника ещё нет. Размер и ставка лежат на печати.
-    # Пустой id подставляется только в копию для этого расчёта.
-    sheets: dict[int, Sheet] = {}
-    printings: list[Printing] = []
-    used = {
-        printing.specification.press_sheet
-        for printing in order.printings
-        if printing.specification.press_sheet is not None
-    }
-    next_id = 1
-    for printing in order.printings:
-        spec = printing.specification
-        sheet_id = spec.press_sheet
-        if sheet_id is None:
-            while next_id in used:
-                next_id += 1
-            sheet_id = next_id
-            used.add(sheet_id)
-            next_id += 1
-            printing = replace(
-                printing,
-                specification=replace(spec, press_sheet=sheet_id),
-            )
-        stored = printing.stored_press
-        sheets[sheet_id] = Sheet(
-            SheetFormat("", stored.height, stored.width),
-            stored.density,
-            stored.paper,
-        )
-        printings.append(printing)
-    return replace(order, printings=tuple(printings)), sheets
+    def _load_sheets(self, order: Order, operation: str) -> dict[int, Sheet]:
+        sheets: dict[int, Sheet] = {}
+        for printing in order.printings:
+            sheet_id = printing.specification.press_sheet
+            if sheet_id is None:
+                raise SheetIdEmpty(operation)
+            if sheet_id not in sheets:
+                sheets[sheet_id] = self._sheets.take(sheet_id)
+        return sheets

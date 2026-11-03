@@ -1,3 +1,4 @@
+import json
 import threading
 from collections.abc import Callable, Iterator
 from dataclasses import replace
@@ -7,19 +8,34 @@ import pytest
 from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
 
+from backend.core.accountant.money import Money
+from backend.core.accountant.pricing.cutting import CuttingCalculation
+from backend.core.accountant.pricing.die_cutting import DieCuttingCalculation
+from backend.core.accountant.pricing.lamination import LaminationCalculation
+from backend.core.accountant.pricing.printing import PrintingCalculation
 from backend.core.administrator import Administrator
 from backend.core.order import (
+    List,
     Operation,
     Order,
     OrderSpecification,
+    Printing,
+    PrintingSpecification,
     Status,
+    StoredPress,
 )
+from backend.core.sheet.repository import SheetIdEmpty, SheetNotFound
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma
 from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
 )
 from backend.core.order_service import WorkplaceOrderService
 from backend.core.reports import CostReport
+from backend.storage.repositories.sheet_repository import (
+    SqlSheetRepository,
+)
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -149,7 +165,9 @@ def workplace(
 ) -> Iterator[_Bundle]:
     saved_ids: list[int] = []
     orders = SqlWorkplaceOrderRepository(engine)
-    service = WorkplaceOrderService(orders, Administrator())
+    service = WorkplaceOrderService(
+        orders, SqlSheetRepository(engine), Administrator()
+    )
     try:
         yield service, orders, saved_ids
     finally:
@@ -492,7 +510,9 @@ def test_should_calculate_without_using_the_database() -> None:
     )
     try:
         service = WorkplaceOrderService(
-            SqlWorkplaceOrderRepository(local), Administrator()
+            SqlWorkplaceOrderRepository(local),
+            SqlSheetRepository(local),
+            Administrator(),
         )
         order = _order()
         held = replace(order)
@@ -553,7 +573,9 @@ def test_should_return_the_connection(workplace: _Bundle) -> None:
     )
     source.dispose()
     service = WorkplaceOrderService(
-        SqlWorkplaceOrderRepository(local), Administrator()
+        SqlWorkplaceOrderRepository(local),
+        SqlSheetRepository(local),
+        Administrator(),
     )
     try:
         for _ in range(3):
@@ -575,7 +597,9 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
     )
     try:
         service = WorkplaceOrderService(
-            SqlWorkplaceOrderRepository(local), Administrator()
+            SqlWorkplaceOrderRepository(local),
+            SqlSheetRepository(local),
+            Administrator(),
         )
         calls: list[Callable[[], object]] = [
             lambda: service.save(_order()),
@@ -596,3 +620,132 @@ def test_should_report_an_unreachable_database_without_secrets() -> None:
             assert "order-body-marker" not in message
     finally:
         local.dispose()
+
+
+def _money(amount: str = "0") -> Money:
+    return Money(Decimal(amount))
+
+
+def _order_with_sheet(press_sheet: int | None) -> Order:
+    rate = _money()
+    printing = Printing(
+        specification=PrintingSpecification(
+            count=1,
+            chroma=Chroma.ZERO_ZERO,
+            lamination=Lamination.DONT,
+            die_cutting=False,
+            spacing=0,
+            press_sheet=press_sheet,
+            list=List(100, 100, 0),
+            sheet_by_fitting=0,
+        ),
+        stack_height=50,
+        press_pricing=PrintingCalculation(rate, rate, rate, rate, rate),
+        cut_pricing=CuttingCalculation(rate),
+        lamination_pricing=LaminationCalculation(rate, rate, rate),
+        die_cut_pricing=DieCuttingCalculation(rate),
+        stored_press=StoredPress(0, 0, 0, rate),
+    )
+    return Order(
+        specification=OrderSpecification(1, Decimal("0"), ()),
+        tax_rate=Decimal("1"),
+        printings=(printing,),
+    )
+
+
+def _reference_document(engine: Engine) -> object:
+    with engine.connect() as connection:
+        return connection.execute(
+            text("SELECT document FROM reference WHERE id = 1")
+        ).scalar_one_or_none()
+
+
+def _restore_reference(engine: Engine, document: object) -> None:
+    with engine.begin() as connection:
+        if document is None:
+            connection.execute(text("DELETE FROM reference WHERE id = 1"))
+            return
+        connection.execute(
+            text(
+                "INSERT INTO reference (id, document) "
+                "VALUES (1, CAST(:document AS jsonb)) "
+                "ON CONFLICT (id) DO UPDATE "
+                "SET document = EXCLUDED.document"
+            ),
+            {"document": json.dumps(document)},
+        )
+
+
+def _attempt(service: WorkplaceOrderService, action: str, order: Order) -> None:
+    if action == "save":
+        service.save(order)
+        return
+    if action == "set_reference":
+        service.set_reference(order)
+        return
+    if action == "calculate":
+        service.calculate(order)
+        return
+    if action == "accept":
+        service.accept(order)
+        return
+    if action == "delay":
+        service.delay(order)
+        return
+    raise AssertionError(action)
+
+
+@pytest.mark.parametrize(
+    ("action", "message"),
+    [
+        ("save", "save: id листа пустой"),
+        ("set_reference", "set_reference: id листа пустой"),
+        ("calculate", "calculate: id листа пустой"),
+        ("accept", "accept: id листа пустой"),
+        ("delay", "delay: id листа пустой"),
+    ],
+)
+def test_should_write_nothing_when_the_sheet_id_is_empty(
+    workplace: _Bundle, engine: Engine, action: str, message: str
+) -> None:
+    service, _orders, _saved_ids = workplace
+    order = _order_with_sheet(None)
+    held = replace(order)
+    before = _order_and_report_counts(engine)
+    sheets_before = _count_rows(engine, "sheet")
+    previous = _reference_document(engine)
+    try:
+        with pytest.raises(SheetIdEmpty) as caught:
+            _attempt(service, action, order)
+        assert str(caught.value) == message
+        assert order == held
+        assert _order_and_report_counts(engine) == before
+        assert _count_rows(engine, "sheet") == sheets_before
+        assert _reference_document(engine) == previous
+    finally:
+        _restore_reference(engine, previous)
+
+
+@pytest.mark.parametrize(
+    "action",
+    ["save", "set_reference", "calculate", "accept", "delay"],
+)
+def test_should_write_nothing_when_the_sheet_id_is_unknown(
+    workplace: _Bundle, engine: Engine, action: str
+) -> None:
+    service, _orders, _saved_ids = workplace
+    order = _order_with_sheet(_MISSING_ID)
+    held = replace(order)
+    before = _order_and_report_counts(engine)
+    sheets_before = _count_rows(engine, "sheet")
+    previous = _reference_document(engine)
+    try:
+        with pytest.raises(SheetNotFound) as caught:
+            _attempt(service, action, order)
+        assert str(caught.value) == f"take: листа нет, id={_MISSING_ID}"
+        assert order == held
+        assert _order_and_report_counts(engine) == before
+        assert _count_rows(engine, "sheet") == sheets_before
+        assert _reference_document(engine) == previous
+    finally:
+        _restore_reference(engine, previous)
