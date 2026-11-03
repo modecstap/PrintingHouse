@@ -54,9 +54,7 @@ class Administrator:
                 item_count / items_per_sheet + spec.sheet_by_fitting
             )
             printing_report = self.printing.report(
-                width=sheet.format.width,
-                height=sheet.format.height,
-                density=sheet.density,
+                sheet=sheet,
                 chroma=spec.chroma,
                 sheet_count=sheet_count,
             )

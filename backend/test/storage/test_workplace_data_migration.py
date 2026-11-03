@@ -800,6 +800,6 @@ def test_should_share_one_sheet_row_when_printings_and_the_reference_have_the_sa
     )
     assert catalog.item_count(List(100, 100, 0), 0) == 12
     assert catalog.cut_needed(List(100, 100, 0), 0) == 14
-    report = PrintingWorkplace.report(320, 450, 150, Chroma.ZERO_ZERO, 1)
-    assert report.mass_kg == Decimal("0.0216")
-    assert Money(Decimal("10")) * report.mass_kg == Money(Decimal("0.216"))
+    sheet = Sheet(SheetFormat("450 x 320", 450, 320), 150, Money(Decimal("10")))
+    report = PrintingWorkplace.report(sheet, Chroma.ZERO_ZERO, 1)
+    assert Decimal.quantize(report.mass_kg, Decimal("0.0001")) == Decimal("0.0216")

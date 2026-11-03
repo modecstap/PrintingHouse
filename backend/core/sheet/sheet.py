@@ -88,3 +88,18 @@ class Sheet:
             self.format.width, self.format.height, item, spacing
         )
         return (max(0, count_x - 1) + max(0, count_y - 1)) * 2 + 4
+
+    def area(self) -> int:
+        """Calculates the area of the sheet in square millimeters.
+
+        :return: width * height
+        """
+        return self.format.width * self.format.height
+
+    def mass(self) -> float:
+        """Calculates the mass of the sheet in kilograms.
+
+        :return: area_m2 * (density / 1000)
+        """
+        area_m2 = self.area() / 1_000_000
+        return area_m2 * (self.density / 1000)
