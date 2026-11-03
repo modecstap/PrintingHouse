@@ -96,7 +96,6 @@ const printingHiddenFields = (index) => [
   { label: "Стоимость высечки (руб./лист)", path: `printings[${index}].production.die_cutting_cost`, step: 0.01 },
   { label: "Поля печатного листа (мм)", path: `printings[${index}].production.spacing` },
   { label: "Высота стопки резака (мм)", path: `printings[${index}].production.cutter.stack_height` },
-  { label: "Листы на приладку (шт)", path: `printings[${index}].production.sheet_by_fitting` },
   { label: "Цена 1 реза (руб.)", path: `printings[${index}].production.cutting_cost`, step: 0.01 },
   { label: "Зарплата печатнику за 1 лист (руб.)", path: `printings[${index}].production.printer_salary`, step: 0.01 },
 ];

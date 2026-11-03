@@ -47,7 +47,6 @@ _PRINTING_KEYS = {
     "chroma",
     "lamination",
     "die_cutting",
-    "sheet_by_fitting",
     "stack_height",
     "spacing",
     "press_sheet",
@@ -162,7 +161,6 @@ def _printing(
         "chroma": chroma,
         "lamination": lamination,
         "die_cutting": die_cutting,
-        "sheet_by_fitting": 3,
         "stack_height": 4,
         "spacing": spacing,
         "press_sheet": press_sheet,
@@ -259,7 +257,6 @@ def _zero_printing() -> dict[str, object]:
         "chroma": "ZERO_ZERO",
         "lamination": "DONT",
         "die_cutting": False,
-        "sheet_by_fitting": 0,
         "stack_height": 0,
         "spacing": 0,
         "press_sheet": None,
@@ -384,7 +381,7 @@ def _assert_printing(
     assert type(actual["lamination"]) is str
     assert type(actual["die_cutting"]) is bool
     assert actual["die_cutting"] is expected["die_cutting"]
-    for key in ("count", "sheet_by_fitting", "stack_height", "spacing"):
+    for key in ("count", "stack_height", "spacing"):
         assert type(actual[key]) is int
         assert actual[key] == expected[key]
     if expected["press_sheet"] is None:

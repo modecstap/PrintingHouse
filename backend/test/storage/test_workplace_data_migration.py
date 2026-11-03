@@ -74,6 +74,22 @@ def _mismatch_count(connection: Connection, statement: str) -> int:
     return int(connection.execute(text(wrapped)).scalar_one())
 
 
+def _has_column(connection: Connection, table: str, column: str) -> bool:
+    found = connection.execute(
+        text(
+            """
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = :table
+              AND column_name = :column
+            """
+        ),
+        {"table": table, "column": column},
+    ).scalar_one_or_none()
+    return found is not None
+
+
 def _service(engine: Engine) -> WorkplaceOrderService:
     return WorkplaceOrderService(
         SqlWorkplaceOrderRepository(engine),
@@ -234,7 +250,7 @@ def _assert_reference(connection: Connection) -> None:
     assert sheet.density == 0
     assert sheet.cost == Decimal("160.0000")
     assert printing["list"] == {"width": 0, "height": 0, "bleeds": 0}
-    assert printing["sheet_by_fitting"] == 2
+    assert "sheet_by_fitting" not in printing
     assert printing["stack_height"] == 30
     assert Decimal(press["black"]) == Decimal("2.0000")
     assert Decimal(press["cyan"]) == _COLOR
@@ -803,3 +819,44 @@ def test_should_share_one_sheet_row_when_printings_and_the_reference_have_the_sa
     sheet = Sheet(SheetFormat("450 x 320", 450, 320), 150, Money(Decimal("10")))
     report = PrintingWorkplace.report(sheet, Chroma.ZERO_ZERO, 1)
     assert Decimal.quantize(report.mass_kg, Decimal("0.0001")) == Decimal("0.0216")
+
+
+def test_should_drop_sheet_by_fitting_at_head_and_restore_zero_on_downgrade() -> None:
+    with _migration_database() as (config, engine):
+        command.upgrade(config, "b6d4e2a81c05")
+        with engine.begin() as connection:
+            _insert_legacy(connection)
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            assert _has_column(connection, "printing", "sheet_by_fitting") is False
+            _assert_reference(connection)
+        command.downgrade(config, "53df464e9eb6")
+        with engine.connect() as connection:
+            tables = set(connection.execute(text(
+                "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
+            )).scalars())
+            assert "printing" in tables
+            assert "reference" in tables
+            assert _count(connection, "printing") == 4
+            fittings = _rows(connection, "SELECT sheet_by_fitting FROM printing")
+            assert fittings == [(0,), (0,), (0,), (0,)]
+            document = connection.execute(text(
+                "SELECT document FROM reference WHERE id = 1"
+            )).scalar_one()
+            assert document["printings"][0]["sheet_by_fitting"] == 0
+            column = connection.execute(text(
+                """
+                SELECT data_type, is_nullable, column_default
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'printing'
+                  AND column_name = 'sheet_by_fitting'
+                """
+            )).one()
+            assert column.data_type == "bigint"
+            assert column.is_nullable == "NO"
+            assert column.column_default is None
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            assert _has_column(connection, "printing", "sheet_by_fitting") is False
+            _assert_reference(connection)

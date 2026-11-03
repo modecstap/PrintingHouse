@@ -286,6 +286,18 @@ def _assert_head_objects(connection: Connection) -> None:
     assert _public_sequences(connection) - {"user_id_seq"} == _HEAD_SEQUENCES
     assert set(_LEGACY_ENUMS).isdisjoint(_public_enums(connection))
     assert _workplace_names(connection) == set()
+    fitting = connection.execute(
+        text(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'printing'
+              AND column_name = 'sheet_by_fitting'
+            """
+        )
+    ).scalar_one_or_none()
+    assert fitting is None
 
 
 def _assert_legacy_objects_present(connection: Connection) -> None:
@@ -741,7 +753,7 @@ def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields
             if target in {"revision", "down_revision"} and value is not None:
                 values[target] = ast.literal_eval(value)
         revisions.append((str(values["revision"]), values["down_revision"]))
-    assert len(paths) == 7
+    assert len(paths) == 8
     assert ("53a756fbc804", None) in revisions
     assert ("733171f352dd", "53a756fbc804") in revisions
     assert ("b6d4e2a81c05", "733171f352dd") in revisions
@@ -749,6 +761,7 @@ def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields
     assert ("e7b3c91a04d6", "2f55f813c842") in revisions
     assert ("9d3f6a2c1b7e", "e7b3c91a04d6") in revisions
     assert ("53df464e9eb6", "9d3f6a2c1b7e") in revisions
+    assert ("36320a9fdf0e", "53df464e9eb6") in revisions
 
 
 def test_should_drop_legacy_objects_when_an_empty_database_reaches_head() -> None:
@@ -758,7 +771,7 @@ def test_should_drop_legacy_objects_when_an_empty_database_reaches_head() -> Non
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            assert version == "53df464e9eb6"
+            assert version == "36320a9fdf0e"
             _assert_head_objects(connection)
             assert "user" in _public_tables(connection)
             assert "user_id_seq" in _public_sequences(connection)

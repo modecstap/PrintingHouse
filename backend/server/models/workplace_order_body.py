@@ -183,7 +183,6 @@ class WorkplacePrintingBody(BaseModel):
     chroma: JsonChroma
     lamination: JsonLamination
     die_cutting: StrictBool
-    sheet_by_fitting: StrictInt
     stack_height: StrictInt
     spacing: StrictInt
     press_sheet: OptionalSheetId
@@ -380,7 +379,6 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
                 height=page.height,
                 bleeds=page.bleeds,
             ),
-            sheet_by_fitting=body.sheet_by_fitting,
         ),
         stack_height=body.stack_height,
         press_pricing=PrintingCalculation(
@@ -413,7 +411,6 @@ def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
         chroma=spec.chroma,
         lamination=spec.lamination,
         die_cutting=spec.die_cutting,
-        sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
         spacing=spec.spacing,
         press_sheet=spec.press_sheet,

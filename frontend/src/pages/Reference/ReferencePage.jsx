@@ -20,7 +20,6 @@ const fields = [
   { label: "Стоимость высечки (руб./лист)", path: "printings[0].production.die_cutting_cost", type: "number", step: "0.01" },
   { label: "Поля печатного листа (мм)", path: "printings[0].production.spacing", type: "number" },
   { label: "Высота стопки резака (мм)", path: "printings[0].production.cutter.stack_height", type: "number" },
-  { label: "Листы на приладку (шт)", path: "printings[0].production.sheet_by_fitting", type: "number" },
   { label: "Цена 1 реза (руб.)", path: "printings[0].production.cutting_cost", type: "number", step: "0.01" },
 ];
 

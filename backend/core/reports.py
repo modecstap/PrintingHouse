@@ -8,7 +8,6 @@ from backend.core.accountant.pricing.calculatable import Calculatable
 class PrintingCase:
     item_count: int
     items_per_sheet: int
-    sheet_count: int
     internal_sheet_count: int
     calculations: tuple[Calculatable, ...]
 

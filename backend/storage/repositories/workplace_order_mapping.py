@@ -84,7 +84,6 @@ def _printing_row(order_id: int, position: int, printing: Printing) -> PrintingR
         order_id=order_id,
         position=position,
         count=spec.count,
-        sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
         sheet_id=_sheet_id(printing),
         spacing=spec.spacing,
@@ -137,7 +136,6 @@ def _printing_from_row(session: Session, row: PrintingRow) -> Printing:
             spacing=row.spacing,
             press_sheet=row.sheet_id,
             list=List(row.list_width, row.list_height, row.list_bleeds),
-            sheet_by_fitting=row.sheet_by_fitting,
         ),
         stack_height=row.stack_height,
         press_pricing=PrintingCalculation(
@@ -408,7 +406,6 @@ def _printing_document(printing: Printing) -> dict[str, object]:
         "chroma": spec.chroma.name,
         "lamination": spec.lamination.name,
         "die_cutting": spec.die_cutting,
-        "sheet_by_fitting": spec.sheet_by_fitting,
         "stack_height": printing.stack_height,
         "press_sheet": spec.press_sheet,
         "spacing": spec.spacing,
@@ -465,7 +462,6 @@ def _printing_from_document(session: Session, value: object) -> Printing:
                 _int_field(page, "height"),
                 _int_field(page, "bleeds"),
             ),
-            sheet_by_fitting=_int_field(item, "sheet_by_fitting"),
         ),
         stack_height=_int_field(item, "stack_height"),
         press_pricing=PrintingCalculation(

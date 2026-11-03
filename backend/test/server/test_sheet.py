@@ -142,7 +142,6 @@ def _order_using(sheet_id: int) -> dict[str, object]:
             "chroma": "ZERO_ZERO",
             "lamination": "DONT",
             "die_cutting": False,
-            "sheet_by_fitting": 0,
             "stack_height": 0,
             "spacing": 0,
             "press_sheet": sheet_id,

@@ -107,7 +107,6 @@ function toPrinting(printing) {
     chroma: toEnumName(edition.chroma, CHROMA_BY_NUMBER),
     lamination: toEnumName(edition.lamination, LAMINATION_BY_NUMBER),
     die_cutting: toDieCutting(edition.die_cutting),
-    sheet_by_fitting: toJsonInteger(production.sheet_by_fitting),
     stack_height: toJsonInteger(cutter.stack_height),
     spacing: toJsonInteger(production.spacing),
     press_sheet: toSheetId(production.press_sheet),
@@ -157,7 +156,6 @@ function productionFromPrinting(printing) {
     cutter: {
       stack_height: source.stack_height,
     },
-    sheet_by_fitting: source.sheet_by_fitting,
     cutting_cost: source.cut_pricing?.salary,
   };
 }

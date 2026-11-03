@@ -63,7 +63,6 @@ class PrintingRow(Base):
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     count: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    sheet_by_fitting: Mapped[int] = mapped_column(BigInteger, nullable=False)
     stack_height: Mapped[int] = mapped_column(BigInteger, nullable=False)
     sheet_id: Mapped[int] = mapped_column(
         BigInteger,

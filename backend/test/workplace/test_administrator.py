@@ -46,7 +46,6 @@ def _loaded(
             spacing=spacing,
             press_sheet=1,
             list=item,
-            sheet_by_fitting=0,
         ),
         stack_height=50,
         press_pricing=PrintingCalculation(zero, zero, zero, zero, zero),
@@ -78,12 +77,12 @@ def test_report_cost_counts_twelve_items_on_a_plain_sheet():
 @pytest.mark.parametrize(
     ("count", "sheet_count"),
     [
-        (48, 4),
-        (60, 5),
-        (1188, 99),
-        (1200, 100),
-        (5988, 499),
-        (6000, 500),
+        (48, 5),
+        (60, 6),
+        (1188, 102),
+        (1200, 103),
+        (5988, 514),
+        (6000, 515),
     ],
 )
 def test_report_cost_counts_sheets_from_twelve_items(
@@ -101,7 +100,7 @@ def test_report_cost_counts_six_items_and_two_sheets_with_field_and_bleeds():
     result = Administrator().report_cost(order, sheets)
     report = result.printing_cost_reports[0]
 
-    assert (report.items_per_sheet, report.sheet_count) == (6, 2)
+    assert (report.items_per_sheet, report.sheet_count) == (6, 3)
 
 
 def test_report_cost_rejects_a_sheet_that_fits_no_items():

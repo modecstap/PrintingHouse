@@ -47,16 +47,13 @@ class Administrator:
             item_count = spec.count * order.specification.unit_count
             items_per_sheet = sheet.item_count(spec.list, spec.spacing)
             cut_count = sheet.cut_needed(spec.list, spec.spacing)
-            sheet_count = math.ceil(item_count / items_per_sheet)
-            # Приладка внутри суммы до ceil: sheet_count плюс приладка
-            # после округления даёт другое внутреннее число листов.
             internal_sheet_count = math.ceil(
-                item_count / items_per_sheet + spec.sheet_by_fitting
+                item_count / items_per_sheet * 1.03
             )
             printing_report = self.printing.report(
                 sheet=sheet,
                 chroma=spec.chroma,
-                sheet_count=sheet_count,
+                sheet_count=internal_sheet_count,
             )
             cutting_report = self.cutting.report(
                 internal_sheet_count=internal_sheet_count,
@@ -66,14 +63,13 @@ class Administrator:
             )
             lamination_report = self.lamination.report(spec.lamination)
             die_cutting_report = self.die_cutting.report(
-                sheet_count, spec.die_cutting
+                internal_sheet_count, spec.die_cutting
             )
 
             cases.append(
                 PrintingCase(
                     item_count=item_count,
                     items_per_sheet=items_per_sheet,
-                    sheet_count=sheet_count,
                     internal_sheet_count=internal_sheet_count,
                     calculations=(
                         printing.press_pricing.attach(

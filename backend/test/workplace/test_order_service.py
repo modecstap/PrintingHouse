@@ -636,7 +636,6 @@ def _order_with_sheet(press_sheet: int | None) -> Order:
             spacing=0,
             press_sheet=press_sheet,
             list=List(100, 100, 0),
-            sheet_by_fitting=0,
         ),
         stack_height=50,
         press_pricing=PrintingCalculation(rate, rate, rate, rate, rate),

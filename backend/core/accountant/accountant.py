@@ -82,7 +82,7 @@ def _price_printing(case: PrintingCase, tax_rate: Decimal, markup: Decimal) -> P
     profit_after_tax = (profit_before_tax / tax_compensation).quantize(Decimal("0.0001"))
     return PrintingCost(
         items_per_sheet=case.items_per_sheet,
-        sheet_count=case.sheet_count,
+        sheet_count=case.internal_sheet_count,
         unit_cost_price=unit_cost_price.amount,
         unit_cost=unit_cost.amount,
         edition_cost_price=edition_cost_price.amount,

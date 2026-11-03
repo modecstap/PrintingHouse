@@ -14,7 +14,6 @@ export const defaultProduction = {
     paper_cost: 165, 
     press_sheet: { height: 450, width: 320, spacing: 5, }, 
     cutter: { stack_height: 30, }, 
-    sheet_by_fitting: 2, 
     cutting_cost: 10, 
     printer_salary: 2, 
 };

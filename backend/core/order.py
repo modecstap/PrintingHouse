@@ -51,7 +51,6 @@ class PrintingSpecification:
     spacing: int
     press_sheet: int | None
     list: List
-    sheet_by_fitting: int
 
 
 
@@ -96,7 +95,6 @@ def empty_reference_order() -> Order:
             spacing=0,
             press_sheet=None,
             list=List(0, 0, 0),
-            sheet_by_fitting=0,
         ),
         stack_height=0,
         press_pricing=PrintingCalculation(rate, rate, rate, rate, rate),

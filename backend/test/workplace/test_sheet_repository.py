@@ -62,7 +62,6 @@ def _linked_order(sheet_id: int) -> Order:
             spacing=4,
             press_sheet=sheet_id,
             list=List(10, 20, 0),
-            sheet_by_fitting=0,
         ),
         stack_height=1,
         press_pricing=PrintingCalculation(rate, rate, rate, rate, rate),
