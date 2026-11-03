@@ -218,6 +218,7 @@ _HEAD_TABLES = {
     "cost_report",
     "printing_cost",
     "reference",
+    "sheet",
     "alembic_version",
 }
 _HEAD_SEQUENCES = {
@@ -227,6 +228,7 @@ _HEAD_SEQUENCES = {
     "cost_report_id_seq",
     "printing_cost_id_seq",
     "reference_id_seq",
+    "sheet_id_seq",
 }
 
 
@@ -739,13 +741,14 @@ def test_versions_directory_keeps_the_baseline_workplace_tables_and_order_fields
             if target in {"revision", "down_revision"} and value is not None:
                 values[target] = ast.literal_eval(value)
         revisions.append((str(values["revision"]), values["down_revision"]))
-    assert len(paths) == 6
+    assert len(paths) == 7
     assert ("53a756fbc804", None) in revisions
     assert ("733171f352dd", "53a756fbc804") in revisions
     assert ("b6d4e2a81c05", "733171f352dd") in revisions
     assert ("2f55f813c842", "b6d4e2a81c05") in revisions
     assert ("e7b3c91a04d6", "2f55f813c842") in revisions
     assert ("9d3f6a2c1b7e", "e7b3c91a04d6") in revisions
+    assert ("53df464e9eb6", "9d3f6a2c1b7e") in revisions
 
 
 def test_should_drop_legacy_objects_when_an_empty_database_reaches_head() -> None:
@@ -755,7 +758,7 @@ def test_should_drop_legacy_objects_when_an_empty_database_reaches_head() -> Non
             version = connection.execute(
                 text("SELECT version_num FROM alembic_version")
             ).scalar_one()
-            assert version == "9d3f6a2c1b7e"
+            assert version == "53df464e9eb6"
             _assert_head_objects(connection)
             assert "user" in _public_tables(connection)
             assert "user_id_seq" in _public_sequences(connection)

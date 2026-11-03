@@ -65,14 +65,12 @@ class PrintingRow(Base):
     count: Mapped[int] = mapped_column(BigInteger, nullable=False)
     sheet_by_fitting: Mapped[int] = mapped_column(BigInteger, nullable=False)
     stack_height: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    press_sheet_density: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+    sheet_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("sheet.id", ondelete="RESTRICT"),
+        nullable=False,
     )
-    press_sheet_width: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    press_sheet_height: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    press_sheet_spacing: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
-    )
+    spacing: Mapped[int] = mapped_column(BigInteger, nullable=False)
     list_width: Mapped[int] = mapped_column(BigInteger, nullable=False)
     list_height: Mapped[int] = mapped_column(BigInteger, nullable=False)
     list_bleeds: Mapped[int] = mapped_column(BigInteger, nullable=False)
@@ -83,7 +81,6 @@ class PrintingRow(Base):
     press_magenta: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     press_yellow: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     press_black: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
-    press_paper: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     press_salary: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     cut_salary: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     lamination_startup: Mapped[Decimal] = mapped_column(Numeric, nullable=False)

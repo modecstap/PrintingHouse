@@ -27,6 +27,7 @@ from backend.core.order import (
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
+from backend.storage.tables.sheet import SheetRow
 from backend.storage.tables.workplace_order import (
     CostReportRow,
     OperationCostRow,
@@ -35,6 +36,9 @@ from backend.storage.tables.workplace_order import (
     WorkplaceOrderRow,
     WorkplaceReferenceRow,
 )
+
+# Импорт регистрирует таблицу sheet в metadata до первой сессии.
+_SHEET_ROW = SheetRow
 
 
 def _as_decimal(value: object) -> Decimal:

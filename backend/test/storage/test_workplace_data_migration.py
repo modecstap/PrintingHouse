@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -21,10 +22,13 @@ from backend.test.storage.test_schema_migration import (
 )
 from backend.core.accountant.money import Money
 from backend.core.administrator import Administrator
-from backend.core.order import List, Order, OrderSpecification, Status, StoredPress
+from backend.core.order import List, Order, OrderSpecification, Status
 from backend.core.order_service import WorkplaceOrderService
+from backend.core.sheet.format import SheetFormat
+from backend.core.sheet.sheet import Sheet
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
+from backend.core.workplaces.printing.printing import PrintingWorkplace
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -189,42 +193,54 @@ def _upgraded_legacy() -> Iterator[tuple[Config, Engine, dict[str, int]]]:
         yield config, engine, before
 
 
-def _assert_reference(order: Order) -> None:
-    assert order.id is None
-    assert order.creation_date is None
-    spec = order.specification
-    assert spec.unit_count == 1
-    assert order.tax_rate == Decimal("0")
-    assert spec.markup == Decimal("0")
-    assert order.status is Status.SAVED
-    assert spec.operations == ()
-    assert len(order.printings) == 1
-    printing = order.printings[0]
-    printing_spec = printing.specification
-    assert printing_spec.count == 0
-    assert printing_spec.chroma is Chroma.ZERO_ZERO
-    assert printing_spec.lamination is Lamination.DONT
-    assert printing_spec.die_cutting is False
-    assert printing.comment == ""
-    assert printing_spec.press_sheet is None
-    assert printing_spec.spacing == 5
-    assert printing.stored_press == StoredPress(
-        0, 320, 470, Money(Decimal("160.0000"))
-    )
-    assert printing_spec.list == List(0, 0, 0)
-    assert printing_spec.sheet_by_fitting == 2
-    assert printing.stack_height == 30
-    press = printing.press_pricing
-    assert press.black.amount == Decimal("2.0000")
-    assert press.cyan.amount == _COLOR
-    assert press.magenta.amount == _COLOR
-    assert press.yellow.amount == _COLOR
-    assert press.salary.amount == Decimal("1.0000")
-    assert printing.cut_pricing.salary.amount == Decimal("10.0000")
-    assert printing.die_cut_pricing.salary.amount == Decimal("25.0000")
-    assert printing.lamination_pricing.startup.amount == Decimal("200")
-    assert printing.lamination_pricing.film_cost.amount == Decimal("10.0000")
-    assert printing.lamination_pricing.salary.amount == Decimal("0.0000")
+def _assert_reference(connection: Connection) -> None:
+    document = connection.execute(text(
+        "SELECT document FROM reference WHERE id = 1"
+    )).scalar_one()
+    assert document["id"] is None
+    assert "creation_date" not in document
+    assert document["unit_count"] == 1
+    assert Decimal(document["tax_rate"]) == Decimal("0")
+    assert Decimal(document["markup"]) == Decimal("0")
+    assert document["status"] == Status.SAVED.name
+    assert document["operations"] == []
+    assert len(document["printings"]) == 1
+    printing = document["printings"][0]
+    assert printing["count"] == 0
+    assert printing["chroma"] == Chroma.ZERO_ZERO.name
+    assert printing["lamination"] == Lamination.DONT.name
+    assert printing["die_cutting"] is False
+    assert printing["comment"] == ""
+    assert printing["spacing"] == 5
+    assert type(printing["press_sheet"]) is int
+    press = printing["press_pricing"]
+    assert "paper" not in press
+    sheet = connection.execute(text(
+        """
+        SELECT name, height, width, density, cost
+        FROM sheet
+        WHERE id = :id
+        """
+    ), {"id": printing["press_sheet"]}).one()
+    assert sheet.name == "470 x 320"
+    assert sheet.height == 470
+    assert sheet.width == 320
+    assert sheet.density == 0
+    assert sheet.cost == Decimal("160.0000")
+    assert printing["list"] == {"width": 0, "height": 0, "bleeds": 0}
+    assert printing["sheet_by_fitting"] == 2
+    assert printing["stack_height"] == 30
+    assert Decimal(press["black"]) == Decimal("2.0000")
+    assert Decimal(press["cyan"]) == _COLOR
+    assert Decimal(press["magenta"]) == _COLOR
+    assert Decimal(press["yellow"]) == _COLOR
+    assert Decimal(press["salary"]) == Decimal("1.0000")
+    assert Decimal(printing["cut_pricing"]["salary"]) == Decimal("10.0000")
+    assert Decimal(printing["die_cut_pricing"]["salary"]) == Decimal("25.0000")
+    lamination = printing["lamination_pricing"]
+    assert Decimal(lamination["startup"]) == Decimal("200")
+    assert Decimal(lamination["film_cost"]) == Decimal("10.0000")
+    assert Decimal(lamination["salary"]) == Decimal("0.0000")
 
 
 def test_should_copy_order_headers_and_advance_the_id_when_legacy_orders_are_upgraded() -> None:
@@ -365,9 +381,10 @@ def test_should_write_the_reference_without_an_order_row_when_legacy_orders_are_
             )).scalar_one()
             assert _counts(connection, _KEPT) == before
         command.upgrade(config, "head")
-        service = _service(engine)
-        _assert_reference(service.reference())
-        assert sorted(order.id for order in service.take_all()) == [6, 50]
+        with engine.connect() as connection:
+            _assert_reference(connection)
+            order_ids = _rows(connection, 'SELECT id FROM "order" ORDER BY id')
+        assert order_ids == [(6,), (50,)]
     assert document["id"] is None
     assert "creation_date" not in document
     assert before == {
@@ -594,10 +611,8 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
             head_orders = _count(connection, '"order"')
             head_users = _count(connection, '"user"')
             _assert_head_objects(connection)
-        service = _service(engine)
-        _assert_reference(service.reference())
-        taken = service.take_all()
-        saved_id = service.save(_blank_order())
+            _assert_reference(connection)
+        saved_id = _service(engine).save(_blank_order())
     assert tuple(span) == (234, 6, 890)
     assert done == 225
     assert saved == 9
@@ -623,8 +638,6 @@ def test_should_copy_the_dump_when_the_dump_file_is_upgraded() -> None:
     assert copied_empty_reports == 0
     assert report_gap == 0
     assert printing_cost_gap == 0
-    assert len(taken) == 234
-    assert all(order.id is not None for order in taken)
     assert workplace_orders == 234
     assert after == before
     assert before == {'"order"': 234, "production_reference": 1, '"user"': 3}
@@ -659,3 +672,128 @@ def test_should_keep_copied_rows_and_restore_empty_legacy_tables_when_head_is_do
             again = _rows(connection, 'SELECT id FROM "order" ORDER BY id')
             _assert_head_objects(connection)
         assert again == [(6,), (50,)]
+
+
+def test_should_share_one_sheet_row_when_printings_and_the_reference_have_the_same_tuple() -> None:
+    with _migration_database() as (config, engine):
+        command.upgrade(config, "9d3f6a2c1b7e")
+        with engine.begin() as connection:
+            order_id = connection.execute(text(
+                """
+                INSERT INTO "order" (
+                    comment, status, unit_count, tax_rate, markup, creation_date
+                ) VALUES ('', 'SAVED', 1, 0, 0, DATE '2024-01-01')
+                RETURNING id
+                """
+            )).scalar_one()
+            for position, height, width in (
+                (0, 450, 320),
+                (1, 450, 320),
+                (2, 320, 450),
+            ):
+                connection.execute(text(
+                    """
+                    INSERT INTO printing (
+                        order_id, position, count, sheet_by_fitting,
+                        stack_height, press_sheet_density, press_sheet_width,
+                        press_sheet_height, press_sheet_spacing,
+                        list_width, list_height, list_bleeds,
+                        chroma, lamination, die_cutting,
+                        press_cyan, press_magenta, press_yellow, press_black,
+                        press_paper, press_salary, cut_salary,
+                        lamination_startup, lamination_film_cost,
+                        lamination_salary, die_cut_salary, comment
+                    ) VALUES (
+                        :order_id, :position, 1, 0,
+                        0, 150, :width,
+                        :height, 0,
+                        100, 100, 0,
+                        'ZERO_ZERO', 'DONT', false,
+                        0, 0, 0, 0,
+                        10, 0, 0,
+                        0, 0,
+                        0, 0, ''
+                    )
+                    """
+                ), {
+                    "order_id": order_id,
+                    "position": position,
+                    "height": height,
+                    "width": width,
+                })
+            connection.execute(text(
+                """
+                INSERT INTO reference (id, document)
+                VALUES (1, CAST(:document AS jsonb))
+                """
+            ), {"document": json.dumps({
+                "id": None,
+                "comment": "шаблон",
+                "status": "SAVED",
+                "printings": [{
+                    "press_sheet": {
+                        "density": 150,
+                        "width": 320,
+                        "height": 450,
+                        "spacing": 4,
+                    },
+                    "press_pricing": {"paper": "10", "salary": "1"},
+                    "comment": "край",
+                }],
+            })})
+        command.upgrade(config, "head")
+        with engine.connect() as connection:
+            sheets = connection.execute(text(
+                """
+                SELECT id, name, height, width, density, cost, version
+                FROM sheet
+                """
+            )).mappings().all()
+            links = connection.execute(text(
+                """
+                SELECT position, sheet_id, spacing
+                FROM printing
+                ORDER BY position
+                """
+            )).mappings().all()
+            document = connection.execute(text(
+                "SELECT document FROM reference WHERE id = 1"
+            )).scalar_one()
+    assert len(sheets) == 2
+    shared = next(
+        row for row in sheets if row["height"] == 450 and row["width"] == 320
+    )
+    other = next(
+        row for row in sheets if row["height"] == 320 and row["width"] == 450
+    )
+    assert shared["name"] == "450 x 320"
+    assert shared["density"] == 150
+    assert shared["cost"] == Decimal("10")
+    assert shared["version"] == 0
+    assert other["name"] == "320 x 450"
+    assert other["id"] != shared["id"]
+    assert links[0]["sheet_id"] == shared["id"]
+    assert links[1]["sheet_id"] == shared["id"]
+    assert links[0]["spacing"] == 0
+    assert links[1]["spacing"] == 0
+    assert links[2]["sheet_id"] == other["id"]
+    assert links[2]["spacing"] == 0
+    printing = document["printings"][0]
+    assert printing["press_sheet"] == shared["id"]
+    assert printing["spacing"] == 4
+    assert "paper" not in printing["press_pricing"]
+    assert printing["press_pricing"]["salary"] == "1"
+    assert printing["comment"] == "край"
+    assert document["comment"] == "шаблон"
+    assert document["id"] is None
+    assert "creation_date" not in document
+    catalog = Sheet(
+        SheetFormat(str(shared["name"]), int(shared["height"]), int(shared["width"])),
+        int(shared["density"]),
+        Money(Decimal(shared["cost"])),
+    )
+    assert catalog.item_count(List(100, 100, 0), 0) == 12
+    assert catalog.cut_needed(List(100, 100, 0), 0) == 14
+    report = PrintingWorkplace.report(320, 450, 150, Chroma.ZERO_ZERO, 1)
+    assert report.mass_kg == Decimal("0.0216")
+    assert Money(Decimal("10")) * report.mass_kg == Money(Decimal("0.216"))
