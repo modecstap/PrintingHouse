@@ -56,10 +56,10 @@ class PrintingSpecification:
 
 @dataclass(frozen=True)
 class StoredPress:
-    """Size and paper rate still stored on the printing row and in order JSON.
+    """Size and paper rate copied from the sheet row when an order is read.
 
-    The sheet id lives on PrintingSpecification.press_sheet.
-    These four numbers stay here until that id replaces the old columns.
+    The printing row stores the sheet id. These four numbers stay on the
+    printing until the order service loads the sheet catalog.
     """
 
     density: int

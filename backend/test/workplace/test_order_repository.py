@@ -33,6 +33,7 @@ from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
 )
+from backend.core.sheet.repository import SheetNotFound
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
@@ -68,6 +69,39 @@ def _order(
     )
 
 
+def _sheet_id(
+    engine: Engine,
+    name: str,
+    height: int,
+    width: int,
+    density: int,
+    cost: Decimal,
+) -> int:
+    params = {
+        "name": name,
+        "height": height,
+        "width": width,
+        "density": density,
+        "cost": cost,
+    }
+    insert_sheet = text(
+        "INSERT INTO sheet (version, name, height, width, density, cost) "
+        "VALUES (0, :name, :height, :width, :density, :cost) "
+        "ON CONFLICT (height, width, density, cost) DO NOTHING "
+        "RETURNING id"
+    )
+    select_sheet = text(
+        "SELECT id FROM sheet "
+        "WHERE height = :height AND width = :width "
+        "AND density = :density AND cost = :cost"
+    )
+    with engine.begin() as connection:
+        inserted = connection.execute(insert_sheet, params).scalar_one_or_none()
+        if inserted is not None:
+            return int(inserted)
+        return int(connection.execute(select_sheet, params).scalar_one())
+
+
 def _printing(
     count: int,
     chroma: Chroma,
@@ -79,6 +113,7 @@ def _printing(
     density: int,
     width: int,
     height: int,
+    press_sheet: int,
     paper: Decimal,
     sheet: List,
     press: tuple[Decimal, Decimal, Decimal, Decimal, Decimal],
@@ -95,7 +130,7 @@ def _printing(
             lamination=lamination,
             die_cutting=die_cutting,
             spacing=spacing,
-            press_sheet=None,
+            press_sheet=press_sheet,
             list=sheet,
             sheet_by_fitting=sheet_by_fitting,
         ),
@@ -119,8 +154,12 @@ def _printing(
     )
 
 
-def _full_order() -> Order:
+def _full_order(engine: Engine) -> Order:
     zero = Decimal(0)
+    first_sheet = _sheet_id(
+        engine, "450 x 320", 450, 320, 150, Decimal("5.50")
+    )
+    second_sheet = _sheet_id(engine, "100 x 100", 100, 100, 80, zero)
     first = _printing(
         3,
         Chroma.FOUR_FOUR,
@@ -132,6 +171,7 @@ def _full_order() -> Order:
         150,
         320,
         450,
+        first_sheet,
         Decimal("5.50"),
         List(90, 50, 2),
         (
@@ -157,6 +197,7 @@ def _full_order() -> Order:
         80,
         100,
         100,
+        second_sheet,
         zero,
         List(10, 20, 0),
         (zero, zero, zero, zero, zero),
@@ -333,11 +374,12 @@ def _public_table_names(engine: Engine) -> set[str]:
 def _assert_printing(taken: Printing, original: Printing) -> None:
     assert taken.specification == original.specification
     assert taken.stack_height == original.stack_height
-    assert taken.stored_press == original.stored_press
     assert taken.press_pricing.cyan == original.press_pricing.cyan
     assert taken.press_pricing.magenta == original.press_pricing.magenta
     assert taken.press_pricing.yellow == original.press_pricing.yellow
     assert taken.press_pricing.black == original.press_pricing.black
+    assert taken.specification.press_sheet == original.specification.press_sheet
+    assert taken.specification.spacing == original.specification.spacing
     assert taken.press_pricing.salary == original.press_pricing.salary
     assert taken.cut_pricing.salary == original.cut_pricing.salary
     startup = taken.lamination_pricing.startup
@@ -423,9 +465,10 @@ def test_order_without_identity_starts_unsaved() -> None:
 
 def test_save_assigns_id_and_stores_no_cost_report(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
-    order = _full_order()
+    order = _full_order(engine)
     order_id = _save(store, saved_ids, order)
     assert type(order_id) is int
     assert order.id is None
@@ -434,9 +477,10 @@ def test_save_assigns_id_and_stores_no_cost_report(
 
 def test_take_returns_saved_order(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
-    order = _full_order()
+    order = _full_order(engine)
     order_id = _save(store, saved_ids, order)
     taken = store.take(order_id)
     _assert_full_order(taken, order, order_id)
@@ -444,9 +488,10 @@ def test_take_returns_saved_order(
 
 def test_take_has_no_workplace_report(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
-    order_id = _save(store, saved_ids, _full_order())
+    order_id = _save(store, saved_ids, _full_order(engine))
     taken = store.take(order_id)
     for printing in taken.printings:
         for pricing in (
@@ -472,6 +517,46 @@ def test_empty_collections_round_trip(
     assert taken.id == order_id
 
 
+def test_should_refuse_an_unknown_sheet_and_write_no_order(
+    repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
+) -> None:
+    store, _saved_ids = repository
+    printing = _printing(
+        1,
+        Chroma.ZERO_ZERO,
+        Lamination.DONT,
+        False,
+        0,
+        1,
+        0,
+        0,
+        1,
+        1,
+        _MISSING_ID,
+        Decimal(0),
+        List(1, 1, 0),
+        (Decimal(0), Decimal(0), Decimal(0), Decimal(0), Decimal(0)),
+        Decimal(0),
+        (Decimal(0), Decimal(0), Decimal(0)),
+        Decimal(0),
+    )
+    order = _order(
+        unit_count=1,
+        tax_rate=Decimal(0),
+        markup=Decimal(0),
+        operations=(),
+        printings=(printing,),
+    )
+    before = _count_rows(engine, '"order"')
+    with pytest.raises(SheetNotFound) as caught:
+        store.save(order)
+    assert str(caught.value) == f"save: листа нет, id={_MISSING_ID}"
+    assert caught.value.__cause__ is not None
+    assert "postgres" not in str(caught.value)
+    assert _count_rows(engine, '"order"') == before
+
+
 def test_save_unknown_id_raises_and_writes_nothing(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
     engine: Engine,
@@ -485,9 +570,10 @@ def test_save_unknown_id_raises_and_writes_nothing(
 
 def test_second_save_replaces_order_and_keeps_reports(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
-    order_id = _save(store, saved_ids, _full_order())
+    order_id = _save(store, saved_ids, _full_order(engine))
     created_on = store.take(order_id).creation_date
     report_a = _report_a()
     report_b = _report_b()
@@ -539,9 +625,10 @@ def test_attach_unknown_id_raises_and_writes_nothing(
 
 def test_reports_return_attached_reports_in_call_order(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
-    order_id = _save(store, saved_ids, _full_order())
+    order_id = _save(store, saved_ids, _full_order(engine))
     report_a = _report_a()
     report_b = _report_b()
     store.attach(report_a, order_id)
@@ -553,6 +640,7 @@ def test_reports_return_attached_reports_in_call_order(
 
 def test_attach_keeps_report_when_printing_cost_count_differs(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
     order = _order(
@@ -560,7 +648,7 @@ def test_attach_keeps_report_when_printing_cost_count_differs(
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
         operations=(),
-        printings=(_full_order().printings[0],),
+        printings=(_full_order(engine).printings[0],),
     )
     order_id = _save(store, saved_ids, order)
     report = _report_b()
@@ -587,10 +675,11 @@ def test_reports_unknown_id_raises(
 
 def test_concurrent_saves_keep_one_complete_order(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
+    engine: Engine,
 ) -> None:
     store, saved_ids = repository
     order_id = _save(store, saved_ids, _bare_order())
-    printings = _full_order().printings
+    printings = _full_order(engine).printings
     _join_pair(
         lambda: store.save(_sized_order(order_id, "A", printings[:1])),
         lambda: store.save(_sized_order(order_id, "B", printings)),
@@ -675,7 +764,7 @@ def test_should_keep_one_complete_reference_when_two_writes_race(
     engine: Engine,
 ) -> None:
     store, _saved_ids = repository
-    full = _full_order()
+    full = _full_order(engine)
     left = _order(
         unit_count=2,
         tax_rate=Decimal("0.1"),

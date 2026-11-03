@@ -60,6 +60,8 @@ class WorkplaceOrderRepository(Protocol):
         :param order:
 
         :raises OrderNotFound: if the given id has no row.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order is not written.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved order. When the id is empty,
@@ -138,6 +140,8 @@ class WorkplaceOrderRepository(Protocol):
         :param report:
 
         :raises OrderNotFound: if the given id has no row. The text is built by save.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order and the report are not written.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved order. An empty id is assigned by the database.

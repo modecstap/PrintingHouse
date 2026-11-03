@@ -1,9 +1,10 @@
+import re
 from collections.abc import Callable
 from typing import TypeVar
 
 from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import InterfaceError, OperationalError
+from sqlalchemy.exc import IntegrityError, InterfaceError, OperationalError
 from sqlalchemy.orm import Session
 
 from backend.core.order import Order
@@ -14,6 +15,7 @@ from backend.core.order_repository import (
     StoreOperation,
     WorkplaceOrderRepository,
 )
+from backend.core.sheet.repository import SheetNotFound
 from backend.core.reports import CostReport
 from backend.storage.repositories.workplace_order_mapping import (
     insert_order,
@@ -27,6 +29,26 @@ from backend.storage.repositories.workplace_order_mapping import (
 from backend.storage.tables.workplace_order import CostReportRow, WorkplaceOrderRow
 
 _T = TypeVar("_T")
+_SHEET_FK = "printing_sheet_id_fkey"
+_SHEET_ID_IN_DETAIL = re.compile(r"sheet_id\D+(\d+)")
+
+
+def _missing_sheet_id(error: IntegrityError) -> int | None:
+    # Текст драйвера — запасной источник id: diag его не всегда отдаёт.
+    orig = error.orig
+    message = str(orig) if orig is not None else ""
+    diag = getattr(orig, "diag", None)
+    constraint = getattr(diag, "constraint_name", None)
+    if constraint != _SHEET_FK and _SHEET_FK not in message:
+        return None
+    detail = getattr(diag, "detail", None)
+    for source in (detail, message):
+        if type(source) is not str:
+            continue
+        matched = _SHEET_ID_IN_DETAIL.search(source)
+        if matched is not None:
+            return int(matched.group(1))
+    return None
 
 
 class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
@@ -43,6 +65,8 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         :param order:
 
         :raises OrderNotFound: if the given id has no row.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order is not written.
         :raises OrderStoreUnavailable: if there is no connection.
 
         :return: the id of the saved order. When the id is empty,
@@ -145,6 +169,8 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
         :param report:
 
         :raises OrderNotFound: if the given id has no row. The text is built by save.
+        :raises SheetNotFound: if a printing names a sheet id that has no row.
+        The order and the report are not written.
         :raises OrderStoreUnavailable: if there is no connection to the database.
 
         :return: the id of the saved order. An empty id is assigned by the database.
@@ -196,6 +222,11 @@ class SqlWorkplaceOrderRepository(WorkplaceOrderRepository):
             with Session(self._engine) as session:
                 with session.begin():
                     return action(session)
+        except IntegrityError as error:
+            sheet_id = _missing_sheet_id(error)
+            if sheet_id is None:
+                raise
+            raise SheetNotFound("save", sheet_id) from error
         except (OperationalError, InterfaceError) as error:
             raise OrderStoreUnavailable(operation, order_id) from error
 

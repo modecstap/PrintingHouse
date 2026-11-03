@@ -25,6 +25,7 @@ from backend.core.order import (
     StoredPress,
 )
 from backend.core.reports import CostReport, PrintingCost
+from backend.core.sheet.repository import SheetIdEmpty, SheetNotFound
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
 from backend.storage.tables.sheet import SheetRow
@@ -36,10 +37,6 @@ from backend.storage.tables.workplace_order import (
     WorkplaceOrderRow,
     WorkplaceReferenceRow,
 )
-
-# Импорт регистрирует таблицу sheet в metadata до первой сессии.
-_SHEET_ROW = SheetRow
-
 
 def _as_decimal(value: object) -> Decimal:
     # Money принимает только объект, у которого type is Decimal.
@@ -72,21 +69,26 @@ def _fill_header(row: WorkplaceOrderRow, order: Order) -> None:
     row.markup = spec.markup
 
 
+def _sheet_id(printing: Printing) -> int:
+    # Столбец sheet_id not null. Пустой id — ошибка контракта, не текст драйвера.
+    sheet_id = printing.specification.press_sheet
+    if sheet_id is None:
+        raise SheetIdEmpty("save")
+    return sheet_id
+
+
 def _printing_row(order_id: int, position: int, printing: Printing) -> PrintingRow:
     press = printing.press_pricing
     spec = printing.specification
     page = spec.list
-    stored = printing.stored_press
     return PrintingRow(
         order_id=order_id,
         position=position,
         count=spec.count,
         sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
-        press_sheet_density=stored.density,
-        press_sheet_width=stored.width,
-        press_sheet_height=stored.height,
-        press_sheet_spacing=spec.spacing,
+        sheet_id=_sheet_id(printing),
+        spacing=spec.spacing,
         list_width=page.width,
         list_height=page.height,
         list_bleeds=page.bleeds,
@@ -97,7 +99,6 @@ def _printing_row(order_id: int, position: int, printing: Printing) -> PrintingR
         press_magenta=press.magenta.amount,
         press_yellow=press.yellow.amount,
         press_black=press.black.amount,
-        press_paper=stored.paper.amount,
         press_salary=press.salary.amount,
         cut_salary=printing.cut_pricing.salary.amount,
         lamination_startup=printing.lamination_pricing.startup.amount,
@@ -127,17 +128,29 @@ def _replace_calculation(session: Session, order_id: int, order: Order) -> None:
         session.add(_printing_row(order_id, position, printing))
 
 
-def _printing_from_row(row: PrintingRow) -> Printing:
-    # Столбца id листа ещё нет, поэтому press_sheet пустой.
-    # Плотность, стороны и ставка по-прежнему читаются из старых столбцов.
+def _stored_press(session: Session, sheet_id: int | None) -> StoredPress:
+    if sheet_id is None:
+        return StoredPress(0, 0, 0, Money(Decimal(0)))
+    row = session.get(SheetRow, sheet_id)
+    if row is None:
+        raise SheetNotFound("take", sheet_id)
+    return StoredPress(
+        int(row.density),
+        int(row.width),
+        int(row.height),
+        _money(row.cost),
+    )
+
+
+def _printing_from_row(session: Session, row: PrintingRow) -> Printing:
     return Printing(
         specification=PrintingSpecification(
             count=row.count,
             chroma=Chroma[row.chroma],
             lamination=Lamination[row.lamination],
             die_cutting=row.die_cutting,
-            spacing=row.press_sheet_spacing,
-            press_sheet=None,
+            spacing=row.spacing,
+            press_sheet=row.sheet_id,
             list=List(row.list_width, row.list_height, row.list_bleeds),
             sheet_by_fitting=row.sheet_by_fitting,
         ),
@@ -156,12 +169,7 @@ def _printing_from_row(row: PrintingRow) -> Printing:
             _money(row.lamination_salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(row.die_cut_salary)),
-        stored_press=StoredPress(
-            row.press_sheet_density,
-            row.press_sheet_width,
-            row.press_sheet_height,
-            _money(row.press_paper),
-        ),
+        stored_press=_stored_press(session, row.sheet_id),
         comment=row.comment,
     )
 
@@ -199,6 +207,9 @@ def insert_order(session: Session, order: Order) -> int:
     :param session:
     :param order:
 
+    :raises SheetIdEmpty: if a printing has no sheet id.
+    The order is not written.
+
     :return: the id that the database assigned.
     """
     row = WorkplaceOrderRow()
@@ -218,6 +229,9 @@ def update_order(
     :param session:
     :param row: the row is already in the database.
     :param order:
+
+    :raises SheetIdEmpty: if a printing has no sheet id.
+    The order is not changed.
     """
     _fill_header(row, order)
     _replace_calculation(session, row.id, order)
@@ -254,7 +268,9 @@ def read_order(session: Session, row: WorkplaceOrderRow) -> Order:
             ),
         ),
         tax_rate=_as_decimal(row.tax_rate),
-        printings=tuple(_printing_from_row(item) for item in printings),
+        printings=tuple(
+            _printing_from_row(session, item) for item in printings
+        ),
         id=row.id,
         comment=row.comment,
         status=Status[row.status],
@@ -366,6 +382,20 @@ def _int_field(document: dict[str, object], key: str) -> int:
     return value
 
 
+def _optional_int_field(
+    document: dict[str, object], key: str
+) -> int | None:
+    value = document[key]
+    if value is None:
+        return None
+    if type(value) is not int:
+        raise TypeError(
+            f"справочник: {key} ожидается целое, "
+            f"пришло {type(value).__name__}"
+        )
+    return value
+
+
 def _bool_field(document: dict[str, object], key: str) -> bool:
     value = document[key]
     if type(value) is not bool:
@@ -388,7 +418,6 @@ def _printing_document(printing: Printing) -> dict[str, object]:
     press = printing.press_pricing
     spec = printing.specification
     page = spec.list
-    stored = printing.stored_press
     lamination = printing.lamination_pricing
     return {
         "count": spec.count,
@@ -397,12 +426,8 @@ def _printing_document(printing: Printing) -> dict[str, object]:
         "die_cutting": spec.die_cutting,
         "sheet_by_fitting": spec.sheet_by_fitting,
         "stack_height": printing.stack_height,
-        "press_sheet": {
-            "density": stored.density,
-            "width": stored.width,
-            "height": stored.height,
-            "spacing": spec.spacing,
-        },
+        "press_sheet": spec.press_sheet,
+        "spacing": spec.spacing,
         "list": {
             "width": page.width,
             "height": page.height,
@@ -413,7 +438,6 @@ def _printing_document(printing: Printing) -> dict[str, object]:
             "magenta": _text_money(press.magenta),
             "yellow": _text_money(press.yellow),
             "black": _text_money(press.black),
-            "paper": _text_money(stored.paper),
             "salary": _text_money(press.salary),
         },
         "cut_pricing": {
@@ -431,28 +455,27 @@ def _printing_document(printing: Printing) -> dict[str, object]:
     }
 
 
-def _printing_from_document(value: object) -> Printing:
+def _printing_from_document(session: Session, value: object) -> Printing:
     if type(value) is not dict:
         raise TypeError(
             "справочник: печать ожидается объектом, "
             f"пришло {type(value).__name__}"
         )
     item = {str(key): nested for key, nested in value.items()}
-    sheet = _object_field(item, "press_sheet")
     page = _object_field(item, "list")
     press = _object_field(item, "press_pricing")
     cut = _object_field(item, "cut_pricing")
     lamination = _object_field(item, "lamination_pricing")
     die_cut = _object_field(item, "die_cut_pricing")
-    # В старом документе press_sheet — объект, не id.
+    sheet_id = _optional_int_field(item, "press_sheet")
     return Printing(
         specification=PrintingSpecification(
             count=_int_field(item, "count"),
             chroma=Chroma[_str_field(item, "chroma")],
             lamination=Lamination[_str_field(item, "lamination")],
             die_cutting=_bool_field(item, "die_cutting"),
-            spacing=_int_field(sheet, "spacing"),
-            press_sheet=None,
+            spacing=_int_field(item, "spacing"),
+            press_sheet=sheet_id,
             list=List(
                 _int_field(page, "width"),
                 _int_field(page, "height"),
@@ -477,12 +500,7 @@ def _printing_from_document(value: object) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             _money_field(die_cut, "salary")
         ),
-        stored_press=StoredPress(
-            _int_field(sheet, "density"),
-            _int_field(sheet, "width"),
-            _int_field(sheet, "height"),
-            _money_field(press, "paper"),
-        ),
+        stored_press=_stored_press(session, sheet_id),
         comment=_str_field(item, "comment"),
     )
 
@@ -493,7 +511,9 @@ def reference_document(order: Order) -> dict[str, object]:
     :param order:
 
     :return: the reference JSON document. id is always null.
-    creation_date is not in the document.
+    creation_date is not in the document. Each printing stores press_sheet
+    as an id or null, and spacing as an integer. Density, sides, and paper
+    are not in the document.
     """
     # id всегда null. creation_date в документ не входит:
     # дата есть только у строки заказа.
@@ -519,7 +539,7 @@ def reference_document(order: Order) -> dict[str, object]:
     }
 
 
-def _order_from_document(document: object) -> Order:
+def _order_from_document(session: Session, document: object) -> Order:
     if type(document) is not dict:
         raise TypeError(
             "справочник: документ ожидается объектом, "
@@ -538,7 +558,7 @@ def _order_from_document(document: object) -> Order:
         ),
         tax_rate=_decimal_field(body, "tax_rate"),
         printings=tuple(
-            _printing_from_document(item) for item in printings
+            _printing_from_document(session, item) for item in printings
         ),
         id=None,
         comment=_str_field(body, "comment"),
@@ -590,4 +610,4 @@ def read_reference(session: Session) -> Order | None:
     row = session.get(WorkplaceReferenceRow, 1)
     if row is None:
         return None
-    return _order_from_document(row.document)
+    return _order_from_document(session, row.document)
