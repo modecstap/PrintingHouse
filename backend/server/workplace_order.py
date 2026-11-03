@@ -23,6 +23,11 @@ from backend.core.order_repository import (
     OrderStoreUnavailable,
 )
 from backend.core.order_service import WorkplaceOrderService
+from backend.core.sheet.repository import (
+    SheetIdEmpty,
+    SheetNotFound,
+    SheetStoreUnavailable,
+)
 
 _T = TypeVar("_T")
 
@@ -55,9 +60,11 @@ def get_workplace_order_service() -> WorkplaceOrderService:
 def _call(action: Callable[[], _T]) -> _T:
     try:
         return action()
-    except OrderNotFound as error:
+    except SheetIdEmpty as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except (OrderNotFound, SheetNotFound) as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
-    except OrderStoreUnavailable as error:
+    except (OrderStoreUnavailable, SheetStoreUnavailable) as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
 
@@ -95,8 +102,10 @@ def save_order(
     :param body:
     :param service:
 
-    :raises HTTPException: status 404 if the given id does not exist.
-    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 404 if the given order id does not exist
+    or a printing names a sheet id that has no row.
+    :raises HTTPException: status 422 if the body is not accepted
+    or a printing has no sheet id.
     :raises HTTPException: status 500 if a money rate is negative.
     :raises HTTPException: status 503 if there is no connection to the database.
 
@@ -119,7 +128,10 @@ def cost_report(
     :param body:
     :param service:
 
-    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 404 if a printing names a sheet id
+    that has no row. The order is not written.
+    :raises HTTPException: status 422 if the body is not accepted
+    or a printing has no sheet id.
     :raises HTTPException: status 500 if the calculation or a money rate fails.
 
     :return: HTTP 200 and the CostReport JSON without a wrapper.
@@ -144,8 +156,10 @@ def delay_order(
     :param body:
     :param service:
 
-    :raises HTTPException: status 404 if the given id does not exist.
-    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 404 if the given order id does not exist
+    or a printing names a sheet id that has no row.
+    :raises HTTPException: status 422 if the body is not accepted
+    or a printing has no sheet id.
     :raises HTTPException: status 500 if the calculation or the rate fails.
     :raises HTTPException: status 503 if there is no connection to the database.
 
@@ -171,8 +185,10 @@ def accept_order(
     :param body:
     :param service:
 
-    :raises HTTPException: status 404 if the given id does not exist.
-    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 404 if the given order id does not exist
+    or a printing names a sheet id that has no row.
+    :raises HTTPException: status 422 if the body is not accepted
+    or a printing has no sheet id.
     :raises HTTPException: status 500 if the calculation or the rate fails.
     :raises HTTPException: status 503 if there is no connection to the database.
 

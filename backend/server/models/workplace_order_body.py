@@ -115,6 +115,9 @@ StrictBool = Annotated[bool, BeforeValidator(_parse_bool)]
 OptionalOrderId = Annotated[
     int | None, BeforeValidator(_parse_optional_id)
 ]
+OptionalSheetId = Annotated[
+    int | None, BeforeValidator(_parse_optional_id)
+]
 JsonStatus = Annotated[
     Status,
     BeforeValidator(_parse_status),
@@ -144,15 +147,6 @@ class WorkplaceListBody(BaseModel):
     bleeds: StrictInt
 
 
-class WorkplacePressSheetBody(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    density: StrictInt
-    width: StrictInt
-    height: StrictInt
-    spacing: StrictInt
-
-
 class WorkplacePressPricingBody(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -160,7 +154,6 @@ class WorkplacePressPricingBody(BaseModel):
     magenta: JsonDecimal
     yellow: JsonDecimal
     black: JsonDecimal
-    paper: JsonDecimal
     salary: JsonDecimal
 
 
@@ -193,7 +186,8 @@ class WorkplacePrintingBody(BaseModel):
     die_cutting: StrictBool
     sheet_by_fitting: StrictInt
     stack_height: StrictInt
-    press_sheet: WorkplacePressSheetBody
+    spacing: StrictInt
+    press_sheet: OptionalSheetId
     list: WorkplaceListBody
     press_pricing: WorkplacePressPricingBody
     cut_pricing: WorkplaceCutPricingBody
@@ -370,18 +364,18 @@ def body_from_report(report: CostReport) -> WorkplaceCostReportBody:
 
 def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
     press = body.press_pricing
-    sheet = body.press_sheet
     page = body.list
     lamination = body.lamination_pricing
-    # JSON ещё несёт объект листа, не id.
+    # JSON несёт id листа. Размер и ставка живут в справочнике.
+    # Нулевой StoredPress не пишется: чтение собирает его из строки sheet.
     return Printing(
         specification=PrintingSpecification(
             count=body.count,
             chroma=body.chroma,
             lamination=body.lamination,
             die_cutting=body.die_cutting,
-            spacing=sheet.spacing,
-            press_sheet=None,
+            spacing=body.spacing,
+            press_sheet=body.press_sheet,
             list=List(
                 width=page.width,
                 height=page.height,
@@ -406,12 +400,7 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             Money(body.die_cut_pricing.salary)
         ),
-        stored_press=StoredPress(
-            sheet.density,
-            sheet.width,
-            sheet.height,
-            Money(press.paper),
-        ),
+        stored_press=StoredPress(0, 0, 0, Money(Decimal(0))),
         comment=body.comment,
     )
 
@@ -419,7 +408,6 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
 def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
     press = printing.press_pricing
     spec = printing.specification
-    stored = printing.stored_press
     page = spec.list
     lamination = printing.lamination_pricing
     return WorkplacePrintingBody(
@@ -429,12 +417,8 @@ def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
         die_cutting=spec.die_cutting,
         sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
-        press_sheet=WorkplacePressSheetBody(
-            density=stored.density,
-            width=stored.width,
-            height=stored.height,
-            spacing=spec.spacing,
-        ),
+        spacing=spec.spacing,
+        press_sheet=spec.press_sheet,
         list=WorkplaceListBody(
             width=page.width,
             height=page.height,
@@ -445,7 +429,6 @@ def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
             magenta=press.magenta.amount,
             yellow=press.yellow.amount,
             black=press.black.amount,
-            paper=stored.paper.amount,
             salary=press.salary.amount,
         ),
         cut_pricing=WorkplaceCutPricingBody(

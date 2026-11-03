@@ -86,3 +86,26 @@ class SheetService:
             return stored.id
         sheet.reprice(command.density, command.cost)
         return self._sheets.save(sheet)
+
+    def take_all(self) -> list[Sheet]:
+        """Returns every sheet.
+
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+
+        :return: each sheet once, by ascending id. No rows: an empty list.
+        """
+        return self._sheets.take_all()
+
+    def delete(self, sheet_id: int) -> None:
+        """Deletes this sheet, or raises when the row is missing or still used.
+
+        :param sheet_id:
+
+        :raises SheetNotFound: if there is no row.
+        :raises SheetInUse: if a printing row or a printing in the reference
+        document points at this id. The row and those references stay.
+        :raises SheetStoreUnavailable: if there is no connection to the database.
+
+        :return: returns nothing.
+        """
+        self._sheets.delete(sheet_id)

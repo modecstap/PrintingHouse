@@ -19,6 +19,11 @@ from backend.core.order_repository import (
     OrderStoreUnavailable,
 )
 from backend.core.order_service import WorkplaceOrderService
+from backend.core.sheet.repository import (
+    SheetIdEmpty,
+    SheetNotFound,
+    SheetStoreUnavailable,
+)
 
 _T = TypeVar("_T")
 
@@ -28,9 +33,11 @@ router = APIRouter(prefix="/api/v2/reference", tags=["core-reference"])
 def _call(action: Callable[[], _T]) -> _T:
     try:
         return action()
-    except OrderNotFound as error:
+    except SheetIdEmpty as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except (OrderNotFound, SheetNotFound) as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
-    except OrderStoreUnavailable as error:
+    except (OrderStoreUnavailable, SheetStoreUnavailable) as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
 
@@ -67,7 +74,10 @@ def replace_reference(
     :param body:
     :param service:
 
-    :raises HTTPException: status 422 if the body is not accepted.
+    :raises HTTPException: status 404 if a printing names a sheet id
+    that has no row. The reference is not replaced.
+    :raises HTTPException: status 422 if the body is not accepted
+    or a printing has no sheet id.
     :raises HTTPException: status 500 if a money rate or an operation cost is negative.
     :raises HTTPException: status 503 if there is no connection to the database.
 

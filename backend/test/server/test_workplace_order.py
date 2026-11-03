@@ -25,7 +25,6 @@ from backend.core.reports import CostReport
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
-from backend.storage.sync_engine import create_sync_engine
 
 _MISSING_ID = 9_000_000_000_001
 _PASSWORD = "test-password"
@@ -50,6 +49,7 @@ _PRINTING_KEYS = {
     "die_cutting",
     "sheet_by_fitting",
     "stack_height",
+    "spacing",
     "press_sheet",
     "list",
     "press_pricing",
@@ -87,7 +87,8 @@ _OPERATION_COST = CostReport(
     Decimal("0.00"),
     (),
 )
-_PRESS_KEYS = ("cyan", "magenta", "yellow", "black", "paper", "salary")
+_PRESS_KEYS = ("cyan", "magenta", "yellow", "black", "salary")
+_sheet_density = 920_000
 
 
 class _Api(NamedTuple):
@@ -95,6 +96,7 @@ class _Api(NamedTuple):
     engine: Engine
     saved_ids: list[int]
     usernames: list[str]
+    sheet_ids: list[int]
 
 
 class _EmptyCatalog:
@@ -147,6 +149,8 @@ def _printing(
     chroma: str,
     lamination: str,
     die_cutting: bool,
+    press_sheet: int | None,
+    spacing: int,
     press: dict[str, str],
     cut: str,
     film: dict[str, str],
@@ -160,12 +164,8 @@ def _printing(
         "die_cutting": die_cutting,
         "sheet_by_fitting": 3,
         "stack_height": 4,
-        "press_sheet": {
-            "density": 5,
-            "width": 6,
-            "height": 7,
-            "spacing": 8,
-        },
+        "spacing": spacing,
+        "press_sheet": press_sheet,
         "list": {"width": 9, "height": 10, "bleeds": 11},
         "press_pricing": press,
         "cut_pricing": {"salary": cut},
@@ -175,7 +175,9 @@ def _printing(
     }
 
 
-def _first_printing() -> dict[str, object]:
+def _first_printing(
+    press_sheet: int | None = None,
+) -> dict[str, object]:
     press = _zero_rates()
     press["cyan"] = "1.5"
     press["magenta"] = "2"
@@ -183,6 +185,8 @@ def _first_printing() -> dict[str, object]:
         chroma="FOUR_ZERO",
         lamination="ONE_ONE",
         die_cutting=True,
+        press_sheet=press_sheet,
+        spacing=8,
         press=press,
         cut="3",
         film={"startup": "4", "film_cost": "5", "salary": "6"},
@@ -191,11 +195,15 @@ def _first_printing() -> dict[str, object]:
     )
 
 
-def _second_printing() -> dict[str, object]:
+def _second_printing(
+    press_sheet: int | None = None,
+) -> dict[str, object]:
     return _printing(
         chroma="ZERO_ZERO",
         lamination="DONT",
         die_cutting=False,
+        press_sheet=press_sheet,
+        spacing=8,
         press=_zero_rates(),
         cut="0",
         film={"startup": "0", "film_cost": "0", "salary": "0"},
@@ -253,12 +261,8 @@ def _zero_printing() -> dict[str, object]:
         "die_cutting": False,
         "sheet_by_fitting": 0,
         "stack_height": 0,
-        "press_sheet": {
-            "density": 0,
-            "width": 0,
-            "height": 0,
-            "spacing": 0,
-        },
+        "spacing": 0,
+        "press_sheet": None,
         "list": {"width": 0, "height": 0, "bleeds": 0},
         "press_pricing": _zero_rates(),
         "cut_pricing": {"salary": "0"},
@@ -272,8 +276,11 @@ def _zero_printing() -> dict[str, object]:
     }
 
 
-def _reference_body(cyan: str, comment: str) -> dict[str, object]:
+def _reference_body(
+    cyan: str, comment: str, sheet_id: int
+) -> dict[str, object]:
     printing = _zero_printing()
+    printing["press_sheet"] = sheet_id
     press = _zero_rates()
     press["cyan"] = cyan
     printing["press_pricing"] = press
@@ -323,6 +330,27 @@ def _token(api: _Api, permissions: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {access_token}"}
 
 
+def _remember_sheet(api: _Api, headers: dict[str, str]) -> int:
+    global _sheet_density
+    _sheet_density += 1
+    created = api.client.post(
+        "/api/v2/sheet/",
+        headers=headers,
+        json={
+            "name": "",
+            "height": 210,
+            "width": 297,
+            "density": _sheet_density,
+            "cost": "1",
+        },
+    )
+    assert created.status_code == 200
+    sheet_id = created.json()["id"]
+    assert type(sheet_id) is int
+    api.sheet_ids.append(sheet_id)
+    return sheet_id
+
+
 def _remember(api: _Api, response: Response) -> int:
     body = response.json()
     assert set(body) == {"id"}
@@ -356,12 +384,15 @@ def _assert_printing(
     assert type(actual["lamination"]) is str
     assert type(actual["die_cutting"]) is bool
     assert actual["die_cutting"] is expected["die_cutting"]
-    for key in ("count", "sheet_by_fitting", "stack_height"):
+    for key in ("count", "sheet_by_fitting", "stack_height", "spacing"):
         assert type(actual[key]) is int
         assert actual[key] == expected[key]
-    for key in ("density", "width", "height", "spacing"):
-        assert type(actual["press_sheet"][key]) is int
-        assert actual["press_sheet"][key] == expected["press_sheet"][key]
+    if expected["press_sheet"] is None:
+        assert actual["press_sheet"] is None
+    else:
+        assert type(actual["press_sheet"]) is int
+        assert actual["press_sheet"] == expected["press_sheet"]
+    assert set(actual["press_pricing"]) == set(_PRESS_KEYS)
     for key in ("width", "height", "bleeds"):
         assert type(actual["list"][key]) is int
         assert actual["list"][key] == expected["list"][key]
@@ -387,28 +418,12 @@ def _assert_printing(
     assert actual["comment"] == expected["comment"]
 
 
-@pytest.fixture(scope="module")
-def engine() -> Iterator[Engine]:
-    sync_engine = create_sync_engine()
-    try:
-        yield sync_engine
-    finally:
-        sync_engine.dispose()
-
-
-@pytest.fixture(scope="module")
-def client() -> Iterator[TestClient]:
-    # Один цикл на модуль: async-движок приложения не переживает
-    # закрытие портала TestClient между тестами.
-    with TestClient(app, raise_server_exceptions=False) as test_client:
-        yield test_client
-
-
 @pytest.fixture
 def api(engine: Engine, client: TestClient) -> Iterator[_Api]:
     saved_ids: list[int] = []
     usernames: list[str] = []
-    bundle = _Api(client, engine, saved_ids, usernames)
+    sheet_ids: list[int] = []
+    bundle = _Api(client, engine, saved_ids, usernames, sheet_ids)
     try:
         yield bundle
     finally:
@@ -419,6 +434,12 @@ def api(engine: Engine, client: TestClient) -> Iterator[_Api]:
             ).bindparams(bindparam("ids", expanding=True))
             with engine.begin() as connection:
                 connection.execute(statement, {"ids": saved_ids})
+        if sheet_ids:
+            statement = text(
+                "DELETE FROM sheet WHERE id IN :ids"
+            ).bindparams(bindparam("ids", expanding=True))
+            with engine.begin() as connection:
+                connection.execute(statement, {"ids": sheet_ids})
         for username in usernames:
             with engine.begin() as connection:
                 connection.execute(
@@ -511,8 +532,10 @@ def test_should_refuse_to_save_an_unknown_id(api: _Api) -> None:
 
 def test_should_round_trip_printings_in_request_order(api: _Api) -> None:
     headers = _token(api, "FULL")
-    first = _first_printing()
-    second = _second_printing()
+    sheet_id = _remember_sheet(api, headers)
+    first = _first_printing(sheet_id)
+    second = _second_printing(sheet_id)
+    first["press_pricing"] = {**first["press_pricing"], "paper": "99"}
     created = api.client.post(
         "/api/v2/order/",
         headers=headers,
@@ -526,6 +549,51 @@ def test_should_round_trip_printings_in_request_order(api: _Api) -> None:
     assert len(printings) == 2
     _assert_printing(printings[0], first)
     _assert_printing(printings[1], second)
+
+
+@pytest.mark.parametrize(
+    ("path", "operation"),
+    [
+        ("/api/v2/order/", "save"),
+        ("/api/v2/order/cost_report", "calculate"),
+    ],
+)
+def test_should_refuse_an_order_when_the_sheet_id_is_empty(
+    api: _Api, path: str, operation: str
+) -> None:
+    headers = _token(api, "FULL")
+    before = _counts(api)
+    response = api.client.post(
+        path,
+        headers=headers,
+        json=_empty_order(printings=[_zero_printing()]),
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == f"{operation}: id листа пустой"
+    assert _counts(api) == before
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["/api/v2/order/", "/api/v2/order/cost_report"],
+)
+def test_should_refuse_an_order_when_the_sheet_id_is_unknown(
+    api: _Api, path: str
+) -> None:
+    headers = _token(api, "FULL")
+    printing = _zero_printing()
+    printing["press_sheet"] = _MISSING_ID
+    before = _counts(api)
+    response = api.client.post(
+        path,
+        headers=headers,
+        json=_empty_order(printings=[printing]),
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        f"take: листа нет, id={_MISSING_ID}"
+    )
+    assert _counts(api) == before
 
 
 def test_should_list_created_orders_by_descending_id(api: _Api) -> None:
@@ -1053,13 +1121,14 @@ def test_should_replace_the_reference_without_adding_an_order(
     full = _token(api, "FULL")
     read = _token(api, "READ")
     comment = f"reference-{uuid4().hex}"
+    sheet_id = _remember_sheet(api, full)
     previous = _reference_document(api.engine)
     before = _count_rows(api.engine, '"order"')
     try:
         saved = api.client.post(
             "/api/v2/reference/",
             headers=full,
-            json=_reference_body("1.5", comment),
+            json=_reference_body("1.5", comment, sheet_id),
         )
         assert saved.status_code == 200
         assert saved.content == b""
@@ -1069,6 +1138,8 @@ def test_should_replace_the_reference_without_adding_an_order(
         assert body["id"] is None
         assert "creation_date" not in body
         assert body["printings"][0]["press_pricing"]["cyan"] == "1.5"
+        assert body["printings"][0]["press_sheet"] == sheet_id
+        assert "paper" not in body["printings"][0]["press_pricing"]
         assert _count_rows(api.engine, '"order"') == before
         missing = api.client.get(
             f"/api/v2/order/{_MISSING_ID}", headers=read
@@ -1077,7 +1148,7 @@ def test_should_replace_the_reference_without_adding_an_order(
         replaced = api.client.post(
             "/api/v2/reference/",
             headers=full,
-            json=_reference_body("2.5", comment),
+            json=_reference_body("2.5", comment, sheet_id),
         )
         assert replaced.status_code == 200
         assert replaced.content == b""
