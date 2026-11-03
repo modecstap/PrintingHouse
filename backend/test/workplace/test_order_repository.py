@@ -27,7 +27,6 @@ from backend.core.order import (
     Printing,
     PrintingSpecification,
     Status,
-    StoredPress,
 )
 from backend.core.order_repository import (
     OrderNotFound,
@@ -149,7 +148,6 @@ def _printing(
             _money(salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(die_cut)),
-        stored_press=StoredPress(density, width, height, _money(paper)),
         comment=comment,
     )
 

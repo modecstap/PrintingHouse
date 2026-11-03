@@ -18,7 +18,6 @@ from backend.core.order import (
     OrderSpecification,
     Printing,
     PrintingSpecification,
-    StoredPress,
 )
 from backend.core.sheet.format import SheetFormat
 from backend.core.sheet.sheet import Sheet
@@ -54,7 +53,6 @@ def _loaded(
         cut_pricing=CuttingCalculation(zero),
         lamination_pricing=LaminationCalculation(zero, zero, zero),
         die_cut_pricing=DieCuttingCalculation(zero),
-        stored_press=StoredPress(density, width, height, rate),
     )
     order = Order(
         specification=OrderSpecification(

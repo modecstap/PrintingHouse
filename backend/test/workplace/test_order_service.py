@@ -22,7 +22,6 @@ from backend.core.order import (
     Printing,
     PrintingSpecification,
     Status,
-    StoredPress,
 )
 from backend.core.sheet.repository import SheetIdEmpty, SheetNotFound
 from backend.core.workplaces.lamination.models import Lamination
@@ -644,7 +643,6 @@ def _order_with_sheet(press_sheet: int | None) -> Order:
         cut_pricing=CuttingCalculation(rate),
         lamination_pricing=LaminationCalculation(rate, rate, rate),
         die_cut_pricing=DieCuttingCalculation(rate),
-        stored_press=StoredPress(0, 0, 0, rate),
     )
     return Order(
         specification=OrderSpecification(1, Decimal("0"), ()),

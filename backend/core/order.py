@@ -54,19 +54,6 @@ class PrintingSpecification:
     sheet_by_fitting: int
 
 
-@dataclass(frozen=True)
-class StoredPress:
-    """Size and paper rate copied from the sheet row when an order is read.
-
-    The printing row stores the sheet id. These four numbers stay on the
-    printing until the order service loads the sheet catalog.
-    """
-
-    density: int
-    width: int
-    height: int
-    paper: Money
-
 
 @dataclass(frozen=True)
 class Printing:
@@ -76,7 +63,6 @@ class Printing:
     cut_pricing: CuttingCalculation
     lamination_pricing: LaminationCalculation
     die_cut_pricing: DieCuttingCalculation
-    stored_press: StoredPress
     comment: str = ""
 
 
@@ -117,7 +103,6 @@ def empty_reference_order() -> Order:
         cut_pricing=CuttingCalculation(rate),
         lamination_pricing=LaminationCalculation(rate, rate, rate),
         die_cut_pricing=DieCuttingCalculation(rate),
-        stored_press=StoredPress(0, 0, 0, rate),
         comment="",
     )
     return Order(

@@ -22,7 +22,6 @@ from backend.core.order import (
     Printing,
     PrintingSpecification,
     Status,
-    StoredPress,
 )
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.sheet.repository import SheetIdEmpty, SheetNotFound
@@ -128,20 +127,6 @@ def _replace_calculation(session: Session, order_id: int, order: Order) -> None:
         session.add(_printing_row(order_id, position, printing))
 
 
-def _stored_press(session: Session, sheet_id: int | None) -> StoredPress:
-    if sheet_id is None:
-        return StoredPress(0, 0, 0, Money(Decimal(0)))
-    row = session.get(SheetRow, sheet_id)
-    if row is None:
-        raise SheetNotFound("take", sheet_id)
-    return StoredPress(
-        int(row.density),
-        int(row.width),
-        int(row.height),
-        _money(row.cost),
-    )
-
-
 def _printing_from_row(session: Session, row: PrintingRow) -> Printing:
     return Printing(
         specification=PrintingSpecification(
@@ -169,7 +154,6 @@ def _printing_from_row(session: Session, row: PrintingRow) -> Printing:
             _money(row.lamination_salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(row.die_cut_salary)),
-        stored_press=_stored_press(session, row.sheet_id),
         comment=row.comment,
     )
 
@@ -500,7 +484,6 @@ def _printing_from_document(session: Session, value: object) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             _money_field(die_cut, "salary")
         ),
-        stored_press=_stored_press(session, sheet_id),
         comment=_str_field(item, "comment"),
     )
 

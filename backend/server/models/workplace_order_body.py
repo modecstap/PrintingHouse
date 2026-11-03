@@ -29,7 +29,6 @@ from backend.core.order import (
     Printing,
     PrintingSpecification,
     Status,
-    StoredPress,
 )
 from backend.core.errors import InvalidPriceException
 from backend.core.reports import CostReport, PrintingCost
@@ -400,7 +399,6 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             Money(body.die_cut_pricing.salary)
         ),
-        stored_press=StoredPress(0, 0, 0, Money(Decimal(0))),
         comment=body.comment,
     )
 

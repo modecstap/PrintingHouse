@@ -18,7 +18,6 @@ from backend.core.order import (
     OrderSpecification,
     Printing,
     PrintingSpecification,
-    StoredPress,
 )
 from backend.core.sheet.format import SheetFormat
 from backend.core.sheet.repository import (
@@ -70,7 +69,6 @@ def _linked_order(sheet_id: int) -> Order:
         cut_pricing=CuttingCalculation(rate),
         lamination_pricing=LaminationCalculation(rate, rate, rate),
         die_cut_pricing=DieCuttingCalculation(rate),
-        stored_press=StoredPress(0, 0, 0, rate),
     )
     return Order(
         specification=OrderSpecification(1, Decimal(0), ()),
