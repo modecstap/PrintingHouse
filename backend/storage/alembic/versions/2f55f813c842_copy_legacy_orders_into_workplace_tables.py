@@ -13,22 +13,6 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, RowMapping
 
-from backend.core.accountant.money import Money
-from backend.core.accountant.pricing.cutting import CuttingCalculation
-from backend.core.accountant.pricing.die_cutting import (
-    DieCuttingCalculation,
-)
-from backend.core.accountant.pricing.lamination import (
-    LaminationCalculation,
-)
-from backend.core.accountant.pricing.printing import PrintingCalculation
-from backend.core.order import List, Order, Printing, Status
-from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma, PressSheet
-from backend.storage.repositories.workplace_order_mapping import (
-    reference_document,
-)
-
 
 # revision identifiers, used by Alembic.
 revision: str = '2f55f813c842'
@@ -372,58 +356,54 @@ def _write_reference(connection: Connection) -> None:
         raise RuntimeError(
             "copy legacy orders: production_reference has no production"
         )
+    rates = _printing_rates(row, "DONT")
+    zero = str(Decimal("0"))
     connection.execute(
         sa.text(
             "INSERT INTO workplace_reference (id, document) VALUES (1, :document)"
         ).bindparams(sa.bindparam("document", type_=postgresql.JSONB)),
-        {"document": reference_document(_reference_order(row))},
-    )
-
-
-def _reference_order(row: RowMapping) -> Order:
-    rates = _printing_rates(row, "DONT")
-    zero = Decimal("0")
-    printing = Printing(
-        count=0,
-        chroma=Chroma.ZERO_ZERO,
-        lamination=Lamination.DONT,
-        die_cutting=False,
-        sheet_by_fitting=int(row["sheet_by_fitting"]),
-        stack_height=int(row["stack_height"]),
-        press_sheet=PressSheet(
-            0,
-            int(row["press_width"]),
-            int(row["press_height"]),
-            int(row["press_spacing"]),
-        ),
-        list=List(0, 0, 0),
-        press_pricing=PrintingCalculation(
-            Money(rates["press_cyan"]),
-            Money(rates["press_magenta"]),
-            Money(rates["press_yellow"]),
-            Money(rates["press_black"]),
-            Money(rates["press_paper"]),
-            Money(rates["press_salary"]),
-        ),
-        cut_pricing=CuttingCalculation(Money(rates["cut_salary"])),
-        lamination_pricing=LaminationCalculation(
-            Money(rates["lamination_startup"]),
-            Money(rates["lamination_film_cost"]),
-            Money(rates["lamination_salary"]),
-        ),
-        die_cut_pricing=DieCuttingCalculation(Money(rates["die_cut_salary"])),
-        comment="",
-    )
-    return Order(
-        unit_count=1,
-        tax_rate=zero,
-        markup=zero,
-        operations=(),
-        printings=(printing,),
-        id=None,
-        comment="",
-        status=Status.SAVED,
-        creation_date=None,
+        {"document": {
+            "id": None,
+            "unit_count": 1,
+            "tax_rate": zero,
+            "markup": zero,
+            "operations": [],
+            "printings": [{
+                "count": 0,
+                "chroma": "ZERO_ZERO",
+                "lamination": "DONT",
+                "die_cutting": False,
+                "sheet_by_fitting": int(row["sheet_by_fitting"]),
+                "stack_height": int(row["stack_height"]),
+                "press_sheet": {
+                    "density": 0,
+                    "width": int(row["press_width"]),
+                    "height": int(row["press_height"]),
+                    "spacing": int(row["press_spacing"]),
+                },
+                "list": {"width": 0, "height": 0, "bleeds": 0},
+                "press_pricing": {
+                    "cyan": str(rates["press_cyan"]),
+                    "magenta": str(rates["press_magenta"]),
+                    "yellow": str(rates["press_yellow"]),
+                    "black": str(rates["press_black"]),
+                    "paper": str(rates["press_paper"]),
+                    "salary": str(rates["press_salary"]),
+                },
+                "cut_pricing": {"salary": str(rates["cut_salary"])},
+                "lamination_pricing": {
+                    "startup": str(rates["lamination_startup"]),
+                    "film_cost": str(rates["lamination_film_cost"]),
+                    "salary": str(rates["lamination_salary"]),
+                },
+                "die_cut_pricing": {
+                    "salary": str(rates["die_cut_salary"]),
+                },
+                "comment": "",
+            }],
+            "comment": "",
+            "status": "SAVED",
+        }},
     )
 
 
