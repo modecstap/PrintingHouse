@@ -8,7 +8,12 @@ from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.engine import Engine
 
 from backend.core.administrator import Administrator
-from backend.core.order import Operation, Order, Status
+from backend.core.order import (
+    Operation,
+    Order,
+    OrderSpecification,
+    Status,
+)
 from backend.core.order_repository import (
     OrderNotFound,
     OrderStoreUnavailable,
@@ -52,10 +57,10 @@ def _order(
     status: Status = Status.SAVED,
 ) -> Order:
     return Order(
-        unit_count=unit_count,
+        specification=OrderSpecification(
+            unit_count, Decimal("0"), operations
+        ),
         tax_rate=Decimal("1"),
-        markup=Decimal("0"),
-        operations=operations,
         printings=(),
         id=order_id,
         comment=comment,
@@ -171,8 +176,8 @@ def test_should_save_a_new_order_and_return_its_id(
     taken = service.take(order_id)
     assert taken.comment == "заметка"
     assert taken.status is Status.DONE
-    assert taken.unit_count == 1
-    assert taken.operations == ()
+    assert taken.specification.unit_count == 1
+    assert taken.specification.operations == ()
     assert orders.reports(order_id) == []
 
 
@@ -225,10 +230,10 @@ def test_should_return_one_saved_order_from_take(
     assert taken.id == order_id
     assert taken.comment == "заметка"
     assert taken.status is Status.DONE
-    assert taken.unit_count == order.unit_count
+    assert taken.specification.unit_count == order.specification.unit_count
     assert taken.tax_rate == order.tax_rate
-    assert taken.markup == order.markup
-    assert taken.operations == ()
+    assert taken.specification.markup == order.specification.markup
+    assert taken.specification.operations == ()
     assert taken.printings == ()
     assert orders.reports(order_id) == []
 
@@ -343,7 +348,7 @@ def test_should_accept_or_delay_and_attach_that_report(
     assert order == held
     taken = service.take(order_id)
     assert taken.comment == "заметка"
-    assert taken.unit_count == 1
+    assert taken.specification.unit_count == 1
     assert taken.status is stored
     assert orders.reports(order_id) == [_ZERO_REPORT]
 
@@ -381,7 +386,7 @@ def test_should_keep_a_saved_order_when_a_later_accept_or_delay_cannot_calculate
         _call(service, keep, broken)
     assert broken == held_broken
     taken = service.take(order_id)
-    assert taken.unit_count == 1
+    assert taken.specification.unit_count == 1
     assert taken.comment == "keep"
     assert taken.status is Status.DONE
     assert orders.reports(order_id) == []
@@ -416,7 +421,7 @@ def test_should_append_a_report_when_the_same_order_is_accepted_or_delayed_again
         _OPERATION_REPORT,
     ]
     taken = service.take(order_id)
-    assert taken.unit_count == 2
+    assert taken.specification.unit_count == 2
     assert taken.status is stored
 
 
@@ -442,16 +447,16 @@ def test_should_change_only_the_status(workplace: _Bundle) -> None:
     saved_ids.append(order_id)
     assert order == held
     assert report == _OPERATION_REPORT
-    stored_costs = order.operations
+    stored_costs = order.specification.operations
     stored_comment = order.comment
     stored_reports = orders.reports(order_id)
     assert stored_reports == [_OPERATION_REPORT]
     service.change_status(order_id, Status.DONE)
     taken = service.take(order_id)
     assert taken.status is Status.DONE
-    assert taken.operations == stored_costs
+    assert taken.specification.operations == stored_costs
     assert taken.comment == stored_comment
-    assert taken.unit_count == 2
+    assert taken.specification.unit_count == 2
     assert orders.reports(order_id) == stored_reports
 
 
@@ -467,7 +472,7 @@ def test_should_change_status_without_calculating(
     service.change_status(order_id, Status.DONE)
     taken = service.take(order_id)
     assert taken.status is Status.DONE
-    assert taken.unit_count == 0
+    assert taken.specification.unit_count == 0
 
 
 def test_should_refuse_to_change_status_of_an_unknown_id(
@@ -512,10 +517,10 @@ def test_should_keep_both_reports_when_two_accepts_run_together(
     assert orders.reports(order_id) == [_ZERO_REPORT, _ZERO_REPORT]
     taken = service.take(order_id)
     assert taken.status is Status.IN_WORK
-    assert taken.unit_count == 1
+    assert taken.specification.unit_count == 1
     assert taken.tax_rate == Decimal("1")
-    assert taken.markup == Decimal("0")
-    assert taken.operations == ()
+    assert taken.specification.markup == Decimal("0")
+    assert taken.specification.operations == ()
     assert taken.printings == ()
 
 

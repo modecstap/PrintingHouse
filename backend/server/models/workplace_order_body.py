@@ -25,13 +25,16 @@ from backend.core.order import (
     List,
     Operation,
     Order,
+    OrderSpecification,
     Printing,
+    PrintingSpecification,
     Status,
+    StoredPress,
 )
 from backend.core.errors import InvalidPriceException
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma, PressSheet
+from backend.core.workplaces.printing.models import Chroma
 
 _EnumT = TypeVar("_EnumT", bound=Enum)
 
@@ -296,13 +299,15 @@ def order_from_body(body: WorkplaceOrderBody) -> Order:
                 f"{item.name!r} стоит {item.cost}, меньше нуля"
             )
     return Order(
-        unit_count=body.unit_count,
-        tax_rate=body.tax_rate,
-        markup=body.markup,
-        operations=tuple(
-            Operation(item.name, item.cost, item.description)
-            for item in body.operations
+        specification=OrderSpecification(
+            unit_count=body.unit_count,
+            markup=body.markup,
+            operations=tuple(
+                Operation(item.name, item.cost, item.description)
+                for item in body.operations
+            ),
         ),
+        tax_rate=body.tax_rate,
         printings=tuple(
             _printing_from_body(item) for item in body.printings
         ),
@@ -321,17 +326,18 @@ def body_from_order(order: Order) -> WorkplaceOrderBody:
     An operation cost and a rate in a field are Decimal, not a Money object.
     creation_date is copied. An empty date is not included in the JSON.
     """
+    spec = order.specification
     return WorkplaceOrderBody(
-        unit_count=order.unit_count,
+        unit_count=spec.unit_count,
         tax_rate=order.tax_rate,
-        markup=order.markup,
+        markup=spec.markup,
         operations=[
             WorkplaceOperationBody(
                 name=item.name,
                 cost=item.cost,
                 description=item.description,
             )
-            for item in order.operations
+            for item in spec.operations
         ],
         printings=[
             _body_from_printing(item) for item in order.printings
@@ -367,30 +373,28 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
     sheet = body.press_sheet
     page = body.list
     lamination = body.lamination_pricing
+    # JSON ещё несёт объект листа, не id.
     return Printing(
-        count=body.count,
-        chroma=body.chroma,
-        lamination=body.lamination,
-        die_cutting=body.die_cutting,
-        sheet_by_fitting=body.sheet_by_fitting,
-        stack_height=body.stack_height,
-        press_sheet=PressSheet(
-            density=sheet.density,
-            width=sheet.width,
-            height=sheet.height,
+        specification=PrintingSpecification(
+            count=body.count,
+            chroma=body.chroma,
+            lamination=body.lamination,
+            die_cutting=body.die_cutting,
             spacing=sheet.spacing,
+            press_sheet=None,
+            list=List(
+                width=page.width,
+                height=page.height,
+                bleeds=page.bleeds,
+            ),
+            sheet_by_fitting=body.sheet_by_fitting,
         ),
-        list=List(
-            width=page.width,
-            height=page.height,
-            bleeds=page.bleeds,
-        ),
+        stack_height=body.stack_height,
         press_pricing=PrintingCalculation(
             Money(press.cyan),
             Money(press.magenta),
             Money(press.yellow),
             Money(press.black),
-            Money(press.paper),
             Money(press.salary),
         ),
         cut_pricing=CuttingCalculation(Money(body.cut_pricing.salary)),
@@ -402,27 +406,34 @@ def _printing_from_body(body: WorkplacePrintingBody) -> Printing:
         die_cut_pricing=DieCuttingCalculation(
             Money(body.die_cut_pricing.salary)
         ),
+        stored_press=StoredPress(
+            sheet.density,
+            sheet.width,
+            sheet.height,
+            Money(press.paper),
+        ),
         comment=body.comment,
     )
 
 
 def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
     press = printing.press_pricing
-    sheet = printing.press_sheet
-    page = printing.list
+    spec = printing.specification
+    stored = printing.stored_press
+    page = spec.list
     lamination = printing.lamination_pricing
     return WorkplacePrintingBody(
-        count=printing.count,
-        chroma=printing.chroma,
-        lamination=printing.lamination,
-        die_cutting=printing.die_cutting,
-        sheet_by_fitting=printing.sheet_by_fitting,
+        count=spec.count,
+        chroma=spec.chroma,
+        lamination=spec.lamination,
+        die_cutting=spec.die_cutting,
+        sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
         press_sheet=WorkplacePressSheetBody(
-            density=sheet.density,
-            width=sheet.width,
-            height=sheet.height,
-            spacing=sheet.spacing,
+            density=stored.density,
+            width=stored.width,
+            height=stored.height,
+            spacing=spec.spacing,
         ),
         list=WorkplaceListBody(
             width=page.width,
@@ -434,7 +445,7 @@ def _body_from_printing(printing: Printing) -> WorkplacePrintingBody:
             magenta=press.magenta.amount,
             yellow=press.yellow.amount,
             black=press.black.amount,
-            paper=press.paper.amount,
+            paper=stored.paper.amount,
             salary=press.salary.amount,
         ),
         cut_pricing=WorkplaceCutPricingBody(

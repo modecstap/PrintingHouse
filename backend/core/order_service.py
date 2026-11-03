@@ -3,9 +3,12 @@ from dataclasses import replace
 from backend.core.administrator import Administrator
 from backend.core.order import (
     Order,
+    Printing,
     Status,
     empty_reference_order,
 )
+from backend.core.sheet.format import SheetFormat
+from backend.core.sheet.sheet import Sheet
 from backend.core.order_repository import (
     OrderId,
     WorkplaceOrderRepository,
@@ -105,7 +108,8 @@ class WorkplaceOrderService:
 
         :return: the CostReport of this calculation.
         """
-        return self._administrator.report_cost(order)
+        priced, sheets = _calculation_sheets(order)
+        return self._administrator.report_cost(priced, sheets)
 
     def accept(self, order: Order) -> tuple[OrderId, CostReport]:
         """Saves the order with status В работе and the calculation report.
@@ -157,8 +161,43 @@ class WorkplaceOrderService:
     def _keep(
         self, order: Order, status: Status
     ) -> tuple[OrderId, CostReport]:
-        report = self._administrator.report_cost(order)
+        priced, sheets = _calculation_sheets(order)
+        report = self._administrator.report_cost(priced, sheets)
         order_id = self._orders.save_with_report(
             replace(order, status=status), report
         )
         return order_id, report
+
+
+def _calculation_sheets(order: Order) -> tuple[Order, dict[int, Sheet]]:
+    # Справочника ещё нет. Размер и ставка лежат на печати.
+    # Пустой id подставляется только в копию для этого расчёта.
+    sheets: dict[int, Sheet] = {}
+    printings: list[Printing] = []
+    used = {
+        printing.specification.press_sheet
+        for printing in order.printings
+        if printing.specification.press_sheet is not None
+    }
+    next_id = 1
+    for printing in order.printings:
+        spec = printing.specification
+        sheet_id = spec.press_sheet
+        if sheet_id is None:
+            while next_id in used:
+                next_id += 1
+            sheet_id = next_id
+            used.add(sheet_id)
+            next_id += 1
+            printing = replace(
+                printing,
+                specification=replace(spec, press_sheet=sheet_id),
+            )
+        stored = printing.stored_press
+        sheets[sheet_id] = Sheet(
+            SheetFormat("", stored.height, stored.width),
+            stored.density,
+            stored.paper,
+        )
+        printings.append(printing)
+    return replace(order, printings=tuple(printings)), sheets

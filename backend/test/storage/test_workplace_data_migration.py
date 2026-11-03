@@ -19,11 +19,12 @@ from backend.test.storage.test_schema_migration import (
     _assert_legacy_objects_present,
     _migration_database,
 )
+from backend.core.accountant.money import Money
 from backend.core.administrator import Administrator
-from backend.core.order import List, Order, Status
+from backend.core.order import List, Order, OrderSpecification, Status, StoredPress
 from backend.core.order_service import WorkplaceOrderService
 from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma, PressSheet
+from backend.core.workplaces.printing.models import Chroma
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -73,10 +74,8 @@ def _service(engine: Engine) -> WorkplaceOrderService:
 
 def _blank_order() -> Order:
     return Order(
-        unit_count=1,
+        specification=OrderSpecification(1, Decimal("0"), ()),
         tax_rate=Decimal("0"),
-        markup=Decimal("0"),
-        operations=(),
         printings=(),
     )
 
@@ -193,28 +192,33 @@ def _upgraded_legacy() -> Iterator[tuple[Config, Engine, dict[str, int]]]:
 def _assert_reference(order: Order) -> None:
     assert order.id is None
     assert order.creation_date is None
-    assert order.unit_count == 1
+    spec = order.specification
+    assert spec.unit_count == 1
     assert order.tax_rate == Decimal("0")
-    assert order.markup == Decimal("0")
+    assert spec.markup == Decimal("0")
     assert order.status is Status.SAVED
-    assert order.operations == ()
+    assert spec.operations == ()
     assert len(order.printings) == 1
     printing = order.printings[0]
-    assert printing.count == 0
-    assert printing.chroma is Chroma.ZERO_ZERO
-    assert printing.lamination is Lamination.DONT
-    assert printing.die_cutting is False
+    printing_spec = printing.specification
+    assert printing_spec.count == 0
+    assert printing_spec.chroma is Chroma.ZERO_ZERO
+    assert printing_spec.lamination is Lamination.DONT
+    assert printing_spec.die_cutting is False
     assert printing.comment == ""
-    assert printing.press_sheet == PressSheet(0, 320, 470, 5)
-    assert printing.list == List(0, 0, 0)
-    assert printing.sheet_by_fitting == 2
+    assert printing_spec.press_sheet is None
+    assert printing_spec.spacing == 5
+    assert printing.stored_press == StoredPress(
+        0, 320, 470, Money(Decimal("160.0000"))
+    )
+    assert printing_spec.list == List(0, 0, 0)
+    assert printing_spec.sheet_by_fitting == 2
     assert printing.stack_height == 30
     press = printing.press_pricing
     assert press.black.amount == Decimal("2.0000")
     assert press.cyan.amount == _COLOR
     assert press.magenta.amount == _COLOR
     assert press.yellow.amount == _COLOR
-    assert press.paper.amount == Decimal("160.0000")
     assert press.salary.amount == Decimal("1.0000")
     assert printing.cut_pricing.salary.amount == Decimal("10.0000")
     assert printing.die_cut_pricing.salary.amount == Decimal("25.0000")

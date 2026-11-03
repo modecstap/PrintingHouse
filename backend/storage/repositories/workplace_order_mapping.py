@@ -18,12 +18,15 @@ from backend.core.order import (
     List,
     Operation,
     Order,
+    OrderSpecification,
     Printing,
+    PrintingSpecification,
     Status,
+    StoredPress,
 )
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma, PressSheet
+from backend.core.workplaces.printing.models import Chroma
 from backend.storage.tables.workplace_order import (
     CostReportRow,
     OperationCostRow,
@@ -57,38 +60,40 @@ def _as_date(value: object) -> date:
 
 
 def _fill_header(row: WorkplaceOrderRow, order: Order) -> None:
+    spec = order.specification
     row.comment = order.comment
     row.status = order.status.name
-    row.unit_count = order.unit_count
+    row.unit_count = spec.unit_count
     row.tax_rate = order.tax_rate
-    row.markup = order.markup
+    row.markup = spec.markup
 
 
 def _printing_row(order_id: int, position: int, printing: Printing) -> PrintingRow:
     press = printing.press_pricing
-    sheet = printing.list
-    press_sheet = printing.press_sheet
+    spec = printing.specification
+    page = spec.list
+    stored = printing.stored_press
     return PrintingRow(
         order_id=order_id,
         position=position,
-        count=printing.count,
-        sheet_by_fitting=printing.sheet_by_fitting,
+        count=spec.count,
+        sheet_by_fitting=spec.sheet_by_fitting,
         stack_height=printing.stack_height,
-        press_sheet_density=press_sheet.density,
-        press_sheet_width=press_sheet.width,
-        press_sheet_height=press_sheet.height,
-        press_sheet_spacing=press_sheet.spacing,
-        list_width=sheet.width,
-        list_height=sheet.height,
-        list_bleeds=sheet.bleeds,
-        chroma=printing.chroma.name,
-        lamination=printing.lamination.name,
-        die_cutting=printing.die_cutting,
+        press_sheet_density=stored.density,
+        press_sheet_width=stored.width,
+        press_sheet_height=stored.height,
+        press_sheet_spacing=spec.spacing,
+        list_width=page.width,
+        list_height=page.height,
+        list_bleeds=page.bleeds,
+        chroma=spec.chroma.name,
+        lamination=spec.lamination.name,
+        die_cutting=spec.die_cutting,
         press_cyan=press.cyan.amount,
         press_magenta=press.magenta.amount,
         press_yellow=press.yellow.amount,
         press_black=press.black.amount,
-        press_paper=press.paper.amount,
+        press_paper=stored.paper.amount,
         press_salary=press.salary.amount,
         cut_salary=printing.cut_pricing.salary.amount,
         lamination_startup=printing.lamination_pricing.startup.amount,
@@ -104,7 +109,7 @@ def _replace_calculation(session: Session, order_id: int, order: Order) -> None:
         delete(OperationCostRow).where(OperationCostRow.order_id == order_id)
     )
     session.execute(delete(PrintingRow).where(PrintingRow.order_id == order_id))
-    for position, operation in enumerate(order.operations):
+    for position, operation in enumerate(order.specification.operations):
         session.add(
             OperationCostRow(
                 order_id=order_id,
@@ -119,27 +124,25 @@ def _replace_calculation(session: Session, order_id: int, order: Order) -> None:
 
 
 def _printing_from_row(row: PrintingRow) -> Printing:
-    sheet = List(row.list_width, row.list_height, row.list_bleeds)
+    # Столбца id листа ещё нет, поэтому press_sheet пустой.
+    # Плотность, стороны и ставка по-прежнему читаются из старых столбцов.
     return Printing(
-        count=row.count,
-        chroma=Chroma[row.chroma],
-        lamination=Lamination[row.lamination],
-        die_cutting=row.die_cutting,
-        sheet_by_fitting=row.sheet_by_fitting,
-        stack_height=row.stack_height,
-        press_sheet=PressSheet(
-            row.press_sheet_density,
-            row.press_sheet_width,
-            row.press_sheet_height,
-            row.press_sheet_spacing,
+        specification=PrintingSpecification(
+            count=row.count,
+            chroma=Chroma[row.chroma],
+            lamination=Lamination[row.lamination],
+            die_cutting=row.die_cutting,
+            spacing=row.press_sheet_spacing,
+            press_sheet=None,
+            list=List(row.list_width, row.list_height, row.list_bleeds),
+            sheet_by_fitting=row.sheet_by_fitting,
         ),
-        list=sheet,
+        stack_height=row.stack_height,
         press_pricing=PrintingCalculation(
             _money(row.press_cyan),
             _money(row.press_magenta),
             _money(row.press_yellow),
             _money(row.press_black),
-            _money(row.press_paper),
             _money(row.press_salary),
         ),
         cut_pricing=CuttingCalculation(_money(row.cut_salary)),
@@ -149,6 +152,12 @@ def _printing_from_row(row: PrintingRow) -> Printing:
             _money(row.lamination_salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(row.die_cut_salary)),
+        stored_press=StoredPress(
+            row.press_sheet_density,
+            row.press_sheet_width,
+            row.press_sheet_height,
+            _money(row.press_paper),
+        ),
         comment=row.comment,
     )
 
@@ -230,13 +239,17 @@ def read_order(session: Session, row: WorkplaceOrderRow) -> Order:
         .order_by(PrintingRow.position)
     ).all()
     return Order(
-        unit_count=row.unit_count,
-        tax_rate=_as_decimal(row.tax_rate),
-        markup=_as_decimal(row.markup),
-        operations=tuple(
-            Operation(item.name, _as_decimal(item.amount), item.description)
-            for item in costs
+        specification=OrderSpecification(
+            unit_count=row.unit_count,
+            markup=_as_decimal(row.markup),
+            operations=tuple(
+                Operation(
+                    item.name, _as_decimal(item.amount), item.description
+                )
+                for item in costs
+            ),
         ),
+        tax_rate=_as_decimal(row.tax_rate),
         printings=tuple(_printing_from_row(item) for item in printings),
         id=row.id,
         comment=row.comment,
@@ -369,21 +382,22 @@ def _money_field(document: dict[str, object], key: str) -> Money:
 
 def _printing_document(printing: Printing) -> dict[str, object]:
     press = printing.press_pricing
-    page = printing.list
-    sheet = printing.press_sheet
+    spec = printing.specification
+    page = spec.list
+    stored = printing.stored_press
     lamination = printing.lamination_pricing
     return {
-        "count": printing.count,
-        "chroma": printing.chroma.name,
-        "lamination": printing.lamination.name,
-        "die_cutting": printing.die_cutting,
-        "sheet_by_fitting": printing.sheet_by_fitting,
+        "count": spec.count,
+        "chroma": spec.chroma.name,
+        "lamination": spec.lamination.name,
+        "die_cutting": spec.die_cutting,
+        "sheet_by_fitting": spec.sheet_by_fitting,
         "stack_height": printing.stack_height,
         "press_sheet": {
-            "density": sheet.density,
-            "width": sheet.width,
-            "height": sheet.height,
-            "spacing": sheet.spacing,
+            "density": stored.density,
+            "width": stored.width,
+            "height": stored.height,
+            "spacing": spec.spacing,
         },
         "list": {
             "width": page.width,
@@ -395,7 +409,7 @@ def _printing_document(printing: Printing) -> dict[str, object]:
             "magenta": _text_money(press.magenta),
             "yellow": _text_money(press.yellow),
             "black": _text_money(press.black),
-            "paper": _text_money(press.paper),
+            "paper": _text_money(stored.paper),
             "salary": _text_money(press.salary),
         },
         "cut_pricing": {
@@ -426,30 +440,28 @@ def _printing_from_document(value: object) -> Printing:
     cut = _object_field(item, "cut_pricing")
     lamination = _object_field(item, "lamination_pricing")
     die_cut = _object_field(item, "die_cut_pricing")
+    # В старом документе press_sheet — объект, не id.
     return Printing(
-        count=_int_field(item, "count"),
-        chroma=Chroma[_str_field(item, "chroma")],
-        lamination=Lamination[_str_field(item, "lamination")],
-        die_cutting=_bool_field(item, "die_cutting"),
-        sheet_by_fitting=_int_field(item, "sheet_by_fitting"),
+        specification=PrintingSpecification(
+            count=_int_field(item, "count"),
+            chroma=Chroma[_str_field(item, "chroma")],
+            lamination=Lamination[_str_field(item, "lamination")],
+            die_cutting=_bool_field(item, "die_cutting"),
+            spacing=_int_field(sheet, "spacing"),
+            press_sheet=None,
+            list=List(
+                _int_field(page, "width"),
+                _int_field(page, "height"),
+                _int_field(page, "bleeds"),
+            ),
+            sheet_by_fitting=_int_field(item, "sheet_by_fitting"),
+        ),
         stack_height=_int_field(item, "stack_height"),
-        press_sheet=PressSheet(
-            _int_field(sheet, "density"),
-            _int_field(sheet, "width"),
-            _int_field(sheet, "height"),
-            _int_field(sheet, "spacing"),
-        ),
-        list=List(
-            _int_field(page, "width"),
-            _int_field(page, "height"),
-            _int_field(page, "bleeds"),
-        ),
         press_pricing=PrintingCalculation(
             _money_field(press, "cyan"),
             _money_field(press, "magenta"),
             _money_field(press, "yellow"),
             _money_field(press, "black"),
-            _money_field(press, "paper"),
             _money_field(press, "salary"),
         ),
         cut_pricing=CuttingCalculation(_money_field(cut, "salary")),
@@ -460,6 +472,12 @@ def _printing_from_document(value: object) -> Printing:
         ),
         die_cut_pricing=DieCuttingCalculation(
             _money_field(die_cut, "salary")
+        ),
+        stored_press=StoredPress(
+            _int_field(sheet, "density"),
+            _int_field(sheet, "width"),
+            _int_field(sheet, "height"),
+            _money_field(press, "paper"),
         ),
         comment=_str_field(item, "comment"),
     )
@@ -475,18 +493,19 @@ def reference_document(order: Order) -> dict[str, object]:
     """
     # id всегда null. creation_date в документ не входит:
     # дата есть только у строки заказа.
+    spec = order.specification
     return {
         "id": None,
-        "unit_count": order.unit_count,
+        "unit_count": spec.unit_count,
         "tax_rate": str(order.tax_rate),
-        "markup": str(order.markup),
+        "markup": str(spec.markup),
         "operations": [
             {
                 "name": item.name,
                 "cost": str(item.cost),
                 "description": item.description,
             }
-            for item in order.operations
+            for item in spec.operations
         ],
         "printings": [
             _printing_document(item) for item in order.printings
@@ -506,12 +525,14 @@ def _order_from_document(document: object) -> Order:
     operations = _list_field(body, "operations")
     printings = _list_field(body, "printings")
     return Order(
-        unit_count=_int_field(body, "unit_count"),
-        tax_rate=_decimal_field(body, "tax_rate"),
-        markup=_decimal_field(body, "markup"),
-        operations=tuple(
-            _operation_from_document(item) for item in operations
+        specification=OrderSpecification(
+            unit_count=_int_field(body, "unit_count"),
+            markup=_decimal_field(body, "markup"),
+            operations=tuple(
+                _operation_from_document(item) for item in operations
+            ),
         ),
+        tax_rate=_decimal_field(body, "tax_rate"),
         printings=tuple(
             _printing_from_document(item) for item in printings
         ),

@@ -23,8 +23,11 @@ from backend.core.order import (
     List,
     Operation,
     Order,
+    OrderSpecification,
     Printing,
+    PrintingSpecification,
     Status,
+    StoredPress,
 )
 from backend.core.order_repository import (
     OrderNotFound,
@@ -32,7 +35,7 @@ from backend.core.order_repository import (
 )
 from backend.core.reports import CostReport, PrintingCost
 from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma, PressSheet
+from backend.core.workplaces.printing.models import Chroma
 from backend.storage.repositories.workplace_order_repository import (
     SqlWorkplaceOrderRepository,
 )
@@ -45,6 +48,26 @@ def _money(amount: Decimal) -> Money:
     return Money(amount)
 
 
+def _order(
+    unit_count: int,
+    tax_rate: Decimal,
+    markup: Decimal,
+    operations: tuple[Operation, ...],
+    printings: tuple[Printing, ...],
+    order_id: int | None = None,
+    comment: str = "",
+    status: Status = Status.SAVED,
+) -> Order:
+    return Order(
+        specification=OrderSpecification(unit_count, markup, operations),
+        tax_rate=tax_rate,
+        printings=printings,
+        id=order_id,
+        comment=comment,
+        status=status,
+    )
+
+
 def _printing(
     count: int,
     chroma: Chroma,
@@ -52,9 +75,13 @@ def _printing(
     die_cutting: bool,
     sheet_by_fitting: int,
     stack_height: int,
-    press_sheet: PressSheet,
+    spacing: int,
+    density: int,
+    width: int,
+    height: int,
+    paper: Decimal,
     sheet: List,
-    press: tuple[Decimal, Decimal, Decimal, Decimal, Decimal, Decimal],
+    press: tuple[Decimal, Decimal, Decimal, Decimal, Decimal],
     cut: Decimal,
     lamination_rates: tuple[Decimal, Decimal, Decimal],
     die_cut: Decimal,
@@ -62,21 +89,23 @@ def _printing(
 ) -> Printing:
     startup, film_cost, salary = lamination_rates
     return Printing(
-        count=count,
-        chroma=chroma,
-        lamination=lamination,
-        die_cutting=die_cutting,
-        sheet_by_fitting=sheet_by_fitting,
+        specification=PrintingSpecification(
+            count=count,
+            chroma=chroma,
+            lamination=lamination,
+            die_cutting=die_cutting,
+            spacing=spacing,
+            press_sheet=None,
+            list=sheet,
+            sheet_by_fitting=sheet_by_fitting,
+        ),
         stack_height=stack_height,
-        press_sheet=press_sheet,
-        list=sheet,
         press_pricing=PrintingCalculation(
             _money(press[0]),
             _money(press[1]),
             _money(press[2]),
             _money(press[3]),
             _money(press[4]),
-            _money(press[5]),
         ),
         cut_pricing=CuttingCalculation(_money(cut)),
         lamination_pricing=LaminationCalculation(
@@ -85,6 +114,7 @@ def _printing(
             _money(salary),
         ),
         die_cut_pricing=DieCuttingCalculation(_money(die_cut)),
+        stored_press=StoredPress(density, width, height, _money(paper)),
         comment=comment,
     )
 
@@ -98,14 +128,17 @@ def _full_order() -> Order:
         True,
         2,
         50,
-        PressSheet(150, 320, 450, 2),
+        2,
+        150,
+        320,
+        450,
+        Decimal("5.50"),
         List(90, 50, 2),
         (
             Decimal("1.10"),
             Decimal("2.20"),
             Decimal("3.30"),
             Decimal("4.40"),
-            Decimal("5.50"),
             Decimal("6.60"),
         ),
         Decimal("7.70"),
@@ -120,14 +153,18 @@ def _full_order() -> Order:
         False,
         0,
         1,
-        PressSheet(80, 100, 100, 0),
+        0,
+        80,
+        100,
+        100,
+        zero,
         List(10, 20, 0),
-        (zero, zero, zero, zero, zero, zero),
+        (zero, zero, zero, zero, zero),
         zero,
         (zero, zero, zero),
         zero,
     )
-    return Order(
+    return _order(
         unit_count=12,
         tax_rate=Decimal("0.93"),
         markup=Decimal("20"),
@@ -142,26 +179,26 @@ def _full_order() -> Order:
 
 
 def _bare_order(order_id: int | None = None) -> Order:
-    return Order(
+    return _order(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
         operations=(),
         printings=(),
-        id=order_id,
+        order_id=order_id,
     )
 
 
 def _sized_order(
     order_id: int, comment: str, printings: tuple[Printing, ...]
 ) -> Order:
-    return Order(
+    return _order(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
         operations=(),
         printings=printings,
-        id=order_id,
+        order_id=order_id,
         comment=comment,
     )
 
@@ -271,10 +308,10 @@ def _restore_reference(engine: Engine, document: object) -> None:
 def _assert_reference(taken: Order, expected: Order) -> None:
     assert taken.id is None
     assert taken.creation_date is None
-    assert taken.unit_count == expected.unit_count
+    assert taken.specification.unit_count == expected.specification.unit_count
     assert taken.tax_rate == expected.tax_rate
-    assert taken.markup == expected.markup
-    assert taken.operations == expected.operations
+    assert taken.specification.markup == expected.specification.markup
+    assert taken.specification.operations == expected.specification.operations
     assert taken.comment == expected.comment
     assert taken.status is expected.status
     assert len(taken.printings) == len(expected.printings)
@@ -294,19 +331,13 @@ def _public_table_names(engine: Engine) -> set[str]:
 
 
 def _assert_printing(taken: Printing, original: Printing) -> None:
-    assert taken.count == original.count
-    assert taken.chroma is original.chroma
-    assert taken.lamination is original.lamination
-    assert taken.die_cutting is original.die_cutting
-    assert taken.sheet_by_fitting == original.sheet_by_fitting
+    assert taken.specification == original.specification
     assert taken.stack_height == original.stack_height
-    assert taken.press_sheet == original.press_sheet
-    assert taken.list == original.list
+    assert taken.stored_press == original.stored_press
     assert taken.press_pricing.cyan == original.press_pricing.cyan
     assert taken.press_pricing.magenta == original.press_pricing.magenta
     assert taken.press_pricing.yellow == original.press_pricing.yellow
     assert taken.press_pricing.black == original.press_pricing.black
-    assert taken.press_pricing.paper == original.press_pricing.paper
     assert taken.press_pricing.salary == original.press_pricing.salary
     assert taken.cut_pricing.salary == original.cut_pricing.salary
     startup = taken.lamination_pricing.startup
@@ -323,10 +354,10 @@ def _assert_full_order(
     taken: Order, original: Order, order_id: int
 ) -> None:
     assert taken.id == order_id
-    assert taken.unit_count == original.unit_count
+    assert taken.specification.unit_count == original.specification.unit_count
     assert taken.tax_rate == original.tax_rate
-    assert taken.markup == original.markup
-    assert taken.operations == original.operations
+    assert taken.specification.markup == original.specification.markup
+    assert taken.specification.operations == original.specification.operations
     assert taken.comment == original.comment
     assert len(taken.comment) == 501
     assert taken.status is original.status
@@ -369,7 +400,7 @@ def repository(
 
 
 def test_order_without_identity_starts_unsaved() -> None:
-    order = Order(
+    order = _order(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
@@ -380,10 +411,8 @@ def test_order_without_identity_starts_unsaved() -> None:
     assert order.comment == ""
     assert order.status is Status.SAVED
     assert {item.name for item in fields(Order)} == {
-        "unit_count",
+        "specification",
         "tax_rate",
-        "markup",
-        "operations",
         "printings",
         "id",
         "comment",
@@ -436,7 +465,7 @@ def test_empty_collections_round_trip(
     store, saved_ids = repository
     order_id = _save(store, saved_ids, _bare_order())
     taken = store.take(order_id)
-    assert taken.operations == ()
+    assert taken.specification.operations == ()
     assert taken.printings == ()
     assert taken.comment == ""
     assert taken.status is Status.SAVED
@@ -464,13 +493,13 @@ def test_second_save_replaces_order_and_keeps_reports(
     report_b = _report_b()
     store.attach(report_a, order_id)
     store.attach(report_b, order_id)
-    second = Order(
+    second = _order(
         unit_count=7,
         tax_rate=Decimal("1"),
         markup=Decimal("0"),
         operations=(),
         printings=(),
-        id=order_id,
+        order_id=order_id,
         comment="второй",
         status=Status.DONE,
     )
@@ -481,10 +510,10 @@ def test_second_save_replaces_order_and_keeps_reports(
     assert created_on == date.today()
     assert taken.comment == "второй"
     assert taken.status is Status.DONE
-    assert taken.unit_count == 7
+    assert taken.specification.unit_count == 7
     assert taken.tax_rate == Decimal("1")
-    assert taken.markup == Decimal("0")
-    assert taken.operations == ()
+    assert taken.specification.markup == Decimal("0")
+    assert taken.specification.operations == ()
     assert taken.printings == ()
     assert store.reports(order_id) == [report_a, report_b]
 
@@ -526,7 +555,7 @@ def test_attach_keeps_report_when_printing_cost_count_differs(
     repository: tuple[SqlWorkplaceOrderRepository, list[int]],
 ) -> None:
     store, saved_ids = repository
-    order = Order(
+    order = _order(
         unit_count=1,
         tax_rate=Decimal("0"),
         markup=Decimal("0"),
@@ -618,7 +647,7 @@ def test_unreachable_database_is_store_unavailable() -> None:
     )
     try:
         store = SqlWorkplaceOrderRepository(local)
-        order = Order(
+        order = _order(
             unit_count=1,
             tax_rate=Decimal("0"),
             markup=Decimal("0"),
@@ -647,7 +676,7 @@ def test_should_keep_one_complete_reference_when_two_writes_race(
 ) -> None:
     store, _saved_ids = repository
     full = _full_order()
-    left = Order(
+    left = _order(
         unit_count=2,
         tax_rate=Decimal("0.1"),
         markup=Decimal("1"),
@@ -656,7 +685,7 @@ def test_should_keep_one_complete_reference_when_two_writes_race(
         comment="A",
         status=Status.IN_WORK,
     )
-    right = Order(
+    right = _order(
         unit_count=9,
         tax_rate=Decimal("0.2"),
         markup=Decimal("4"),

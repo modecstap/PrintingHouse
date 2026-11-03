@@ -29,9 +29,8 @@ def test_printing_price_charges_one_sheet_of_paper_and_ink_and_salary_once():
         magenta=Money(Decimal("8") / 4),
         yellow=Money(Decimal("8") / 4),
         black=Money(Decimal("3")),
-        paper=Money(Decimal("10")),
         salary=Money(Decimal("9")),
-    ).attach(report).calculate()
+    ).attach(report, Money(Decimal("10"))).calculate()
 
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
@@ -53,9 +52,8 @@ def test_printing_price_omits_salary_when_human_operations_are_zero():
         magenta=Money(Decimal("8") / 4),
         yellow=Money(Decimal("8") / 4),
         black=Money(Decimal("3")),
-        paper=Money(Decimal("10")),
         salary=Money(Decimal("9")),
-    ).attach(report).calculate()
+    ).attach(report, Money(Decimal("10"))).calculate()
 
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),
@@ -77,9 +75,8 @@ def test_printing_price_omits_ink_when_sheet_count_is_zero():
         magenta=Money(Decimal("8") / 4),
         yellow=Money(Decimal("8") / 4),
         black=Money(Decimal("3")),
-        paper=Money(Decimal("10")),
         salary=Money(Decimal("4")),
-    ).attach(report).calculate()
+    ).attach(report, Money(Decimal("10"))).calculate()
 
     assert result == StageCost(
         startup_cost=Money(Decimal("0")),

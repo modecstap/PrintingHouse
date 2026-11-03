@@ -11,14 +11,6 @@ class PrintingReport:
     human_operations: int
 
 
-@dataclass(frozen=True)
-class PressSheet:
-    density: int
-    width: int
-    height: int
-    spacing: int
-
-
 class Chroma(Enum):
     ZERO_ZERO = 0
     ONE_ZERO = 1

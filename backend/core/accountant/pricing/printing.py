@@ -11,15 +11,24 @@ class PrintingCalculation(Calculatable):
             magenta: Money,
             yellow: Money,
             black: Money,
-            paper: Money,
             salary: Money,
         ):
+        """Remembers the ink rates and the salary rate.
+
+        Paper is not a stored rate. attach receives it for one calculation.
+
+        :param cyan:
+        :param magenta:
+        :param yellow:
+        :param black:
+        :param salary:
+        """
         self._report = None
+        self._paper = None
         self._cyan = cyan
         self._magenta = magenta
         self._yellow = yellow
         self._black = black
-        self._paper = paper
         self._salary = salary
 
     @property
@@ -43,23 +52,39 @@ class PrintingCalculation(Calculatable):
         return self._black
 
     @property
-    def paper(self) -> Money:
-        """Returns the paper rate passed to the constructor."""
-        return self._paper
-
-    @property
     def salary(self) -> Money:
         """Returns the salary rate passed to the constructor."""
         return self._salary
 
-    def attach(self, report: PrintingReport) -> "PrintingCalculation":
+    def attach(
+        self, report: PrintingReport, paper: Money
+    ) -> "PrintingCalculation":
+        """Attaches the printing report and the paper rate for this calculation.
+
+        :param report:
+        :param paper: the sheet rate, in rubles per kilogram.
+        The rate is kept only on this calculation, the same way the report is.
+
+        :raises RuntimeError:
+        "Report is already attached" if the report is already attached.
+
+        :return: this same object.
+        """
         if self._report is not None:
             raise RuntimeError("Report is already attached")
 
         self._report = report
+        self._paper = paper
         return self
 
     def calculate(self) -> StageCost:
+        """Calculates ink, paper, and salary for one sheet's mass.
+
+        :raises RuntimeError: "Report is not attach" if the report is not attached.
+
+        :return: material_cost is the attached paper rate multiplied by
+        report.mass_kg, plus ink. The mass is not multiplied by the run length.
+        """
         if not self._report:
             raise RuntimeError("Report is not attach")
 
