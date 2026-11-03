@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import FlexForm from "../../../features/Form/FlexForm";
 import AdvancedSection from "../components/AdvancedSection";
+import { fetchSheets } from "../../../components/sheet/api/sheet";
+import SheetSelect from "../../../components/sheet/sheet-select";
 import { referenceProduction } from "../../../lib/workplaceOrder";
 import { calculatorService } from "../services/calculatorService";
 
@@ -29,12 +31,6 @@ const firstPrintingFields = (index) => [
     path: `printings[${index}].comment`,
     type: "text",
     valueParser: (v) => v,
-  },
-  {
-    label: "Плотность",
-    path: `printings[${index}].edition.density`,
-    type: "number",
-    valueParser: Number,
   },
   {
     label: "Цветность",
@@ -98,10 +94,7 @@ const printingHiddenFields = (index) => [
   { label: "Цена плёнки (руб.)", path: `printings[${index}].production.film_cost`, step: 0.01 },
   { label: "Зарплата за ламинацию (руб.)", path: `printings[${index}].production.lamination_salary`, step: 0.01 },
   { label: "Стоимость высечки (руб./лист)", path: `printings[${index}].production.die_cutting_cost`, step: 0.01 },
-  { label: "Стоимость бумаги (руб./кг)", path: `printings[${index}].production.paper_cost`, step: 0.01 },
-  { label: "Высота печатного листа (мм)", path: `printings[${index}].production.press_sheet.height` },
-  { label: "Ширина печатного листа (мм)", path: `printings[${index}].production.press_sheet.width` },
-  { label: "Поля печатного листа (мм)", path: `printings[${index}].production.press_sheet.spacing` },
+  { label: "Поля печатного листа (мм)", path: `printings[${index}].production.spacing` },
   { label: "Высота стопки резака (мм)", path: `printings[${index}].production.cutter.stack_height` },
   { label: "Листы на приладку (шт)", path: `printings[${index}].production.sheet_by_fitting` },
   { label: "Цена 1 реза (руб.)", path: `printings[${index}].production.cutting_cost`, step: 0.01 },
@@ -130,7 +123,6 @@ const newPrinting = () => ({
   edition: {
     count: 0,
     list_size: { width: 420, height: 297, bleeds: 2 },
-    density: 80,
     chroma: 1,
     lamination: 1,
     die_cutting: false,
@@ -147,6 +139,25 @@ export default function PrintingSection({ formData, setFormData }) {
 
   const [referenceRates, setReferenceRates] = useState(null);
   const [referenceError, setReferenceError] = useState(null);
+  const [sheets, setSheets] = useState([]);
+  const [sheetError, setSheetError] = useState(null);
+
+  const setPrintingSheet = (index, sheetId) => {
+    setFormData((prev) => ({
+      ...prev,
+      printings: prev.printings.map((printing, i) =>
+        i === index
+          ? {
+              ...printing,
+              production: {
+                ...printing.production,
+                press_sheet: sheetId,
+              },
+            }
+          : printing
+      ),
+    }));
+  };
 
   // ✅ Установка формата листа
   const setPaperSize = (index, size) => {
@@ -207,6 +218,21 @@ export default function PrintingSection({ formData, setFormData }) {
     return () => controller.abort();
   }, [setFormData]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetchSheets(controller.signal)
+      .then((list) => {
+        if (!controller.signal.aborted) setSheets(list);
+      })
+      .catch((error) => {
+        if (error?.name === "AbortError") return;
+        setSheetError(error?.message || "Не удалось загрузить листы");
+      });
+
+    return () => controller.abort();
+  }, []);
+
   const addPrinting = () => {
     const newP = newPrinting();
     if (referenceRates) {
@@ -235,10 +261,16 @@ export default function PrintingSection({ formData, setFormData }) {
       <h2>Параметры печати</h2>
 
       {referenceError && <div className="error">{referenceError}</div>}
+      {sheetError && <div className="error">{sheetError}</div>}
 
-      {formData.printings.map((_, i) => (
+      {formData.printings.map((printing, i) => (
         <div key={i}>
           <div>
+            <SheetSelect
+              sheets={sheets}
+              sheetId={printing.production?.press_sheet ?? null}
+              onChange={(sheetId) => setPrintingSheet(i, sheetId)}
+            />
             <FlexForm
               fields={firstPrintingFields(i)}
               formData={formData}

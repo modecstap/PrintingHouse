@@ -6,7 +6,6 @@ export const INITIAL_DATA = {
         edition: {
             count: 0,
             list_size: { width: 420, height: 297, bleeds: 2 },
-            density: 80,
             chroma: 1,
             lamination: 1,
             die_cutting: false,

@@ -88,12 +88,17 @@ function toOperation(operation) {
   };
 }
 
+function toSheetId(value) {
+  if (value == null || value === "") return null;
+  const asInteger = toJsonInteger(value);
+  return Number.isInteger(asInteger) ? asInteger : null;
+}
+
 function toPrinting(printing) {
   const source = printing ?? {};
   const edition = source.edition ?? {};
   const production = source.production ?? {};
   const listSize = edition.list_size ?? {};
-  const pressSheet = production.press_sheet ?? {};
   const cutter = production.cutter ?? {};
 
   return {
@@ -104,12 +109,8 @@ function toPrinting(printing) {
     die_cutting: toDieCutting(edition.die_cutting),
     sheet_by_fitting: toJsonInteger(production.sheet_by_fitting),
     stack_height: toJsonInteger(cutter.stack_height),
-    press_sheet: {
-      density: toJsonInteger(edition.density),
-      width: toJsonInteger(pressSheet.width),
-      height: toJsonInteger(pressSheet.height),
-      spacing: toJsonInteger(pressSheet.spacing),
-    },
+    spacing: toJsonInteger(production.spacing),
+    press_sheet: toSheetId(production.press_sheet),
     list: {
       width: toJsonInteger(listSize.width),
       height: toJsonInteger(listSize.height),
@@ -120,7 +121,6 @@ function toPrinting(printing) {
       magenta: toJsonDecimal(production.magenta),
       yellow: toJsonDecimal(production.yellow),
       black: toJsonDecimal(production.black_ink_cost),
-      paper: toJsonDecimal(production.paper_cost),
       salary: toJsonDecimal(production.printer_salary),
     },
     cut_pricing: {
@@ -140,7 +140,6 @@ function toPrinting(printing) {
 function productionFromPrinting(printing) {
   const source = printing ?? {};
   const pricing = source.press_pricing ?? {};
-  const pressSheet = source.press_sheet ?? {};
   const lamination = source.lamination_pricing ?? {};
 
   return {
@@ -148,17 +147,13 @@ function productionFromPrinting(printing) {
     magenta: pricing.magenta,
     yellow: pricing.yellow,
     black_ink_cost: pricing.black,
-    paper_cost: pricing.paper,
     printer_salary: pricing.salary,
     lamination_startup: lamination.startup,
     film_cost: lamination.film_cost,
     lamination_salary: lamination.salary,
     die_cutting_cost: source.die_cut_pricing?.salary,
-    press_sheet: {
-      height: pressSheet.height,
-      width: pressSheet.width,
-      spacing: pressSheet.spacing,
-    },
+    spacing: source.spacing,
+    press_sheet: source.press_sheet ?? null,
     cutter: {
       stack_height: source.stack_height,
     },
@@ -169,7 +164,6 @@ function productionFromPrinting(printing) {
 
 function printingToForm(printing) {
   const source = printing ?? {};
-  const pressSheet = source.press_sheet ?? {};
   const list = source.list ?? {};
 
   return {
@@ -180,7 +174,6 @@ function printingToForm(printing) {
         height: list.height,
         bleeds: list.bleeds,
       },
-      density: pressSheet.density,
       chroma: enumNumber(source.chroma, CHROMA_BY_NAME),
       lamination: enumNumber(source.lamination, LAMINATION_BY_NAME),
       die_cutting: source.die_cutting,
