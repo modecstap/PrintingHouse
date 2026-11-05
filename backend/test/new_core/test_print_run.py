@@ -19,7 +19,7 @@ from backend.new_core import (
     Laminate,
     Laminator,
     LaminatorOperator,
-    Operation,
+    AdditionalWork,
     Order,
     Paper,
     PressOperator,
@@ -65,7 +65,7 @@ def build_worked_run(
         product=Product(
             blocks=(block,),
             operations=(
-                Operation(
+                AdditionalWork(
                     name="сборка",
                     price=Money(Decimal(999)),
                     description="склейка",

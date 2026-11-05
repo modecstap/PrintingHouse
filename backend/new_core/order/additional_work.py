@@ -4,7 +4,7 @@ from backend.core.accountant.money import Money
 
 
 @dataclass(frozen=True)
-class Operation:
+class AdditionalWork:
     name: str
     price: Money
     description: str

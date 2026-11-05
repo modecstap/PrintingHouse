@@ -281,7 +281,7 @@ def order_from_body(body: WorkplaceOrderBody) -> Order:
 
     :return: an Order with calculation data, id, comment, and status.
     creation_date of the result is always None: the insert sets the date.
-    operations is a tuple of Operation.
+    operations is a tuple of AdditionalWork.
     Each printing rate is a Money from the Decimal of that field.
     """
     for item in body.operations:

@@ -4,7 +4,7 @@ from backend.new_core.sheet import Paper, Sheet
 from backend.new_core.print_run.imposition import Imposition
 
 from backend.new_core.order.block import Block
-from backend.new_core.order.operation import Operation
+from backend.new_core.order.additional_work import AdditionalWork
 from backend.new_core.order.product import Product
 from backend.new_core.order.order import Order
 
@@ -20,7 +20,7 @@ from backend.new_core.operations.printing import PressOperator, Print, Printer
 
 __all__ = [
     "InvalidInput",
-    "Operation",
+    "AdditionalWork",
     "Block",
     "Product",
     "Order",

@@ -62,7 +62,7 @@ catch (e: ConnectionError) {
 }
 ```
 
-## Make a State-Changing Operation Safe on Failure
+## Make a State-Changing AdditionalWork Safe on Failure
 
 1. List the invariants the operation must preserve.
 2. If all changes go to one store, apply them in one transaction.
