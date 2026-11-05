@@ -25,7 +25,7 @@ _ZERO_CELL = (
 
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
-        paper=Paper(density=0, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(density=60, name="sheet", price_per_kilo=Money(Decimal(0))),
         height=height,
         width=width,
     )
@@ -36,48 +36,57 @@ def _rejects(message: str, call) -> None:
         call()
 
 
-def test_cost_report_is_rejected_when_nothing_fits():
-    """A press sheet that fits nothing has count 0 and cuts 4, and both run methods reject it."""
-    run, _, _, _ = build_worked_run(
-        target_width=100,
-        target_height=100,
-        press_width=50,
-        press_height=50,
-        required_count=10,
+def test_imposition_rejects_count_when_nothing_fits():
+    """A 100 by 100 target on a 50 by 50 press sheet rejects count and still needs 4 cuts.
+
+    The same grid rejects a print run, because the run counts its press sheets.
+    """
+    imposition = Imposition(
+        target=_sheet(100, 100),
+        press_sheet=_sheet(50, 50),
+        bleeds=0,
+        spacing=0,
     )
     message = "imposition: на печатный лист влезает 0 целевых листов"
 
-    assert run.imposition.count() == 0
-    assert run.imposition.cuts() == 4
-    _rejects(message, run.production_count)
-    _rejects(message, lambda: run.cost_report(()))
-
-
-def test_cost_report_is_rejected_when_the_cell_side_is_zero():
-    """A target of 0 by 10 makes production count and the cost report reject the zero cell."""
-    run, _, _, _ = build_worked_run(target_width=0, target_height=10)
-
-    _rejects(_ZERO_CELL, run.production_count)
-    _rejects(_ZERO_CELL, lambda: run.cost_report(()))
-
-
-def test_cost_report_is_rejected_when_density_is_zero():
-    """Press paper density 0 rejects the cost report."""
-    run, printing, laminate, cut = build_worked_run(press_density=0)
-
+    assert imposition.cuts() == 4
+    _rejects(message, imposition.count)
     _rejects(
-        "paper: плотность равна 0",
-        lambda: run.cost_report((printing, laminate, cut)),
+        message,
+        lambda: PrintRun(
+            id=1,
+            block=Block(sheet=_sheet(1, 1), count=0),
+            required_count=10,
+            imposition=imposition,
+        ),
     )
 
 
-def test_cost_report_is_rejected_when_the_stack_is_zero():
-    """A passed cut with stack height 0 rejects the cost report."""
-    run, _, _, cut = build_worked_run(max_stack=0)
-
+def test_print_run_rejects_a_zero_cell_side():
+    """A target of 0 by 10 rejects the run because the cell side is zero."""
     _rejects(
-        "cut: листов в стопе 0, высота стопы=0 мм, плотность=100",
-        lambda: run.cost_report((cut,)),
+        _ZERO_CELL,
+        lambda: build_worked_run(target_width=0, target_height=10),
+    )
+
+
+def test_paper_rejects_a_density_of_zero():
+    """A paper density of 0 is rejected."""
+    _rejects(
+        "paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
+        lambda: Paper(
+            density=0,
+            name="press",
+            price_per_kilo=Money(Decimal(1000)),
+        ),
+    )
+
+
+def test_cutter_rejects_a_stack_height_of_zero():
+    """A stack height of 0 is rejected."""
+    _rejects(
+        "cutter: высота стопы равна 0, высота=0 мм",
+        lambda: Cutter(id=1, max_stack=0),
     )
 
 
@@ -88,7 +97,7 @@ def test_cost_report_is_rejected_when_the_stack_is_zero():
             "sheet: высота меньше 0, высота=-1 мм",
             lambda: Sheet(
                 paper=Paper(
-                    density=0,
+                    density=60,
                     name="sheet",
                     price_per_kilo=Money(Decimal(0)),
                 ),
@@ -101,7 +110,7 @@ def test_cost_report_is_rejected_when_the_stack_is_zero():
             "sheet: ширина меньше 0, ширина=-1 мм",
             lambda: Sheet(
                 paper=Paper(
-                    density=0,
+                    density=60,
                     name="sheet",
                     price_per_kilo=Money(Decimal(0)),
                 ),

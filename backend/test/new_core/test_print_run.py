@@ -54,7 +54,7 @@ def build_worked_run(
     """
     block = Block(
         sheet=Sheet(
-            paper=Paper(density=0, name="block", price_per_kilo=Money(Decimal(999))),
+            paper=Paper(density=60, name="block", price_per_kilo=Money(Decimal(999))),
             height=1,
             width=1,
         ),
@@ -81,7 +81,7 @@ def build_worked_run(
         imposition=Imposition(
             target=Sheet(
                 paper=Paper(
-                    density=0,
+                    density=60,
                     name="target",
                     price_per_kilo=Money(Decimal(9999)),
                 ),
@@ -115,16 +115,19 @@ def build_worked_run(
             id=1,
             salary_by_operation=Money(Decimal(press_salary)),
         ),
+        print_run=run,
     )
     laminate = Laminate(
         lamination=lamination,
         laminator=Laminator(id=1, startup=Money(Decimal(10))),
         film=Film(name="film", price=Money(Decimal(3)), density=77),
         operator=LaminatorOperator(id=1, salary_by_operation=Money(Decimal(4))),
+        print_run=run,
     )
     cut = Cut(
         cutter=Cutter(id=1, max_stack=max_stack),
         operator=CutterOperator(id=1, salary_by_operation=Money(Decimal(7))),
+        print_run=run,
     )
     return run, printing, laminate, cut
 
@@ -303,11 +306,9 @@ def test_cost_report_adds_the_die_cutter_salary_once():
     assert report.target_work == Money(Decimal(8) / Decimal(6))
 
 
-def test_production_count_is_zero_when_required_count_is_zero():
-    """A required count of 0 produces 0 sheets and rejects the cost report."""
-    run, printing, laminate, cut = build_worked_run(required_count=0)
+def test_print_run_rejects_a_required_count_of_zero():
+    """A required count of 0 is rejected because the run prints no press sheets."""
     message = "print_run: печатных листов 0, необходимое количество=0"
 
-    assert run.production_count() == 0
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
-        run.cost_report((printing, laminate, cut))
+        build_worked_run(required_count=0)

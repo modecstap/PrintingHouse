@@ -33,15 +33,21 @@ class Imposition:
     def count(self) -> int:
         """Returns how many target sheets fit on the press sheet.
 
-        :raises InvalidInput: if a cell side is zero. The cell side is
+        :raises InvalidInput: if a cell side is zero, or if the chosen
+        grid fits no positive number of target sheets. The cell side is
         the target side plus two bleeds.
 
-        :return: the product of the chosen grid axes, including zero and
-        a negative product. The straight grid is kept only when it fits
-        strictly more sheets than the turned grid.
+        :return: the product of the chosen grid axes. The straight grid
+        is kept only when it fits strictly more sheets than the turned grid.
         """
         count_x, count_y = self._axis_counts()
-        return count_x * count_y
+        item_count = count_x * count_y
+        if item_count <= 0:
+            raise InvalidInput(
+                "imposition",
+                f"на печатный лист влезает {item_count} целевых листов",
+            )
+        return item_count
 
     def cuts(self) -> int:
         """Returns the cut count for the same grid as count.

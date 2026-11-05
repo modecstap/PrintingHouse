@@ -3,13 +3,7 @@ from decimal import Decimal
 
 from backend.core.accountant.money import Money
 from backend.new_core.errors import InvalidInput
-
-
-@dataclass(frozen=True)
-class Paper:
-    density: int
-    name: str
-    price_per_kilo: Money
+from backend.new_core.paper import Paper
 
 
 @dataclass(frozen=True)
@@ -50,3 +44,17 @@ class Sheet:
             * Decimal(self.paper.density)
             / Decimal(1000)
         )
+
+    def thickness(self) -> Decimal:
+        """Returns the thickness of the sheet.
+
+        :return: the thickness of the sheet.
+        """
+        return Decimal(self.paper.density) / Decimal(1200)
+
+    def price(self) -> Money:
+        """Returns the price of one sheet.
+
+        :return: the paper price per kilo times the sheet mass.
+        """
+        return self.paper.price_per_kilo * self.mass_kg()

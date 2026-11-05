@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
 from backend.core.workplaces.printing.models import Chroma
-from backend.new_core.press_job import PressJob
+from backend.new_core import PrintRun
 
 # One sheet, in the order cyan, magenta, yellow, black.
 _INK_SHARES: dict[Chroma, tuple[int, int, int, int]] = {
@@ -36,17 +36,14 @@ class Print:
     chroma: Chroma
     printer: Printer
     operator: PressOperator
+    print_run: PrintRun
 
-    def material_price(self, job: PressJob) -> Money:
+    def material_price(self) -> Money:
         """Returns the paper and ink cost of one press sheet.
 
-        :param job: the press sheet whose mass is priced.
-        The sheet count is not used.
-
-        :return: the paper price per kilo times the sheet mass, plus each
-        ink rate times the share of this chroma for one sheet.
+        :return: the press sheet price, plus each ink rate times the share
+        of this chroma for one sheet.
         """
-        paper = job.press_sheet.paper.price_per_kilo * job.press_sheet.mass_kg()
         cyan_share, magenta_share, yellow_share, black_share = _INK_SHARES[
             self.chroma
         ]
@@ -56,12 +53,10 @@ class Print:
             + self.printer.yellow * yellow_share
             + self.printer.black * black_share
         )
-        return paper + ink
+        return self.print_run.imposition.press_sheet.price() + ink
 
-    def work_price(self, job: PressJob) -> Money:
+    def work_price(self) -> Money:
         """Returns the press operator salary for one press sheet.
-
-        :param job: present for the shared operation signature. It is not used.
 
         :return: the full salary when chroma is not ZERO_ZERO, otherwise zero.
         """
@@ -69,13 +64,10 @@ class Print:
             return Money.zero()
         return self.operator.salary_by_operation
 
-    def startup_price(self, job: PressJob) -> Money:
+    def startup_price(self) -> Money:
         """Returns the printer startup spread over the press sheets.
-
-        :param job: the run whose press sheet count divides the startup.
-        The count is already positive.
 
         :return: the printer startup divided by the press sheet count.
         A chroma of ZERO_ZERO still divides the startup.
         """
-        return self.printer.startup / job.press_sheet_count
+        return self.printer.startup / self.print_run.press_sheet_count()

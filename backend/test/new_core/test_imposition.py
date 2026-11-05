@@ -9,7 +9,7 @@ from backend.new_core import Imposition, InvalidInput, Paper, Sheet
 
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
-        paper=Paper(density=0, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(density=60, name="sheet", price_per_kilo=Money(Decimal(0))),
         height=height,
         width=width,
     )

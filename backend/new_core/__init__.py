@@ -1,14 +1,22 @@
-from backend.new_core.cutting import Cut, Cutter, CutterOperator
-from backend.new_core.die_cutting import DieCut, DieCutterOperator
 from backend.new_core.errors import InvalidInput
-from backend.new_core.imposition import Imposition
-from backend.new_core.lamination import Film, Laminate, Laminator, LaminatorOperator
-from backend.new_core.order import Block, Operation, Order, Product
-from backend.new_core.press_job import PressJob, RunOperation
-from backend.new_core.print_run import PrintRun
-from backend.new_core.printing import PressOperator, Print, Printer
-from backend.new_core.report import CostReport
+
 from backend.new_core.sheet import Paper, Sheet
+from backend.new_core.print_run.imposition import Imposition
+
+from backend.new_core.order.block import Block
+from backend.new_core.order.operation import Operation
+from backend.new_core.order.product import Product
+from backend.new_core.order.order import Order
+
+from backend.new_core.print_run.run_operation import RunOperation
+from backend.new_core.print_run.report import CostReport
+from backend.new_core.print_run.print_run import PrintRun
+
+from backend.new_core.operations.cutting import Cut, Cutter, CutterOperator
+from backend.new_core.operations.die_cutting import DieCut, DieCutterOperator
+from backend.new_core.operations.lamination import Film, Laminate, Laminator, LaminatorOperator
+from backend.new_core.operations.printing import PressOperator, Print, Printer
+
 
 __all__ = [
     "InvalidInput",
@@ -19,7 +27,6 @@ __all__ = [
     "Paper",
     "Sheet",
     "Imposition",
-    "PressJob",
     "RunOperation",
     "Printer",
     "PressOperator",
