@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 from typing import TYPE_CHECKING
 
@@ -23,24 +22,14 @@ if TYPE_CHECKING:
     from backend.new_core.operations.printing import PressOperator, Print, Printer
 
 
-@dataclass(frozen=True)
 class PrintRun:
-    id: int
-    block: Block
-    required_count: int
-    imposition: Imposition
+    def __init__(self, id: int, block: Block, required_count: int, imposition: Imposition) -> None:
+        self.id = id
+        self.block = block
+        self.required_count = required_count
+        self.imposition = imposition
+        self.operations :list[RunOperation] = []
 
-
-    def __post_init__(self) -> None:
-        """Rejects a run that prints no press sheets.
-
-        :raises InvalidInput: if required_count is below zero. A cell side
-        of zero, or a press sheet that fits no target sheets, is raised by
-        the imposition while the press sheet count is calculated. A required
-        count of zero raises the press sheet count error.
-
-        :return: nothing.
-        """
         if self.required_count < 0:
             raise InvalidInput(
                 "print_run",
@@ -53,10 +42,6 @@ class PrintRun:
                 "печатных листов 0, "
                 f"необходимое количество={self.required_count}",
             )
-
-        # Not a dataclass field: Print.print_run points at this run, and a
-        # field would cycle eq, hash, and repr.
-        object.__setattr__(self, "_operations", [])
 
     def production_count(self) -> int:
         """Returns how many target sheets the run produces.
@@ -84,18 +69,6 @@ class PrintRun:
         ).to_integral_value(rounding=ROUND_CEILING)
         return int(sheets)
 
-    def operations(self) -> tuple[RunOperation, ...]:
-        """Returns the operations this run's factories appended.
-
-        The order follows the factory calls, from the first to the last.
-        A new run returns an empty tuple. An operation built by its own
-        constructor is absent.
-
-        :return: the appended operations, from the first factory call to
-        the last.
-        """
-        return tuple(self._operations)
-
     def add_print(
         self,
         chroma: Chroma,
@@ -120,7 +93,7 @@ class PrintRun:
             operator=operator,
             print_run=self,
         )
-        self._operations.append(printing)
+        self.operations.append(printing)
         return printing
 
     def add_laminate(
@@ -148,7 +121,7 @@ class PrintRun:
             operator=operator,
             print_run=self,
         )
-        self._operations.append(laminate)
+        self.operations.append(laminate)
         return laminate
 
     def add_cut(self, cutter: Cutter, operator: CutterOperator) -> Cut:
@@ -162,7 +135,7 @@ class PrintRun:
         from backend.new_core.operations.cutting import Cut
 
         cut = Cut(cutter=cutter, operator=operator, print_run=self)
-        self._operations.append(cut)
+        self.operations.append(cut)
         return cut
 
     def add_die_cut(self, operator: DieCutterOperator) -> DieCut:
@@ -175,5 +148,5 @@ class PrintRun:
         from backend.new_core.operations.die_cutting import DieCut
 
         die_cut = DieCut(operator=operator)
-        self._operations.append(die_cut)
+        self.operations.append(die_cut)
         return die_cut

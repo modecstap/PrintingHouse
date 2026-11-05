@@ -22,7 +22,7 @@ class Accountant:
         material = Money.zero()
         startup = Money.zero()
         work = Money.zero()
-        for operation in run.operations():
+        for operation in run.operations:
             material += operation.material_price()
             startup += operation.startup_price()
             work += operation.work_price()

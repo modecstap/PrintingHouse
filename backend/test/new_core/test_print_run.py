@@ -214,7 +214,7 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
         operator=printing.operator,
     )
 
-    assert run.operations() == (printing, second)
+    assert run.operations == [printing, second]
     assert printing is not second
     report = Accountant().run_cost_report(run)
 
@@ -286,7 +286,7 @@ def test_cost_report_is_zero_without_operations():
         with_cut=False,
     )
 
-    assert run.operations() == ()
+    assert run.operations == []
     assert run.production_count() == 12
     report = Accountant().run_cost_report(run)
 
@@ -364,7 +364,7 @@ def test_factories_append_in_call_order():
     )
     die_cut = run.add_die_cut(operator=operator)
 
-    assert run.operations() == (printing, laminate, cut, die_cut)
+    assert run.operations == [printing, laminate, cut, die_cut]
     assert printing.print_run is run
     assert laminate.print_run is run
     assert cut.print_run is run
@@ -387,7 +387,7 @@ def test_constructor_print_stays_out_of_the_run():
         print_run=run,
     )
 
-    assert run.operations() == (printing,)
+    assert run.operations == [printing]
     report = Accountant().run_cost_report(run)
 
     assert report.press_sheet_material == Money(Decimal(10))
