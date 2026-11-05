@@ -1,13 +1,26 @@
-from collections.abc import Sequence
+from __future__ import annotations
+
 from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
+from typing import TYPE_CHECKING
 
-from backend.core.accountant.money import Money
 from backend.new_core import Block
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.print_run.run_operation import RunOperation
-from backend.new_core.print_run.report import CostReport
+
+if TYPE_CHECKING:
+    from backend.core.workplaces.lamination.models import Lamination
+    from backend.core.workplaces.printing.models import Chroma
+    from backend.new_core.operations.cutting import Cut, Cutter, CutterOperator
+    from backend.new_core.operations.die_cutting import DieCut, DieCutterOperator
+    from backend.new_core.operations.lamination import (
+        Film,
+        Laminate,
+        Laminator,
+        LaminatorOperator,
+    )
+    from backend.new_core.operations.printing import PressOperator, Print, Printer
 
 
 @dataclass(frozen=True)
@@ -41,6 +54,10 @@ class PrintRun:
                 f"необходимое количество={self.required_count}",
             )
 
+        # Not a dataclass field: Print.print_run points at this run, and a
+        # field would cycle eq, hash, and repr.
+        object.__setattr__(self, "_operations", [])
+
     def production_count(self) -> int:
         """Returns how many target sheets the run produces.
 
@@ -67,39 +84,96 @@ class PrintRun:
         ).to_integral_value(rounding=ROUND_CEILING)
         return int(sheets)
 
-    def cost_report(self, operations: Sequence[RunOperation]) -> CostReport:
-        """Returns the eight money fields of this run.
+    def operations(self) -> tuple[RunOperation, ...]:
+        """Returns the operations this run's factories appended.
 
-        :param operations: the run operations, in the order they are added.
-        An operation left out of this sequence adds nothing.
+        The order follows the factory calls, from the first to the last.
+        A new run returns an empty tuple. An operation built by its own
+        constructor is absent.
 
-        :return: the press-sheet material, startup, work, and their sum,
-        plus those three parts divided by the smaller of the grid count
-        and the required count. The target total is the sum of the three
-        target parts.
+        :return: the appended operations, from the first factory call to
+        the last.
         """
-        items_per_sheet = self.imposition.count()
+        return tuple(self._operations)
 
-        material = Money.zero()
-        startup = Money.zero()
-        work = Money.zero()
-        for operation in operations:
-            material += operation.material_price()
-            startup += operation.startup_price()
-            work += operation.work_price()
+    def add_print(
+        self,
+        chroma: Chroma,
+        printer: Printer,
+        operator: PressOperator,
+    ) -> Print:
+        """Appends a print to this run.
 
-        press_sheet_total = material + startup + work
-        divisor = min(items_per_sheet, self.required_count)
-        target_material = material / divisor
-        target_startup = startup / divisor
-        target_work = work / divisor
-        return CostReport(
-            target_material=target_material,
-            target_startup=target_startup,
-            target_work=target_work,
-            target_total=target_material + target_startup + target_work,
-            press_sheet_material=material,
-            press_sheet_startup=startup,
-            press_sheet_work=work,
-            press_sheet_total=press_sheet_total,
+        A second call appends a second print.
+
+        :param chroma: the ink layout of the print.
+        :param printer: the printer and its ink and startup prices.
+        :param operator: the press operator and the salary.
+
+        :return: the print already appended, whose print_run is this run.
+        """
+        from backend.new_core.operations.printing import Print
+
+        printing = Print(
+            chroma=chroma,
+            printer=printer,
+            operator=operator,
+            print_run=self,
         )
+        self._operations.append(printing)
+        return printing
+
+    def add_laminate(
+        self,
+        lamination: Lamination,
+        laminator: Laminator,
+        film: Film,
+        operator: LaminatorOperator,
+    ) -> Laminate:
+        """Appends a lamination to this run.
+
+        :param lamination: which film sides to apply.
+        :param laminator: the laminator and its startup price.
+        :param film: the film and its price.
+        :param operator: the laminator operator and the salary.
+
+        :return: the lamination already appended, whose print_run is this run.
+        """
+        from backend.new_core.operations.lamination import Laminate
+
+        laminate = Laminate(
+            lamination=lamination,
+            laminator=laminator,
+            film=film,
+            operator=operator,
+            print_run=self,
+        )
+        self._operations.append(laminate)
+        return laminate
+
+    def add_cut(self, cutter: Cutter, operator: CutterOperator) -> Cut:
+        """Appends a cut to this run.
+
+        :param cutter: the cutter and its stack height.
+        :param operator: the cutter operator and the salary.
+
+        :return: the cut already appended, whose print_run is this run.
+        """
+        from backend.new_core.operations.cutting import Cut
+
+        cut = Cut(cutter=cutter, operator=operator, print_run=self)
+        self._operations.append(cut)
+        return cut
+
+    def add_die_cut(self, operator: DieCutterOperator) -> DieCut:
+        """Appends a die cut to this run.
+
+        :param operator: the die cutter operator and the salary.
+
+        :return: the die cut already appended. It has no print_run field.
+        """
+        from backend.new_core.operations.die_cutting import DieCut
+
+        die_cut = DieCut(operator=operator)
+        self._operations.append(die_cut)
+        return die_cut

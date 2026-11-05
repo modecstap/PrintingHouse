@@ -11,6 +11,7 @@ from backend.new_core.order.order import Order
 from backend.new_core.print_run.run_operation import RunOperation
 from backend.new_core.print_run.report import CostReport
 from backend.new_core.print_run.print_run import PrintRun
+from backend.new_core.accountant.service import Accountant
 
 from backend.new_core.operations.cutting import Cut, Cutter, CutterOperator
 from backend.new_core.operations.die_cutting import DieCut, DieCutterOperator
@@ -42,4 +43,5 @@ __all__ = [
     "Cut",
     "PrintRun",
     "CostReport",
+    "Accountant",
 ]
