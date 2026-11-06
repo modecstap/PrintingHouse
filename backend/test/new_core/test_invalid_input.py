@@ -1,3 +1,5 @@
+"""Constructors reject a measure that is below its allowed minimum."""
+
 import re
 from decimal import Decimal
 
@@ -15,6 +17,7 @@ from backend.new_core import (
     LaminationSpecification,
     Order,
     Paper,
+    Percent,
     PrintRun,
     Product,
     Sheet,
@@ -39,6 +42,7 @@ def _block(count: int) -> Block:
     return Block(
         sheet=_sheet(1, 1),
         count=count,
+        markup=Percent(0),
         chroma=Chroma.ZERO_ZERO,
         lamination=LaminationSpecification(
             lamination=Lamination.DONT,
@@ -72,6 +76,7 @@ def test_imposition_rejects_count_when_nothing_fits():
         message,
         lambda: PrintRun(
             id=1,
+            for_order=0,
             block=_block(0),
             required_count=10,
             imposition=imposition,
@@ -174,6 +179,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "print_run: необходимое количество меньше 0, количество=-1",
             lambda: PrintRun(
                 id=1,
+                for_order=1,
                 block=_block(0),
                 required_count=-1,
                 imposition=Imposition(

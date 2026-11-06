@@ -1,8 +1,11 @@
+"""One press run for a block, and the operations appended to it."""
+
 from __future__ import annotations
 
 from decimal import ROUND_CEILING, Decimal
 
-from backend.new_core import Block
+from backend.new_core.accountant.percent import Percent
+from backend.new_core.order.block import Block
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.operations.cutting import Cut, Cutter, CutterOperator
@@ -21,10 +24,23 @@ from backend.new_core.operations.printing import (
 from backend.new_core.operations.run_operation import RunOperation
 
 
+_WASTE_ALLOWANCE = Percent(3)
+
+
 class PrintRun:
-    def __init__(self, id: int, block: Block, required_count: int, imposition: Imposition) -> None:
+    """A run that prints one block and records the operations it uses."""
+
+    def __init__(
+            self,
+            id: int,  # pylint: disable=redefined-builtin
+            for_order: int,
+            block: Block,
+            required_count: int,
+            imposition: Imposition,
+    ) -> None:
         self.id = id
         self.block = block
+        self.for_order = for_order
         self.required_count = required_count
         self.imposition = imposition
         self.operations: list[RunOperation] = []
@@ -55,15 +71,13 @@ class PrintRun:
         :raises InvalidInput: if a cell side is zero, or if the press sheet
         fits no positive number of target sheets.
 
-        :return: required_count times 103/100, divided by the number of
-        target sheets on one press sheet, rounded up to an integer.
+        :return: required_count times a 3 percent waste allowance, divided
+        by the number of target sheets on one press sheet, rounded up
+        to an integer.
         """
         sheets = (
                 Decimal(self.required_count)
-                # TODO выделить проценты
-                * Decimal(103)
-                / Decimal(100)
-                # ----------------------
+                * _WASTE_ALLOWANCE.factor()
                 / Decimal(self.imposition.count())
         ).to_integral_value(rounding=ROUND_CEILING)
         return int(sheets)

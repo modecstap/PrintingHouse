@@ -1,5 +1,5 @@
-from backend.new_core.accountant.accountant import Accountant
-from backend.new_core.accountant.report import CostReport
+"""Types for a print order: sheets, runs, operations, and prices."""
+
 from backend.new_core.errors import InvalidInput
 
 from backend.new_core.sheet import Paper, Sheet
@@ -29,6 +29,11 @@ from backend.new_core.order.order import Order
 
 from backend.new_core.print_run.print_run import PrintRun
 
+from backend.new_core.accountant.accountant import Accountant
+from backend.new_core.accountant.cost_report import CostReport
+from backend.new_core.accountant.order_report import OrderReport
+from backend.new_core.accountant.percent import Percent
+
 
 __all__ = [
     "InvalidInput",
@@ -56,5 +61,7 @@ __all__ = [
     "Cut",
     "PrintRun",
     "CostReport",
+    "OrderReport",
+    "Percent",
     "Accountant",
 ]

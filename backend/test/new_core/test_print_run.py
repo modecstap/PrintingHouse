@@ -1,3 +1,5 @@
+"""A print run prices its operations, markup, and the order around them."""
+
 import re
 from decimal import Decimal
 
@@ -23,6 +25,7 @@ from backend.new_core import (
     AdditionalWork,
     Order,
     Paper,
+    Percent,
     PressOperator,
     Print,
     PrintRun,
@@ -32,7 +35,7 @@ from backend.new_core import (
 )
 
 
-def build_worked_run(
+def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     *,
     target_width: int = 100,
     target_height: int = 100,
@@ -49,6 +52,7 @@ def build_worked_run(
     with_print: bool = True,
     with_laminate: bool = True,
     with_cut: bool = True,
+    markup: Percent = Percent(0),
 ) -> tuple[PrintRun, Print | None, Laminate | None, Cut | None]:
     """Assembles one run and the operations the flags allow. It does not price them.
 
@@ -56,9 +60,10 @@ def build_worked_run(
     skips that factory and returns None in its place. Chroma and
     lamination are stored on the block. die_cutting is false.
 
-    The block sheet costs 999, the target sheet costs 9999, the block count
-    is 3, the order count is 4, and assembly costs 999. Those values stay
-    out of the report.
+    The block sheet costs 999, the target sheet costs 9999, the order count
+    is 4, and assembly costs 999. Those values stay out of the sheet report.
+    The block count is 3 and scales only block_cost_report. Block markup
+    defaults to 0. Two press sheets add a 30 percent volume markup.
     """
     block = Block(
         sheet=Sheet(
@@ -67,6 +72,7 @@ def build_worked_run(
             width=1,
         ),
         count=3,
+        markup=markup,
         chroma=chroma,
         lamination=LaminationSpecification(
             lamination=lamination,
@@ -83,6 +89,7 @@ def build_worked_run(
                     name="сборка",
                     price=Money(Decimal(999)),
                     description="склейка",
+                    markup=Percent(0),
                 ),
             ),
         ),
@@ -91,6 +98,7 @@ def build_worked_run(
     run = PrintRun(
         id=1,
         block=block,
+        for_order=1,
         required_count=required_count,
         imposition=Imposition(
             target=Sheet(
@@ -159,68 +167,78 @@ def build_worked_run(
 
 
 def test_cost_report_prices_the_worked_run():
-    """Print, laminate, and cut price the press sheet at 13, 16, 44, and 73.
+    """Print, laminate, and cut price the press sheet at 13, 16, 44, and 21.9.
 
-    The run prints 2 press sheets, so the run report is 26, 32, 88, and 146.
-    Each target field is the press amount divided by 6.
+    Two press sheets add 30 percent of 73, so the sheet total is 94.9.
+    Each target field is the press amount divided by 6. The block has 3
+    sheets, so the block report is the target report times 3.
     """
     run, _, _, _ = build_worked_run()
 
     assert run.production_count() == 12
     assert run.press_sheet_count() == 2
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
-    per_item = accountant.list_report(
-        run.operations,
-        run.press_sheet_count(),
-        run.imposition.count(),
-    )
-    report = accountant.run_cost_report(run)
+    sheet = accountant.sheet_cost_report(run)
+    per_item = accountant.list_report(run)
+    report = accountant.block_cost_report(run)
 
     assert sheet.material == Money(Decimal(13))
     assert sheet.startup == Money(Decimal(16))
     assert sheet.work == Money(Decimal(44))
-    assert sheet.total() == Money(Decimal(73))
+    assert sheet.markup == Money(Decimal("21.9"))
+    assert sheet.total() == Money(Decimal("94.9"))
     assert per_item.material == Money(Decimal(13) / Decimal(6))
     assert per_item.startup == Money(Decimal(16) / Decimal(6))
     assert per_item.work == Money(Decimal(44) / Decimal(6))
-    assert per_item.total() == Money(Decimal(73) / Decimal(6))
-    assert per_item.material + per_item.startup + per_item.work == per_item.total()
-    assert report.material == Money(Decimal(26))
-    assert report.startup == Money(Decimal(32))
-    assert report.work == Money(Decimal(88))
-    assert report.total() == Money(Decimal(146))
+    assert per_item.markup == Money(Decimal("21.9") / Decimal(6))
+    assert per_item.total() == Money(Decimal("94.9") / Decimal(6))
+    assert (
+        per_item.material + per_item.startup + per_item.work + per_item.markup
+        == per_item.total()
+    )
+    assert report.material == Money(Decimal(13) / Decimal(6) * 3)
+    assert report.startup == Money(Decimal(16) / Decimal(6) * 3)
+    assert report.work == Money(Decimal(44) / Decimal(6) * 3)
+    assert report.markup == Money(Decimal("21.9") / Decimal(6) * 3)
+    assert report.total() == (
+        report.material + report.startup + report.work + report.markup
+    )
 
 
 def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
     """ZERO_ZERO keeps paper and printer startup, and drops ink and press salary.
 
-    The press sheet is 9, 16, 39, and 64.
+    The press sheet is 9, 16, 39, and 19.2. The total is 83.2.
     """
     run, _, _, _ = build_worked_run(chroma=Chroma.ZERO_ZERO)
 
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(9))
     assert sheet.startup == Money(Decimal(16))
     assert sheet.work == Money(Decimal(39))
-    assert sheet.total() == Money(Decimal(64))
+    assert sheet.markup == Money(Decimal("19.2"))
+    assert sheet.total() == Money(Decimal("83.2"))
 
 
 def test_cost_report_omits_lamination_when_it_is_not_passed():
-    """Print and cut, without calling the laminate factory, price the press sheet at 10, 11, 40, and 61."""
+    """Print and cut, without calling the laminate factory, price the press sheet.
+
+    The press sheet is 10, 11, 40, and 18.3.
+    """
     run, _, _, _ = build_worked_run(with_laminate=False)
 
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
     assert sheet.work == Money(Decimal(40))
-    assert sheet.total() == Money(Decimal(61))
+    assert sheet.markup == Money(Decimal("18.3"))
+    assert sheet.total() == Money(Decimal("79.3"))
 
 
 def test_cost_report_adds_paper_and_ink_for_a_second_print():
-    """Two FOUR_ZERO prints and nothing else price the press sheet at 20, 22, 10, and 52."""
+    """Two FOUR_ZERO prints and nothing else price the press sheet at 20, 22, 10, and 15.6."""
     run, printing, _, _ = build_worked_run(with_laminate=False, with_cut=False)
     second = run.print(
         printer=printing.printer,
@@ -229,12 +247,13 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
 
     assert run.operations == [printing, second]
     assert printing is not second
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(20))
     assert sheet.startup == Money(Decimal(22))
     assert sheet.work == Money(Decimal(10))
-    assert sheet.total() == Money(Decimal(52))
+    assert sheet.markup == Money(Decimal("15.6"))
+    assert sheet.total() == Money(Decimal("67.6"))
 
 
 @pytest.mark.parametrize(
@@ -262,15 +281,15 @@ def test_press_sheet_material_equals_the_chroma_shares(
         with_cut=False,
     )
 
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(material))
 
 
-def test_cost_report_divides_the_target_by_the_smaller_count():
-    """Three required sheets divide one target by 3. The run prints one press sheet.
+def test_list_report_divides_by_the_imposition_count():
+    """One press sheet is divided by the 6 targets on it, then times 3 block sheets.
 
-    The press sheet is 10, 10, 5, and 25, and the run report matches it.
+    The press sheet is 10, 10, 5, and 7.5. The sheet total is 32.5.
     """
     run, _, _, _ = build_worked_run(
         required_count=3,
@@ -280,27 +299,27 @@ def test_cost_report_divides_the_target_by_the_smaller_count():
     )
 
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
-    per_item = accountant.list_report(
-        run.operations,
-        run.press_sheet_count(),
-        run.required_count,
-    )
-    report = accountant.run_cost_report(run)
+    sheet = accountant.sheet_cost_report(run)
+    per_item = accountant.list_report(run)
+    report = accountant.block_cost_report(run)
 
     assert run.press_sheet_count() == 1
+    assert run.imposition.count() == 6
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(10))
     assert sheet.work == Money(Decimal(5))
-    assert sheet.total() == Money(Decimal(25))
-    assert per_item.material == Money(Decimal(10) / Decimal(3))
-    assert per_item.startup == Money(Decimal(10) / Decimal(3))
-    assert per_item.work == Money(Decimal(5) / Decimal(3))
-    assert per_item.total() == Money(Decimal(25) / Decimal(3))
-    assert report.material == Money(Decimal(10))
-    assert report.startup == Money(Decimal(10))
-    assert report.work == Money(Decimal(5))
-    assert report.total() == Money(Decimal(25))
+    assert sheet.markup == Money(Decimal("7.5"))
+    assert sheet.total() == Money(Decimal("32.5"))
+    assert per_item.material == Money(Decimal(10) / Decimal(6))
+    assert per_item.startup == Money(Decimal(10) / Decimal(6))
+    assert per_item.work == Money(Decimal(5) / Decimal(6))
+    assert per_item.markup == Money(Decimal("7.5") / Decimal(6))
+    assert per_item.total() == Money(Decimal("32.5") / Decimal(6))
+    assert report.material == Money(Decimal(10) / Decimal(6) * 3)
+    assert report.startup == Money(Decimal(10) / Decimal(6) * 3)
+    assert report.work == Money(Decimal(5) / Decimal(6) * 3)
+    assert report.markup == Money(Decimal("7.5") / Decimal(6) * 3)
+    assert report.total() == Money(Decimal("32.5") / Decimal(6) * 3)
 
 
 def test_cost_report_is_zero_without_operations():
@@ -311,26 +330,28 @@ def test_cost_report_is_zero_without_operations():
         with_cut=False,
     )
 
-    assert run.operations == []
+    assert not run.operations
     assert run.production_count() == 12
-    report = Accountant().run_cost_report(run)
+    report = Accountant().block_cost_report(run)
 
     assert report.material == Money.zero()
     assert report.startup == Money.zero()
     assert report.work == Money.zero()
+    assert report.markup == Money.zero()
     assert report.total() == Money.zero()
 
 
 def test_cost_report_is_zero_for_lamination_with_no_sides():
-    """Lamination DONT leaves the press sheet at 10, 11, 40, and 61."""
+    """Lamination DONT leaves the press sheet at 10, 11, 40, and 18.3."""
     run, _, _, _ = build_worked_run(lamination=Lamination.DONT)
 
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
     assert sheet.work == Money(Decimal(40))
-    assert sheet.total() == Money(Decimal(61))
+    assert sheet.markup == Money(Decimal("18.3"))
+    assert sheet.total() == Money(Decimal("79.3"))
 
 
 def test_cost_report_prices_two_film_sides_once_for_salary():
@@ -341,12 +362,13 @@ def test_cost_report_prices_two_film_sides_once_for_salary():
         with_cut=False,
     )
 
-    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    sheet = Accountant.sheet_cost_report(run)
 
     assert sheet.material == Money(Decimal(6))
     assert sheet.startup == Money(Decimal(5))
     assert sheet.work == Money(Decimal(4))
-    assert sheet.total() == Money(Decimal(15))
+    assert sheet.markup == Money(Decimal("4.5"))
+    assert sheet.total() == Money(Decimal("19.5"))
 
 
 def test_cost_report_adds_the_die_cutter_salary_once():
@@ -364,17 +386,14 @@ def test_cost_report_adds_the_die_cutter_salary_once():
     )
 
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
-    per_item = accountant.list_report(
-        run.operations,
-        run.press_sheet_count(),
-        run.imposition.count(),
-    )
+    sheet = accountant.sheet_cost_report(run)
+    per_item = accountant.list_report(run)
 
     assert sheet.material == Money(Decimal(0))
     assert sheet.startup == Money(Decimal(0))
     assert sheet.work == Money(Decimal(8))
-    assert sheet.total() == Money(Decimal(8))
+    assert sheet.markup == Money(Decimal("2.4"))
+    assert sheet.total() == Money(Decimal("10.4"))
     assert per_item.work == Money(Decimal(8) / Decimal(6))
 
 
@@ -404,9 +423,9 @@ def test_factories_append_in_call_order():
 def test_constructor_print_stays_out_of_the_run():
     """A Print built by its constructor stays out of the run.
 
-    One factory print prices the press sheet at 10, 11, 5, and 26.
+    One factory print prices the press sheet at 10, 11, 5, and 7.8.
     Each target field is that amount divided by 6, and the target total
-    is the sum of the three target parts.
+    is the sum of the four target parts.
     """
     run, printing, _, _ = build_worked_run(with_laminate=False, with_cut=False)
     Print(
@@ -417,21 +436,104 @@ def test_constructor_print_stays_out_of_the_run():
 
     assert run.operations == [printing]
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
-    per_item = accountant.list_report(
-        run.operations,
-        run.press_sheet_count(),
-        run.imposition.count(),
-    )
+    sheet = accountant.sheet_cost_report(run)
+    per_item = accountant.list_report(run)
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
     assert sheet.work == Money(Decimal(5))
-    assert sheet.total() == Money(Decimal(26))
+    assert sheet.markup == Money(Decimal("7.8"))
+    assert sheet.total() == Money(Decimal("33.8"))
     assert per_item.material == Money(Decimal(10) / Decimal(6))
     assert per_item.startup == Money(Decimal(11) / Decimal(6))
     assert per_item.work == Money(Decimal(5) / Decimal(6))
-    assert per_item.total() == per_item.material + per_item.startup + per_item.work
+    assert per_item.markup == Money(Decimal("7.8") / Decimal(6))
+    assert (
+        per_item.total()
+        == per_item.material + per_item.startup + per_item.work + per_item.markup
+    )
+
+
+def test_sheet_cost_report_adds_block_markup_to_volume_markup():
+    """A 10 percent block markup and a 30 percent volume markup both use the base 73.
+
+    The markups are 7.3 and 21.9. The second does not scale the first.
+    """
+    run, _, _, _ = build_worked_run(markup=Percent(10))
+
+    sheet = Accountant.sheet_cost_report(run)
+
+    assert sheet.markup == Money(Decimal("29.2"))
+    assert sheet.total() == Money(Decimal("102.2"))
+
+
+def test_sheet_cost_report_uses_the_15_percent_volume_band():
+    """Five press sheets add 15 percent of the ink, not 30."""
+    run, _, _, _ = build_worked_run(
+        required_count=24,
+        chroma=Chroma.FOUR_ZERO,
+        press_price=0,
+        printer_startup=0,
+        press_salary=0,
+        with_laminate=False,
+        with_cut=False,
+    )
+
+    sheet = Accountant.sheet_cost_report(run)
+
+    assert run.press_sheet_count() == 5
+    assert sheet.material == Money(Decimal(4))
+    assert sheet.markup == Money(Decimal("0.6"))
+    assert sheet.total() == Money(Decimal("4.6"))
+
+
+def test_order_report_scales_the_product_by_tax_and_the_order_count():
+    """Work of 100 with 10 percent markup is 110, then times 100/93, then times 4.
+
+    The run has no operations, so its block report is zero. Income equals
+    the order price because material and startup stay zero.
+    """
+    run, _, _, _ = build_worked_run(
+        with_print=False,
+        with_laminate=False,
+        with_cut=False,
+    )
+    order = Order(
+        id=1,
+        product=Product(
+            blocks=(run.block,),
+            operations=(
+                AdditionalWork(
+                    name="сборка",
+                    price=Money(Decimal(100)),
+                    description="склейка",
+                    markup=Percent(10),
+                ),
+            ),
+        ),
+        count=4,
+    )
+
+    accountant = Accountant()
+    priced = accountant.order_cost_report(
+        [run],
+        order.product.operations,
+        order,
+    )
+    report = accountant.order_report(order, [run])
+
+    compensation = Decimal(100) / Decimal(93)
+    assert priced.work == Money(Decimal(400))
+    assert priced.markup == Money(Decimal(40))
+    assert priced.total() == Money(Decimal(440))
+    assert report.product_price == (
+        Money(Decimal(100) * compensation) + Money(Decimal(10) * compensation)
+    )
+    assert report.order_price == (
+        Money(Decimal(400) * compensation) + Money(Decimal(40) * compensation)
+    )
+    assert report.income == report.order_price
+    assert report.impositions == (6,)
 
 
 def test_print_run_has_no_cost_report():

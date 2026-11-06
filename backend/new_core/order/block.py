@@ -1,14 +1,21 @@
+"""One printed part of a product: its sheet, count, and finishing."""
+
 from dataclasses import dataclass
 
 from backend.core.workplaces.printing.models import Chroma
-from backend.new_core import InvalidInput, Sheet
+from backend.new_core.accountant.percent import Percent
+from backend.new_core.errors import InvalidInput
+from backend.new_core.sheet import Sheet
 from backend.new_core.operations.lamination import LaminationSpecification
 
 
 @dataclass(frozen=True)
 class Block:
+    """The sheet, the copy count, the markup, and the finishing of one part."""
+
     sheet: Sheet
     count: int
+    markup: Percent
 
     chroma: Chroma
     lamination: LaminationSpecification
