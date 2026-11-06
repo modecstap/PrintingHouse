@@ -4,11 +4,15 @@ from decimal import Decimal
 import pytest
 
 from backend.core.accountant.money import Money
+from backend.core.workplaces.lamination.models import Lamination
+from backend.core.workplaces.printing.models import Chroma
 from backend.new_core import (
     Block,
     Cutter,
+    Film,
     Imposition,
     InvalidInput,
+    LaminationSpecification,
     Order,
     Paper,
     PrintRun,
@@ -28,6 +32,19 @@ def _sheet(width: int, height: int) -> Sheet:
         paper=Paper(density=60, name="sheet", price_per_kilo=Money(Decimal(0))),
         height=height,
         width=width,
+    )
+
+
+def _block(count: int) -> Block:
+    return Block(
+        sheet=_sheet(1, 1),
+        count=count,
+        chroma=Chroma.ZERO_ZERO,
+        lamination=LaminationSpecification(
+            lamination=Lamination.DONT,
+            film=Film(name="film", price=Money(Decimal(0)), density=1),
+        ),
+        die_cutting=False,
     )
 
 
@@ -55,7 +72,7 @@ def test_imposition_rejects_count_when_nothing_fits():
         message,
         lambda: PrintRun(
             id=1,
-            block=Block(sheet=_sheet(1, 1), count=0),
+            block=_block(0),
             required_count=10,
             imposition=imposition,
         ),
@@ -150,14 +167,14 @@ def test_cutter_rejects_a_stack_height_of_zero():
         ),
         pytest.param(
             "block: количество меньше 0, количество=-1",
-            lambda: Block(sheet=_sheet(1, 1), count=-1),
+            lambda: _block(-1),
             id="block count",
         ),
         pytest.param(
             "print_run: необходимое количество меньше 0, количество=-1",
             lambda: PrintRun(
                 id=1,
-                block=Block(sheet=_sheet(1, 1), count=0),
+                block=_block(0),
                 required_count=-1,
                 imposition=Imposition(
                     target=_sheet(100, 100),

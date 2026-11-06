@@ -19,6 +19,7 @@ from backend.new_core import (
     Laminate,
     Laminator,
     LaminatorOperator,
+    LaminationSpecification,
     AdditionalWork,
     Order,
     Paper,
@@ -52,7 +53,8 @@ def build_worked_run(
     """Assembles one run and the operations the flags allow. It does not price them.
 
     with_print, with_laminate, and with_cut default to True. A False flag
-    skips that factory and returns None in its place.
+    skips that factory and returns None in its place. Chroma and
+    lamination are stored on the block. die_cutting is false.
 
     The block sheet costs 999, the target sheet costs 9999, the block count
     is 3, the order count is 4, and assembly costs 999. Those values stay
@@ -65,6 +67,12 @@ def build_worked_run(
             width=1,
         ),
         count=3,
+        chroma=chroma,
+        lamination=LaminationSpecification(
+            lamination=lamination,
+            film=Film(name="film", price=Money(Decimal(3)), density=77),
+        ),
+        die_cutting=False,
     )
     Order(
         id=1,
@@ -108,8 +116,7 @@ def build_worked_run(
         ),
     )
     printing = (
-        run.add_print(
-            chroma=chroma,
+        run.print(
             printer=Printer(
                 id=1,
                 startup=Money(Decimal(printer_startup)),
@@ -127,10 +134,8 @@ def build_worked_run(
         else None
     )
     laminate = (
-        run.add_laminate(
-            lamination=lamination,
+        run.laminate(
             laminator=Laminator(id=1, startup=Money(Decimal(10))),
-            film=Film(name="film", price=Money(Decimal(3)), density=77),
             operator=LaminatorOperator(
                 id=1,
                 salary_by_operation=Money(Decimal(4)),
@@ -140,7 +145,7 @@ def build_worked_run(
         else None
     )
     cut = (
-        run.add_cut(
+        run.cut(
             cutter=Cutter(id=1, max_stack=max_stack),
             operator=CutterOperator(
                 id=1,
@@ -164,8 +169,12 @@ def test_cost_report_prices_the_worked_run():
     assert run.production_count() == 12
     assert run.press_sheet_count() == 2
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations)
-    per_item = accountant.list_report(run.operations, run.imposition.count())
+    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    per_item = accountant.list_report(
+        run.operations,
+        run.press_sheet_count(),
+        run.imposition.count(),
+    )
     report = accountant.run_cost_report(run)
 
     assert sheet.material == Money(Decimal(13))
@@ -190,7 +199,7 @@ def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
     """
     run, _, _, _ = build_worked_run(chroma=Chroma.ZERO_ZERO)
 
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(9))
     assert sheet.startup == Money(Decimal(16))
@@ -202,7 +211,7 @@ def test_cost_report_omits_lamination_when_it_is_not_passed():
     """Print and cut, without calling the laminate factory, price the press sheet at 10, 11, 40, and 61."""
     run, _, _, _ = build_worked_run(with_laminate=False)
 
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
@@ -213,15 +222,14 @@ def test_cost_report_omits_lamination_when_it_is_not_passed():
 def test_cost_report_adds_paper_and_ink_for_a_second_print():
     """Two FOUR_ZERO prints and nothing else price the press sheet at 20, 22, 10, and 52."""
     run, printing, _, _ = build_worked_run(with_laminate=False, with_cut=False)
-    second = run.add_print(
-        chroma=printing.chroma,
+    second = run.print(
         printer=printing.printer,
         operator=printing.operator,
     )
 
     assert run.operations == [printing, second]
     assert printing is not second
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(20))
     assert sheet.startup == Money(Decimal(22))
@@ -254,7 +262,7 @@ def test_press_sheet_material_equals_the_chroma_shares(
         with_cut=False,
     )
 
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(material))
 
@@ -272,8 +280,12 @@ def test_cost_report_divides_the_target_by_the_smaller_count():
     )
 
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations)
-    per_item = accountant.list_report(run.operations, run.required_count)
+    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    per_item = accountant.list_report(
+        run.operations,
+        run.press_sheet_count(),
+        run.required_count,
+    )
     report = accountant.run_cost_report(run)
 
     assert run.press_sheet_count() == 1
@@ -313,7 +325,7 @@ def test_cost_report_is_zero_for_lamination_with_no_sides():
     """Lamination DONT leaves the press sheet at 10, 11, 40, and 61."""
     run, _, _, _ = build_worked_run(lamination=Lamination.DONT)
 
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
@@ -329,7 +341,7 @@ def test_cost_report_prices_two_film_sides_once_for_salary():
         with_cut=False,
     )
 
-    sheet = Accountant.sheet_cost_report(run.operations)
+    sheet = Accountant.sheet_cost_report(run.operations, run.press_sheet_count())
 
     assert sheet.material == Money(Decimal(6))
     assert sheet.startup == Money(Decimal(5))
@@ -344,7 +356,7 @@ def test_cost_report_adds_the_die_cutter_salary_once():
         with_laminate=False,
         with_cut=False,
     )
-    run.add_die_cut(
+    run.die_cut(
         operator=DieCutterOperator(
             id=1,
             salary_by_operation=Money(Decimal(8)),
@@ -352,8 +364,12 @@ def test_cost_report_adds_the_die_cutter_salary_once():
     )
 
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations)
-    per_item = accountant.list_report(run.operations, run.imposition.count())
+    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    per_item = accountant.list_report(
+        run.operations,
+        run.press_sheet_count(),
+        run.imposition.count(),
+    )
 
     assert sheet.material == Money(Decimal(0))
     assert sheet.startup == Money(Decimal(0))
@@ -365,21 +381,23 @@ def test_cost_report_adds_the_die_cutter_salary_once():
 def test_factories_append_in_call_order():
     """Factories append print, laminate, cut, then die cut, in call order.
 
-    Print, laminate, and cut point back at the run. The die cut has no
-    print_run and keeps the operator that was passed.
+    Print keeps the block chroma and the press sheet. Laminate keeps the
+    block lamination. Cut keeps the imposition and the press sheet count.
+    The die cut keeps the operator that was passed.
     """
     run, printing, laminate, cut = build_worked_run()
     operator = DieCutterOperator(
         id=1,
         salary_by_operation=Money(Decimal(8)),
     )
-    die_cut = run.add_die_cut(operator=operator)
+    die_cut = run.die_cut(operator=operator)
 
     assert run.operations == [printing, laminate, cut, die_cut]
-    assert printing.print_run is run
-    assert laminate.print_run is run
-    assert cut.print_run is run
-    assert not hasattr(die_cut, "print_run")
+    assert printing.spec.chroma is run.block.chroma
+    assert printing.spec.paper is run.imposition.press_sheet
+    assert laminate.spec is run.block.lamination
+    assert cut.imposition is run.imposition
+    assert cut.sheet_count == run.press_sheet_count()
     assert die_cut.operator is operator
 
 
@@ -392,16 +410,19 @@ def test_constructor_print_stays_out_of_the_run():
     """
     run, printing, _, _ = build_worked_run(with_laminate=False, with_cut=False)
     Print(
-        chroma=printing.chroma,
+        spec=printing.spec,
         printer=printing.printer,
         operator=printing.operator,
-        print_run=run,
     )
 
     assert run.operations == [printing]
     accountant = Accountant()
-    sheet = accountant.sheet_cost_report(run.operations)
-    per_item = accountant.list_report(run.operations, run.imposition.count())
+    sheet = accountant.sheet_cost_report(run.operations, run.press_sheet_count())
+    per_item = accountant.list_report(
+        run.operations,
+        run.press_sheet_count(),
+        run.imposition.count(),
+    )
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))

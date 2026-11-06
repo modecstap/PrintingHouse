@@ -21,8 +21,9 @@ class RunOperation(Protocol):
         ...
 
     def startup_price(self) -> Money:
-        """Returns the startup cost of one press sheet.
+        """Returns the startup cost of the operation.
 
-        :return: the startup money for one press sheet.
+        :return: the startup money for the whole operation.
+        The press sheet count does not divide it.
         """
         ...

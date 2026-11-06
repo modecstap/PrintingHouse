@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
 from backend.core.workplaces.printing.models import Chroma
-from backend.new_core import PrintRun
+from backend.new_core.sheet import Sheet
 
 # One sheet, in the order cyan, magenta, yellow, black.
 _INK_SHARES: dict[Chroma, tuple[int, int, int, int]] = {
@@ -32,11 +32,24 @@ class PressOperator:
 
 
 @dataclass(frozen=True)
-class Print:
+class PrintSpecification:
     chroma: Chroma
+    paper: Sheet
+
+    def paper_price(self) -> Money:
+        """Returns the price of the press sheet paper.
+
+        :return: the price of one sheet of this paper.
+        """
+        return self.paper.price()
+
+
+@dataclass(frozen=True)
+class Print:
+    spec: PrintSpecification
+
     printer: Printer
     operator: PressOperator
-    print_run: PrintRun
 
     def material_price(self) -> Money:
         """Returns the paper and ink cost of one press sheet.
@@ -45,7 +58,7 @@ class Print:
         of this chroma for one sheet.
         """
         cyan_share, magenta_share, yellow_share, black_share = _INK_SHARES[
-            self.chroma
+            self.spec.chroma
         ]
         ink = (
             self.printer.cyan * cyan_share
@@ -53,21 +66,21 @@ class Print:
             + self.printer.yellow * yellow_share
             + self.printer.black * black_share
         )
-        return self.print_run.imposition.press_sheet.price() + ink
+        return self.spec.paper_price() + ink
 
     def work_price(self) -> Money:
         """Returns the press operator salary for one press sheet.
 
         :return: the full salary when chroma is not ZERO_ZERO, otherwise zero.
         """
-        if self.chroma is Chroma.ZERO_ZERO:
+        if self.spec.chroma is Chroma.ZERO_ZERO:
             return Money.zero()
         return self.operator.salary_by_operation
 
     def startup_price(self) -> Money:
-        """Returns the printer startup spread over the press sheets.
+        """Returns the printer startup for the operation.
 
-        :return: the printer startup divided by the press sheet count.
-        A chroma of ZERO_ZERO still divides the startup.
+        :return: the printer startup. A chroma of ZERO_ZERO still returns
+        the startup. The press sheet count does not divide it.
         """
-        return self.printer.startup / self.print_run.press_sheet_count()
+        return self.printer.startup

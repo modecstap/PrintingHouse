@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 
 from backend.core.accountant.money import Money
-from backend.new_core import PrintRun
+from backend.new_core import Imposition
 from backend.new_core.errors import InvalidInput
 
 
@@ -41,7 +41,8 @@ class CutterOperator:
 class Cut:
     cutter: Cutter
     operator: CutterOperator
-    print_run: PrintRun
+    imposition: Imposition
+    sheet_count: int
 
     @staticmethod
     def material_price() -> Money:
@@ -61,13 +62,13 @@ class Cut:
         """
         stack = self._sheets_in_stack()
         lifts = (
-            Decimal(self.print_run.press_sheet_count()) / Decimal(stack)
+            Decimal(self.sheet_count) / Decimal(stack)
         ).to_integral_value(rounding=ROUND_CEILING)
-        human_cuts = int(lifts) * self.print_run.imposition.cuts()
+        human_cuts = int(lifts) * self.imposition.cuts()
         return (
                 self.operator.salary_by_operation
                 * human_cuts
-                / self.print_run.press_sheet_count()
+                / self.sheet_count
         )
 
     @staticmethod
@@ -87,6 +88,6 @@ class Cut:
         """
         sheets = (
                 Decimal(self.cutter.max_stack)
-                / self.print_run.imposition.press_sheet.thickness()
+                / self.imposition.press_sheet.thickness()
         ).to_integral_value(rounding=ROUND_CEILING)
         return max(int(sheets), 0)

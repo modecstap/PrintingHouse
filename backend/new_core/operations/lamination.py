@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
 from backend.core.workplaces.lamination.models import Lamination
-from backend.new_core import PrintRun
 
 
 @dataclass(frozen=True)
@@ -31,12 +30,23 @@ class LaminatorOperator:
 
 
 @dataclass(frozen=True)
-class Laminate:
+class LaminationSpecification:
     lamination: Lamination
-    laminator: Laminator
     film: Film
+
+    def film_sides(self) -> int:
+        """Returns how many sides of this lamination receive film.
+
+        :return: the number of sides of the lamination that have film.
+        """
+        return self.lamination.film_sides()
+
+
+@dataclass(frozen=True)
+class Laminate:
+    spec: LaminationSpecification
+    laminator: Laminator
     operator: LaminatorOperator
-    print_run: PrintRun
 
     def material_price(self) -> Money:
         """Returns the film cost of one press sheet.
@@ -44,10 +54,10 @@ class Laminate:
         :return: zero when the lamination has no film sides. Otherwise, the
         film price times the number of sides. Film density is not read.
         """
-        sides = self.lamination.film_sides()
+        sides = self.spec.film_sides()
         if sides == 0:
             return Money.zero()
-        return self.film.price * sides
+        return self.spec.film.price * sides
 
     def work_price(self) -> Money:
         """Returns the laminator operator salary for one press sheet.
@@ -55,17 +65,17 @@ class Laminate:
         :return: zero when the lamination has no film sides. Otherwise, the
         full salary once, including when the film covers two sides.
         """
-        if self.lamination.film_sides() == 0:
+        if self.spec.film_sides() == 0:
             return Money.zero()
         return self.operator.salary_by_operation
 
     def startup_price(self) -> Money:
-        """Returns the laminator startup spread over the press sheets.
+        """Returns the laminator startup for the operation.
 
         :return: zero when the lamination has no film sides. Otherwise, the
-        laminator startup divided by the press sheet count.
+        laminator startup. The press sheet count does not divide it.
         """
-        if self.lamination.film_sides() == 0:
+        if self.spec.film_sides() == 0:
             return Money.zero()
-        return self.laminator.startup / self.print_run.press_sheet_count()
+        return self.laminator.startup
 
