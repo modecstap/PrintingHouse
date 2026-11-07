@@ -5,7 +5,7 @@ from __future__ import annotations
 from decimal import ROUND_CEILING, Decimal
 
 from backend.new_core.accountant.percent import Percent
-from backend.new_core.order.block import Block
+from backend.new_core.part import Part
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.operations.cutting import Cut, Cutter, CutterOperator
@@ -34,7 +34,7 @@ class PrintRun:
             self,
             id: int,  # pylint: disable=redefined-builtin
             for_order: int,
-            block: Block,
+            block: Part,
             required_count: int,
             imposition: Imposition,
     ) -> None:

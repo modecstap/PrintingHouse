@@ -10,7 +10,7 @@ from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
 from backend.new_core import (
     Accountant,
-    Block,
+    Part,
     Cut,
     Cutter,
     CutterOperator,
@@ -62,10 +62,10 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
 
     The block sheet costs 999, the target sheet costs 9999, the order count
     is 4, and assembly costs 999. Those values stay out of the sheet report.
-    The block count is 3 and scales only block_cost_report. Block markup
+    The block count is 3 and scales only block_cost_report. Part markup
     defaults to 0. Two press sheets add a 30 percent volume markup.
     """
-    block = Block(
+    block = Part(
         sheet=Sheet(
             paper=Paper(density=60, name="block", price_per_kilo=Money(Decimal(999))),
             height=1,

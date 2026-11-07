@@ -22,7 +22,7 @@ from backend.new_core.operations.printing import (
     PrintSpecification,
 )
 
-from backend.new_core.order.block import Block
+from backend.new_core.part import Part
 from backend.new_core.order.additional_work import AdditionalWork
 from backend.new_core.order.product import Product
 from backend.new_core.order.order import Order
@@ -38,7 +38,7 @@ from backend.new_core.accountant.percent import Percent
 __all__ = [
     "InvalidInput",
     "AdditionalWork",
-    "Block",
+    "Part",
     "Product",
     "Order",
     "Paper",

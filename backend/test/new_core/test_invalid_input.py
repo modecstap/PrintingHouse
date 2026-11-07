@@ -9,7 +9,7 @@ from backend.core.accountant.money import Money
 from backend.core.workplaces.lamination.models import Lamination
 from backend.core.workplaces.printing.models import Chroma
 from backend.new_core import (
-    Block,
+    Part,
     Cutter,
     Film,
     Imposition,
@@ -38,8 +38,8 @@ def _sheet(width: int, height: int) -> Sheet:
     )
 
 
-def _block(count: int) -> Block:
-    return Block(
+def _block(count: int) -> Part:
+    return Part(
         sheet=_sheet(1, 1),
         count=count,
         markup=Percent(0),

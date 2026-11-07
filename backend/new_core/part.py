@@ -10,7 +10,7 @@ from backend.new_core.operations.lamination import LaminationSpecification
 
 
 @dataclass(frozen=True)
-class Block:
+class Part:
     """The sheet, the copy count, the markup, and the finishing of one part."""
 
     sheet: Sheet
@@ -30,6 +30,6 @@ class Block:
         """
         if self.count < 0:
             raise InvalidInput(
-                "block",
+                "part",
                 f"количество меньше 0, количество={self.count}",
             )
