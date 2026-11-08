@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.core.accountant.money import Money
+from backend.new_core.accountant.money import Money
 from backend.new_core.errors import InvalidInput
 from backend.new_core.paper import Paper
 

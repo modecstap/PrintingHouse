@@ -5,7 +5,7 @@ from decimal import Decimal
 
 import pytest
 
-from backend.core.accountant.money import Money
+from backend.new_core.accountant.money import Money
 from backend.new_core import Imposition, InvalidInput, Paper, Sheet
 
 

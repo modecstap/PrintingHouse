@@ -5,9 +5,9 @@ from decimal import Decimal
 
 import pytest
 
-from backend.core.accountant.money import Money
-from backend.core.workplaces.lamination.models import Lamination
-from backend.core.workplaces.printing.models import Chroma
+from backend.new_core.accountant.money import Money
+from backend.new_core.operations.laminate.lamination import Lamination
+from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core import (
     Accountant,
     Part,

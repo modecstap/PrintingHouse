@@ -1,6 +1,10 @@
 from collections.abc import Sequence
 
 
+class InvalidPriceException(Exception):
+    pass
+
+
 class InvalidInput(Exception):
     def __init__(self, subject: str, reason: str | Sequence[str]) -> None:
         """Stores the rejected data and why it was rejected.

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from backend.core.accountant.money import Money
+from backend.new_core.accountant.money import Money
 from backend.new_core.operations.die_cut.die_cutter_operator import DieCutterOperator
 
 

@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from backend.core.accountant.money import Money
-from backend.core.workplaces.printing.models import Chroma
+from backend.new_core.accountant.money import Money
+from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.operations.print.press_operator import PressOperator
 from backend.new_core.operations.print.print_specification import PrintSpecification
 from backend.new_core.operations.print.printer import Printer

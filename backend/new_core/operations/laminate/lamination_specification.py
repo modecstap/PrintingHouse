@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from backend.core.workplaces.lamination.models import Lamination
+from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.laminate.film import Film
 
 
