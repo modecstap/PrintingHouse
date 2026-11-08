@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.operations.cut.cutter import Cutter
 from backend.new_core.operations.cut.cutter_operator import CutterOperator

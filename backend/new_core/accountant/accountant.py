@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.accountant.order_report import OrderReport
-from backend.new_core.accountant.percent import Percent
+from backend.new_core.values.percent import Percent
 from backend.new_core.order.additional_work import AdditionalWork
 from backend.new_core.order.order import Order
 from backend.new_core.print_run.print_run import PrintRun

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.sheet import Sheet
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from decimal import ROUND_CEILING, Decimal
 
-from backend.new_core.accountant.percent import Percent
+from backend.new_core.values.percent import Percent
 from backend.new_core.part import Part
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition

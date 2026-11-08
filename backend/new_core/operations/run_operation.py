@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 
 
 class RunOperation(Protocol):

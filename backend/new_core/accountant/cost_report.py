@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
-from backend.new_core.accountant.money import Money
-from backend.new_core.accountant.percent import Percent
+from backend.new_core.values.money import Money
+from backend.new_core.values.percent import Percent
 
 
 @dataclass(frozen=True, slots=True)

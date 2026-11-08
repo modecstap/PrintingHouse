@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.laminator import Laminator
 from backend.new_core.operations.laminate.laminator_operator import LaminatorOperator
 from backend.new_core.operations.laminate.lamination_specification import (

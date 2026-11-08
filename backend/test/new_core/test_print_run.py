@@ -5,7 +5,7 @@ from decimal import Decimal
 
 import pytest
 
-from backend.new_core.accountant.money import Money
+from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core import (

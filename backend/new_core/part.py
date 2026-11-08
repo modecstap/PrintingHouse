@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from backend.new_core.operations.print.chroma import Chroma
-from backend.new_core.accountant.percent import Percent
+from backend.new_core.values.percent import Percent
 from backend.new_core.errors import InvalidInput
 from backend.new_core.sheet import Sheet
 from backend.new_core.operations.laminate.lamination_specification import (

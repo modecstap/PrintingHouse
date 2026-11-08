@@ -37,7 +37,7 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.accountant.order_report import OrderReport
-from backend.new_core.accountant.percent import Percent
+from backend.new_core.values.percent import Percent
 
 
 __all__ = [
