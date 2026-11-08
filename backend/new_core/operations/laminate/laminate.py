@@ -1,56 +1,20 @@
+"""One lamination of a press sheet."""
+
 from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
-from backend.core.workplaces.lamination.models import Lamination
-
-
-@dataclass(frozen=True, slots=True)
-class Film:
-    """
-    Value Object. A film name, its price, and its density.
-
-    Density does not change the money of a run.
-    The constructor does not check the sign of density.
-    """
-
-    name: str
-    price: Money
-    density: int
-
-
-@dataclass(frozen=True)
-class Laminator:
-    id: int
-    startup: Money
-
-
-@dataclass(frozen=True)
-class LaminatorOperator:
-    id: int
-    salary_by_operation: Money
-
-
-@dataclass(frozen=True, slots=True)
-class LaminationSpecification:
-    """
-    Value Object. Which lamination a part uses, and the film that lamination applies.
-    """
-
-    lamination: Lamination
-    film: Film
-
-    def film_sides(self) -> int:
-        """Returns how many sides of this lamination receive film.
-
-        :return: the number of sides of the lamination that have film.
-        """
-        return self.lamination.film_sides()
+from backend.new_core.operations.laminate.laminator import Laminator
+from backend.new_core.operations.laminate.laminator_operator import LaminatorOperator
+from backend.new_core.operations.laminate.lamination_specification import (
+    LaminationSpecification,
+)
 
 
 @dataclass(frozen=True, slots=True)
 class Laminate:
     """
-    Value Object. One lamination of a press sheet: the specification, the laminator, and the operator.
+    Value Object. One lamination of a press sheet: the specification,
+    the laminator, and the operator.
     """
 
     spec: LaminationSpecification
@@ -87,4 +51,3 @@ class Laminate:
         if self.spec.film_sides() == 0:
             return Money.zero()
         return self.laminator.startup
-

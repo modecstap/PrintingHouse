@@ -1,46 +1,19 @@
+"""One cut of a run."""
+
 from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 
 from backend.core.accountant.money import Money
-from backend.new_core import Imposition
-from backend.new_core.errors import InvalidInput
-
-
-@dataclass(frozen=True)
-class Cutter:
-    id: int
-    max_stack: int
-
-    def __post_init__(self) -> None:
-        """Rejects a stack height that is not positive.
-
-        :raises InvalidInput: if max_stack is below zero, or if it is zero
-        after a negative height is rejected.
-
-        :return: nothing.
-        """
-        if self.max_stack < 0:
-            raise InvalidInput(
-                "cutter",
-                f"высота стопы меньше 0, высота={self.max_stack} мм",
-            )
-        if self.max_stack == 0:
-            raise InvalidInput(
-                "cutter",
-                f"высота стопы равна 0, высота={self.max_stack} мм",
-            )
-
-
-@dataclass(frozen=True)
-class CutterOperator:
-    id: int
-    salary_by_operation: Money
+from backend.new_core.print_run.imposition import Imposition
+from backend.new_core.operations.cut.cutter import Cutter
+from backend.new_core.operations.cut.cutter_operator import CutterOperator
 
 
 @dataclass(frozen=True, slots=True)
 class Cut:
     """
-    Value Object. One cut of a run: the cutter, the operator, the imposition, and the press-sheet count.
+    Value Object. One cut of a run: the cutter, the operator, the imposition,
+    and the press-sheet count.
     """
 
     cutter: Cutter

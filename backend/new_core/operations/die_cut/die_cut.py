@@ -1,12 +1,9 @@
+"""One die cut of a press sheet."""
+
 from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
-
-
-@dataclass(frozen=True)
-class DieCutterOperator:
-    id: int
-    salary_by_operation: Money
+from backend.new_core.operations.die_cut.die_cutter_operator import DieCutterOperator
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,4 +36,3 @@ class DieCut:
         :return: zero.
         """
         return Money.zero()
-

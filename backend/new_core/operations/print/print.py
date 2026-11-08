@@ -1,8 +1,12 @@
+"""One print of a press sheet."""
+
 from dataclasses import dataclass
 
 from backend.core.accountant.money import Money
 from backend.core.workplaces.printing.models import Chroma
-from backend.new_core.sheet import Sheet
+from backend.new_core.operations.print.press_operator import PressOperator
+from backend.new_core.operations.print.print_specification import PrintSpecification
+from backend.new_core.operations.print.printer import Printer
 
 # One sheet, in the order cyan, magenta, yellow, black.
 _INK_SHARES: dict[Chroma, tuple[int, int, int, int]] = {
@@ -13,39 +17,6 @@ _INK_SHARES: dict[Chroma, tuple[int, int, int, int]] = {
     Chroma.FOUR_ONE: (1, 1, 1, 2),
     Chroma.FOUR_FOUR: (2, 2, 2, 2),
 }
-
-
-@dataclass(frozen=True)
-class Printer:
-    id: int
-    startup: Money
-    cyan: Money
-    magenta: Money
-    yellow: Money
-    black: Money
-
-
-@dataclass(frozen=True)
-class PressOperator:
-    id: int
-    salary_by_operation: Money
-
-
-@dataclass(frozen=True, slots=True)
-class PrintSpecification:
-    """
-    Value Object. The chroma and the press-sheet paper of one print.
-    """
-
-    chroma: Chroma
-    paper: Sheet
-
-    def paper_price(self) -> Money:
-        """Returns the price of the press sheet paper.
-
-        :return: the price of one sheet of this paper.
-        """
-        return self.paper.price()
 
 
 @dataclass(frozen=True, slots=True)

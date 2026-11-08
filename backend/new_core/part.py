@@ -6,7 +6,9 @@ from backend.core.workplaces.printing.models import Chroma
 from backend.new_core.accountant.percent import Percent
 from backend.new_core.errors import InvalidInput
 from backend.new_core.sheet import Sheet
-from backend.new_core.operations.lamination import LaminationSpecification
+from backend.new_core.operations.laminate.lamination_specification import (
+    LaminationSpecification,
+)
 
 
 @dataclass(frozen=True, slots=True)
