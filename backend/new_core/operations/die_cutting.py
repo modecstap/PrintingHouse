@@ -9,8 +9,12 @@ class DieCutterOperator:
     salary_by_operation: Money
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DieCut:
+    """
+    Value Object. One die cut of a press sheet, priced from the operator salary.
+    """
+
     operator: DieCutterOperator
 
     @staticmethod

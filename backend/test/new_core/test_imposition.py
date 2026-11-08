@@ -68,7 +68,7 @@ def test_imposition_rejects_a_zero_cell_side():
         spacing=0,
     )
     message = (
-        "imposition: сторона ячейки равна 0, "
+        "Imposition: сторона ячейки равна 0, "
         "ширина ячейки=0 мм, высота ячейки=10 мм"
     )
 

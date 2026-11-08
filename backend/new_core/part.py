@@ -9,9 +9,11 @@ from backend.new_core.sheet import Sheet
 from backend.new_core.operations.lamination import LaminationSpecification
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Part:
-    """The sheet, the copy count, the markup, and the finishing of one part."""
+    """
+    Value Object. One printed part: its sheet, copy count, markup, and finishing.
+    """
 
     sheet: Sheet
     count: int
@@ -28,8 +30,13 @@ class Part:
 
         :return: nothing. A count of zero stays.
         """
+        reasons: list[str] = []
         if self.count < 0:
-            raise InvalidInput(
-                "part",
+            reasons.append(
                 f"количество меньше 0, количество={self.count}",
+            )
+        if reasons:
+            raise InvalidInput(
+                subject="Part",
+                reason=reasons,
             )

@@ -7,9 +7,11 @@ from backend.core.accountant.money import Money
 from backend.new_core.accountant.percent import Percent
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class CostReport:
-    """Material, startup, work, and the markup added on top of them."""
+    """
+    Value Object. A price split into material, startup, work, and the markup added on top.
+    """
 
     material: Money
     startup: Money

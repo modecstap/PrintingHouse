@@ -4,9 +4,10 @@ from backend.core.accountant.money import Money
 from backend.core.workplaces.lamination.models import Lamination
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Film:
-    """A film name and its price.
+    """
+    Value Object. A film name, its price, and its density.
 
     Density does not change the money of a run.
     The constructor does not check the sign of density.
@@ -29,8 +30,12 @@ class LaminatorOperator:
     salary_by_operation: Money
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class LaminationSpecification:
+    """
+    Value Object. Which lamination a part uses, and the film that lamination applies.
+    """
+
     lamination: Lamination
     film: Film
 
@@ -42,8 +47,12 @@ class LaminationSpecification:
         return self.lamination.film_sides()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Laminate:
+    """
+    Value Object. One lamination of a press sheet: the specification, the laminator, and the operator.
+    """
+
     spec: LaminationSpecification
     laminator: Laminator
     operator: LaminatorOperator

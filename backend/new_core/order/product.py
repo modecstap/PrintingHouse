@@ -6,9 +6,11 @@ from backend.new_core.order.additional_work import AdditionalWork
 from backend.new_core.part import Part
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Product:
-    """Blocks and additional work priced together as one product."""
+    """
+    Value Object. The parts and the additional work priced together as one product.
+    """
 
     blocks: tuple[Part, ...]
     operations: tuple[AdditionalWork, ...]

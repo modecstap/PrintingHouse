@@ -37,8 +37,12 @@ class CutterOperator:
     salary_by_operation: Money
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Cut:
+    """
+    Value Object. One cut of a run: the cutter, the operator, the imposition, and the press-sheet count.
+    """
+
     cutter: Cutter
     operator: CutterOperator
     imposition: Imposition

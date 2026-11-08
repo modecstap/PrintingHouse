@@ -31,8 +31,12 @@ class PressOperator:
     salary_by_operation: Money
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PrintSpecification:
+    """
+    Value Object. The chroma and the press-sheet paper of one print.
+    """
+
     chroma: Chroma
     paper: Sheet
 
@@ -44,8 +48,12 @@ class PrintSpecification:
         return self.paper.price()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Print:
+    """
+    Value Object. One print of a press sheet: the specification, the printer, and the operator.
+    """
+
     spec: PrintSpecification
 
     printer: Printer

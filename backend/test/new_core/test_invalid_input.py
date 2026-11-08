@@ -25,7 +25,7 @@ from backend.new_core import (
 from backend.test.new_core.test_print_run import build_worked_run
 
 _ZERO_CELL = (
-    "imposition: сторона ячейки равна 0, "
+    "Imposition: сторона ячейки равна 0, "
     "ширина ячейки=0 мм, высота ячейки=10 мм"
 )
 
@@ -68,7 +68,7 @@ def test_imposition_rejects_count_when_nothing_fits():
         bleeds=0,
         spacing=0,
     )
-    message = "imposition: на печатный лист влезает 0 целевых листов"
+    message = "Imposition: на печатный лист влезает 0 целевых листов"
 
     assert imposition.cuts() == 4
     _rejects(message, imposition.count)
@@ -95,7 +95,7 @@ def test_print_run_rejects_a_zero_cell_side():
 def test_paper_rejects_a_density_of_zero():
     """A paper density of 0 is rejected."""
     _rejects(
-        "paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
+        "Paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
         lambda: Paper(
             density=0,
             thickness=1,
@@ -108,7 +108,7 @@ def test_paper_rejects_a_density_of_zero():
 def test_paper_rejects_a_thickness_of_zero():
     """A paper thickness of 0 is rejected."""
     _rejects(
-        "paper: толщина бумаги меньше или равна 0, толщина=0 мм",
+        "Paper: толщина бумаги меньше или равна 0, толщина=0 мм",
         lambda: Paper(
             density=60,
             thickness=0,
@@ -130,7 +130,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
     ("message", "build"),
     [
         pytest.param(
-            "sheet: высота меньше 0, высота=-1 мм",
+            "Sheet: высота меньше 0, высота=-1 мм",
             lambda: Sheet(
                 paper=Paper(
                     density=60,
@@ -144,7 +144,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             id="height",
         ),
         pytest.param(
-            "sheet: ширина меньше 0, ширина=-1 мм",
+            "Sheet: ширина меньше 0, ширина=-1 мм",
             lambda: Sheet(
                 paper=Paper(
                     density=60,
@@ -158,7 +158,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             id="width",
         ),
         pytest.param(
-            "imposition: вылеты меньше 0, вылеты=-1 мм",
+            "Imposition: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
                 target=_sheet(10, 10),
                 press_sheet=_sheet(30, 40),
@@ -168,7 +168,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             id="bleeds",
         ),
         pytest.param(
-            "imposition: поля меньше 0, поля=-1 мм",
+            "Imposition: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=_sheet(10, 10),
                 press_sheet=_sheet(30, 40),
@@ -187,7 +187,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             id="order count",
         ),
         pytest.param(
-            "part: количество меньше 0, количество=-1",
+            "Part: количество меньше 0, количество=-1",
             lambda: _block(-1),
             id="block count",
         ),
@@ -216,4 +216,49 @@ def test_cutter_rejects_a_stack_height_of_zero():
 )
 def test_negative_measure_is_rejected(message: str, build):
     """One negative measure is rejected in its constructor with that text."""
+    _rejects(message, build)
+
+
+@pytest.mark.parametrize(
+    ("message", "build"),
+    [
+        pytest.param(
+            "Paper: плотность бумаги меньше или равна 0, плотность=0 г/м²; "
+            "толщина бумаги меньше или равна 0, толщина=0 мм",
+            lambda: Paper(
+                density=0,
+                thickness=0,
+                name="press",
+                price_per_kilo=Money(Decimal(1000)),
+            ),
+            id="paper",
+        ),
+        pytest.param(
+            "Sheet: высота меньше 0, высота=-1 мм; ширина меньше 0, ширина=-1 мм",
+            lambda: Sheet(
+                paper=Paper(
+                    density=60,
+                    thickness=1,
+                    name="sheet",
+                    price_per_kilo=Money(Decimal(0)),
+                ),
+                height=-1,
+                width=-1,
+            ),
+            id="sheet",
+        ),
+        pytest.param(
+            "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
+            lambda: Imposition(
+                target=_sheet(10, 10),
+                press_sheet=_sheet(30, 40),
+                bleeds=-1,
+                spacing=-1,
+            ),
+            id="imposition",
+        ),
+    ],
+)
+def test_every_invalid_field_is_reported(message: str, build):
+    """Every invalid field is named in one error."""
     _rejects(message, build)

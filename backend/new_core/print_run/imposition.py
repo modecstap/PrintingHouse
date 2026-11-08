@@ -4,30 +4,38 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.sheet import Sheet
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Imposition:
+    """
+    Value Object. How target sheets sit on a press sheet, including bleeds and spacing.
+    """
+
     target: Sheet
     press_sheet: Sheet
     bleeds: int
     spacing: int
 
     def __post_init__(self) -> None:
-        """Rejects a negative bleed or spacing. Bleeds are checked first.
+        """Rejects a negative bleed or spacing.
 
         :raises InvalidInput: if bleeds is below zero, or if spacing is
-        below zero after bleeds is accepted.
+        below zero. Both failures are reported together.
 
         :return: nothing. A bleed or spacing of zero stays.
         """
+        reasons: list[str] = []
         if self.bleeds < 0:
-            raise InvalidInput(
-                "imposition",
+            reasons.append(
                 f"вылеты меньше 0, вылеты={self.bleeds} мм",
             )
         if self.spacing < 0:
-            raise InvalidInput(
-                "imposition",
+            reasons.append(
                 f"поля меньше 0, поля={self.spacing} мм",
+            )
+        if reasons:
+            raise InvalidInput(
+                subject="Imposition",
+                reason=reasons,
             )
 
     def count(self) -> int:
@@ -44,8 +52,8 @@ class Imposition:
         item_count = count_x * count_y
         if item_count <= 0:
             raise InvalidInput(
-                "imposition",
-                f"на печатный лист влезает {item_count} целевых листов",
+                subject="Imposition",
+                reason=f"на печатный лист влезает {item_count} целевых листов",
             )
         return item_count
 
@@ -66,9 +74,11 @@ class Imposition:
         cell_height = self.target.height + 2 * self.bleeds
         if cell_width == 0 or cell_height == 0:
             raise InvalidInput(
-                "imposition",
-                "сторона ячейки равна 0, "
-                f"ширина ячейки={cell_width} мм, высота ячейки={cell_height} мм",
+                subject="Imposition",
+                reason=(
+                    "сторона ячейки равна 0, "
+                    f"ширина ячейки={cell_width} мм, высота ячейки={cell_height} мм"
+                ),
             )
 
         usable_width = self.press_sheet.width - 2 * self.spacing

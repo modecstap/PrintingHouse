@@ -6,9 +6,11 @@ from backend.core.accountant.money import Money
 from backend.new_core.errors import InvalidInput
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Paper:
-    """The density, the thickness, the name, and the price of one kilogram."""
+    """
+    Value Object. The density, the thickness, the name, and the price of one kilogram of a paper grade.
+    """
 
     density: int
     thickness: int
@@ -19,18 +21,22 @@ class Paper:
         """Rejects a density or a thickness that is not positive.
 
         :raises InvalidInput: if density is below one, or if thickness is
-        below one after density is accepted.
+        below one. Both failures are reported together.
 
         :return: nothing. A negative price never reaches this method,
         because Money rejects it first.
         """
+        reasons: list[str] = []
         if self.density <= 0:
-            raise InvalidInput(
-                "paper",
+            reasons.append(
                 f"плотность бумаги меньше или равна 0, плотность={self.density} г/м²",
             )
         if self.thickness <= 0:
-            raise InvalidInput(
-                "paper",
+            reasons.append(
                 f"толщина бумаги меньше или равна 0, толщина={self.thickness} мм",
+            )
+        if reasons:
+            raise InvalidInput(
+                subject="Paper",
+                reason=reasons,
             )

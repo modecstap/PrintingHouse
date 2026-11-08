@@ -5,9 +5,11 @@ from dataclasses import dataclass
 from backend.core.accountant.money import Money
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OrderReport:
-    """Product price, order price, income, and imposition counts."""
+    """
+    Value Object. The priced product, the priced order, the income, and the imposition counts.
+    """
 
     product_price: Money
     order_price: Money

@@ -4,9 +4,11 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Percent:
-    """A whole-number percent of a price."""
+    """
+    Value Object. A whole-number percent of a price, and the factors derived from it.
+    """
 
     value: int
 

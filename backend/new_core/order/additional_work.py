@@ -6,9 +6,11 @@ from backend.core.accountant.money import Money
 from backend.new_core.accountant.percent import Percent
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class AdditionalWork:
-    """One extra job: its name, price, description, and markup."""
+    """
+    Value Object. One extra job on a product: its name, price, description, and markup.
+    """
 
     name: str
     price: Money
