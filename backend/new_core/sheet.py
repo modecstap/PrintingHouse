@@ -1,3 +1,5 @@
+"""One sheet: its paper and its size, in millimeters."""
+
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -8,6 +10,8 @@ from backend.new_core.paper import Paper
 
 @dataclass(frozen=True)
 class Sheet:
+    """A paper grade cut to a height and a width."""
+
     paper: Paper
     height: int
     width: int
@@ -45,12 +49,12 @@ class Sheet:
             / Decimal(1000)
         )
 
-    def thickness(self) -> Decimal:
+    def thickness(self) -> int:
         """Returns the thickness of the sheet.
 
-        :return: the thickness of the sheet.
+        :return: the thickness of the sheet in mm.
         """
-        return Decimal(self.paper.density) / Decimal(1200)
+        return self.paper.thickness
 
     def price(self) -> Money:
         """Returns the price of one sheet.

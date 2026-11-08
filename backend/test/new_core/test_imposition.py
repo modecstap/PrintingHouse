@@ -1,3 +1,5 @@
+"""An imposition counts targets on a press sheet and the cuts between them."""
+
 import re
 from decimal import Decimal
 
@@ -9,7 +11,7 @@ from backend.new_core import Imposition, InvalidInput, Paper, Sheet
 
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
-        paper=Paper(density=60, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
         height=height,
         width=width,
     )
@@ -42,7 +44,10 @@ def test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid():
 
 
 def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
-    """A 100 by 100 target with bleeds 5 on a 320 by 450 sheet with spacing 11 fits 6 and needs 10 cuts."""
+    """A 100 by 100 target, bleeds 5, on a 320 by 450 sheet with spacing 11.
+
+    It fits 6 and needs 10 cuts.
+    """
     imposition = Imposition(
         target=_sheet(100, 100),
         press_sheet=_sheet(320, 450),

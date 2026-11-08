@@ -32,7 +32,7 @@ _ZERO_CELL = (
 
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
-        paper=Paper(density=60, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
         height=height,
         width=width,
     )
@@ -98,6 +98,20 @@ def test_paper_rejects_a_density_of_zero():
         "paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
         lambda: Paper(
             density=0,
+            thickness=1,
+            name="press",
+            price_per_kilo=Money(Decimal(1000)),
+        ),
+    )
+
+
+def test_paper_rejects_a_thickness_of_zero():
+    """A paper thickness of 0 is rejected."""
+    _rejects(
+        "paper: толщина бумаги меньше или равна 0, толщина=0 мм",
+        lambda: Paper(
+            density=60,
+            thickness=0,
             name="press",
             price_per_kilo=Money(Decimal(1000)),
         ),
@@ -120,6 +134,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             lambda: Sheet(
                 paper=Paper(
                     density=60,
+                    thickness=1,
                     name="sheet",
                     price_per_kilo=Money(Decimal(0)),
                 ),
@@ -133,6 +148,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             lambda: Sheet(
                 paper=Paper(
                     density=60,
+                    thickness=1,
                     name="sheet",
                     price_per_kilo=Money(Decimal(0)),
                 ),
@@ -171,7 +187,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             id="order count",
         ),
         pytest.param(
-            "block: количество меньше 0, количество=-1",
+            "part: количество меньше 0, количество=-1",
             lambda: _block(-1),
             id="block count",
         ),

@@ -64,10 +64,17 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     is 4, and assembly costs 999. Those values stay out of the sheet report.
     The block count is 3 and scales only block_cost_report. Part markup
     defaults to 0. Two press sheets add a 30 percent volume markup.
+    Paper thickness is 1 mm, so the 50 mm stack cuts both press sheets
+    in one lift.
     """
     block = Part(
         sheet=Sheet(
-            paper=Paper(density=60, name="block", price_per_kilo=Money(Decimal(999))),
+            paper=Paper(
+                density=60,
+                thickness=1,
+                name="block",
+                price_per_kilo=Money(Decimal(999)),
+            ),
             height=1,
             width=1,
         ),
@@ -104,6 +111,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             target=Sheet(
                 paper=Paper(
                     density=60,
+                    thickness=1,
                     name="target",
                     price_per_kilo=Money(Decimal(9999)),
                 ),
@@ -113,6 +121,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             press_sheet=Sheet(
                 paper=Paper(
                     density=press_density,
+                    thickness=1,
                     name="press",
                     price_per_kilo=Money(Decimal(press_price)),
                 ),
