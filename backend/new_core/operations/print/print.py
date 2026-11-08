@@ -1,12 +1,19 @@
 """One print of a press sheet."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
+from typing import TYPE_CHECKING
+
+from backend.new_core.materials.sheet import Sheet
 from backend.new_core.values.money import Money
+
+if TYPE_CHECKING:
+    from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.operations.print.chroma import Chroma
-from backend.new_core.operations.print.press_operator import PressOperator
-from backend.new_core.operations.print.print_specification import PrintSpecification
-from backend.new_core.operations.print.printer import Printer
+from backend.new_core.personal.press_operator import PressOperator
+from backend.new_core.equipment.printer import Printer
 
 # One sheet, in the order cyan, magenta, yellow, black.
 _INK_SHARES: dict[Chroma, tuple[int, int, int, int]] = {
@@ -25,19 +32,19 @@ class Print:
     Value Object. One print of a press sheet: the specification, the printer, and the operator.
     """
 
-    spec: PrintSpecification
-
     printer: Printer
     operator: PressOperator
+    chroma: Chroma
+    paper: Sheet
 
-    def material_price(self) -> Money:
+    def material_price(self, run: PrintRun) -> Money:
         """Returns the paper and ink cost of one press sheet.
 
         :return: the press sheet price, plus each ink rate times the share
         of this chroma for one sheet.
         """
         cyan_share, magenta_share, yellow_share, black_share = _INK_SHARES[
-            self.spec.chroma
+            self.chroma
         ]
         ink = (
             self.printer.cyan * cyan_share
@@ -45,18 +52,18 @@ class Print:
             + self.printer.yellow * yellow_share
             + self.printer.black * black_share
         )
-        return self.spec.paper_price() + ink
+        return self.paper.price() + ink
 
-    def work_price(self) -> Money:
+    def work_price(self, run: PrintRun) -> Money:
         """Returns the press operator salary for one press sheet.
 
         :return: the full salary when chroma is not ZERO_ZERO, otherwise zero.
         """
-        if self.spec.chroma is Chroma.ZERO_ZERO:
+        if self.chroma is Chroma.ZERO_ZERO:
             return Money.zero()
         return self.operator.salary_by_operation
 
-    def startup_price(self) -> Money:
+    def startup_price(self, run: PrintRun) -> Money:
         """Returns the printer startup for the operation.
 
         :return: the printer startup. A chroma of ZERO_ZERO still returns

@@ -44,14 +44,14 @@ class Accountant:
 
         for operation in run.operations:
             report += CostReport(
-                material=operation.material_price(),
-                startup=operation.startup_price() / run.press_sheet_count(),
-                work=operation.work_price(),
+                material=operation.material_price(run),
+                startup=operation.startup_price(run) / run.imposition_count(),
+                work=operation.work_price(run),
                 markup=Money.zero(),
             )
 
         report = report.apply_markup(run.block.markup)
-        report = report.apply_markup(_volume_factor(run.press_sheet_count()))
+        report = report.apply_markup(_volume_factor(run.imposition_count()))
 
         return report
 

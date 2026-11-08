@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from backend.new_core.values.money import Money
 from backend.new_core.errors import InvalidInput
-from backend.new_core.paper import Paper
+from backend.new_core.materials.paper import Paper
 
 
 @dataclass(frozen=True, slots=True)

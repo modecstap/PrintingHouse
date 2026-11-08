@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from backend.new_core.errors import InvalidInput
-from backend.new_core.sheet import Sheet
+from backend.new_core.materials.sheet import Sheet
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +37,9 @@ class Imposition:
                 subject="Imposition",
                 reason=reasons,
             )
+
+    def thickness(self) -> int:
+        return self.press_sheet.thickness()
 
     def count(self) -> int:
         """Returns how many target sheets fit on the press sheet.

@@ -2,13 +2,12 @@
 
 from dataclasses import dataclass
 
+from backend.new_core.materials.film import Film
+from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.values.percent import Percent
 from backend.new_core.errors import InvalidInput
-from backend.new_core.sheet import Sheet
-from backend.new_core.operations.laminate.lamination_specification import (
-    LaminationSpecification,
-)
+from backend.new_core.materials.sheet import Sheet
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,7 +21,8 @@ class Part:
     markup: Percent
 
     chroma: Chroma
-    lamination: LaminationSpecification
+    lamination: Lamination
+    film: Film
     die_cutting: bool
 
     def __post_init__(self) -> None:

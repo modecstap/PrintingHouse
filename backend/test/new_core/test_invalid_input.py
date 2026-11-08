@@ -14,7 +14,6 @@ from backend.new_core import (
     Film,
     Imposition,
     InvalidInput,
-    LaminationSpecification,
     Order,
     Paper,
     Percent,
@@ -44,10 +43,8 @@ def _block(count: int) -> Part:
         count=count,
         markup=Percent(0),
         chroma=Chroma.ZERO_ZERO,
-        lamination=LaminationSpecification(
-            lamination=Lamination.DONT,
-            film=Film(name="film", price=Money(Decimal(0)), density=1),
-        ),
+        lamination=Lamination.DONT,
+        film=Film(name="film", price=Money(Decimal(0)), density=1),
         die_cutting=False,
     )
 
