@@ -1,17 +1,16 @@
 """JSON mapping round-trip and validation rules."""
 
 from dataclasses import replace
-from decimal import Decimal
 
 import pytest
 from pydantic import ValidationError
 
 from backend.new_core.operations.die_cut.die_cut import DieCut
+from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.part import Part
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
-from backend.new_core.values.money import Money
 from backend.server.mapping import (
     order_to_dto,
     product_from_dto,
@@ -36,20 +35,48 @@ def _product_with_die_cut() -> Product:
     )
 
 
-def test_full_product_all_kinds_round_trip():
+def test_product_dto_uses_catalog_ids_only():
     product = _product_with_die_cut()
-    dto = product_to_dto(product)
-    restored = product_from_dto(dto)
-    assert restored == product
+    dumped = product_to_dto(product).model_dump()
+    imp = dumped["blocks"][0]["imposition"]
+    assert "sheet_id" in imp
+    assert "press_sheet" not in imp
+    laminate_ops = [
+        op for op in dumped["blocks"][0]["operations"] if op["kind"] == "laminate"
+    ]
+    assert laminate_ops
+    assert "film_id" in laminate_ops[0]
+    assert "film" not in laminate_ops[0]
 
 
-def test_money_json_number_rejected():
+def test_product_from_dto_restores_ids_unhydrated_sheet():
+    product = _product_with_die_cut()
+    restored = product_from_dto(product_to_dto(product))
+    original = product.blocks[0]
+    block = restored.blocks[0]
+    assert block.imposition.sheet_id == original.imposition.sheet_id
+    assert block.imposition.press_sheet is None
+    orig_laminate = next(op for op in original.operations if isinstance(op, Laminate))
+    rest_laminate = next(op for op in block.operations if isinstance(op, Laminate))
+    assert rest_laminate.film_id == orig_laminate.film_id
+
+
+def test_extra_nested_press_sheet_ignored():
     product = product_from_run(build_worked_run()[0])
-    dto = product_to_dto(product)
-    dumped = dto.model_dump()
-    dumped["blocks"][0]["imposition"]["press_sheet"]["paper"]["price_per_kilo"] = 1
-    with pytest.raises(ValidationError):
-        ProductDto.model_validate(dumped)
+    dumped = product_to_dto(product).model_dump()
+    dumped["blocks"][0]["imposition"]["press_sheet"] = {
+        "paper": {
+            "density": 100,
+            "thickness": 1,
+            "name": "ignored",
+            "price_per_kilo": "1",
+        },
+        "format": {"name": "f", "height": 1, "width": 1},
+    }
+    dto = ProductDto.model_validate(dumped)
+    block = product_from_dto(dto).blocks[0]
+    assert block.imposition.press_sheet is None
+    assert block.imposition.sheet_id.value == dumped["blocks"][0]["imposition"]["sheet_id"]
 
 
 def test_unknown_kind_rejected():
@@ -58,15 +85,7 @@ def test_unknown_kind_rejected():
             {
                 "imposition": {
                     "target": {"name": "t", "height": 10, "width": 10},
-                    "press_sheet": {
-                        "paper": {
-                            "density": 100,
-                            "thickness": 1,
-                            "name": "p",
-                            "price_per_kilo": "1",
-                        },
-                        "format": {"name": "f", "height": 100, "width": 200},
-                    },
+                    "sheet_id": 1,
                     "bleeds": 0,
                     "spacing": 0,
                 },

@@ -35,7 +35,7 @@ class ImpositionDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     target: FormatDto
-    press_sheet: SheetDto
+    sheet_id: int
     bleeds: int
     spacing: int
 
@@ -92,7 +92,7 @@ class LaminateOpDto(BaseModel):
     laminator_id: int
     operator_id: int
     lamination: Literal["DONT", "ONE_ZERO", "ONE_ONE"]
-    film: FilmDto
+    film_id: int
 
 
 class CutOpDto(BaseModel):
