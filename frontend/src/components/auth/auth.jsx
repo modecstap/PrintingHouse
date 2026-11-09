@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction";
-import FlexForm from "../../components/generic/flex-form/flex-form";
-import Button from "../../components/generic/button/button";
+import FlexForm from "../generic/flex-form/flex-form";
+import Button from "../generic/button/button";
 
-import styles from "./AuthPage.module.css";
+import styles from "./auth.module.css";
 
 const fields = [
   {
-    label: "Имя пользователя",
+    label: "Логин",
     path: "username",
     type: "text",
   },
@@ -18,7 +18,7 @@ const fields = [
   },
 ];
 
-const AuthPage = () => {
+const Auth = () => {
   const { loading, error, successMsg, execute } = useAsyncAction();
 
   const [formData, setFormData] = useState({
@@ -40,22 +40,20 @@ const AuthPage = () => {
 
     if (res?.access_token) {
       localStorage.setItem("access_token", res.access_token);
-      alert("Вход выполнен: токен сохранён");
+      alert("ВХОД ВЫПОЛНЕН: ТОКЕН СОХРАНЁН");
     }
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
-    alert("Выход выполнен");
+    alert("ВЫХОД ВЫПОЛНЕН");
   };
 
   return (
     <div className={styles.calculatorContainer}>
-      <h2>Авторизация (JWT)</h2>
+      <h2>Вход</h2>
 
-      <form
-        onSubmit={onSubmit}
-      >
+      <form onSubmit={onSubmit}>
         <FlexForm
           fields={fields}
           formData={formData}
@@ -72,11 +70,11 @@ const AuthPage = () => {
           </Button>
         </div>
 
-        {error && <div style={{ color: "red" }}>{error}</div>}
-        {successMsg && <div style={{ color: "green" }}>{successMsg}</div>}
+        {error && <div className={styles.error}>{error}</div>}
+        {successMsg && <div className={styles.success}>{successMsg}</div>}
       </form>
     </div>
   );
 };
 
-export default AuthPage;
+export default Auth;

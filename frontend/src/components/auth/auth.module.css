@@ -1,0 +1,26 @@
+.calculatorContainer {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-light);
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.error {
+  color: var(--lonetrail-red);
+  font-family: var(--header-font);
+  font-weight: normal;
+}
+
+.success {
+  color: var(--text-color);
+}

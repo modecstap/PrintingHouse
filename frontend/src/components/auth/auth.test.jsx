@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AuthPage from "./AuthPage";
+import Auth from "./auth";
 
 function jsonResponse(data, status = 200) {
   return Promise.resolve({
@@ -10,7 +10,7 @@ function jsonResponse(data, status = 200) {
   });
 }
 
-describe("AuthPage", () => {
+describe("Auth", () => {
   const originalFetch = global.fetch;
   let alertSpy;
 
@@ -41,7 +41,8 @@ describe("AuthPage", () => {
       return jsonResponse({}, 404);
     });
 
-    const { container } = render(<AuthPage />);
+    const { container } = render(<Auth />);
+    expect(screen.getByRole("heading", { name: "Вход" })).toBeInTheDocument();
     const [usernameInput, passwordInput] = container.querySelectorAll("input");
 
     await userEvent.type(usernameInput, "alice");
@@ -51,14 +52,16 @@ describe("AuthPage", () => {
     await waitFor(() => {
       expect(localStorage.getItem("access_token")).toBe("jwt-abc");
     });
+    expect(alertSpy).toHaveBeenCalledWith("ВХОД ВЫПОЛНЕН: ТОКЕН СОХРАНЁН");
   });
 
   it("should remove the access token when the user logs out", async () => {
     localStorage.setItem("access_token", "jwt-abc");
 
-    render(<AuthPage />);
+    render(<Auth />);
     await userEvent.click(screen.getByRole("button", { name: "Выйти" }));
 
     expect(localStorage.getItem("access_token")).toBeNull();
+    expect(alertSpy).toHaveBeenCalledWith("ВЫХОД ВЫПОЛНЕН");
   });
 });
