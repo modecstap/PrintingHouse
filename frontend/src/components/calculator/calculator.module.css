@@ -1,0 +1,167 @@
+.calculatorContainer {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-light);
+}
+
+.calculatorBlock {
+  text-align: left;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.separator {
+  width: 100%;
+  height: 5px;
+  margin: 40px 0;
+  background: var(--primary);
+}
+
+.pageTitle {
+  text-align: left;
+  margin: 20px 15px;
+  color: var(--text);
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: none;
+  padding: 12px 28px;
+  cursor: pointer;
+  font-size: 16px;
+  min-width: 140px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btnAccent {
+  background: var(--accent);
+  color: var(--bg-dark);
+}
+
+.btnAccent:hover:not(:disabled) {
+  background: var(--secondary);
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: var(--bg-dark);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--text-muted);
+}
+
+.btnSecondary {
+  margin-top: 10px;
+  background: var(--border);
+  color: var(--bg-dark);
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  flex: 1;
+}
+
+.fieldGroup label {
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.fieldGroup input,
+.fieldGroup select,
+.fieldGroup textarea {
+  padding: 8px;
+  font-size: 1rem;
+}
+
+.legend {
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.blockHeading {
+  margin: 0 0 12px;
+}
+
+.operationCard {
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.operationHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reportTable {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: var(--shadow-light);
+}
+
+.reportTable th,
+.reportTable td {
+  background: var(--bg-dark);
+  padding: 8px;
+  text-align: left;
+}
+
+.reportTable tr:nth-child(even) td {
+  background: var(--bg-light);
+}
+
+.errorMessage {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--danger);
+  color: var(--highlight);
+  font-size: 0.95rem;
+  box-shadow: var(--shadow);
+}
+
+.statusMessage {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-light);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 600px) {
+  .buttonRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
