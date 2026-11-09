@@ -50,7 +50,7 @@ const Auth = () => {
   };
 
   return (
-    <div className={styles.calculatorContainer}>
+    <div className={styles.page}>
       <h2>Вход</h2>
 
       <form onSubmit={onSubmit}>

@@ -18,7 +18,7 @@ const CHROMA_OPTIONS = [
 ];
 
 const LAMINATION_OPTIONS = [
-  { value: "DONT", label: "Без ламинации" },
+  { value: "DONT", label: "Нет" },
   { value: "ONE_ZERO", label: "1+0" },
   { value: "ONE_ONE", label: "1+1" },
 ];
@@ -190,7 +190,7 @@ export default function OperationFields({
           />
           <CatalogSelect
             id={`${idPrefix}-laminate-operator`}
-            label="Оператор ламинации"
+            label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             options={catalogs.laminatorOperators.map((o) => ({
@@ -253,7 +253,7 @@ export default function OperationFields({
           />
           <CatalogSelect
             id={`${idPrefix}-cut-operator`}
-            label="Оператор реза"
+            label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             options={catalogs.cutterOperators.map((o) => ({
@@ -277,7 +277,7 @@ export default function OperationFields({
         <div className={styles.fieldRow}>
           <CatalogSelect
             id={`${idPrefix}-die-cut-operator`}
-            label="Оператор высечки"
+            label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             options={catalogs.dieCutOperators.map((o) => ({

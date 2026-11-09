@@ -6,6 +6,7 @@ import {
   fetchOrderReport,
   fetchOrderSummaries,
 } from "./api/orders";
+import Button from "../generic/button/button";
 import styles from "./orders.module.css";
 
 export default function Orders() {
@@ -102,17 +103,16 @@ export default function Orders() {
   };
 
   return (
-    <div className={styles.calculatorContainer}>
+    <div className={styles.page}>
       <div className={styles.pageTitle}>
-        <h1 style={{ marginTop: 0, marginRight: 5 }}>Заказы</h1>
-        <button
+        <h1>Заказы</h1>
+        <Button
           type="button"
-          className={styles.refreshButton}
           onClick={startListLoad}
-          aria-label="Обновить список заказов"
+          aria-label="Обновить"
         >
           &#10226;
-        </button>
+        </Button>
       </div>
 
       {listState.status === "loading" && <div>Загрузка...</div>}

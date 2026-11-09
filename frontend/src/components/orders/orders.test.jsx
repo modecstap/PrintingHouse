@@ -60,6 +60,12 @@ function stubCatalogFetch() {
     if (url === "/api/materials/sheets") {
       return jsonResponse(SAMPLE_SHEET_CATALOG);
     }
+    if (url === "/api/materials/films") {
+      return jsonResponse([]);
+    }
+    if (url === "/api/references") {
+      return jsonResponse([]);
+    }
     return jsonResponse({}, 404);
   });
 }
@@ -100,7 +106,7 @@ describe("Orders", () => {
 
     expect(screen.queryByRole("button", { name: "Отложить" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "В работу" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Обновить" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Обновить" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /удалить/i })).not.toBeInTheDocument();
   });
 
@@ -162,7 +168,7 @@ describe("Orders", () => {
     await userEvent.click(screen.getByRole("button", { name: /1.*10|10.*1/ }));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("SRA3")).toBeInTheDocument();
+      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
     });
     expect(screen.getByText("Цена изделия")).toBeInTheDocument();
   });

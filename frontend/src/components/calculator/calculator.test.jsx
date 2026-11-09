@@ -153,8 +153,8 @@ describe("Calculator", () => {
     render(<Calculator />);
     await waitForCatalogs();
 
-    await userEvent.clear(screen.getByLabelText("Количество изделий"));
-    await userEvent.type(screen.getByLabelText("Количество изделий"), "10");
+    await userEvent.clear(screen.getByLabelText("Тираж"));
+    await userEvent.type(screen.getByLabelText("Тираж"), "10");
     await userEvent.click(screen.getByRole("button", { name: "+ Печать" }));
 
     const operationRegion = screen.getByRole("region", { name: /Печать/i });
@@ -169,7 +169,7 @@ describe("Calculator", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Рассчитать" }));
 
-    expect(screen.getByRole("button", { name: "Вычисляем..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Счёт..." })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeDisabled();
 
     resolveQuote();
@@ -183,8 +183,8 @@ describe("Calculator", () => {
       expect(screen.getByText("Цена изделия")).toBeInTheDocument();
     });
     expect(screen.getByText("Цена тиража")).toBeInTheDocument();
-    expect(screen.getByText("Прибыль от тиража")).toBeInTheDocument();
-    expect(screen.getByText("Блок 1: изделий на листе")).toBeInTheDocument();
+    expect(screen.getByText("Прибыль")).toBeInTheDocument();
+    expect(screen.getByText("Блок 1: на листе")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument();
   });
 
@@ -283,7 +283,7 @@ describe("Calculator", () => {
     await userEvent.selectOptions(screen.getByLabelText("Пресет"), "42");
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Количество изделий")).toHaveValue(100);
+      expect(screen.getByLabelText("Тираж")).toHaveValue(100);
     });
     expect(screen.getByLabelText("Ширина (мм)")).toHaveValue(90);
     expect(screen.getByLabelText("Высота (мм)")).toHaveValue(50);

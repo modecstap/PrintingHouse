@@ -66,9 +66,9 @@ export default function References() {
     saveState.status === "error" ? saveState.message : null;
 
   return (
-    <div className={styles.calculatorContainer}>
+    <div className={styles.page}>
       <div className={styles.pageTitle}>
-        <h1 style={{ marginTop: 0 }}>Справочная система</h1>
+        <h1>Справочники</h1>
       </div>
 
       {listState.status === "loading" && <div>Загрузка...</div>}
@@ -83,7 +83,7 @@ export default function References() {
             <tr>
               <th scope="col">Имя</th>
               <th scope="col">Описание</th>
-              <th scope="col">Номер заказа</th>
+              <th scope="col">Заказ №</th>
             </tr>
           </thead>
           <tbody>
@@ -97,8 +97,6 @@ export default function References() {
           </tbody>
         </table>
       )}
-
-      <div className={styles.separator} />
 
       <div className={styles.calculatorBlock}>
         <div className={styles.formRow}>
@@ -126,7 +124,7 @@ export default function References() {
             />
           </label>
           <label className={styles.field}>
-            Номер заказа
+            Заказ №
             <input
               type="number"
               step="1"
@@ -148,8 +146,6 @@ export default function References() {
         </div>
         {saveError && <div role="alert">{saveError}</div>}
       </div>
-
-      <div className={styles.separator} />
 
       <section aria-labelledby="references-equipment">
         <h2 id="references-equipment" className={styles.groupHeading}>

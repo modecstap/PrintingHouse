@@ -139,7 +139,7 @@ export default function BlockSection({
       <div className={styles.fieldRow}>
         <TextField
           id={`${idPrefix}-block-count`}
-          label="Количество копий"
+          label="Копии"
           value={block.count}
           type="number"
           onChange={(v) => update({ count: v })}
@@ -153,7 +153,7 @@ export default function BlockSection({
         />
       </div>
 
-      <p className={styles.legend}>Формат изделия</p>
+      <p className={styles.legend}>Формат</p>
       <div className={styles.fieldRow}>
         <TextField
           id={`${idPrefix}-target-width`}
@@ -195,7 +195,7 @@ export default function BlockSection({
         />
         <TextField
           id={`${idPrefix}-spacing`}
-          label="Поля печатного листа (мм)"
+          label="Поля листа (мм)"
           value={block.spacing}
           type="number"
           onChange={(v) => update({ spacing: v })}

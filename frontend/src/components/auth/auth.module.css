@@ -1,18 +1,32 @@
-.calculatorContainer {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
-  background: var(--bg);
-  color: var(--text);
-  box-shadow: var(--shadow-light);
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  box-sizing: border-box;
+  padding: var(--spacing-8);
+  text-transform: uppercase;
+  background: var(--bg-color);
+  background-image: var(--bg-grid);
+  background-size: var(--spacing-8) var(--spacing-8);
+  color: var(--text-color);
+  font-family: var(--text-font);
+  min-height: 100%;
+}
+
+.page h1,
+.page h2,
+.page h3 {
+  margin: 0;
+  font-family: var(--header-font);
+  font-weight: normal;
 }
 
 .buttonRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-3);
 }
 
 .error {

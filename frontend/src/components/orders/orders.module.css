@@ -1,62 +1,81 @@
-.calculatorContainer {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background: var(--bg);
-    color: var(--text);
-    box-shadow: var(--shadow-light);
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  box-sizing: border-box;
+  padding: var(--spacing-8);
+  text-transform: uppercase;
+  background: var(--bg-color);
+  background-image: var(--bg-grid);
+  background-size: var(--spacing-8) var(--spacing-8);
+  color: var(--text-color);
+  font-family: var(--text-font);
+  min-height: 100%;
+}
+
+.page h1,
+.page h2,
+.page h3 {
+  margin: 0;
+  font-family: var(--header-font);
+  font-weight: normal;
 }
 
 .pageTitle {
-    display: flex;
-    text-align: left;
-    margin: 20px 15px;
-    color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  text-align: left;
 }
 
-.refreshButton {
-    background-color: var(--primary);
-    color: var(--highlight);
-    border: none;
-    font-size: 16px;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: background 0.2s;
-    height: 30px;
-    width: 30px;
+.page [role="alert"],
+.modalMessage {
+  color: var(--lonetrail-red);
+  font-family: var(--header-font);
+  font-weight: normal;
 }
 
 .table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 8px;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  margin-top: var(--spacing-2);
 }
 
-.table th,
+.table thead {
+  background: var(--bg-highlight);
+}
+
+.table th {
+  font-family: var(--header-font);
+  font-weight: normal;
+  padding: var(--spacing-2) var(--spacing-4);
+  text-align: left;
+}
+
 .table td {
-    text-align: left;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border, #ddd);
+  padding: var(--spacing-2) var(--spacing-4);
+  text-align: left;
 }
 
 .rowButton {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-    text-align: left;
-    padding: 8px 12px;
-    margin: 0;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-2) var(--spacing-4);
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 .rowButton:hover {
-    background: var(--hover, rgba(0, 0, 0, 0.05));
+  background: color-mix(in srgb, var(--text-color) 8%, transparent);
 }
 
 .modalMessage {
-    margin: 0 0 16px;
+  margin: 0 0 var(--spacing-4);
 }

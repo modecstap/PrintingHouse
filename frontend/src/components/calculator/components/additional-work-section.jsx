@@ -37,7 +37,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
 
   return (
     <section className={styles.calculatorBlock}>
-      <h3>Дополнительные работы</h3>
+      <h3>Доп. работы</h3>
       {works.map((work) => {
         const idPrefix = work.clientKey;
         return (
@@ -54,7 +54,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
             <div className={styles.fieldRow}>
               <TextField
                 id={`${idPrefix}-name`}
-                label="Название операции"
+                label="Название"
                 value={work.name}
                 onChange={(v) => updateWork(work.clientKey, { name: v })}
               />
@@ -83,7 +83,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
         );
       })}
       <Button type="button" onClick={addWork}>
-        + Добавить работу
+        + Работа
       </Button>
     </section>
   );

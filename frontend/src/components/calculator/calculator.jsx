@@ -214,7 +214,7 @@ export default function Calculator({
   const presetBusy = presetLoadState.status === "loading";
 
   return (
-    <div className={styles.calculatorContainer}>
+    <div className={styles.page}>
       <div className={styles.fieldRow}>
         <h2 className={styles.pageTitle}>Калькулятор</h2>
       </div>
@@ -229,7 +229,7 @@ export default function Calculator({
               onChange={handlePresetChange}
               disabled={actionBusy || presetBusy}
             >
-              <option value="">— не выбран —</option>
+              <option value="">Нет</option>
               {referencesState.references.map((row) => (
                 <option key={`${row.name}-${row.order_id}`} value={row.order_id}>
                   {row.description
@@ -242,7 +242,7 @@ export default function Calculator({
         )}
 
       <div className={styles.fieldGroup}>
-        <label htmlFor="order-count">Количество изделий</label>
+        <label htmlFor="order-count">Тираж</label>
         <input
           id="order-count"
           type="number"
@@ -265,17 +265,13 @@ export default function Calculator({
       ))}
 
       <Button type="button" onClick={addBlock}>
-        + Добавить блок
+        + Блок
       </Button>
-
-      <div className={styles.separator} />
 
       <AdditionalWorkSection
         works={form.additionalWorks}
         onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
       />
-
-      <div className={styles.separator} />
 
       <ReportView report={report} />
 
@@ -285,7 +281,7 @@ export default function Calculator({
           onClick={handleQuote}
           disabled={actionBusy || presetBusy}
         >
-          {quoteState.status === "loading" ? "Вычисляем..." : "Рассчитать"}
+          {quoteState.status === "loading" ? "Счёт..." : "Рассчитать"}
         </Button>
         <Button
           type="button"

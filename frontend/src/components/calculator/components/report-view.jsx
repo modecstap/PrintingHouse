@@ -20,12 +20,12 @@ export default function ReportView({ report }) {
             <td>{formatMoney(report.order_price)}</td>
           </tr>
           <tr>
-            <th scope="row">Прибыль от тиража</th>
+            <th scope="row">Прибыль</th>
             <td>{formatMoney(report.income)}</td>
           </tr>
           {report.impositions.map((count, index) => (
             <tr key={index}>
-              <th scope="row">{`Блок ${index + 1}: изделий на листе`}</th>
+              <th scope="row">{`Блок ${index + 1}: на листе`}</th>
               <td>{count}</td>
             </tr>
           ))}

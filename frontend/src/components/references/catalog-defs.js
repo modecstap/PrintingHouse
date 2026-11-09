@@ -274,17 +274,17 @@ export const STAFF_CATALOGS = [
   }),
   staffCatalog({
     key: "laminator-operators",
-    title: "Операторы ламинации",
+    title: "Ламинация",
     listPath: "/api/staff/laminator-operators",
   }),
   staffCatalog({
     key: "cutter-operators",
-    title: "Операторы реза",
+    title: "Рез",
     listPath: "/api/staff/cutter-operators",
   }),
   staffCatalog({
     key: "die-cut-operators",
-    title: "Операторы высечки",
+    title: "Высечка",
     listPath: "/api/staff/die-cut-operators",
   }),
 ];

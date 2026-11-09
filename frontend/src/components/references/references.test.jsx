@@ -124,7 +124,7 @@ describe("References", () => {
 
     await userEvent.type(screen.getByLabelText("Имя"), "Новый");
     await userEvent.type(screen.getByLabelText("Описание"), "Описание");
-    await userEvent.type(screen.getByLabelText("Номер заказа"), "5");
+    await userEvent.type(screen.getByLabelText("Заказ №"), "5");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -134,7 +134,7 @@ describe("References", () => {
     });
     expect(screen.getByLabelText("Имя")).toHaveValue("");
     expect(screen.getByLabelText("Описание")).toHaveValue("");
-    expect(screen.getByLabelText("Номер заказа")).toHaveValue(null);
+    expect(screen.getByLabelText("Заказ №")).toHaveValue(null);
   });
 
   it("should show the server detail and keep the row out when the order is missing", async () => {
@@ -158,7 +158,7 @@ describe("References", () => {
 
     await userEvent.type(screen.getByLabelText("Имя"), "X");
     await userEvent.type(screen.getByLabelText("Описание"), "Y");
-    await userEvent.type(screen.getByLabelText("Номер заказа"), "99");
+    await userEvent.type(screen.getByLabelText("Заказ №"), "99");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -168,7 +168,7 @@ describe("References", () => {
         within(templateBlock()).getByRole("alert")
       ).toHaveTextContent("order missing");
     });
-    expect(screen.getByLabelText("Номер заказа")).toHaveValue(99);
+    expect(screen.getByLabelText("Заказ №")).toHaveValue(99);
 
     const tbody = templateTable().querySelector("tbody");
     expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
@@ -189,6 +189,8 @@ describe("References", () => {
     });
     expect(screen.getByRole("heading", { name: "Персонал" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Материалы" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Справочники" })).toBeInTheDocument();
+    expect(screen.queryByText("Справочная система")).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(
@@ -201,9 +203,9 @@ describe("References", () => {
       "Ламинаторы",
       "Резаки",
       "Печатники",
-      "Операторы ламинации",
-      "Операторы реза",
-      "Операторы высечки",
+      "Ламинация",
+      "Рез",
+      "Высечка",
       "Листы",
       "Плёнки",
     ]) {
@@ -212,7 +214,7 @@ describe("References", () => {
 
     expect(
       within(templateTable()).getByRole("columnheader", {
-        name: "Номер заказа",
+        name: "Заказ №",
       })
     ).toBeInTheDocument();
   });
