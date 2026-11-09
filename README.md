@@ -32,9 +32,9 @@ DB_NAME=ph_db
 
 alembic -c backend/storage/alembic.ini upgrade head
 
-Upgrade копирует строки старых заказов в таблицы Workplace, если в `"order"` есть строки, а таблицы Workplace пустые. Если в таблицах Workplace уже есть строки, upgrade останавливается и старые таблицы не меняет.
+Команда создаёт схему хранения для `new_core`: каталоги оборудования и операторов, заказы, тиражи, справочные материалы. Подключение к PostgreSQL берётся из переменных окружения `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (см. раздел «Переменные окружения»).
 
-Следующие ревизии удаляют старые таблицы и убирают префикс `workplace_`: на head заказы лежат в `"order"`, `operation_cost`, `printing`, `cost_report`, `printing_cost`, а справочник — в `reference`.
+После `upgrade head` таблицы пустые: строк в каталогах и заказах нет. Миграция не переносит данные из удалённой схемы Workplace и не копирует старые заказы.
 
 ## AI-агенты
 Настройка AI-агентов и структура `.agents/`: [.agents/docs/onboarding.md](.agents/docs/onboarding.md).
