@@ -75,11 +75,33 @@ function stubCatalogFetch(overrides = {}) {
     if (url === "/api/materials/films") {
       return jsonResponse(catalogs.films);
     }
+    if (url === "/api/references") {
+      return jsonResponse([]);
+    }
     if (url === "/api/orders/quote" && options?.method === "POST") {
       return jsonResponse(QUOTE_REPORT_RAW);
     }
   });
 }
+
+const SAMPLE_PRODUCT = {
+  blocks: [
+    {
+      count: 2,
+      markup: 30,
+      imposition: {
+        target: { name: "Визитка", width: 90, height: 50 },
+        sheet_id: null,
+        bleeds: 2,
+        spacing: 5,
+      },
+      operations: [],
+    },
+  ],
+  operations: [],
+};
+
+const ORDER_DTO = { id: 42, count: 100, product: SAMPLE_PRODUCT };
 
 async function waitForCatalogs(fetchMock = global.fetch) {
   await waitFor(() => {
@@ -236,6 +258,35 @@ describe("Calculator", () => {
     });
     expect(screen.getByText("Цена изделия")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
+  });
+
+  it("should load the order form when the user picks a preset", async () => {
+    global.fetch = jest.fn((url, options) => {
+      if (url === "/api/references") {
+        return jsonResponse([
+          { name: "Визитки", description: "стандарт", order_id: 42 },
+        ]);
+      }
+      if (url === "/api/orders/42") {
+        return jsonResponse(ORDER_DTO);
+      }
+      return stubCatalogFetch()(url, options);
+    });
+
+    render(<Calculator />);
+    await waitForCatalogs();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Пресет")).toBeInTheDocument();
+    });
+
+    await userEvent.selectOptions(screen.getByLabelText("Пресет"), "42");
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Количество изделий")).toHaveValue(100);
+    });
+    expect(screen.getByLabelText("Ширина (мм)")).toHaveValue(90);
+    expect(screen.getByLabelText("Высота (мм)")).toHaveValue(50);
   });
 
   it("should not offer delay, accept, or update", async () => {
