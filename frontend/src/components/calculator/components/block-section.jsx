@@ -42,6 +42,17 @@ function paperFromSheet(sheet) {
   };
 }
 
+function sheetFormatFromSheet(sheet) {
+  if (!sheet.format) {
+    return { name: "", width: "0", height: "0" };
+  }
+  return {
+    name: sheet.format.name,
+    width: String(sheet.format.width),
+    height: String(sheet.format.height),
+  };
+}
+
 function resolvePaperSheetId(paperSheetId, paper, sheets) {
   if (paperSheetId) {
     return paperSheetId;
@@ -88,7 +99,11 @@ export default function BlockSection({
 
   const selectPaperSheet = (sheetId) => {
     if (sheetId === "") {
-      update({ paperSheetId: "", paper: emptyPaperFields() });
+      update({
+        paperSheetId: "",
+        paper: emptyPaperFields(),
+        sheetFormat: { name: "", width: "0", height: "0" },
+      });
       return;
     }
     const sheet = catalogs.sheets.find((row) => String(row.id) === sheetId);
@@ -96,7 +111,11 @@ export default function BlockSection({
       update({ paperSheetId: sheetId });
       return;
     }
-    update({ paperSheetId: sheetId, paper: paperFromSheet(sheet) });
+    update({
+      paperSheetId: sheetId,
+      paper: paperFromSheet(sheet),
+      sheetFormat: sheetFormatFromSheet(sheet),
+    });
   };
 
   const paperSheetValue = resolvePaperSheetId(
@@ -170,36 +189,6 @@ export default function BlockSection({
         />
       </div>
 
-      <p className={styles.legend}>Формат листа</p>
-      <div className={styles.fieldRow}>
-        <TextField
-          id={`${idPrefix}-sheet-name`}
-          label="Название"
-          value={block.sheetFormat.name}
-          onChange={(v) =>
-            update({ sheetFormat: { ...block.sheetFormat, name: v } })
-          }
-        />
-        <TextField
-          id={`${idPrefix}-sheet-width`}
-          label="Ширина (мм)"
-          value={block.sheetFormat.width}
-          type="number"
-          onChange={(v) =>
-            update({ sheetFormat: { ...block.sheetFormat, width: v } })
-          }
-        />
-        <TextField
-          id={`${idPrefix}-sheet-height`}
-          label="Высота (мм)"
-          value={block.sheetFormat.height}
-          type="number"
-          onChange={(v) =>
-            update({ sheetFormat: { ...block.sheetFormat, height: v } })
-          }
-        />
-      </div>
-
       <div className={styles.fieldRow}>
         <TextField
           id={`${idPrefix}-bleeds`}
@@ -216,6 +205,14 @@ export default function BlockSection({
           onChange={(v) => update({ spacing: v })}
         />
       </div>
+      
+      <EdgeButtonRow
+        existingKinds={existingKinds}
+        onPrint={() => addOperation(emptyPrintOperation)}
+        onLaminate={() => addOperation(emptyLaminateOperation)}
+        onCut={() => addOperation(emptyCutOperation)}
+        onDieCut={() => addOperation(emptyDieCutOperation)}
+      />
 
       {block.operations.map((operation) => (
         <OperationFields
@@ -227,13 +224,7 @@ export default function BlockSection({
         />
       ))}
 
-      <EdgeButtonRow
-        existingKinds={existingKinds}
-        onPrint={() => addOperation(emptyPrintOperation)}
-        onLaminate={() => addOperation(emptyLaminateOperation)}
-        onCut={() => addOperation(emptyCutOperation)}
-        onDieCut={() => addOperation(emptyDieCutOperation)}
-      />
+      
     </section>
   );
 }

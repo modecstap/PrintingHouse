@@ -1,6 +1,7 @@
 import { requestJson } from "../../../lib/api";
 import {
   toCutter,
+  toFilm,
   toLaminator,
   toOperator,
   toPrinter,
@@ -47,6 +48,11 @@ export async function fetchSheets(signal) {
   return data.map(toSheet);
 }
 
+export async function fetchFilms(signal) {
+  const data = await requestJson("/api/materials/films", { signal });
+  return data.map(toFilm);
+}
+
 const CATALOG_LOADERS = [
   ["printers", fetchPrinters],
   ["laminators", fetchLaminators],
@@ -56,6 +62,7 @@ const CATALOG_LOADERS = [
   ["cutterOperators", fetchCutterOperators],
   ["dieCutOperators", fetchDieCutOperators],
   ["sheets", fetchSheets],
+  ["films", fetchFilms],
 ];
 
 export async function loadCatalogs(signal) {

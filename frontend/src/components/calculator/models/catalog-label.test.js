@@ -8,7 +8,9 @@ import {
   cutterLabel,
   operatorLabel,
   toSheet,
+  filmLabel,
   sheetLabel,
+  toFilm,
 } from "./catalog-label";
 
 describe("catalog parsers", () => {
@@ -53,7 +55,7 @@ describe("catalog parsers", () => {
     });
   });
 
-  it("should parse a sheet with paper", () => {
+  it("should parse a sheet with paper and format", () => {
     expect(
       toSheet({
         id: 2,
@@ -63,6 +65,7 @@ describe("catalog parsers", () => {
           thickness: 1,
           price_per_kilo: "80.50",
         },
+        format: { name: "SRA3", width: 320, height: 450 },
       }),
     ).toEqual({
       id: 2,
@@ -72,6 +75,7 @@ describe("catalog parsers", () => {
         thickness: 1,
         price_per_kilo: "80.50",
       },
+      format: { name: "SRA3", width: 320, height: 450 },
     });
   });
 });
@@ -117,5 +121,17 @@ describe("catalog labels", () => {
         },
       }),
     ).toBe("Офсет, 80 г/м², 1 мм, 50.00 ₽/кг");
+  });
+
+  it("should parse a film and format its label", () => {
+    expect(toFilm({ id: 2, name: "Глянец", price: "3", density: 25 })).toEqual({
+      id: 2,
+      name: "Глянец",
+      price: "3",
+      density: 25,
+    });
+    expect(filmLabel({ name: "Глянец", price: "3", density: 25 })).toBe(
+      "Глянец, 3.00 ₽, плотность 25",
+    );
   });
 });

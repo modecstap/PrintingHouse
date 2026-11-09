@@ -9,15 +9,7 @@ const SAMPLE_PRODUCT = {
       markup: 30,
       imposition: {
         target: { name: "Визитка", width: 90, height: 50 },
-        press_sheet: {
-          paper: {
-            name: "Мелованная",
-            density: 150,
-            thickness: 1,
-            price_per_kilo: "80.50",
-          },
-          format: { name: "SRA3", width: 320, height: 450 },
-        },
+        sheet_id: 1,
         bleeds: 2,
         spacing: 5,
       },
@@ -44,6 +36,19 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+const SAMPLE_SHEET_CATALOG = [
+  {
+    id: 1,
+    paper: {
+      name: "Мелованная",
+      density: 150,
+      thickness: 1,
+      price_per_kilo: "80.50",
+    },
+    format: { name: "SRA3", width: 320, height: 450 },
+  },
+];
+
 function stubCatalogFetch() {
   return jest.fn((url, options) => {
     if (options?.method && options.method !== "GET") {
@@ -51,6 +56,9 @@ function stubCatalogFetch() {
     }
     if (url.startsWith("/api/equipment/") || url.startsWith("/api/staff/")) {
       return jsonResponse([]);
+    }
+    if (url === "/api/materials/sheets") {
+      return jsonResponse(SAMPLE_SHEET_CATALOG);
     }
     return jsonResponse({}, 404);
   });
@@ -154,7 +162,7 @@ describe("Orders", () => {
     await userEvent.click(screen.getByRole("button", { name: /1.*10|10.*1/ }));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("Визитка")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("SRA3")).toBeInTheDocument();
     });
     expect(screen.getByText("Цена изделия")).toBeInTheDocument();
   });

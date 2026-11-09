@@ -40,6 +40,7 @@ function stubCatalogFetch(overrides = {}) {
     cutterOperators: [],
     dieCutOperators: [],
     sheets: [],
+    films: [],
     ...overrides,
   };
 
@@ -71,6 +72,9 @@ function stubCatalogFetch(overrides = {}) {
     if (url === "/api/materials/sheets") {
       return jsonResponse(catalogs.sheets);
     }
+    if (url === "/api/materials/films") {
+      return jsonResponse(catalogs.films);
+    }
     if (url === "/api/orders/quote" && options?.method === "POST") {
       return jsonResponse(QUOTE_REPORT_RAW);
     }
@@ -88,6 +92,7 @@ async function waitForCatalogs(fetchMock = global.fetch) {
       "/api/staff/cutter-operators",
       "/api/staff/die-cut-operators",
       "/api/materials/sheets",
+      "/api/materials/films",
     ];
     for (const url of catalogUrls) {
       expect(fetchMock).toHaveBeenCalledWith(

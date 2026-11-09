@@ -15,15 +15,7 @@ const sampleWriteJson = {
         markup: 30,
         imposition: {
           target: { name: "", width: 90, height: 50 },
-          press_sheet: {
-            paper: {
-              name: "Мелованная",
-              density: 150,
-              thickness: 1,
-              price_per_kilo: "80.50",
-            },
-            format: { name: "SRA3", width: 320, height: 450 },
-          },
+          sheet_id: 1,
           bleeds: 2,
           spacing: 5,
         },
@@ -34,7 +26,7 @@ const sampleWriteJson = {
             laminator_id: 2,
             operator_id: 5,
             lamination: "ONE_ZERO",
-            film: { name: "Глянец", price: "3.00", density: 25 },
+            film_id: 2,
           },
           { kind: "cut", cutter_id: 3, operator_id: 6 },
           { kind: "die_cut", operator_id: 7 },
@@ -56,6 +48,7 @@ function sampleForm() {
         count: "2",
         markup: "30",
         target: { name: "Визитка", width: "90", height: "50" },
+        paperSheetId: "1",
         paper: {
           name: "Мелованная",
           density: "150",
@@ -79,6 +72,7 @@ function sampleForm() {
             laminatorId: "2",
             operatorId: "5",
             lamination: "ONE_ZERO",
+            filmId: "2",
             film: { name: "Глянец", price: "3.00", density: "25" },
           },
           {
@@ -149,15 +143,7 @@ describe("toOrderWrite", () => {
             markup: 0,
             imposition: {
               target: { name: "", width: 0, height: 0 },
-              press_sheet: {
-                paper: {
-                  name: "",
-                  density: "",
-                  thickness: "",
-                  price_per_kilo: "0",
-                },
-                format: { name: "", width: 0, height: 0 },
-              },
+              sheet_id: "",
               bleeds: 0,
               spacing: 0,
             },
@@ -191,9 +177,10 @@ describe("toCalculatorForm", () => {
     expect(form.blocks[0].count).toBe("2");
     expect(form.blocks[0].markup).toBe("30");
     expect(form.blocks[0].target.width).toBe("90");
-    expect(form.blocks[0].paper.price_per_kilo).toBe("80.50");
+    expect(form.blocks[0].paperSheetId).toBe("1");
     expect(form.blocks[0].operations[0].printerId).toBe("1");
     expect(form.blocks[0].operations[0].chroma).toBe("FOUR_ZERO");
+    expect(form.blocks[0].operations[1].filmId).toBe("2");
     expect(form.additionalWorks[0].price).toBe("10.00");
     expect(form.blocks[0].clientKey).toMatch(/\S/);
     expect(form.blocks[0].operations[0].clientKey).toMatch(/\S/);

@@ -52,6 +52,7 @@ function emptyLaminateOperation() {
     laminatorId: "",
     operatorId: "",
     lamination: "DONT",
+    filmId: "",
     film: { name: "", price: "0", density: "0" },
   };
 }
@@ -126,11 +127,7 @@ function mapOperationToWrite(operation) {
       laminator_id: coerceIdField(operation.laminatorId),
       operator_id: coerceIdField(operation.operatorId),
       lamination: operation.lamination,
-      film: {
-        name: operation.film.name,
-        price: coerceMoneyField(operation.film.price),
-        density: coerceIntegerField(operation.film.density),
-      },
+      film_id: coerceIdField(operation.filmId),
     };
   }
   if (operation.kind === "cut") {
@@ -159,19 +156,7 @@ function mapBlockToWrite(block) {
         width: coerceIntegerField(block.target.width),
         height: coerceIntegerField(block.target.height),
       },
-      press_sheet: {
-        paper: {
-          name: block.paper.name,
-          density: coerceIntegerField(block.paper.density),
-          thickness: coerceIntegerField(block.paper.thickness),
-          price_per_kilo: coerceMoneyField(block.paper.price_per_kilo),
-        },
-        format: {
-          name: block.sheetFormat.name,
-          width: coerceIntegerField(block.sheetFormat.width),
-          height: coerceIntegerField(block.sheetFormat.height),
-        },
-      },
+      sheet_id: coerceIdField(block.paperSheetId),
       bleeds: coerceIntegerField(block.bleeds),
       spacing: coerceIntegerField(block.spacing),
     },
@@ -211,11 +196,11 @@ function mapOperationFromDto(operation) {
       laminatorId: numberToFormString(operation.laminator_id),
       operatorId: numberToFormString(operation.operator_id),
       lamination: operation.lamination,
-      film: {
-        name: operation.film.name,
-        price: operation.film.price,
-        density: numberToFormString(operation.film.density),
-      },
+      filmId:
+        operation.film_id != null
+          ? numberToFormString(operation.film_id)
+          : "",
+      film: { name: "", price: "0", density: "0" },
     };
   }
   if (operation.kind === "cut") {
@@ -236,6 +221,84 @@ function mapOperationFromDto(operation) {
   throw new Error(`order: unknown operation kind ${operation.kind}`);
 }
 
+function paperFieldsFromSheet(sheet) {
+  return {
+    name: sheet.paper.name,
+    density: String(sheet.paper.density),
+    thickness: String(sheet.paper.thickness),
+    price_per_kilo: sheet.paper.price_per_kilo,
+  };
+}
+
+function sheetFormatFieldsFromSheet(sheet) {
+  if (!sheet.format) {
+    return { name: "", width: "0", height: "0" };
+  }
+  return {
+    name: sheet.format.name,
+    width: String(sheet.format.width),
+    height: String(sheet.format.height),
+  };
+}
+
+function filmFieldsFromCatalog(film) {
+  return {
+    name: film.name,
+    price: film.price,
+    density: String(film.density),
+  };
+}
+
+function applyFilmsToOperations(operations, films) {
+  return operations.map((operation) => {
+    if (operation.kind !== "laminate" || !operation.filmId) {
+      return operation;
+    }
+    const film = films.find(
+      (row) => String(row.id) === String(operation.filmId),
+    );
+    if (!film) {
+      return operation;
+    }
+    return {
+      ...operation,
+      film: filmFieldsFromCatalog(film),
+    };
+  });
+}
+
+export function applySheetsCatalogToForm(form, sheets) {
+  return {
+    ...form,
+    blocks: form.blocks.map((block) => {
+      if (!block.paperSheetId) {
+        return block;
+      }
+      const sheet = sheets.find(
+        (row) => String(row.id) === String(block.paperSheetId),
+      );
+      if (!sheet) {
+        return block;
+      }
+      return {
+        ...block,
+        paper: paperFieldsFromSheet(sheet),
+        sheetFormat: sheetFormatFieldsFromSheet(sheet),
+      };
+    }),
+  };
+}
+
+export function applyFilmsCatalogToForm(form, films) {
+  return {
+    ...form,
+    blocks: form.blocks.map((block) => ({
+      ...block,
+      operations: applyFilmsToOperations(block.operations, films),
+    })),
+  };
+}
+
 function mapBlockFromDto(block) {
   const { imposition } = block;
   return {
@@ -247,18 +310,17 @@ function mapBlockFromDto(block) {
       width: numberToFormString(imposition.target.width),
       height: numberToFormString(imposition.target.height),
     },
-    paperSheetId: "",
+    paperSheetId:
+      imposition.sheet_id != null
+        ? numberToFormString(imposition.sheet_id)
+        : "",
     paper: {
-      name: imposition.press_sheet.paper.name,
-      density: numberToFormString(imposition.press_sheet.paper.density),
-      thickness: numberToFormString(imposition.press_sheet.paper.thickness),
-      price_per_kilo: imposition.press_sheet.paper.price_per_kilo,
+      name: "",
+      density: "",
+      thickness: "",
+      price_per_kilo: "0",
     },
-    sheetFormat: {
-      name: imposition.press_sheet.format.name,
-      width: numberToFormString(imposition.press_sheet.format.width),
-      height: numberToFormString(imposition.press_sheet.format.height),
-    },
+    sheetFormat: { name: "", width: "0", height: "0" },
     bleeds: numberToFormString(imposition.bleeds),
     spacing: numberToFormString(imposition.spacing),
     operations: block.operations.map(mapOperationFromDto),

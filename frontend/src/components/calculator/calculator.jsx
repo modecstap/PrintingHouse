@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { loadCatalogs } from "./api/catalog";
 import { quoteOrder, saveOrder } from "./api/order";
 import {
+  applyFilmsCatalogToForm,
+  applySheetsCatalogToForm,
   emptyBlock,
   emptyCalculatorForm,
 } from "./models/order";
@@ -19,6 +21,7 @@ const EMPTY_CATALOGS = {
   cutterOperators: [],
   dieCutOperators: [],
   sheets: [],
+  films: [],
 };
 
 export default function Calculator({
@@ -43,11 +46,24 @@ export default function Calculator({
       if (controller.signal.aborted) {
         return;
       }
+      const merged = { ...EMPTY_CATALOGS, ...catalogs };
       setCatalogState({
         status: error ? "error" : "success",
-        catalogs: { ...EMPTY_CATALOGS, ...catalogs },
+        catalogs: merged,
         message: error,
       });
+      if (!error) {
+        setForm((prev) => {
+          let next = prev;
+          if (merged.sheets.length > 0) {
+            next = applySheetsCatalogToForm(next, merged.sheets);
+          }
+          if (merged.films.length > 0) {
+            next = applyFilmsCatalogToForm(next, merged.films);
+          }
+          return next;
+        });
+      }
     });
     return () => controller.abort();
   }, []);

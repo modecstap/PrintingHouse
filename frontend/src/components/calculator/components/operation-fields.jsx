@@ -1,5 +1,6 @@
 import {
   cutterLabel,
+  filmLabel,
   laminatorLabel,
   operatorLabel,
   printerLabel,
@@ -60,6 +61,31 @@ const KIND_HEADING = {
   die_cut: "Высечка",
 };
 
+function emptyFilmFields() {
+  return { name: "", price: "0", density: "0" };
+}
+
+function filmFromCatalog(film) {
+  return {
+    name: film.name,
+    price: film.price,
+    density: String(film.density),
+  };
+}
+
+function resolveFilmId(filmId, film, films) {
+  if (filmId) {
+    return filmId;
+  }
+  const match = films.find(
+    (row) =>
+      row.name === film.name &&
+      row.price === film.price &&
+      String(row.density) === String(film.density),
+  );
+  return match ? String(match.id) : "";
+}
+
 export default function OperationFields({
   operation,
   catalogs,
@@ -118,6 +144,31 @@ export default function OperationFields({
   }
 
   if (operation.kind === "laminate") {
+    const films = catalogs.films ?? [];
+
+    const selectFilm = (filmId) => {
+      if (filmId === "") {
+        onChange({
+          ...operation,
+          filmId: "",
+          film: emptyFilmFields(),
+        });
+        return;
+      }
+      const film = films.find((row) => String(row.id) === filmId);
+      if (!film) {
+        onChange({ ...operation, filmId });
+        return;
+      }
+      onChange({
+        ...operation,
+        filmId,
+        film: filmFromCatalog(film),
+      });
+    };
+
+    const filmValue = resolveFilmId(operation.filmId, operation.film, films);
+
     return (
       <article
         className={styles.operationCard}
@@ -165,40 +216,15 @@ export default function OperationFields({
         </div>
         <p className={styles.legend}>Плёнка</p>
         <div className={styles.fieldRow}>
-          <TextField
-            id={`${idPrefix}-film-name`}
-            label="Название"
-            value={operation.film.name}
-            onChange={(v) =>
-              onChange({
-                ...operation,
-                film: { ...operation.film, name: v },
-              })
-            }
-          />
-          <TextField
-            id={`${idPrefix}-film-price`}
-            label="Цена"
-            value={operation.film.price}
-            inputMode="decimal"
-            onChange={(v) =>
-              onChange({
-                ...operation,
-                film: { ...operation.film, price: v },
-              })
-            }
-          />
-          <TextField
-            id={`${idPrefix}-film-density`}
-            label="Плотность"
-            value={operation.film.density}
-            type="number"
-            onChange={(v) =>
-              onChange({
-                ...operation,
-                film: { ...operation.film, density: v },
-              })
-            }
+          <CatalogSelect
+            id={`${idPrefix}-film`}
+            label="Плёнка"
+            value={filmValue}
+            onChange={selectFilm}
+            options={films.map((film) => ({
+              value: String(film.id),
+              label: filmLabel(film),
+            }))}
           />
         </div>
       </article>

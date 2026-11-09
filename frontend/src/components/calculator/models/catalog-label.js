@@ -92,6 +92,16 @@ export function toSheet(raw) {
   if (typeof paper?.price_per_kilo !== "string") {
     throw new Error("sheet: paper.price_per_kilo must be a string");
   }
+  const format = raw?.format;
+  if (typeof format?.name !== "string") {
+    throw new Error("sheet: format.name must be a string");
+  }
+  if (typeof format?.width !== "number") {
+    throw new Error("sheet: format.width must be a number");
+  }
+  if (typeof format?.height !== "number") {
+    throw new Error("sheet: format.height must be a number");
+  }
   return {
     id: raw.id,
     paper: {
@@ -100,10 +110,40 @@ export function toSheet(raw) {
       thickness: paper.thickness,
       price_per_kilo: paper.price_per_kilo,
     },
+    format: {
+      name: format.name,
+      width: format.width,
+      height: format.height,
+    },
   };
 }
 
 export function sheetLabel(sheet) {
   const { paper } = sheet;
   return `${paper.name}, ${paper.density} г/м², ${paper.thickness} мм, ${formatMoney(paper.price_per_kilo)}/кг`;
+}
+
+export function toFilm(raw) {
+  if (typeof raw?.id !== "number") {
+    throw new Error("film: id must be a number");
+  }
+  if (typeof raw?.name !== "string") {
+    throw new Error("film: name must be a string");
+  }
+  if (typeof raw?.price !== "string") {
+    throw new Error("film: price must be a string");
+  }
+  if (typeof raw?.density !== "number") {
+    throw new Error("film: density must be a number");
+  }
+  return {
+    id: raw.id,
+    name: raw.name,
+    price: raw.price,
+    density: raw.density,
+  };
+}
+
+export function filmLabel(film) {
+  return `${film.name}, ${formatMoney(film.price)}, плотность ${film.density}`;
 }
