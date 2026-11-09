@@ -15,6 +15,8 @@ from backend.new_core.accountant.run_estimate import RunEstimate
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.sheet import SheetID
 from backend.new_core.order.order import OrderID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
@@ -71,6 +73,8 @@ class _RunPricingFixtures:
         default_factory=dict,
     )
     cutters: dict[CutterID, Cutter] = field(default_factory=dict)
+    sheets: dict[SheetID, Sheet] = field(default_factory=dict)
+    films: dict[FilmID, Film] = field(default_factory=dict)
 
 
 def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
@@ -91,6 +95,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     with_laminate: bool = True,
     with_cut: bool = True,
     markup: Percent = Percent(0),
+    sheet_id: SheetID | None = None,
+    film_id: FilmID | None = None,
 ) -> tuple[
     PrintRun,
     Print | None,
@@ -128,7 +134,14 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=LaminatorOperatorID(1),
         salary_by_operation=Money(Decimal(4)),
     )
-    film = Film(name="film", price=Money(Decimal(3)), density=77)
+    resolved_sheet_id = sheet_id or SheetID(1)
+    resolved_film_id = film_id or FilmID(1)
+    film = Film(
+        id=resolved_film_id,
+        name="film",
+        price=Money(Decimal(3)),
+        density=77,
+    )
     cutter = Cutter(id=CutterID(1), max_stack=max_stack)
     cutter_operator = CutterOperator(
         id=CutterOperatorID(1),
@@ -141,6 +154,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             width=target_width,
         ),
         press_sheet=Sheet(
+            id=resolved_sheet_id,
             paper=Paper(
                 density=press_density,
                 thickness=1,
@@ -208,6 +222,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         for_order=OrderID(1),
         required_count=required_count,
     )
+    sheet = imposition.press_sheet
     ctx = _RunPricingFixtures(
         printers={printer.id: printer},
         press_operators={press_operator.id: press_operator},
@@ -215,6 +230,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         laminator_operators={laminator_operator.id: laminator_operator},
         cutter_operators={cutter_operator.id: cutter_operator},
         cutters={cutter.id: cutter},
+        sheets={sheet.id: sheet},
+        films={film.id: film},
     )
     return run, printing, laminate, cut, ctx
 

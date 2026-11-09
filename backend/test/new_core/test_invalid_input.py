@@ -8,6 +8,8 @@ import pytest
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.sheet import SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
@@ -36,8 +38,9 @@ _ZERO_CELL = (
 )
 
 
-def _sheet(width: int, height: int) -> Sheet:
+def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
     return Sheet(
+        id=sheet_id or SheetID(1),
         paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
         format=Format(name="sheet", height=height, width=width),
     )
@@ -255,6 +258,8 @@ def test_every_invalid_field_is_reported(message: str, build):
             id="cutter id",
         ),
         pytest.param("printer id", lambda: PrinterID(-1), id="printer id"),
+        pytest.param("film id", lambda: FilmID(-1), id="film id"),
+        pytest.param("sheet id", lambda: SheetID(-1), id="sheet id"),
         pytest.param("laminator id", lambda: LaminatorID(-1), id="laminator id"),
         pytest.param(
             "press operator id",

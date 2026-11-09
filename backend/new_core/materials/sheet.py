@@ -3,17 +3,35 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from backend.new_core.errors import InvalidInput
 from backend.new_core.values.money import Money
 from backend.new_core.materials.paper import Paper
 from backend.new_core.format import Format
 
 
 @dataclass(frozen=True, slots=True)
+class SheetID:
+    """Value Object. Stable identifier of a sheet in the materials catalog."""
+
+    value: int
+
+    def __post_init__(self) -> None:
+        if self.value < 0:
+            raise InvalidInput(
+                "sheet id",
+                f"id меньше 0, id={self.value}",
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class Sheet:
     """
-    Value Object. One sheet of a paper grade, with its format in millimeters.
+    Entity. One sheet row in the materials catalog.
+
+    Paper grade and format stay nested on the entity.
     """
 
+    id: SheetID
     paper: Paper
     format: Format
 
