@@ -1,0 +1,17 @@
+.button {
+  padding: var(--spacing-2) var(--spacing-4);
+  border: none;
+  background: var(--button-color);
+  color: var(--text-contrast);
+  text-align: center;
+  font-family: var(--header-font);
+  font-weight: normal;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.button:disabled {
+  background: var(--bg-muted);
+  color: var(--text-contrast);
+  cursor: not-allowed;
+}

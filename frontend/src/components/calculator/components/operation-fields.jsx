@@ -5,7 +5,7 @@ import {
   operatorLabel,
   printerLabel,
 } from "../models/catalog-label";
-import Button from "../../../features/Button/Button";
+import Button from "../../generic/button/button";
 import styles from "../calculator.module.css";
 
 const CHROMA_OPTIONS = [

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction";
 import FlexForm from "../../features/Form/FlexForm";
-import Button from "../../features/Button/Button";
+import Button from "../../components/generic/button/button";
 
 import styles from "./AuthPage.module.css";
 
@@ -63,11 +63,11 @@ const AuthPage = () => {
         />
 
         <div className={styles.buttonRow}>
-          <Button type="submit" variant="primary" disabled={loading}>
+          <Button type="submit" disabled={loading}>
             Войти
           </Button>
 
-          <Button type="button" variant="primary" onClick={logout}>
+          <Button type="button" onClick={logout}>
             Выйти
           </Button>
         </div>

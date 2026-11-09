@@ -6,7 +6,7 @@ import {
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
 import OperationFields, { CatalogSelect } from "./operation-fields";
-import Button from "../../../features/Button/Button";
+import Button from "../../generic/button/button";
 import styles from "../calculator.module.css";
 
 function TextField({ id, label, value, onChange, type = "text", inputMode }) {

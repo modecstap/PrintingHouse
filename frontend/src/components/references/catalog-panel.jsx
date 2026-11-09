@@ -5,7 +5,7 @@ import {
   fetchCatalog,
   replaceCatalog,
 } from "./api/catalog";
-import Button from "../../features/Button/Button";
+import Button from "../generic/button/button";
 import styles from "./references.module.css";
 
 function isFieldGroup(fieldDef) {
@@ -158,17 +158,12 @@ export default function CatalogPanel({ def }) {
                 ))}
                 <td className={styles.actionsCol}>
                   {def.canReplace && (
-                    <Button
-                      type="button"
-                      variant="table"
-                      onClick={() => handleEdit(row)}
-                    >
+                    <Button type="button" onClick={() => handleEdit(row)}>
                       Изменить
                     </Button>
                   )}
                   <Button
                     type="button"
-                    variant="table"
                     disabled={deletingId === row.id}
                     onClick={() => handleDelete(row)}
                   >
@@ -210,7 +205,6 @@ export default function CatalogPanel({ def }) {
         <div className={styles.buttonRow}>
           <Button
             type="button"
-            variant="primary"
             disabled={saveState.status === "loading"}
             onClick={handleSave}
           >

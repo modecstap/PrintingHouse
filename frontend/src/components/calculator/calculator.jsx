@@ -12,8 +12,7 @@ import {
 import AdditionalWorkSection from "./components/additional-work-section";
 import BlockSection from "./components/block-section";
 import ReportView from "./components/report-view";
-import Button from "../../features/Button/Button";
-import buttonStyles from "../../features/Button/Button.module.css";
+import Button from "../generic/button/button";
 import styles from "./calculator.module.css";
 
 const EMPTY_CATALOGS = {
@@ -265,11 +264,7 @@ export default function Calculator({
         />
       ))}
 
-      <Button
-        type="button"
-        className={buttonStyles.standalone}
-        onClick={addBlock}
-      >
+      <Button type="button" onClick={addBlock}>
         + Добавить блок
       </Button>
 
@@ -287,7 +282,6 @@ export default function Calculator({
       <div className={styles.buttonRow}>
         <Button
           type="button"
-          variant="accent"
           onClick={handleQuote}
           disabled={actionBusy || presetBusy}
         >
@@ -295,7 +289,6 @@ export default function Calculator({
         </Button>
         <Button
           type="button"
-          variant="primary"
           onClick={handleSave}
           disabled={actionBusy || presetBusy}
         >

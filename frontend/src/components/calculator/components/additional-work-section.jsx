@@ -1,6 +1,5 @@
 import { emptyAdditionalWork } from "../models/order";
-import Button from "../../../features/Button/Button";
-import buttonStyles from "../../../features/Button/Button.module.css";
+import Button from "../../generic/button/button";
 import styles from "../calculator.module.css";
 
 function TextField({ id, label, value, onChange, type = "text", inputMode }) {
@@ -83,11 +82,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
           </article>
         );
       })}
-      <Button
-        type="button"
-        className={buttonStyles.standalone}
-        onClick={addWork}
-      >
+      <Button type="button" onClick={addWork}>
         + Добавить работу
       </Button>
     </section>
