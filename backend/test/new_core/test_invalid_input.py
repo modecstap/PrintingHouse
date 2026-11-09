@@ -5,6 +5,9 @@ from decimal import Decimal
 
 import pytest
 
+from backend.new_core.equipment.cutter import CutterID
+from backend.new_core.order.order import OrderID
+from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
 from backend.new_core import (
     Part,
@@ -66,8 +69,8 @@ def test_imposition_rejects_count_when_nothing_fits():
     _rejects(
         message,
         lambda: PrintRun(
-            id=1,
-            for_order=0,
+            id=PrintRunID(1),
+            for_order=OrderID(0),
             block=_block(0),
             required_count=10,
             imposition=imposition,
@@ -113,7 +116,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
     """A stack height of 0 is rejected."""
     _rejects(
         "cutter: высота стопы равна 0, высота=0 мм",
-        lambda: Cutter(id=1, max_stack=0),
+        lambda: Cutter(id=CutterID(1), max_stack=0),
     )
 
 
@@ -171,7 +174,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
         pytest.param(
             "order: количество меньше 0, количество=-1",
             lambda: Order(
-                id=1,
+                id=OrderID(1),
                 product=Product(blocks=(), operations=()),
                 count=-1,
             ),
@@ -185,8 +188,8 @@ def test_cutter_rejects_a_stack_height_of_zero():
         pytest.param(
             "print_run: необходимое количество меньше 0, количество=-1",
             lambda: PrintRun(
-                id=1,
-                for_order=1,
+                id=PrintRunID(1),
+                for_order=OrderID(1),
                 block=_block(0),
                 required_count=-1,
                 imposition=Imposition(
@@ -200,7 +203,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
         ),
         pytest.param(
             "cutter: высота стопы меньше 0, высота=-1 мм",
-            lambda: Cutter(id=1, max_stack=-1),
+            lambda: Cutter(id=CutterID(1), max_stack=-1),
             id="stack",
         ),
     ],

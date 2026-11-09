@@ -9,6 +9,15 @@ from backend.new_core.accountant.operation_reports import (
     RunPricingContext,
     operation_reports,
 )
+from backend.new_core.equipment.cutter import CutterID
+from backend.new_core.equipment.laminator import LaminatorID
+from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.order.order import OrderID
+from backend.new_core.personal.cutter_operator import CutterOperatorID
+from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
+from backend.new_core.personal.laminator_operator import LaminatorOperatorID
+from backend.new_core.personal.press_operator import PressOperatorID
+from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.print.chroma import Chroma
@@ -88,7 +97,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         operations=(),
     )
     printer = Printer(
-        id=1,
+        id=PrinterID(1),
         startup=Money(Decimal(printer_startup)),
         cyan=Money(Decimal(1)),
         magenta=Money(Decimal(1)),
@@ -96,22 +105,22 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         black=Money(Decimal(1)),
     )
     press_operator = PressOperator(
-        id=1,
+        id=PressOperatorID(1),
         salary_by_operation=Money(Decimal(press_salary)),
     )
-    laminator = Laminator(id=1, startup=Money(Decimal(10)))
+    laminator = Laminator(id=LaminatorID(1), startup=Money(Decimal(10)))
     laminator_operator = LaminatorOperator(
-        id=1,
+        id=LaminatorOperatorID(1),
         salary_by_operation=Money(Decimal(4)),
     )
     film = Film(name="film", price=Money(Decimal(3)), density=77)
-    cutter = Cutter(id=1, max_stack=max_stack)
+    cutter = Cutter(id=CutterID(1), max_stack=max_stack)
     cutter_operator = CutterOperator(
-        id=1,
+        id=CutterOperatorID(1),
         salary_by_operation=Money(Decimal(7)),
     )
     Order(
-        id=1,
+        id=OrderID(1),
         product=Product(
             blocks=(block,),
             operations=(
@@ -126,9 +135,9 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         count=4,
     )
     run = PrintRun(
-        id=1,
+        id=PrintRunID(1),
         block=block,
-        for_order=1,
+        for_order=OrderID(1),
         required_count=required_count,
         imposition=Imposition(
             target=Sheet(
@@ -411,7 +420,7 @@ def test_cost_report_adds_the_die_cutter_salary_once():
         with_cut=False,
     )
     die_operator = DieCutterOperator(
-        id=2,
+        id=DieCutterOperatorID(2),
         salary_by_operation=Money(Decimal(8)),
     )
     run.operations.append(DieCut(operator_id=die_operator.id))
@@ -437,7 +446,7 @@ def test_factories_append_in_call_order():
     """
     run, printing, laminate, cut, ctx = build_worked_run()
     operator = DieCutterOperator(
-        id=2,
+        id=DieCutterOperatorID(2),
         salary_by_operation=Money(Decimal(8)),
     )
     die_cut = DieCut(operator_id=operator.id)
@@ -532,7 +541,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
         with_cut=False,
     )
     order = Order(
-        id=1,
+        id=OrderID(1),
         product=Product(
             blocks=(run.block,),
             operations=(

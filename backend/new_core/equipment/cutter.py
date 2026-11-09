@@ -5,11 +5,25 @@ from dataclasses import dataclass
 from backend.new_core.errors import InvalidInput
 
 
+@dataclass(frozen=True, slots=True)
+class CutterID:
+    """Value Object. Stable identifier of a cutter in the equipment catalog."""
+
+    value: int
+
+    def __post_init__(self) -> None:
+        if self.value < 0:
+            raise InvalidInput(
+                "cutter id",
+                f"id меньше 0, id={self.value}",
+            )
+
+
 @dataclass(frozen=True)
 class Cutter:
     """A cutter and the tallest stack it can cut."""
 
-    id: int
+    id: CutterID
     max_stack: int
 
     def __post_init__(self) -> None:

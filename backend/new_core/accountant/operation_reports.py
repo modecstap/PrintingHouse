@@ -22,19 +22,32 @@ from backend.new_core.personal.die_cutter_operator import DieCutterOperator
 from backend.new_core.personal.laminator_operator import LaminatorOperator
 from backend.new_core.personal.press_operator import PressOperator
 from backend.new_core.print_run.print_run import PrintRun
+from backend.new_core.equipment.cutter import CutterID
+from backend.new_core.equipment.laminator import LaminatorID
+from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.personal.cutter_operator import CutterOperatorID
+from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
+from backend.new_core.personal.laminator_operator import LaminatorOperatorID
+from backend.new_core.personal.press_operator import PressOperatorID
 
 
 @dataclass
 class RunPricingContext:
     """Equipment and staff looked up by id when pricing run operations."""
 
-    printers: dict[int, Printer] = field(default_factory=dict)
-    press_operators: dict[int, PressOperator] = field(default_factory=dict)
-    laminators: dict[int, Laminator] = field(default_factory=dict)
-    laminator_operators: dict[int, LaminatorOperator] = field(default_factory=dict)
-    cutter_operators: dict[int, CutterOperator] = field(default_factory=dict)
-    die_cut_operators: dict[int, DieCutterOperator] = field(default_factory=dict)
-    cutters: dict[int, Cutter] = field(default_factory=dict)
+    printers: dict[PrinterID, Printer] = field(default_factory=dict)
+    press_operators: dict[PressOperatorID, PressOperator] = field(default_factory=dict)
+    laminators: dict[LaminatorID, Laminator] = field(default_factory=dict)
+    laminator_operators: dict[LaminatorOperatorID, LaminatorOperator] = field(
+        default_factory=dict,
+    )
+    cutter_operators: dict[CutterOperatorID, CutterOperator] = field(
+        default_factory=dict,
+    )
+    die_cut_operators: dict[DieCutterOperatorID, DieCutterOperator] = field(
+        default_factory=dict,
+    )
+    cutters: dict[CutterID, Cutter] = field(default_factory=dict)
 
 
 def operation_reports(

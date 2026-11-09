@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from backend.new_core.materials.film import Film
 from backend.new_core.operations.laminate.lamination import Lamination
+from backend.new_core.equipment.laminator import LaminatorID
+from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,7 +17,7 @@ class Laminate:
     the laminator, and the operator.
     """
 
-    laminator_id: int
-    operator_id: int
+    laminator_id: LaminatorID
+    operator_id: LaminatorOperatorID
     lamination: Lamination
     film: Film

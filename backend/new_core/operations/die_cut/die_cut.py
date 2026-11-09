@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
+
 
 @dataclass(frozen=True, slots=True)
 class DieCut:
@@ -11,4 +13,4 @@ class DieCut:
     Value Object. One die cut of a press target, priced from the operator salary.
     """
 
-    operator_id: int
+    operator_id: DieCutterOperatorID

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 
 from backend.new_core.values.percent import Percent
@@ -9,6 +10,21 @@ from backend.new_core.part import Part
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.operations.run_operation import RunOperation
+from backend.new_core.order.order import OrderID
+
+
+@dataclass(frozen=True, slots=True)
+class PrintRunID:
+    """Value Object. Stable identifier of one press run."""
+
+    value: int
+
+    def __post_init__(self) -> None:
+        if self.value < 0:
+            raise InvalidInput(
+                "print run id",
+                f"id меньше 0, id={self.value}",
+            )
 
 
 _WASTE_ALLOWANCE = Percent(3)
@@ -19,8 +35,8 @@ class PrintRun:
 
     def __init__(
             self,
-            id: int,  # pylint: disable=redefined-builtin
-            for_order: int,
+            id: PrintRunID,  # pylint: disable=redefined-builtin
+            for_order: OrderID,
             block: Part,
             required_count: int,
             imposition: Imposition,

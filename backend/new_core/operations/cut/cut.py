@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from backend.new_core.equipment.cutter import Cutter
-from backend.new_core.personal.cutter_operator import CutterOperator
+from backend.new_core.personal.cutter_operator import CutterOperatorID
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,4 +15,4 @@ class Cut:
     """
 
     cutter: Cutter
-    operator_id: int
+    operator_id: CutterOperatorID
