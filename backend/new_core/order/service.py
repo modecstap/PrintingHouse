@@ -159,6 +159,17 @@ class OrderService:
         """
         return self._uow.orders.take_latest(limit)
 
+    def get_order(self, order_id: OrderID) -> Order:
+        """Returns the order with this id.
+
+        :param order_id:
+
+        :raises OrderNotFound: if the order does not exist.
+
+        :return: the order from :meth:`OrderRepository.take`.
+        """
+        return self._uow.orders.take(order_id)
+
     def order_report(self, order_id: OrderID) -> OrderReport:
         """Prices the order after tax compensation.
 
