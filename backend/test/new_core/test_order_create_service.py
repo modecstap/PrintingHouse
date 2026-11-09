@@ -8,6 +8,8 @@ import pytest
 from backend.new_core import AdditionalWork, InvalidInput, Percent
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.sheet import SheetID
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.application_services.order import (
@@ -27,6 +29,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryOrderRepository,
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
+    InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
@@ -55,6 +58,7 @@ def _create_service(
             items=dict(ctx.die_cut_operators),
         ),
         films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
 
 
@@ -101,6 +105,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
         target_height=20,
         press_width=60,
         press_height=40,
+        sheet_id=SheetID(2),
     )
     for repo, other in ((ctx, ctx2), (ctx2, ctx)):
         repo.printers.update(other.printers)
@@ -109,6 +114,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
         repo.laminator_operators.update(other.laminator_operators)
         repo.cutters.update(other.cutters)
         repo.cutter_operators.update(other.cutter_operators)
+        repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, run, ctx)
     product = _product_from_run(run, extra_block=run2.block)
@@ -130,6 +136,51 @@ def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
         run.block,
         operations=(
             replace(broken, printer_id=PrinterID(999)),
+        ),
+    )
+    product = Product(blocks=(bad_block,), operations=())
+
+    with pytest.raises(KeyError):
+        service.quote(product, count=4)
+
+    assert not uow.orders.orders
+    assert not uow.print_runs.by_order
+
+
+def test_quote_with_missing_sheet_raises_and_leaves_stores_empty():
+    """A missing sheet id raises KeyError and does not write stores."""
+    run, _, _, _, ctx = build_worked_run()
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    from dataclasses import replace
+
+    bad_imposition = replace(
+        run.block.imposition,
+        sheet_id=SheetID(999),
+        press_sheet=None,
+    )
+    bad_block = replace(run.block, imposition=bad_imposition)
+    product = Product(blocks=(bad_block,), operations=())
+
+    with pytest.raises(KeyError):
+        service.quote(product, count=4)
+
+    assert not uow.orders.orders
+    assert not uow.print_runs.by_order
+
+
+def test_quote_with_missing_film_raises_and_leaves_stores_empty():
+    """A missing film id raises KeyError and does not write stores."""
+    run, _, laminate, _, ctx = build_worked_run()
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    from dataclasses import replace
+
+    bad_laminate = replace(laminate, film_id=FilmID(999))
+    bad_block = replace(
+        run.block,
+        operations=tuple(
+            bad_laminate if op is laminate else op for op in run.block.operations
         ),
     )
     product = Product(blocks=(bad_block,), operations=())
@@ -169,6 +220,7 @@ def test_save_maps_each_block_to_one_run_in_order():
         repo.laminator_operators.update(other.laminator_operators)
         repo.cutters.update(other.cutters)
         repo.cutter_operators.update(other.cutter_operators)
+        repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, run, ctx)
     product = _product_from_run(run, extra_block=run2.block)
@@ -178,8 +230,8 @@ def test_save_maps_each_block_to_one_run_in_order():
     runs = uow.print_runs.take_all_for_order(order_id)
 
     assert len(runs) == 2
-    assert runs[0].block is product.blocks[0]
-    assert runs[1].block is product.blocks[1]
+    assert runs[0].block.imposition.sheet_id == product.blocks[0].imposition.sheet_id
+    assert runs[1].block.imposition.sheet_id == product.blocks[1].imposition.sheet_id
     assert runs[0].required_count == order_count * product.blocks[0].count
     assert runs[1].required_count == order_count * product.blocks[1].count
 

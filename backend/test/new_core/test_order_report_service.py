@@ -1,5 +1,6 @@
 """Behavior of order report use case."""
 
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
@@ -28,6 +29,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
     InMemoryPrintRunRepository,
+    InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
@@ -52,6 +54,7 @@ def _service_from_fixtures(run, ctx) -> OrderService:
             items=dict(ctx.die_cut_operators),
         ),
         films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
 
 
@@ -102,6 +105,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
             items=dict(ctx.die_cut_operators),
         ),
         films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
 
     report = service.order_report(order.id)
@@ -167,11 +171,91 @@ def test_order_report_prices_die_cut_through_order_service():
             items=dict(ctx.die_cut_operators),
         ),
         films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
 
     estimate = service._run_estimate(run)
 
     assert estimate.aggregated_operations().work == Money(Decimal(8))
+
+
+def test_order_report_reflects_catalog_sheet_replace_after_save():
+    """After PUT on the sheet catalog, report uses the new paper price."""
+    run, _, _, _, ctx = build_worked_run(with_laminate=False)
+    sheets = InMemorySheetRepository(items=dict(ctx.sheets))
+    uow = InMemoryUnitOfWork()
+    service = OrderService(
+        uow=uow,
+        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
+        press_operators=InMemoryPressOperatorRepository(
+            items=dict(ctx.press_operators),
+        ),
+        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+        laminator_operators=InMemoryLaminatorOperatorRepository(
+            items=dict(ctx.laminator_operators),
+        ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
+        cutter_operators=InMemoryCutterOperatorRepository(
+            items=dict(ctx.cutter_operators),
+        ),
+        die_cut_operators=InMemoryDieCutterOperatorRepository(
+            items=dict(ctx.die_cut_operators),
+        ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=sheets,
+    )
+    product = Product(blocks=(run.block,), operations=())
+    order_id = service.save(product, count=1)
+    before = service.order_report(order_id)
+    sheet = sheets.take(run.block.imposition.sheet_id)
+    sheets.replace(
+        replace(
+            sheet,
+            paper=replace(
+                sheet.paper,
+                price_per_kilo=Money(Decimal(50_000)),
+            ),
+        ),
+    )
+    after = service.order_report(order_id)
+    assert after.order_price.amount > before.order_price.amount
+
+
+def test_order_report_reflects_catalog_film_replace_after_save():
+    """After PUT on the film catalog, report uses the new film price."""
+    run, _, laminate, _, ctx = build_worked_run(
+        with_print=False,
+        with_cut=False,
+    )
+    films = InMemoryFilmRepository(items=dict(ctx.films))
+    uow = InMemoryUnitOfWork()
+    service = OrderService(
+        uow=uow,
+        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
+        press_operators=InMemoryPressOperatorRepository(
+            items=dict(ctx.press_operators),
+        ),
+        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+        laminator_operators=InMemoryLaminatorOperatorRepository(
+            items=dict(ctx.laminator_operators),
+        ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
+        cutter_operators=InMemoryCutterOperatorRepository(
+            items=dict(ctx.cutter_operators),
+        ),
+        die_cut_operators=InMemoryDieCutterOperatorRepository(
+            items=dict(ctx.die_cut_operators),
+        ),
+        films=films,
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
+    )
+    product = Product(blocks=(run.block,), operations=())
+    order_id = service.save(product, count=1)
+    before = service.order_report(order_id)
+    film = films.take(laminate.film_id)
+    films.replace(replace(film, price=Money(Decimal(500))))
+    after = service.order_report(order_id)
+    assert after.order_price.amount > before.order_price.amount
 
 
 def test_order_report_raises_when_order_is_missing():

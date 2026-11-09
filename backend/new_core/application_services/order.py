@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.accountant.pricing.cut_pricing import CutPricing
@@ -12,6 +14,8 @@ from backend.new_core.accountant.pricing_strategy import PricingStrategy
 from backend.new_core.accountant.run_estimate import RunEstimate
 from backend.new_core.equipment.cutter_repository import CutterRepository
 from backend.new_core.materials.film_repository import FilmRepository
+from backend.new_core.materials.sheet_repository import SheetRepository
+from backend.new_core.part import Part
 from backend.new_core.equipment.laminator_repository import LaminatorRepository
 from backend.new_core.equipment.printer_repository import PrinterRepository
 from backend.new_core.operations.cut.cut import Cut
@@ -136,6 +140,7 @@ class OrderService:
         cutter_operators: CutterOperatorRepository,
         die_cut_operators: DieCutterOperatorRepository,
         films: FilmRepository,
+        sheets: SheetRepository,
     ) -> None:
         """Remembers the unit of work and catalogs.
 
@@ -148,6 +153,7 @@ class OrderService:
         :param cutter_operators:
         :param die_cut_operators:
         :param films:
+        :param sheets:
         """
         self._uow = uow
         self._printers = printers
@@ -158,6 +164,7 @@ class OrderService:
         self._cutter_operators = cutter_operators
         self._die_cut_operators = die_cut_operators
         self._films = films
+        self._sheets = sheets
         self._order_factory = OrderFactory(uow.orders)
         self._print_run_factory = PrintRunFactory(uow.print_runs)
 
@@ -187,12 +194,15 @@ class OrderService:
         :param order_id:
 
         :raises OrderNotFound: if the order does not exist.
+        :raises KeyError: if a catalog sheet or film id is missing.
 
         :return: the report from :meth:`Accountant.order_report`.
         """
         order = self._uow.orders.take(order_id)
         runs = self._uow.print_runs.take_all_for_order(order_id)
-        estimates = tuple(self._run_estimate(run) for run in runs)
+        estimates = tuple(
+            self._run_estimate(self._rehydrate_run(run)) for run in runs
+        )
         return Accountant().order_report(order, estimates)
 
     def quote(self, product: Product, count: int) -> OrderReport:
@@ -265,13 +275,62 @@ class OrderService:
         product: Product,
         count: int,
     ) -> tuple[Order, tuple[PrintRun, ...]]:
-        order = self._order_factory.create(product, count)
+        hydrated = self._hydrate_product(product)
+        order = self._order_factory.create(hydrated, count)
         runs = tuple(
             self._print_run_factory.create(
                 for_order=order.id,
                 block=block,
                 required_count=order.count * block.count,
             )
-            for block in product.blocks
+            for block in hydrated.blocks
         )
         return order, runs
+
+    def _hydrate_product(self, product: Product) -> Product:
+        """Loads catalog sheet and film rows referenced by the product.
+
+        :param product:
+
+        :raises KeyError: if a referenced sheet or film id is missing.
+
+        :return: a product whose blocks use current catalog ``press_sheet``
+        values and whose laminate operations reference known film ids.
+        """
+        return replace(
+            product,
+            blocks=tuple(self._hydrate_part(block) for block in product.blocks),
+        )
+
+    def _hydrate_part(self, block: Part) -> Part:
+        """Hydrates imposition and validates laminate film ids for one block.
+
+        :param block:
+
+        :raises KeyError: if a referenced sheet or film id is missing.
+
+        :return: the block with ``press_sheet`` loaded from the catalog.
+        """
+        imposition = block.imposition
+        sheet = self._sheets.take(imposition.sheet_id)
+        hydrated_imposition = replace(imposition, press_sheet=sheet)
+        for operation in block.operations:
+            if isinstance(operation, Laminate):
+                self._films.take(operation.film_id)
+        return replace(block, imposition=hydrated_imposition)
+
+    def _rehydrate_run(self, run: PrintRun) -> PrintRun:
+        """Rebuilds a stored run with catalog sheet and film rows.
+
+        :param run:
+
+        :raises KeyError: if a referenced sheet or film id is missing.
+
+        :return: a run whose block matches the catalog at report time.
+        """
+        return PrintRun(
+            id=run.id,
+            for_order=run.for_order,
+            block=self._hydrate_part(run.block),
+            required_count=run.required_count,
+        )

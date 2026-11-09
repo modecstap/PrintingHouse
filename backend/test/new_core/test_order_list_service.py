@@ -16,6 +16,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryOrderRepository,
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
+    InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
@@ -45,6 +46,7 @@ def _list_service(orders: InMemoryOrderRepository) -> OrderService:
         cutter_operators=InMemoryCutterOperatorRepository(),
         die_cut_operators=InMemoryDieCutterOperatorRepository(),
         films=InMemoryFilmRepository(),
+        sheets=InMemorySheetRepository(),
     )
 
 
