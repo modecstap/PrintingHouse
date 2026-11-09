@@ -1,0 +1,162 @@
+"""JSON request and response models."""
+
+from __future__ import annotations
+
+from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class FormatDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    height: int
+    width: int
+
+
+class PaperDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    density: int
+    thickness: int
+    name: str
+    price_per_kilo: str
+
+
+class SheetDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    paper: PaperDto
+    format: FormatDto
+
+
+class ImpositionDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    target: FormatDto
+    press_sheet: SheetDto
+    bleeds: int
+    spacing: int
+
+
+class PrintOpDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    kind: Literal["print"]
+    printer_id: int
+    operator_id: int
+    chroma: Literal[
+        "ZERO_ZERO",
+        "ONE_ZERO",
+        "ONE_ONE",
+        "FOUR_ZERO",
+        "FOUR_ONE",
+        "FOUR_FOUR",
+    ]
+
+
+class FilmDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    price: str
+    density: int
+
+
+class LaminateOpDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    kind: Literal["laminate"]
+    laminator_id: int
+    operator_id: int
+    lamination: Literal["DONT", "ONE_ZERO", "ONE_ONE"]
+    film: FilmDto
+
+
+class CutOpDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    kind: Literal["cut"]
+    cutter_id: int
+    operator_id: int
+
+
+class DieCutOpDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    kind: Literal["die_cut"]
+    operator_id: int
+
+
+RunOperationDto = Annotated[
+    PrintOpDto | LaminateOpDto | CutOpDto | DieCutOpDto,
+    Field(discriminator="kind"),
+]
+
+
+class PartDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    imposition: ImpositionDto
+    count: int
+    markup: int
+    operations: tuple[RunOperationDto, ...]
+
+
+class AdditionalWorkDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    price: str
+    description: str
+    markup: int
+
+
+class ProductDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    blocks: tuple[PartDto, ...]
+    operations: tuple[AdditionalWorkDto, ...] = ()
+
+
+class OrderWriteDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    product: ProductDto
+    count: int
+
+
+class OrderDto(BaseModel):
+    id: int
+    count: int
+    product: ProductDto
+
+
+class OrderReportDto(BaseModel):
+    product_price: str
+    order_price: str
+    income: str
+    impositions: tuple[int, ...]
+
+
+class SaveOrderResponseDto(BaseModel):
+    id: int
+
+
+class ReferenceDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    description: str
+    order_id: int
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"

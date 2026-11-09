@@ -24,6 +24,13 @@ DB_PASSWORD=ph_password
 DB_HOST=ph_db
 DB_PORT=5432
 DB_NAME=ph_db
+JWT_SECRET_KEY=change-this-in-real-env
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=change-this-in-real-env
+
+Обязательные `JWT_SECRET_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` нужны, когда таблица `users` пуста: при старте создаётся один пользователь. Пустой или отсутствующий `JWT_SECRET_KEY`, а также пустые `ADMIN_USERNAME` / `ADMIN_PASSWORD` при пустой таблице `users` не дают процессу поднять HTTP-сервер.
 
 Примечание: для локального запуска фронтенда запустите backend на `localhost:8080` и выполните `npm start` в `frontend/`. Dev-сервер CRA проксирует запросы к API на `http://localhost:8080` (поле `proxy` в `frontend/package.json`). Переменные окружения не нужны.
 
