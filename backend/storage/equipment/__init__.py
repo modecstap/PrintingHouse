@@ -1,0 +1,1 @@
+"""Equipment catalog tables."""

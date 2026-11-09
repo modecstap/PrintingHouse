@@ -1,0 +1,1 @@
+"""Part graph tables."""
