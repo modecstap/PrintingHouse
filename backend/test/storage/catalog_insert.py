@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from backend.new_core.equipment.cutter import Cutter
 from backend.new_core.equipment.laminator import Laminator
 from backend.new_core.equipment.printer import Printer
+from backend.new_core.materials.film import Film
+from backend.new_core.materials.sheet import Sheet
 from backend.new_core.personal.cutter_operator import CutterOperator
 from backend.new_core.personal.die_cutter_operator import DieCutterOperator
 from backend.new_core.personal.laminator_operator import LaminatorOperator
@@ -16,6 +18,7 @@ from backend.storage.equipment.tables import (
     LaminatorRow,
     PrinterRow,
 )
+from backend.storage.materials.tables import FilmRow, SheetRow
 from backend.storage.personal.tables import (
     CutterOperatorRow,
     DieCutterOperatorRow,
@@ -95,6 +98,32 @@ def insert_die_cutter_operator(
     )
 
 
+def insert_film(session: Session, film: Film) -> None:
+    session.add(
+        FilmRow(
+            id=film.id.value,
+            name=film.name,
+            price=film.price.amount,
+            density=film.density,
+        ),
+    )
+
+
+def insert_sheet(session: Session, sheet: Sheet) -> None:
+    session.add(
+        SheetRow(
+            id=sheet.id.value,
+            paper_density=sheet.paper.density,
+            paper_thickness=sheet.paper.thickness,
+            paper_name=sheet.paper.name,
+            paper_price_per_kilo=sheet.paper.price_per_kilo.amount,
+            format_name=sheet.format.name,
+            format_height=sheet.format.height,
+            format_width=sheet.format.width,
+        ),
+    )
+
+
 def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None:
     """Inserts every catalog entity referenced by ``build_worked_run`` fixtures."""
     for printer in ctx.printers.values():
@@ -111,6 +140,10 @@ def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None
         insert_cutter_operator(session, operator)
     for operator in ctx.die_cut_operators.values():
         insert_die_cutter_operator(session, operator)
+    for film in ctx.films.values():
+        insert_film(session, film)
+    for sheet in ctx.sheets.values():
+        insert_sheet(session, sheet)
     session.flush()
     session.commit()
 
