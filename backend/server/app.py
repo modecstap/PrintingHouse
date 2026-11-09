@@ -19,6 +19,7 @@ from backend.new_core.errors import InvalidInput, InvalidPriceException
 from backend.new_core.order.repository import OrderNotFound
 from backend.server.auth import router as auth_router
 from backend.server.equipment import router as equipment_router
+from backend.server.materials import router as materials_router
 from backend.server.orders import router as orders_router
 from backend.server.references import router as references_router
 from backend.server.staff import router as staff_router
@@ -138,6 +139,7 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
     app.include_router(orders_router)
     app.include_router(references_router)
     app.include_router(equipment_router)
+    app.include_router(materials_router)
     app.include_router(staff_router)
     return app
 

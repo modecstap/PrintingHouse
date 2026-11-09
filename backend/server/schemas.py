@@ -64,6 +64,27 @@ class FilmDto(BaseModel):
     density: int
 
 
+class FilmReadDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    name: str
+    price: str
+    density: int
+
+
+class SheetReadDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    paper: PaperDto
+    format: FormatDto
+
+
+class CreatedIdDto(BaseModel):
+    id: int
+
+
 class LaminateOpDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

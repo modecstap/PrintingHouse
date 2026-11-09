@@ -11,10 +11,13 @@ from sqlalchemy.orm import Session
 
 from backend.auth import AuthConfig, CredentialsError, username_from_token
 from backend.new_core.application_services.equipment import EquipmentCatalogService
+from backend.new_core.application_services.materials import MaterialCatalogService
 from backend.new_core.application_services.order import OrderService
 from backend.new_core.application_services.personal import StaffCatalogService
 from backend.new_core.application_services.reference import ReferenceOrderService
 from backend.storage.database import Database
+from backend.storage.materials.film_repository import SqlFilmRepository
+from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
 from backend.storage.equipment.laminator_repository import SqlLaminatorRepository
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
@@ -102,6 +105,16 @@ def get_equipment_catalog_service(
         SqlPrinterRepository(session),
         SqlLaminatorRepository(session),
         SqlCutterRepository(session),
+    )
+
+
+def get_material_catalog_service(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> MaterialCatalogService:
+    """Builds :class:`MaterialCatalogService` for this request."""
+    return MaterialCatalogService(
+        SqlFilmRepository(session),
+        SqlSheetRepository(session),
     )
 
 
