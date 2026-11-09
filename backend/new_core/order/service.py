@@ -89,7 +89,8 @@ class OrderReportService:
         :return: pricing strategies bound to this run.
         """
         strategies: list[PricingStrategy] = []
-        for operation in run.operations:
+        operations = run.block.operations
+        for operation in operations:
             if isinstance(operation, Print):
                 strategies.append(
                     PrintPricing(

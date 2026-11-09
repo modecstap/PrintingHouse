@@ -9,7 +9,6 @@ from backend.new_core.values.percent import Percent
 from backend.new_core.part import Part
 from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
-from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.order.order import OrderID
 
 
@@ -46,7 +45,6 @@ class PrintRun:
         self.block = block
         self.required_count = required_count
         self.imposition = imposition
-        self.operations: list[RunOperation] = []
 
         if self.required_count < 0:
             raise InvalidInput(

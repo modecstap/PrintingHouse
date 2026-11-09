@@ -1,7 +1,7 @@
 """A print run prices its operations, markup, and the order around them."""
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 
 import pytest
@@ -120,12 +120,6 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         height=1,
         width=1,
     )
-    block = Part(
-        target=block_sheet,
-        count=3,
-        markup=markup,
-        operations=(),
-    )
     printer = Printer(
         id=PrinterID(1),
         startup=Money(Decimal(printer_startup)),
@@ -149,6 +143,62 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=CutterOperatorID(1),
         salary_by_operation=Money(Decimal(7)),
     )
+    imposition = Imposition(
+        target=Sheet(
+            paper=Paper(
+                density=60,
+                thickness=1,
+                name="target",
+                price_per_kilo=Money(Decimal(9999)),
+            ),
+            height=target_height,
+            width=target_width,
+        ),
+        press_sheet=Sheet(
+            paper=Paper(
+                density=press_density,
+                thickness=1,
+                name="press",
+                price_per_kilo=Money(Decimal(press_price)),
+            ),
+            height=press_height,
+            width=press_width,
+        ),
+        bleeds=0,
+        spacing=0,
+    )
+    run_operations: list = []
+    printing = None
+    if with_print:
+        printing = Print(
+            printer_id=printer.id,
+            operator_id=press_operator.id,
+            chroma=chroma,
+            paper=imposition.press_sheet,
+        )
+        run_operations.append(printing)
+    laminate = None
+    if with_laminate:
+        laminate = Laminate(
+            laminator_id=laminator.id,
+            operator_id=laminator_operator.id,
+            lamination=lamination,
+            film=film,
+        )
+        run_operations.append(laminate)
+    cut = None
+    if with_cut:
+        cut = Cut(
+            cutter=cutter,
+            operator_id=cutter_operator.id,
+        )
+        run_operations.append(cut)
+    block = Part(
+        target=block_sheet,
+        count=3,
+        markup=markup,
+        operations=tuple(run_operations),
+    )
     Order(
         id=OrderID(1),
         product=Product(
@@ -169,56 +219,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         block=block,
         for_order=OrderID(1),
         required_count=required_count,
-        imposition=Imposition(
-            target=Sheet(
-                paper=Paper(
-                    density=60,
-                    thickness=1,
-                    name="target",
-                    price_per_kilo=Money(Decimal(9999)),
-                ),
-                height=target_height,
-                width=target_width,
-            ),
-            press_sheet=Sheet(
-                paper=Paper(
-                    density=press_density,
-                    thickness=1,
-                    name="press",
-                    price_per_kilo=Money(Decimal(press_price)),
-                ),
-                height=press_height,
-                width=press_width,
-            ),
-            bleeds=0,
-            spacing=0,
-        ),
+        imposition=imposition,
     )
-    printing = None
-    if with_print:
-        printing = Print(
-            printer_id=printer.id,
-            operator_id=press_operator.id,
-            chroma=chroma,
-            paper=run.imposition.press_sheet,
-        )
-        run.operations.append(printing)
-    laminate = None
-    if with_laminate:
-        laminate = Laminate(
-            laminator_id=laminator.id,
-            operator_id=laminator_operator.id,
-            lamination=lamination,
-            film=film,
-        )
-        run.operations.append(laminate)
-    cut = None
-    if with_cut:
-        cut = Cut(
-            cutter=cutter,
-            operator_id=cutter_operator.id,
-        )
-        run.operations.append(cut)
     ctx = _RunPricingFixtures(
         printers={printer.id: printer},
         press_operators={press_operator.id: press_operator},
@@ -230,9 +232,13 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     return run, printing, laminate, cut, ctx
 
 
+def _append_block_operation(run: PrintRun, operation) -> None:
+    run.block = replace(run.block, operations=run.block.operations + (operation,))
+
+
 def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
     strategies: list[PricingStrategy] = []
-    for operation in run.operations:
+    for operation in run.block.operations:
         if isinstance(operation, Print):
             strategies.append(
                 PrintPricing(
@@ -355,9 +361,9 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
         chroma=printing.chroma,
         paper=printing.paper,
     )
-    run.operations.append(second)
+    _append_block_operation(run, second)
 
-    assert run.operations == [printing, second]
+    assert run.block.operations == (printing, second)
     assert printing is not second
     sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
 
@@ -442,7 +448,7 @@ def test_cost_report_is_zero_without_operations():
         with_cut=False,
     )
 
-    assert not run.operations
+    assert not run.block.operations
     assert run.production_count() == 12
     report = Accountant().block_cost_report(_estimate(run, ctx))
 
@@ -494,7 +500,7 @@ def test_cost_report_adds_the_die_cutter_salary_once():
         id=DieCutterOperatorID(2),
         salary_by_operation=Money(Decimal(8)),
     )
-    run.operations.append(DieCut(operator_id=die_operator.id))
+    _append_block_operation(run, DieCut(operator_id=die_operator.id))
     ctx.die_cut_operators[die_operator.id] = die_operator
 
     accountant = Accountant()
@@ -521,10 +527,10 @@ def test_factories_append_in_call_order():
         salary_by_operation=Money(Decimal(8)),
     )
     die_cut = DieCut(operator_id=operator.id)
-    run.operations.append(die_cut)
+    _append_block_operation(run, die_cut)
     ctx.die_cut_operators[operator.id] = operator
 
-    assert run.operations == [printing, laminate, cut, die_cut]
+    assert run.block.operations == (printing, laminate, cut, die_cut)
     assert printing.chroma is Chroma.FOUR_ZERO
     assert printing.paper is run.imposition.press_sheet
     assert laminate.lamination is Lamination.ONE_ZERO
@@ -547,7 +553,7 @@ def test_constructor_print_stays_out_of_the_run():
         paper=printing.paper,
     )
 
-    assert run.operations == [printing]
+    assert run.block.operations == (printing,)
     accountant = Accountant()
     sheet = accountant.sheet_cost_report(_estimate(run, ctx))
     per_item = accountant.list_report(_estimate(run, ctx))
