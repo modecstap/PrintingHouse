@@ -1,2 +1,0 @@
-class InvalidPriceException(Exception):
-    pass
