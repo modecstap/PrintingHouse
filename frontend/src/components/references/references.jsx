@@ -6,6 +6,7 @@ import {
 } from "./catalog-defs";
 import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
+import Button from "../../features/Button/Button";
 import styles from "./references.module.css";
 
 const EMPTY_FORM = { name: "", description: "", orderId: "" };
@@ -137,14 +138,14 @@ export default function References() {
           </label>
         </div>
         <div className={styles.buttonRow}>
-          <button
+          <Button
             type="button"
-            className={`${styles.btn} ${styles.btnPrimary}`}
+            variant="primary"
             disabled={saveState.status === "loading"}
             onClick={handleSave}
           >
             Сохранить
-          </button>
+          </Button>
         </div>
         {saveError && <div role="alert">{saveError}</div>}
       </div>

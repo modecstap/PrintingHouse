@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction";
 import FlexForm from "../../features/Form/FlexForm";
+import Button from "../../features/Button/Button";
 
-import styles from "./AuthPage.module.css"
+import styles from "./AuthPage.module.css";
 
 const fields = [
   {
@@ -62,13 +63,13 @@ const AuthPage = () => {
         />
 
         <div className={styles.buttonRow}>
-          <button type="submit" disabled={loading} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <Button type="submit" variant="primary" disabled={loading}>
             Войти
-          </button>
+          </Button>
 
-          <button type="button" onClick={logout} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <Button type="button" variant="primary" onClick={logout}>
             Выйти
-          </button>
+          </Button>
         </div>
 
         {error && <div style={{ color: "red" }}>{error}</div>}

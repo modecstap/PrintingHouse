@@ -10,6 +10,8 @@ import {
 import AdditionalWorkSection from "./components/additional-work-section";
 import BlockSection from "./components/block-section";
 import ReportView from "./components/report-view";
+import Button from "../../features/Button/Button";
+import buttonStyles from "../../features/Button/Button.module.css";
 import styles from "./calculator.module.css";
 
 const EMPTY_CATALOGS = {
@@ -169,9 +171,13 @@ export default function Calculator({
         />
       ))}
 
-      <button type="button" className={styles.btnSecondary} onClick={addBlock}>
+      <Button
+        type="button"
+        className={buttonStyles.standalone}
+        onClick={addBlock}
+      >
         + Добавить блок
-      </button>
+      </Button>
 
       <div className={styles.separator} />
 
@@ -185,22 +191,22 @@ export default function Calculator({
       <ReportView report={report} />
 
       <div className={styles.buttonRow}>
-        <button
+        <Button
           type="button"
-          className={`${styles.btn} ${styles.btnAccent}`}
+          variant="accent"
           onClick={handleQuote}
           disabled={actionBusy}
         >
           {quoteState.status === "loading" ? "Вычисляем..." : "Рассчитать"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className={`${styles.btn} ${styles.btnPrimary}`}
+          variant="primary"
           onClick={handleSave}
           disabled={actionBusy}
         >
           Сохранить
-        </button>
+        </Button>
       </div>
 
       {actionError && (

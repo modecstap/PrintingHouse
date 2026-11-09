@@ -5,6 +5,7 @@ import {
   fetchCatalog,
   replaceCatalog,
 } from "./api/catalog";
+import Button from "../../features/Button/Button";
 import styles from "./references.module.css";
 
 function isFieldGroup(fieldDef) {
@@ -157,22 +158,22 @@ export default function CatalogPanel({ def }) {
                 ))}
                 <td className={styles.actionsCol}>
                   {def.canReplace && (
-                    <button
+                    <Button
                       type="button"
-                      className={`${styles.btn} ${styles.btnTable}`}
+                      variant="table"
                       onClick={() => handleEdit(row)}
                     >
                       Изменить
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
                     type="button"
-                    className={`${styles.btn} ${styles.btnTable}`}
+                    variant="table"
                     disabled={deletingId === row.id}
                     onClick={() => handleDelete(row)}
                   >
                     Удалить
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -207,22 +208,18 @@ export default function CatalogPanel({ def }) {
           })}
         </div>
         <div className={styles.buttonRow}>
-          <button
+          <Button
             type="button"
-            className={`${styles.btn} ${styles.btnPrimary}`}
+            variant="primary"
             disabled={saveState.status === "loading"}
             onClick={handleSave}
           >
             Сохранить
-          </button>
+          </Button>
           {editingId != null && (
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.btnSecondary}`}
-              onClick={handleCancel}
-            >
+            <Button type="button" onClick={handleCancel}>
               Отмена
-            </button>
+            </Button>
           )}
         </div>
         {saveError && <div role="alert">{saveError}</div>}

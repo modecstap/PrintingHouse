@@ -1,4 +1,6 @@
 import { emptyAdditionalWork } from "../models/order";
+import Button from "../../../features/Button/Button";
+import buttonStyles from "../../../features/Button/Button.module.css";
 import styles from "../calculator.module.css";
 
 function TextField({ id, label, value, onChange, type = "text", inputMode }) {
@@ -43,13 +45,12 @@ export default function AdditionalWorkSection({ works, onChange }) {
           <article key={work.clientKey} className={styles.operationCard}>
             <div className={styles.operationHeading}>
               <span>{work.name || "Работа"}</span>
-              <button
+              <Button
                 type="button"
-                className={styles.btnSecondary}
                 onClick={() => removeWork(work.clientKey)}
               >
                 Удалить
-              </button>
+              </Button>
             </div>
             <div className={styles.fieldRow}>
               <TextField
@@ -82,9 +83,13 @@ export default function AdditionalWorkSection({ works, onChange }) {
           </article>
         );
       })}
-      <button type="button" className={styles.btnSecondary} onClick={addWork}>
+      <Button
+        type="button"
+        className={buttonStyles.standalone}
+        onClick={addWork}
+      >
         + Добавить работу
-      </button>
+      </Button>
     </section>
   );
 }

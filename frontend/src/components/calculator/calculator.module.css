@@ -35,43 +35,6 @@
   flex-wrap: wrap;
 }
 
-.btn {
-  border: none;
-  padding: 12px 28px;
-  cursor: pointer;
-  font-size: 16px;
-  min-width: 140px;
-}
-
-.btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btnAccent {
-  background: var(--accent);
-  color: var(--bg-dark);
-}
-
-.btnAccent:hover:not(:disabled) {
-  background: var(--secondary);
-}
-
-.btnPrimary {
-  background: var(--primary);
-  color: var(--bg-dark);
-}
-
-.btnPrimary:hover:not(:disabled) {
-  background: var(--text-muted);
-}
-
-.btnSecondary {
-  margin-top: 10px;
-  background: var(--border);
-  color: var(--bg-dark);
-}
-
 .fieldGrid {
   display: grid;
   gap: 12px;

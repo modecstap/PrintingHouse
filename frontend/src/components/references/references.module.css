@@ -49,29 +49,8 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  gap: 12px;
   margin-top: 12px;
-}
-
-.btn {
-  border: none;
-  padding: 12px 28px;
-  cursor: pointer;
-  font-size: 16px;
-  min-width: 140px;
-}
-
-.btnPrimary {
-  background: var(--primary);
-  color: var(--bg-dark);
-}
-
-.btnPrimary:hover:not(:disabled) {
-  background: var(--text-muted);
-}
-
-.btnPrimary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .table {
@@ -85,18 +64,6 @@
   text-align: left;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border, #ddd);
-}
-
-.btnSecondary {
-  background: var(--border);
-  color: var(--bg-dark);
-}
-
-.btnTable {
-  padding: 6px 12px;
-  min-width: auto;
-  font-size: 14px;
-  margin-right: 8px;
 }
 
 .actionsCol {
@@ -120,8 +87,4 @@
 
 .fieldset legend {
   padding: 0 6px;
-}
-
-.buttonRow .btnSecondary {
-  margin-left: 8px;
 }

@@ -5,6 +5,7 @@ import {
   operatorLabel,
   printerLabel,
 } from "../models/catalog-label";
+import Button from "../../../features/Button/Button";
 import styles from "../calculator.module.css";
 
 const CHROMA_OPTIONS = [
@@ -296,9 +297,9 @@ function SectionHeading({ heading, onRemove }) {
   return (
     <div className={styles.operationHeading}>
       <h4>{heading}</h4>
-      <button type="button" className={styles.btnSecondary} onClick={onRemove}>
+      <Button type="button" onClick={onRemove}>
         Удалить
-      </button>
+      </Button>
     </div>
   );
 }

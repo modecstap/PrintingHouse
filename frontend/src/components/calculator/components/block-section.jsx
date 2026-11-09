@@ -6,6 +6,7 @@ import {
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
 import OperationFields, { CatalogSelect } from "./operation-fields";
+import Button from "../../../features/Button/Button";
 import styles from "../calculator.module.css";
 
 function TextField({ id, label, value, onChange, type = "text", inputMode }) {
@@ -130,14 +131,9 @@ export default function BlockSection({
     <section className={styles.calculatorBlock}>
       <div className={styles.operationHeading}>
         <h3 className={styles.blockHeading}>{`Блок ${index + 1}`}</h3>
-        <button
-          type="button"
-          className={styles.btnSecondary}
-          onClick={onRemove}
-          disabled={soleBlock}
-        >
+        <Button type="button" onClick={onRemove} disabled={soleBlock}>
           Удалить
-        </button>
+        </Button>
       </div>
 
       <div className={styles.fieldRow}>
@@ -239,28 +235,24 @@ function EdgeButtonRow({
   return (
     <div className={styles.fieldRow}>
       {!existingKinds.has("print") ? (
-        <button type="button" className={styles.btnSecondary} onClick={onPrint}>
+        <Button type="button" onClick={onPrint}>
           + Печать
-        </button>
+        </Button>
       ) : null}
       {!existingKinds.has("laminate") ? (
-        <button
-          type="button"
-          className={styles.btnSecondary}
-          onClick={onLaminate}
-        >
+        <Button type="button" onClick={onLaminate}>
           + Ламинация
-        </button>
+        </Button>
       ) : null}
       {!existingKinds.has("cut") ? (
-        <button type="button" className={styles.btnSecondary} onClick={onCut}>
+        <Button type="button" onClick={onCut}>
           + Рез
-        </button>
+        </Button>
       ) : null}
       {!existingKinds.has("die_cut") ? (
-        <button type="button" className={styles.btnSecondary} onClick={onDieCut}>
+        <Button type="button" onClick={onDieCut}>
           + Высечка
-        </button>
+        </Button>
       ) : null}
     </div>
   );
