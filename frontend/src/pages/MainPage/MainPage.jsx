@@ -1,9 +1,9 @@
 import { useState } from "react";
 import "./MainPage.css";
 
-import ReferencePage from "../Reference/ReferencePage";
-import CostCalculator from "../CostCalculator/CostCalculator";
-import OrderPage from "../Orders/OrderPage";
+import Calculator from "../../components/calculator/calculator";
+import Orders from "../../components/orders/orders";
+import References from "../../components/references/references";
 import AuthPage from "../AuthPage/AuthPage";
 
 import logo from "../../media/VSRT-print.png";
@@ -76,9 +76,9 @@ const MainPage = () => {
       </div>
 
       <div className="form-display">
-        {selectedPage === "calculator" && <CostCalculator />}
-        {selectedPage === "reference" && <ReferencePage />}
-        {selectedPage === "orders" && <OrderPage />}
+        {selectedPage === "calculator" && <Calculator />}
+        {selectedPage === "reference" && <References />}
+        {selectedPage === "orders" && <Orders />}
         {selectedPage === "auth" && <AuthPage />}
       </div>
     </div>
