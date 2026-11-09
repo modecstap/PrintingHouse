@@ -1,14 +1,17 @@
 """A print run prices its operations, markup, and the order around them."""
 
 import re
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 import pytest
 
-from backend.new_core.accountant.operation_reports import (
-    RunPricingContext,
-    operation_reports,
-)
+from backend.new_core.accountant.pricing.cut_pricing import CutPricing
+from backend.new_core.accountant.pricing.die_cut_pricing import DieCutPricing
+from backend.new_core.accountant.pricing.laminate_pricing import LaminatePricing
+from backend.new_core.accountant.pricing.print_pricing import PrintPricing
+from backend.new_core.accountant.pricing_strategy import PricingStrategy
+from backend.new_core.accountant.run_estimate import RunEstimate
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
@@ -48,6 +51,27 @@ from backend.new_core import (
 )
 
 
+@dataclass
+class _RunPricingFixtures:
+    """Equipment and staff looked up by id when building test run estimates."""
+
+    printers: dict[PrinterID, Printer] = field(default_factory=dict)
+    press_operators: dict[PressOperatorID, PressOperator] = field(
+        default_factory=dict,
+    )
+    laminators: dict[LaminatorID, Laminator] = field(default_factory=dict)
+    laminator_operators: dict[LaminatorOperatorID, LaminatorOperator] = field(
+        default_factory=dict,
+    )
+    cutter_operators: dict[CutterOperatorID, CutterOperator] = field(
+        default_factory=dict,
+    )
+    die_cut_operators: dict[DieCutterOperatorID, DieCutterOperator] = field(
+        default_factory=dict,
+    )
+    cutters: dict[CutterID, Cutter] = field(default_factory=dict)
+
+
 def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     *,
     target_width: int = 100,
@@ -66,7 +90,13 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     with_laminate: bool = True,
     with_cut: bool = True,
     markup: Percent = Percent(0),
-) -> tuple[PrintRun, Print | None, Laminate | None, Cut | None, RunPricingContext]:
+) -> tuple[
+    PrintRun,
+    Print | None,
+    Laminate | None,
+    Cut | None,
+    _RunPricingFixtures,
+]:
     """Assembles one run and the operations the flags allow. It does not price them.
 
     with_print, with_laminate, and with_cut default to True. A False flag
@@ -189,7 +219,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             operator_id=cutter_operator.id,
         )
         run.operations.append(cut)
-    ctx = RunPricingContext(
+    ctx = _RunPricingFixtures(
         printers={printer.id: printer},
         press_operators={press_operator.id: press_operator},
         laminators={laminator.id: laminator},
@@ -200,8 +230,49 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     return run, printing, laminate, cut, ctx
 
 
-def _estimate(run: PrintRun, ctx: RunPricingContext):
-    return operation_reports(run, ctx)
+def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
+    strategies: list[PricingStrategy] = []
+    for operation in run.operations:
+        if isinstance(operation, Print):
+            strategies.append(
+                PrintPricing(
+                    printer=ctx.printers[operation.printer_id],
+                    operator=ctx.press_operators[operation.operator_id],
+                    chroma=operation.chroma,
+                    paper=operation.paper,
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, Laminate):
+            strategies.append(
+                LaminatePricing(
+                    laminator=ctx.laminators[operation.laminator_id],
+                    operator=ctx.laminator_operators[operation.operator_id],
+                    lamination=operation.lamination,
+                    film=operation.film,
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, Cut):
+            strategies.append(
+                CutPricing(
+                    cutter=operation.cutter,
+                    operator=ctx.cutter_operators[operation.operator_id],
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, DieCut):
+            strategies.append(
+                DieCutPricing(
+                    operator=ctx.die_cut_operators[operation.operator_id],
+                    print_run=run,
+                ),
+            )
+        else:
+            raise TypeError(
+                f"Unsupported run operation type: {type(operation).__name__}",
+            )
+    return RunEstimate.create(strategies, run=run)
 
 
 def test_cost_report_prices_the_worked_run():
