@@ -1,4 +1,4 @@
-"""One sheet: its paper and its size, in millimeters."""
+"""One target: its paper and its size, in millimeters."""
 
 from dataclasses import dataclass
 from decimal import Decimal
@@ -11,7 +11,7 @@ from backend.new_core.materials.paper import Paper
 @dataclass(frozen=True, slots=True)
 class Sheet:
     """
-    Value Object. One sheet of a paper grade, with its height and width in millimeters.
+    Value Object. One target of a paper grade, with its height and width in millimeters.
     """
 
     paper: Paper
@@ -42,7 +42,7 @@ class Sheet:
             )
 
     def mass_kg(self) -> Decimal:
-        """Returns the mass of one sheet in kilograms.
+        """Returns the mass of one target in kilograms.
 
         :return: width times height, divided by 1_000_000, times the paper
         density, divided by 1000. Every factor is a Decimal.
@@ -56,15 +56,15 @@ class Sheet:
         )
 
     def thickness(self) -> int:
-        """Returns the thickness of the sheet.
+        """Returns the thickness of the target.
 
-        :return: the thickness of the sheet in mm.
+        :return: the thickness of the target in mm.
         """
         return self.paper.thickness
 
     def price(self) -> Money:
-        """Returns the price of one sheet.
+        """Returns the price of one target.
 
-        :return: the paper price per kilo times the sheet mass.
+        :return: the paper price per kilo times the target mass.
         """
         return self.paper.price_per_kilo * self.mass_kg()

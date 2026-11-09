@@ -9,20 +9,12 @@ class Chroma(Enum):
     FOUR_ONE = 4
     FOUR_FOUR = 5
 
-    def consumed_sheets(self, sheet_count: int) -> tuple[int, int, int, int]:
+    def consumed_sheets(self) -> tuple[int, int, int, int]:
         """Returns the cyan, magenta, yellow, and black consumption.
-
-        :param sheet_count:
 
         :return: four integers in the order cyan, magenta, yellow, black.
         """
-        cyan_factor, magenta_factor, yellow_factor, black_factor = _FACTORS[self]
-        return (
-            cyan_factor * sheet_count,
-            magenta_factor * sheet_count,
-            yellow_factor * sheet_count,
-            black_factor * sheet_count,
-        )
+        return _FACTORS[self]
 
 
 _FACTORS: dict[Chroma, tuple[int, int, int, int]] = {

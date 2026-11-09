@@ -6,12 +6,9 @@ from decimal import Decimal
 import pytest
 
 from backend.new_core.values.money import Money
-from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core import (
     Part,
     Cutter,
-    Film,
     Imposition,
     InvalidInput,
     Order,
@@ -39,13 +36,10 @@ def _sheet(width: int, height: int) -> Sheet:
 
 def _block(count: int) -> Part:
     return Part(
-        sheet=_sheet(1, 1),
+        target=_sheet(1, 1),
         count=count,
         markup=Percent(0),
-        chroma=Chroma.ZERO_ZERO,
-        lamination=Lamination.DONT,
-        film=Film(name="film", price=Money(Decimal(0)), density=1),
-        die_cutting=False,
+        operations=(),
     )
 
 

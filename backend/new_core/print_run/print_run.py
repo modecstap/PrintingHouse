@@ -26,8 +26,8 @@ class PrintRun:
             imposition: Imposition,
     ) -> None:
         self.id = id
-        self.block = block
         self.for_order = for_order
+        self.block = block
         self.required_count = required_count
         self.imposition = imposition
         self.operations: list[RunOperation] = []
@@ -48,18 +48,18 @@ class PrintRun:
     def production_count(self) -> int:
         """Returns how many target sheets the run produces.
 
-        :return: the press sheet count times the sheets on one press sheet.
+        :return: the press target count times the sheets on one press target.
         """
         return self.imposition_count() * self.imposition.count()
 
     def imposition_count(self) -> int:
         """Returns how many press sheets the run prints.
 
-        :raises InvalidInput: if a cell side is zero, or if the press sheet
+        :raises InvalidInput: if a cell side is zero, or if the press target
         fits no positive number of target sheets.
 
         :return: required_count times a 3 percent waste allowance, divided
-        by the number of target sheets on one press sheet, rounded up
+        by the number of target sheets on one press target, rounded up
         to an integer.
         """
         sheets = (

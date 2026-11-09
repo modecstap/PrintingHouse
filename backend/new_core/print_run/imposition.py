@@ -7,7 +7,7 @@ from backend.new_core.materials.sheet import Sheet
 @dataclass(frozen=True, slots=True)
 class Imposition:
     """
-    Value Object. How target sheets sit on a press sheet, including bleeds and spacing.
+    Value Object. How target sheets sit on a press target, including bleeds and spacing.
     """
 
     target: Sheet
@@ -42,7 +42,7 @@ class Imposition:
         return self.press_sheet.thickness()
 
     def count(self) -> int:
-        """Returns how many target sheets fit on the press sheet.
+        """Returns how many target sheets fit on the press target.
 
         :raises InvalidInput: if a cell side is zero, or if the chosen
         grid fits no positive number of target sheets. The cell side is
