@@ -14,7 +14,7 @@ const sampleWriteJson = {
         count: 2,
         markup: 30,
         imposition: {
-          target: { name: "Визитка", width: 90, height: 50 },
+          target: { name: "", width: 90, height: 50 },
           press_sheet: {
             paper: {
               name: "Мелованная",
@@ -117,6 +117,7 @@ describe("emptyCalculatorForm", () => {
     expect(block.count).toBe("0");
     expect(block.markup).toBe("0");
     expect(block.target).toEqual({ name: "", width: "0", height: "0" });
+    expect(block.paperSheetId).toBe("");
     expect(block.paper).toEqual({
       name: "",
       density: "",

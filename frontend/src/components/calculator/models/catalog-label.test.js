@@ -7,6 +7,8 @@ import {
   laminatorLabel,
   cutterLabel,
   operatorLabel,
+  toSheet,
+  sheetLabel,
 } from "./catalog-label";
 
 describe("catalog parsers", () => {
@@ -50,6 +52,28 @@ describe("catalog parsers", () => {
       salary_by_operation: "5",
     });
   });
+
+  it("should parse a sheet with paper", () => {
+    expect(
+      toSheet({
+        id: 2,
+        paper: {
+          name: "Мелованная",
+          density: 150,
+          thickness: 1,
+          price_per_kilo: "80.50",
+        },
+      }),
+    ).toEqual({
+      id: 2,
+      paper: {
+        name: "Мелованная",
+        density: 150,
+        thickness: 1,
+        price_per_kilo: "80.50",
+      },
+    });
+  });
 });
 
 describe("catalog labels", () => {
@@ -79,5 +103,19 @@ describe("catalog labels", () => {
 
   it("should format cutter label without money on max stack", () => {
     expect(cutterLabel({ id: 8, max_stack: 40 })).toBe("№ 8, макс. стопа 40");
+  });
+
+  it("should format sheet label with paper properties", () => {
+    expect(
+      sheetLabel({
+        id: 1,
+        paper: {
+          name: "Офсет",
+          density: 80,
+          thickness: 1,
+          price_per_kilo: "50",
+        },
+      }),
+    ).toBe("Офсет, 80 г/м², 1 мм, 50.00 ₽/кг");
   });
 });

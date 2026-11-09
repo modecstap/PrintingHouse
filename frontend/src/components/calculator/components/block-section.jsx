@@ -4,7 +4,8 @@ import {
   emptyLaminateOperation,
   emptyPrintOperation,
 } from "../models/order";
-import OperationFields from "./operation-fields";
+import { sheetLabel } from "../models/catalog-label";
+import OperationFields, { CatalogSelect } from "./operation-fields";
 import styles from "../calculator.module.css";
 
 function TextField({ id, label, value, onChange, type = "text", inputMode }) {
@@ -21,6 +22,38 @@ function TextField({ id, label, value, onChange, type = "text", inputMode }) {
       />
     </div>
   );
+}
+
+function emptyPaperFields() {
+  return {
+    name: "",
+    density: "",
+    thickness: "",
+    price_per_kilo: "0",
+  };
+}
+
+function paperFromSheet(sheet) {
+  return {
+    name: sheet.paper.name,
+    density: String(sheet.paper.density),
+    thickness: String(sheet.paper.thickness),
+    price_per_kilo: sheet.paper.price_per_kilo,
+  };
+}
+
+function resolvePaperSheetId(paperSheetId, paper, sheets) {
+  if (paperSheetId) {
+    return paperSheetId;
+  }
+  const match = sheets.find(
+    (sheet) =>
+      sheet.paper.name === paper.name &&
+      String(sheet.paper.density) === String(paper.density) &&
+      String(sheet.paper.thickness) === String(paper.thickness) &&
+      sheet.paper.price_per_kilo === paper.price_per_kilo,
+  );
+  return match ? String(match.id) : "";
 }
 
 export default function BlockSection({
@@ -52,6 +85,27 @@ export default function BlockSection({
   const addOperation = (factory) => {
     update({ operations: [...block.operations, factory()] });
   };
+
+  const selectPaperSheet = (sheetId) => {
+    if (sheetId === "") {
+      update({ paperSheetId: "", paper: emptyPaperFields() });
+      return;
+    }
+    const sheet = catalogs.sheets.find((row) => String(row.id) === sheetId);
+    if (!sheet) {
+      update({ paperSheetId: sheetId });
+      return;
+    }
+    update({ paperSheetId: sheetId, paper: paperFromSheet(sheet) });
+  };
+
+  const paperSheetValue = resolvePaperSheetId(
+    block.paperSheetId,
+    block.paper,
+    catalogs.sheets,
+  );
+
+  const existingKinds = new Set(block.operations.map((op) => op.kind));
 
   return (
     <section className={styles.calculatorBlock}>
@@ -87,12 +141,6 @@ export default function BlockSection({
       <p className={styles.legend}>Формат изделия</p>
       <div className={styles.fieldRow}>
         <TextField
-          id={`${idPrefix}-target-name`}
-          label="Название"
-          value={block.target.name}
-          onChange={(v) => update({ target: { ...block.target, name: v } })}
-        />
-        <TextField
           id={`${idPrefix}-target-width`}
           label="Ширина (мм)"
           value={block.target.width}
@@ -110,34 +158,15 @@ export default function BlockSection({
 
       <p className={styles.legend}>Бумага</p>
       <div className={styles.fieldRow}>
-        <TextField
-          id={`${idPrefix}-paper-name`}
-          label="Название бумаги"
-          value={block.paper.name}
-          onChange={(v) => update({ paper: { ...block.paper, name: v } })}
-        />
-        <TextField
-          id={`${idPrefix}-paper-density`}
-          label="Плотность (г/м²)"
-          value={block.paper.density}
-          type="number"
-          onChange={(v) => update({ paper: { ...block.paper, density: v } })}
-        />
-        <TextField
-          id={`${idPrefix}-paper-thickness`}
-          label="Толщина (мм)"
-          value={block.paper.thickness}
-          type="number"
-          onChange={(v) => update({ paper: { ...block.paper, thickness: v } })}
-        />
-        <TextField
-          id={`${idPrefix}-paper-price`}
-          label="Цена за кг"
-          value={block.paper.price_per_kilo}
-          inputMode="decimal"
-          onChange={(v) =>
-            update({ paper: { ...block.paper, price_per_kilo: v } })
-          }
+        <CatalogSelect
+          id={`${idPrefix}-paper-sheet`}
+          label="Бумага"
+          value={paperSheetValue}
+          onChange={selectPaperSheet}
+          options={catalogs.sheets.map((sheet) => ({
+            value: String(sheet.id),
+            label: sheetLabel(sheet),
+          }))}
         />
       </div>
 
@@ -199,6 +228,7 @@ export default function BlockSection({
       ))}
 
       <EdgeButtonRow
+        existingKinds={existingKinds}
         onPrint={() => addOperation(emptyPrintOperation)}
         onLaminate={() => addOperation(emptyLaminateOperation)}
         onCut={() => addOperation(emptyCutOperation)}
@@ -208,21 +238,39 @@ export default function BlockSection({
   );
 }
 
-function EdgeButtonRow({ onPrint, onLaminate, onCut, onDieCut }) {
+function EdgeButtonRow({
+  existingKinds,
+  onPrint,
+  onLaminate,
+  onCut,
+  onDieCut,
+}) {
   return (
     <div className={styles.fieldRow}>
-      <button type="button" className={styles.btnSecondary} onClick={onPrint}>
-        + Печать
-      </button>
-      <button type="button" className={styles.btnSecondary} onClick={onLaminate}>
-        + Ламинация
-      </button>
-      <button type="button" className={styles.btnSecondary} onClick={onCut}>
-        + Рез
-      </button>
-      <button type="button" className={styles.btnSecondary} onClick={onDieCut}>
-        + Высечка
-      </button>
+      {!existingKinds.has("print") ? (
+        <button type="button" className={styles.btnSecondary} onClick={onPrint}>
+          + Печать
+        </button>
+      ) : null}
+      {!existingKinds.has("laminate") ? (
+        <button
+          type="button"
+          className={styles.btnSecondary}
+          onClick={onLaminate}
+        >
+          + Ламинация
+        </button>
+      ) : null}
+      {!existingKinds.has("cut") ? (
+        <button type="button" className={styles.btnSecondary} onClick={onCut}>
+          + Рез
+        </button>
+      ) : null}
+      {!existingKinds.has("die_cut") ? (
+        <button type="button" className={styles.btnSecondary} onClick={onDieCut}>
+          + Высечка
+        </button>
+      ) : null}
     </div>
   );
 }

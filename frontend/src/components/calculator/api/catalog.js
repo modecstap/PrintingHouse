@@ -4,6 +4,7 @@ import {
   toLaminator,
   toOperator,
   toPrinter,
+  toSheet,
 } from "../models/catalog-label";
 
 export async function fetchPrinters(signal) {
@@ -41,6 +42,11 @@ export async function fetchDieCutOperators(signal) {
   return data.map(toOperator);
 }
 
+export async function fetchSheets(signal) {
+  const data = await requestJson("/api/materials/sheets", { signal });
+  return data.map(toSheet);
+}
+
 const CATALOG_LOADERS = [
   ["printers", fetchPrinters],
   ["laminators", fetchLaminators],
@@ -49,6 +55,7 @@ const CATALOG_LOADERS = [
   ["laminatorOperators", fetchLaminatorOperators],
   ["cutterOperators", fetchCutterOperators],
   ["dieCutOperators", fetchDieCutOperators],
+  ["sheets", fetchSheets],
 ];
 
 export async function loadCatalogs(signal) {

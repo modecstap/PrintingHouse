@@ -21,7 +21,7 @@ const LAMINATION_OPTIONS = [
   { value: "ONE_ONE", label: "1+1" },
 ];
 
-function CatalogSelect({ id, label, value, onChange, options }) {
+export function CatalogSelect({ id, label, value, onChange, options }) {
   return (
     <div className={styles.fieldGroup}>
       <label htmlFor={id}>{label}</label>

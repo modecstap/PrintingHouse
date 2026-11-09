@@ -79,6 +79,7 @@ export function emptyBlock() {
     count: "0",
     markup: "0",
     target: { name: "", width: "0", height: "0" },
+    paperSheetId: "",
     paper: {
       name: "",
       density: "",
@@ -154,7 +155,7 @@ function mapBlockToWrite(block) {
     markup: coerceIntegerField(block.markup),
     imposition: {
       target: {
-        name: block.target.name,
+        name: "",
         width: coerceIntegerField(block.target.width),
         height: coerceIntegerField(block.target.height),
       },
@@ -246,6 +247,7 @@ function mapBlockFromDto(block) {
       width: numberToFormString(imposition.target.width),
       height: numberToFormString(imposition.target.height),
     },
+    paperSheetId: "",
     paper: {
       name: imposition.press_sheet.paper.name,
       density: numberToFormString(imposition.press_sheet.paper.density),

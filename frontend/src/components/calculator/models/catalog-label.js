@@ -74,3 +74,36 @@ export function cutterLabel(cutter) {
 export function operatorLabel(operator) {
   return `№ ${operator.id}, зарплата ${formatMoney(operator.salary_by_operation)}`;
 }
+
+export function toSheet(raw) {
+  if (typeof raw?.id !== "number") {
+    throw new Error("sheet: id must be a number");
+  }
+  const paper = raw?.paper;
+  if (typeof paper?.name !== "string") {
+    throw new Error("sheet: paper.name must be a string");
+  }
+  if (typeof paper?.density !== "number") {
+    throw new Error("sheet: paper.density must be a number");
+  }
+  if (typeof paper?.thickness !== "number") {
+    throw new Error("sheet: paper.thickness must be a number");
+  }
+  if (typeof paper?.price_per_kilo !== "string") {
+    throw new Error("sheet: paper.price_per_kilo must be a string");
+  }
+  return {
+    id: raw.id,
+    paper: {
+      name: paper.name,
+      density: paper.density,
+      thickness: paper.thickness,
+      price_per_kilo: paper.price_per_kilo,
+    },
+  };
+}
+
+export function sheetLabel(sheet) {
+  const { paper } = sheet;
+  return `${paper.name}, ${paper.density} г/м², ${paper.thickness} мм, ${formatMoney(paper.price_per_kilo)}/кг`;
+}

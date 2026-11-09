@@ -18,6 +18,7 @@ const EMPTY_CATALOGS = {
   laminatorOperators: [],
   cutterOperators: [],
   dieCutOperators: [],
+  sheets: [],
 };
 
 export default function Calculator({
