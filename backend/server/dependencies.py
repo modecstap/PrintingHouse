@@ -10,7 +10,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from backend.auth import AuthConfig, CredentialsError, username_from_token
+from backend.new_core.application_services.equipment import EquipmentCatalogService
 from backend.new_core.application_services.order import OrderService
+from backend.new_core.application_services.personal import StaffCatalogService
 from backend.new_core.application_services.reference import ReferenceOrderService
 from backend.storage.database import Database
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
@@ -89,6 +91,29 @@ def get_reference_service(
     return ReferenceOrderService(
         SqlReferenceRepository(session),
         SqlOrderRepository(session),
+    )
+
+
+def get_equipment_catalog_service(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> EquipmentCatalogService:
+    """Builds :class:`EquipmentCatalogService` for this request."""
+    return EquipmentCatalogService(
+        SqlPrinterRepository(session),
+        SqlLaminatorRepository(session),
+        SqlCutterRepository(session),
+    )
+
+
+def get_staff_catalog_service(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> StaffCatalogService:
+    """Builds :class:`StaffCatalogService` for this request."""
+    return StaffCatalogService(
+        SqlPressOperatorRepository(session),
+        SqlLaminatorOperatorRepository(session),
+        SqlCutterOperatorRepository(session),
+        SqlDieCutterOperatorRepository(session),
     )
 
 

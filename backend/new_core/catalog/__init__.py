@@ -1,0 +1,1 @@
+"""Catalog-wide persistence helpers."""

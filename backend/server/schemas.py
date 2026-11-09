@@ -160,3 +160,35 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: Literal["bearer"] = "bearer"
+
+
+class PrinterDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    startup: str
+    cyan: str
+    magenta: str
+    yellow: str
+    black: str
+
+
+class LaminatorDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    startup: str
+
+
+class CutterDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    max_stack: int
+
+
+class OperatorDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    salary_by_operation: str

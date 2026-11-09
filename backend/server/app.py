@@ -14,11 +14,14 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.auth import AuthConfig
 from backend.new_core.application_services.order import OrderIdAllocationFailed
+from backend.new_core.catalog.errors import CatalogIdOccupied
 from backend.new_core.errors import InvalidInput, InvalidPriceException
 from backend.new_core.order.repository import OrderNotFound
 from backend.server.auth import router as auth_router
+from backend.server.equipment import router as equipment_router
 from backend.server.orders import router as orders_router
 from backend.server.references import router as references_router
+from backend.server.staff import router as staff_router
 from backend.server.server_config import ServerConfig
 from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
@@ -92,6 +95,13 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
     ) -> JSONResponse:
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
+    @app.exception_handler(CatalogIdOccupied)
+    async def catalog_id_conflict(
+        _request: Request,
+        exc: CatalogIdOccupied,
+    ) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
     @app.exception_handler(TypeError)
     async def unsupported_operation(
         _request: Request,
@@ -127,6 +137,8 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(orders_router)
     app.include_router(references_router)
+    app.include_router(equipment_router)
+    app.include_router(staff_router)
     return app
 
 

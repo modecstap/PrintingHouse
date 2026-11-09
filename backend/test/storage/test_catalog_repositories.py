@@ -50,3 +50,34 @@ def test_catalog_take_missing_raises_key_error(db_session):
     """Unknown catalog ids raise ``KeyError`` like the in-memory dict."""
     with pytest.raises(KeyError):
         SqlPrinterRepository(db_session).take(PrinterID(404))
+
+
+def test_printer_save_list_delete_round_trip(db_session):
+    """``save``, ``take_all``, and ``delete`` change the printer catalog."""
+    from decimal import Decimal
+
+    from backend.new_core.equipment.printer import Printer
+    from backend.new_core.equipment.printer_repository import PrinterIdOccupied
+    from backend.new_core.values.money import Money
+
+    repo = SqlPrinterRepository(db_session)
+    printer = Printer(
+        id=PrinterID(10),
+        startup=Money(Decimal("1")),
+        cyan=Money(Decimal("2")),
+        magenta=Money(Decimal("3")),
+        yellow=Money(Decimal("4")),
+        black=Money(Decimal("5")),
+    )
+    repo.save(printer)
+    db_session.commit()
+    assert repo.take_all() == (printer,)
+    repo.delete(PrinterID(10))
+    db_session.commit()
+    with pytest.raises(KeyError):
+        repo.take(PrinterID(10))
+
+    repo.save(printer)
+    db_session.commit()
+    with pytest.raises(PrinterIdOccupied):
+        repo.save(printer)
