@@ -10,7 +10,7 @@ from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
-from backend.new_core.order.service import OrderCreateService, OrderIdAllocationFailed
+from backend.new_core.order.service import OrderIdAllocationFailed, OrderService
 from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
 from backend.test.new_core.in_memory_repositories import (
@@ -31,8 +31,8 @@ def _create_service(
     uow: InMemoryUnitOfWork,
     run,
     ctx,
-) -> OrderCreateService:
-    return OrderCreateService(
+) -> OrderService:
+    return OrderService(
         uow=uow,
         printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
         press_operators=InMemoryPressOperatorRepository(

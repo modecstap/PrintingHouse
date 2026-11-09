@@ -7,7 +7,7 @@ import pytest
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderNotFound
-from backend.new_core.order.service import OrderReportService
+from backend.new_core.order.service import OrderService
 from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
 from backend.new_core import AdditionalWork, Accountant
@@ -20,14 +20,14 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
     InMemoryPrintRunRepository,
+    InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
 
 
-def _service_from_fixtures(run, ctx) -> OrderReportService:
-    return OrderReportService(
-        orders=InMemoryOrderRepository(),
-        print_runs=InMemoryPrintRunRepository(),
+def _service_from_fixtures(run, ctx) -> OrderService:
+    return OrderService(
+        uow=InMemoryUnitOfWork(),
         printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
         press_operators=InMemoryPressOperatorRepository(
             items=dict(ctx.press_operators),
@@ -74,9 +74,8 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
 
     orders = InMemoryOrderRepository(orders={order.id: order})
     print_runs = InMemoryPrintRunRepository(by_order={order.id: (run,)})
-    service = OrderReportService(
-        orders=orders,
-        print_runs=print_runs,
+    service = OrderService(
+        uow=InMemoryUnitOfWork(orders=orders, print_runs=print_runs),
         printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
         press_operators=InMemoryPressOperatorRepository(
             items=dict(ctx.press_operators),

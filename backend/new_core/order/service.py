@@ -1,4 +1,4 @@
-"""Use cases that quote, save, and price orders."""
+"""Use cases that quote, save, list, and price orders."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from backend.new_core.operations.print.print import Print
 from backend.new_core.order.factory import OrderFactory
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
-from backend.new_core.order.repository import OrderIdOccupied, OrderRepository
+from backend.new_core.order.repository import OrderIdOccupied
 from backend.new_core.order.unit_of_work import OrderUnitOfWork
 from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
 from backend.new_core.personal.die_cutter_operator_repository import (
@@ -117,77 +117,8 @@ def build_run_estimate(
     return RunEstimate.create(strategies, run=run)
 
 
-class OrderReportService:
-    """Builds an order price report from stored runs and catalogs."""
-
-    def __init__(
-        self,
-        orders: OrderRepository,
-        print_runs: PrintRunRepository,
-        printers: PrinterRepository,
-        press_operators: PressOperatorRepository,
-        laminators: LaminatorRepository,
-        laminator_operators: LaminatorOperatorRepository,
-        cutter_operators: CutterOperatorRepository,
-        die_cut_operators: DieCutterOperatorRepository,
-    ) -> None:
-        """Remembers the repositories used to load order data and catalogs.
-
-        :param orders:
-        :param print_runs:
-        :param printers:
-        :param press_operators:
-        :param laminators:
-        :param laminator_operators:
-        :param cutter_operators:
-        :param die_cut_operators:
-        """
-        self._orders = orders
-        self._print_runs = print_runs
-        self._printers = printers
-        self._press_operators = press_operators
-        self._laminators = laminators
-        self._laminator_operators = laminator_operators
-        self._cutter_operators = cutter_operators
-        self._die_cut_operators = die_cut_operators
-
-    def order_report(self, order_id: OrderID) -> OrderReport:
-        """Prices the order after tax compensation.
-
-        :param order_id:
-
-        :raises OrderNotFound: if the order does not exist.
-
-        :return: the report from :meth:`Accountant.order_report`.
-        """
-        order = self._orders.take(order_id)
-        runs = self._print_runs.take_all_for_order(order_id)
-        estimates = tuple(self._run_estimate(run) for run in runs)
-        return Accountant().order_report(order, estimates)
-
-    def _run_estimate(self, run: PrintRun) -> RunEstimate:
-        """Turns run operations into one run estimate.
-
-        :param run:
-
-        :raises KeyError: if a catalog id from an operation is missing.
-        :raises TypeError: if an operation type is not supported.
-
-        :return: pricing strategies bound to this run.
-        """
-        return build_run_estimate(
-            run,
-            self._printers,
-            self._press_operators,
-            self._laminators,
-            self._laminator_operators,
-            self._cutter_operators,
-            self._die_cut_operators,
-        )
-
-
-class OrderCreateService:
-    """Quotes or saves a product without an existing order id."""
+class OrderService:
+    """Quotes, saves, lists, and builds price reports for orders."""
 
     def __init__(
         self,
@@ -219,6 +150,29 @@ class OrderCreateService:
         self._order_factory = OrderFactory(uow.orders)
         self._print_run_factory = PrintRunFactory(uow.print_runs)
 
+    def get_orders(self, limit: int) -> tuple[Order, ...]:
+        """Returns the latest orders by id.
+
+        :param limit:
+
+        :return: orders from :meth:`OrderRepository.take_latest`.
+        """
+        return self._uow.orders.take_latest(limit)
+
+    def order_report(self, order_id: OrderID) -> OrderReport:
+        """Prices the order after tax compensation.
+
+        :param order_id:
+
+        :raises OrderNotFound: if the order does not exist.
+
+        :return: the report from :meth:`Accountant.order_report`.
+        """
+        order = self._uow.orders.take(order_id)
+        runs = self._uow.print_runs.take_all_for_order(order_id)
+        estimates = tuple(self._run_estimate(run) for run in runs)
+        return Accountant().order_report(order, estimates)
+
     def quote(self, product: Product, count: int) -> OrderReport:
         """Prices the product without persisting an order.
 
@@ -232,18 +186,7 @@ class OrderCreateService:
         :return: the report from :meth:`Accountant.order_report`.
         """
         order, runs = self._assemble(product, count)
-        estimates = tuple(
-            build_run_estimate(
-                run,
-                self._printers,
-                self._press_operators,
-                self._laminators,
-                self._laminator_operators,
-                self._cutter_operators,
-                self._die_cut_operators,
-            )
-            for run in runs
-        )
+        estimates = tuple(self._run_estimate(run) for run in runs)
         return Accountant().order_report(order, estimates)
 
     def save(self, product: Product, count: int) -> OrderID:
@@ -272,6 +215,26 @@ class OrderCreateService:
         if last_occupied is None:
             raise RuntimeError("save exhausted retries without OrderIdOccupied")
         raise OrderIdAllocationFailed(last_occupied.order_id) from last_occupied
+
+    def _run_estimate(self, run: PrintRun) -> RunEstimate:
+        """Turns run operations into one run estimate.
+
+        :param run:
+
+        :raises KeyError: if a catalog id from an operation is missing.
+        :raises TypeError: if an operation type is not supported.
+
+        :return: pricing strategies bound to this run.
+        """
+        return build_run_estimate(
+            run,
+            self._printers,
+            self._press_operators,
+            self._laminators,
+            self._laminator_operators,
+            self._cutter_operators,
+            self._die_cut_operators,
+        )
 
     def _assemble(
         self,

@@ -49,6 +49,12 @@ class InMemoryOrderRepository:
             raise OrderIdOccupied("save", order.id)
         self.orders[order.id] = order
 
+    def take_latest(self, limit: int) -> tuple[Order, ...]:
+        if limit <= 0:
+            return ()
+        ids = sorted(self.orders, key=lambda order_id: order_id.value, reverse=True)
+        return tuple(self.orders[order_id] for order_id in ids[:limit])
+
 
 @dataclass
 class InMemoryPrintRunRepository:

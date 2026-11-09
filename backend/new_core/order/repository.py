@@ -79,3 +79,13 @@ class OrderRepository(Protocol):
         :return: nothing. Existing rows are not overwritten.
         """
         ...
+
+    def take_latest(self, limit: int) -> tuple[Order, ...]:
+        """Returns stored orders with the largest ids first.
+
+        :param limit: maximum row count. Zero: an empty tuple.
+
+        :return: at most ``limit`` orders, by descending id.
+        No rows: an empty tuple.
+        """
+        ...
