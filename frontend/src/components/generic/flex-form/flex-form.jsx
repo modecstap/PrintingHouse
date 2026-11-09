@@ -54,9 +54,7 @@ function FormField({
   const handleChange = (e) => {
     let val = e.target.value;
 
-    if (type === "number") {
-      val = val;
-    } else if (type === "select" && valueParser) {
+    if (type === "select" && valueParser) {
       val = valueParser(val);
     }
 

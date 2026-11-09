@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   createCatalog,
   deleteCatalog,
@@ -23,7 +23,7 @@ export default function CatalogPanel({ def }) {
   const [deletingId, setDeletingId] = useState(null);
   const listAbortRef = useRef(null);
 
-  const startListLoad = () => {
+  const startListLoad = useCallback(() => {
     listAbortRef.current?.abort();
     const controller = new AbortController();
     listAbortRef.current = controller;
@@ -42,14 +42,14 @@ export default function CatalogPanel({ def }) {
         }
         setListState({ status: "error", message: error.message });
       });
-  };
+  }, [def.listPath, def.parseList]);
 
   useEffect(() => {
     startListLoad();
     return () => {
       listAbortRef.current?.abort();
     };
-  }, [def.listPath, reloadNonce]);
+  }, [reloadNonce, startListLoad]);
 
   const bumpReload = () => setReloadNonce((n) => n + 1);
 

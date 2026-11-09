@@ -39,22 +39,6 @@ export function CatalogSelect({ id, label, value, onChange, options }) {
   );
 }
 
-function TextField({ id, label, value, onChange, inputMode, type = "text" }) {
-  return (
-    <div className={styles.fieldGroup}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        step={type === "number" ? "1" : undefined}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
-
 const KIND_HEADING = {
   print: "Печать",
   laminate: "Ламинация",
