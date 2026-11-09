@@ -57,7 +57,7 @@ class RunEstimate:
         return self._run.imposition_count()
 
     def targets_on_imposition(self) -> int:
-        return self._run.imposition.count()
+        return self._run.block.imposition.count()
 
     def block_count(self) -> int:
         return self._run.block.count

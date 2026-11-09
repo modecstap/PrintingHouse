@@ -25,7 +25,7 @@ class CutPricing:
         lifts = (
             Decimal(self.print_run.imposition_count()) / Decimal(stack)
         ).to_integral_value(rounding=ROUND_CEILING)
-        human_cuts = int(lifts) * self.print_run.imposition.cuts()
+        human_cuts = int(lifts) * self.print_run.block.imposition.cuts()
         work = (
             self.operator.salary_by_operation
             * human_cuts
@@ -41,7 +41,7 @@ class CutPricing:
     def _sheets_in_stack(self) -> int:
         sheets = (
             Decimal(self.cutter.max_stack)
-            / self.print_run.imposition.thickness()
+            / self.print_run.block.imposition.thickness()
         ).to_integral_value(rounding=ROUND_CEILING)
         return max(int(sheets), 0)
 

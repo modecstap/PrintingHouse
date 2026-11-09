@@ -33,6 +33,7 @@ from backend.new_core import (
     DieCut,
     DieCutterOperator,
     Film,
+    Format,
     Imposition,
     InvalidInput,
     Laminate,
@@ -110,16 +111,6 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     Paper thickness is 1 mm, so the 50 mm stack cuts both press sheets
     in one lift.
     """
-    block_sheet = Sheet(
-        paper=Paper(
-            density=60,
-            thickness=1,
-            name="block",
-            price_per_kilo=Money(Decimal(999)),
-        ),
-        height=1,
-        width=1,
-    )
     printer = Printer(
         id=PrinterID(1),
         startup=Money(Decimal(printer_startup)),
@@ -144,13 +135,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         salary_by_operation=Money(Decimal(7)),
     )
     imposition = Imposition(
-        target=Sheet(
-            paper=Paper(
-                density=60,
-                thickness=1,
-                name="target",
-                price_per_kilo=Money(Decimal(9999)),
-            ),
+        target=Format(
+            name="target",
             height=target_height,
             width=target_width,
         ),
@@ -161,8 +147,11 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
                 name="press",
                 price_per_kilo=Money(Decimal(press_price)),
             ),
-            height=press_height,
-            width=press_width,
+            format=Format(
+                name="press",
+                height=press_height,
+                width=press_width,
+            ),
         ),
         bleeds=0,
         spacing=0,
@@ -174,7 +163,6 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             printer_id=printer.id,
             operator_id=press_operator.id,
             chroma=chroma,
-            paper=imposition.press_sheet,
         )
         run_operations.append(printing)
     laminate = None
@@ -194,7 +182,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         )
         run_operations.append(cut)
     block = Part(
-        target=block_sheet,
+        imposition=imposition,
         count=3,
         markup=markup,
         operations=tuple(run_operations),
@@ -219,7 +207,6 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         block=block,
         for_order=OrderID(1),
         required_count=required_count,
-        imposition=imposition,
     )
     ctx = _RunPricingFixtures(
         printers={printer.id: printer},
@@ -245,7 +232,6 @@ def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
                     printer=ctx.printers[operation.printer_id],
                     operator=ctx.press_operators[operation.operator_id],
                     chroma=operation.chroma,
-                    paper=operation.paper,
                     print_run=run,
                 ),
             )
@@ -359,7 +345,6 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
         printer_id=printing.printer_id,
         operator_id=printing.operator_id,
         chroma=printing.chroma,
-        paper=printing.paper,
     )
     _append_block_operation(run, second)
 
@@ -422,7 +407,7 @@ def test_list_report_divides_by_the_imposition_count():
     report = accountant.block_cost_report(_estimate(run, ctx))
 
     assert run.imposition_count() == 1
-    assert run.imposition.count() == 6
+    assert run.block.imposition.count() == 6
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(10))
     assert sheet.work == Money(Decimal(5))
@@ -532,7 +517,7 @@ def test_factories_append_in_call_order():
 
     assert run.block.operations == (printing, laminate, cut, die_cut)
     assert printing.chroma is Chroma.FOUR_ZERO
-    assert printing.paper is run.imposition.press_sheet
+    assert run.block.imposition.press_sheet.paper.name == "press"
     assert laminate.lamination is Lamination.ONE_ZERO
     assert laminate.film.name == "film"
     assert die_cut.operator_id is operator.id
@@ -550,7 +535,6 @@ def test_constructor_print_stays_out_of_the_run():
         printer_id=printing.printer_id,
         operator_id=printing.operator_id,
         chroma=printing.chroma,
-        paper=printing.paper,
     )
 
     assert run.block.operations == (printing,)

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import TypeVar
 
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.order.order import Order, OrderID
-from backend.new_core.order.repository import OrderNotFound
+from backend.new_core.order.repository import OrderIdOccupied, OrderNotFound
 from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
@@ -18,7 +20,9 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperatorID,
 )
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
-from backend.new_core.print_run.print_run import PrintRun
+from backend.new_core.print_run.print_run import PrintRun, PrintRunID
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -26,6 +30,7 @@ class InMemoryOrderRepository:
     """Stores orders in a dict."""
 
     orders: dict[OrderID, Order] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, order_id: OrderID) -> Order:
         try:
@@ -33,15 +38,66 @@ class InMemoryOrderRepository:
         except KeyError as exc:
             raise OrderNotFound("take", order_id) from exc
 
+    def generate_id(self) -> OrderID:
+        order_id = OrderID(self._next_id)
+        self._next_id += 1
+        return order_id
+
+    def save(self, order: Order) -> None:
+        if order.id in self.orders:
+            raise OrderIdOccupied("save", order.id)
+        self.orders[order.id] = order
+
 
 @dataclass
 class InMemoryPrintRunRepository:
     """Stores print runs grouped by order id."""
 
     by_order: dict[OrderID, tuple[PrintRun, ...]] = field(default_factory=dict)
+    _next_id_by_order: dict[OrderID, int] = field(default_factory=dict)
 
     def take_all_for_order(self, order_id: OrderID) -> tuple[PrintRun, ...]:
         return self.by_order.get(order_id, ())
+
+    def generate_id(self, order_id: OrderID) -> PrintRunID:
+        nxt = self._next_id_by_order.get(order_id, 0)
+        self._next_id_by_order[order_id] = nxt + 1
+        return PrintRunID(nxt)
+
+    def save_all_for_order(
+        self,
+        order_id: OrderID,
+        runs: tuple[PrintRun, ...],
+    ) -> None:
+        for run in runs:
+            if run.for_order != order_id:
+                raise ValueError(
+                    f"run {run.id.value} for_order {run.for_order.value} "
+                    f"!= {order_id.value}",
+                )
+        self.by_order[order_id] = runs
+
+
+@dataclass
+class InMemoryUnitOfWork:
+    """Snapshot rollback for in-memory order and print-run stores."""
+
+    orders: InMemoryOrderRepository = field(default_factory=InMemoryOrderRepository)
+    print_runs: InMemoryPrintRunRepository = field(
+        default_factory=InMemoryPrintRunRepository,
+    )
+
+    def transaction(self, work: Callable[[], T]) -> T:
+        orders_snapshot = dict(self.orders.orders)
+        runs_snapshot = {k: v for k, v in self.print_runs.by_order.items()}
+        try:
+            return work()
+        except Exception:
+            self.orders.orders.clear()
+            self.orders.orders.update(orders_snapshot)
+            self.print_runs.by_order.clear()
+            self.print_runs.by_order.update(runs_snapshot)
+            raise
 
 
 @dataclass

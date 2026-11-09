@@ -1,4 +1,4 @@
-"""Use cases that price a stored order."""
+"""Use cases that quote, save, and price orders."""
 
 from __future__ import annotations
 
@@ -16,8 +16,11 @@ from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.operations.print.print import Print
-from backend.new_core.order.order import OrderID
-from backend.new_core.order.repository import OrderRepository
+from backend.new_core.order.factory import OrderFactory
+from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.product import Product
+from backend.new_core.order.repository import OrderIdOccupied, OrderRepository
+from backend.new_core.order.unit_of_work import OrderUnitOfWork
 from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
 from backend.new_core.personal.die_cutter_operator_repository import (
     DieCutterOperatorRepository,
@@ -26,8 +29,92 @@ from backend.new_core.personal.laminator_operator_repository import (
     LaminatorOperatorRepository,
 )
 from backend.new_core.personal.press_operator_repository import PressOperatorRepository
+from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.print_run.repository import PrintRunRepository
+
+_MAX_ORDER_ID_ATTEMPTS = 3
+
+
+class OrderIdAllocationFailed(Exception):
+    """Reports that save exhausted occupied-id retries."""
+
+    def __init__(self, last_occupied: OrderID) -> None:
+        super().__init__(
+            f"save: не удалось выделить id заказа за {_MAX_ORDER_ID_ATTEMPTS} "
+            f"попытки, id={last_occupied.value}",
+        )
+        self.last_occupied = last_occupied
+
+
+def build_run_estimate(
+    run: PrintRun,
+    printers: PrinterRepository,
+    press_operators: PressOperatorRepository,
+    laminators: LaminatorRepository,
+    laminator_operators: LaminatorOperatorRepository,
+    cutter_operators: CutterOperatorRepository,
+    die_cut_operators: DieCutterOperatorRepository,
+) -> RunEstimate:
+    """Turns run operations into one run estimate.
+
+    :param run:
+    :param printers:
+    :param press_operators:
+    :param laminators:
+    :param laminator_operators:
+    :param cutter_operators:
+    :param die_cut_operators:
+
+    :raises KeyError: if a catalog id from an operation is missing.
+    :raises TypeError: if an operation type is not supported.
+
+    :return: pricing strategies bound to this run.
+    """
+    strategies: list[PricingStrategy] = []
+    operations = run.block.operations
+    for operation in operations:
+        if isinstance(operation, Print):
+            strategies.append(
+                PrintPricing(
+                    printer=printers.take(operation.printer_id),
+                    operator=press_operators.take(operation.operator_id),
+                    chroma=operation.chroma,
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, Laminate):
+            strategies.append(
+                LaminatePricing(
+                    laminator=laminators.take(operation.laminator_id),
+                    operator=laminator_operators.take(
+                        operation.operator_id,
+                    ),
+                    lamination=operation.lamination,
+                    film=operation.film,
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, Cut):
+            strategies.append(
+                CutPricing(
+                    cutter=operation.cutter,
+                    operator=cutter_operators.take(operation.operator_id),
+                    print_run=run,
+                ),
+            )
+        elif isinstance(operation, DieCut):
+            strategies.append(
+                DieCutPricing(
+                    operator=die_cut_operators.take(operation.operator_id),
+                    print_run=run,
+                ),
+            )
+        else:
+            raise TypeError(
+                f"Unsupported run operation type: {type(operation).__name__}",
+            )
+    return RunEstimate.create(strategies, run=run)
 
 
 class OrderReportService:
@@ -88,48 +175,116 @@ class OrderReportService:
 
         :return: pricing strategies bound to this run.
         """
-        strategies: list[PricingStrategy] = []
-        operations = run.block.operations
-        for operation in operations:
-            if isinstance(operation, Print):
-                strategies.append(
-                    PrintPricing(
-                        printer=self._printers.take(operation.printer_id),
-                        operator=self._press_operators.take(operation.operator_id),
-                        chroma=operation.chroma,
-                        paper=operation.paper,
-                        print_run=run,
-                    ),
-                )
-            elif isinstance(operation, Laminate):
-                strategies.append(
-                    LaminatePricing(
-                        laminator=self._laminators.take(operation.laminator_id),
-                        operator=self._laminator_operators.take(
-                            operation.operator_id,
-                        ),
-                        lamination=operation.lamination,
-                        film=operation.film,
-                        print_run=run,
-                    ),
-                )
-            elif isinstance(operation, Cut):
-                strategies.append(
-                    CutPricing(
-                        cutter=operation.cutter,
-                        operator=self._cutter_operators.take(operation.operator_id),
-                        print_run=run,
-                    ),
-                )
-            elif isinstance(operation, DieCut):
-                strategies.append(
-                    DieCutPricing(
-                        operator=self._die_cut_operators.take(operation.operator_id),
-                        print_run=run,
-                    ),
-                )
-            else:
-                raise TypeError(
-                    f"Unsupported run operation type: {type(operation).__name__}",
-                )
-        return RunEstimate.create(strategies, run=run)
+        return build_run_estimate(
+            run,
+            self._printers,
+            self._press_operators,
+            self._laminators,
+            self._laminator_operators,
+            self._cutter_operators,
+            self._die_cut_operators,
+        )
+
+
+class OrderCreateService:
+    """Quotes or saves a product without an existing order id."""
+
+    def __init__(
+        self,
+        uow: OrderUnitOfWork,
+        printers: PrinterRepository,
+        press_operators: PressOperatorRepository,
+        laminators: LaminatorRepository,
+        laminator_operators: LaminatorOperatorRepository,
+        cutter_operators: CutterOperatorRepository,
+        die_cut_operators: DieCutterOperatorRepository,
+    ) -> None:
+        """Remembers the unit of work and catalogs.
+
+        :param uow:
+        :param printers:
+        :param press_operators:
+        :param laminators:
+        :param laminator_operators:
+        :param cutter_operators:
+        :param die_cut_operators:
+        """
+        self._uow = uow
+        self._printers = printers
+        self._press_operators = press_operators
+        self._laminators = laminators
+        self._laminator_operators = laminator_operators
+        self._cutter_operators = cutter_operators
+        self._die_cut_operators = die_cut_operators
+        self._order_factory = OrderFactory(uow.orders)
+        self._print_run_factory = PrintRunFactory(uow.print_runs)
+
+    def quote(self, product: Product, count: int) -> OrderReport:
+        """Prices the product without persisting an order.
+
+        :param product:
+        :param count:
+
+        :raises KeyError: if a catalog id is missing.
+        :raises TypeError: if an operation type is not supported.
+        :raises InvalidInput: if the product or run data is invalid.
+
+        :return: the report from :meth:`Accountant.order_report`.
+        """
+        order, runs = self._assemble(product, count)
+        estimates = tuple(
+            build_run_estimate(
+                run,
+                self._printers,
+                self._press_operators,
+                self._laminators,
+                self._laminator_operators,
+                self._cutter_operators,
+                self._die_cut_operators,
+            )
+            for run in runs
+        )
+        return Accountant().order_report(order, estimates)
+
+    def save(self, product: Product, count: int) -> OrderID:
+        """Persists the order and one print run per block.
+
+        :param product:
+        :param count:
+
+        :raises OrderIdAllocationFailed: after three occupied order ids.
+        :raises InvalidInput: if the product or run data is invalid.
+
+        :return: the stored order id.
+        """
+        last_occupied: OrderIdOccupied | None = None
+        for _ in range(_MAX_ORDER_ID_ATTEMPTS):
+            try:
+                def work() -> OrderID:
+                    order, runs = self._assemble(product, count)
+                    self._uow.orders.save(order)
+                    self._uow.print_runs.save_all_for_order(order.id, runs)
+                    return order.id
+
+                return self._uow.transaction(work)
+            except OrderIdOccupied as exc:
+                last_occupied = exc
+        if last_occupied is None:
+            raise RuntimeError("save exhausted retries without OrderIdOccupied")
+        raise OrderIdAllocationFailed(last_occupied.order_id) from last_occupied
+
+    def _assemble(
+        self,
+        product: Product,
+        count: int,
+    ) -> tuple[Order, tuple[PrintRun, ...]]:
+        order = self._order_factory.create(product, count)
+        runs = tuple(
+            self._print_run_factory.create(
+                for_order=order.id,
+                block=block,
+                required_count=order.count * block.count,
+            )
+            for block in product.blocks
+        )
+        return order, runs

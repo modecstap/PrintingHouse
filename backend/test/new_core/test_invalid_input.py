@@ -12,6 +12,7 @@ from backend.new_core.values.money import Money
 from backend.new_core import (
     Part,
     Cutter,
+    Format,
     Imposition,
     InvalidInput,
     Order,
@@ -32,14 +33,22 @@ _ZERO_CELL = (
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
         paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
-        height=height,
-        width=width,
+        format=Format(name="sheet", height=height, width=width),
+    )
+
+
+def _fitting_imposition() -> Imposition:
+    return Imposition(
+        target=Format(name="t", height=100, width=100),
+        press_sheet=_sheet(200, 300),
+        bleeds=0,
+        spacing=0,
     )
 
 
 def _block(count: int) -> Part:
     return Part(
-        target=_sheet(1, 1),
+        imposition=_fitting_imposition(),
         count=count,
         markup=Percent(0),
         operations=(),
@@ -52,28 +61,16 @@ def _rejects(message: str, call) -> None:
 
 
 def test_imposition_rejects_count_when_nothing_fits():
-    """A 100 by 100 target on a 50 by 50 press sheet rejects count and still needs 4 cuts.
-
-    The same grid rejects a print run, because the run counts its press sheets.
-    """
-    imposition = Imposition(
-        target=_sheet(100, 100),
-        press_sheet=_sheet(50, 50),
-        bleeds=0,
-        spacing=0,
-    )
+    """A 100 by 100 target on a 50 by 50 press sheet is rejected at construction."""
     message = "Imposition: на печатный лист влезает 0 целевых листов"
 
-    assert imposition.cuts() == 4
-    _rejects(message, imposition.count)
     _rejects(
         message,
-        lambda: PrintRun(
-            id=PrintRunID(1),
-            for_order=OrderID(0),
-            block=_block(0),
-            required_count=10,
-            imposition=imposition,
+        lambda: Imposition(
+            target=Format(name="t", height=100, width=100),
+            press_sheet=_sheet(50, 50),
+            bleeds=0,
+            spacing=0,
         ),
     )
 
@@ -83,6 +80,14 @@ def test_print_run_rejects_a_zero_cell_side():
     _rejects(
         _ZERO_CELL,
         lambda: build_worked_run(target_width=0, target_height=10),
+    )
+
+
+def test_product_rejects_empty_blocks():
+    """A product with no blocks is rejected at construction."""
+    _rejects(
+        "Product: нет блоков продукта",
+        lambda: Product(blocks=(), operations=()),
     )
 
 
@@ -124,37 +129,19 @@ def test_cutter_rejects_a_stack_height_of_zero():
     ("message", "build"),
     [
         pytest.param(
-            "Sheet: высота меньше 0, высота=-1 мм",
-            lambda: Sheet(
-                paper=Paper(
-                    density=60,
-                    thickness=1,
-                    name="sheet",
-                    price_per_kilo=Money(Decimal(0)),
-                ),
-                height=-1,
-                width=1,
-            ),
+            "Format: высота меньше 0, высота=-1 мм",
+            lambda: Format(name="", height=-1, width=1),
             id="height",
         ),
         pytest.param(
-            "Sheet: ширина меньше 0, ширина=-1 мм",
-            lambda: Sheet(
-                paper=Paper(
-                    density=60,
-                    thickness=1,
-                    name="sheet",
-                    price_per_kilo=Money(Decimal(0)),
-                ),
-                height=1,
-                width=-1,
-            ),
+            "Format: ширина меньше 0, ширина=-1 мм",
+            lambda: Format(name="", height=1, width=-1),
             id="width",
         ),
         pytest.param(
             "Imposition: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
-                target=_sheet(10, 10),
+                target=Format(name="t", height=10, width=10),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=0,
@@ -164,7 +151,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
         pytest.param(
             "Imposition: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
-                target=_sheet(10, 10),
+                target=Format(name="t", height=10, width=10),
                 press_sheet=_sheet(30, 40),
                 bleeds=0,
                 spacing=-1,
@@ -175,7 +162,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "order: количество меньше 0, количество=-1",
             lambda: Order(
                 id=OrderID(1),
-                product=Product(blocks=(), operations=()),
+                product=Product(blocks=(_block(0),), operations=()),
                 count=-1,
             ),
             id="order count",
@@ -192,12 +179,6 @@ def test_cutter_rejects_a_stack_height_of_zero():
                 for_order=OrderID(1),
                 block=_block(0),
                 required_count=-1,
-                imposition=Imposition(
-                    target=_sheet(100, 100),
-                    press_sheet=_sheet(200, 300),
-                    bleeds=0,
-                    spacing=0,
-                ),
             ),
             id="required count",
         ),
@@ -228,23 +209,14 @@ def test_negative_measure_is_rejected(message: str, build):
             id="paper",
         ),
         pytest.param(
-            "Sheet: высота меньше 0, высота=-1 мм; ширина меньше 0, ширина=-1 мм",
-            lambda: Sheet(
-                paper=Paper(
-                    density=60,
-                    thickness=1,
-                    name="sheet",
-                    price_per_kilo=Money(Decimal(0)),
-                ),
-                height=-1,
-                width=-1,
-            ),
-            id="sheet",
+            "Format: высота меньше 0, высота=-1 мм; ширина меньше 0, ширина=-1 мм",
+            lambda: Format(name="", height=-1, width=-1),
+            id="format",
         ),
         pytest.param(
             "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
             lambda: Imposition(
-                target=_sheet(10, 10),
+                target=Format(name="t", height=10, width=10),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=-1,

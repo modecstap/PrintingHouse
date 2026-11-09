@@ -1,20 +1,20 @@
-"""One printed part of a product: its target, count, and finishing."""
+"""One printed part of a product: layout, count, and finishing."""
 
 from dataclasses import dataclass
 
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.values.percent import Percent
 from backend.new_core.errors import InvalidInput
-from backend.new_core.materials.sheet import Sheet
+from backend.new_core.print_run.imposition import Imposition
 
 
 @dataclass(frozen=True, slots=True)
 class Part:
     """
-    Value Object. One printed part: its target, copy count, markup, and finishing.
+    Value Object. One printed part: its layout, copy count, markup, and finishing.
     """
 
-    target: Sheet
+    imposition: Imposition
     count: int
     markup: Percent
     operations: tuple[RunOperation, ...]

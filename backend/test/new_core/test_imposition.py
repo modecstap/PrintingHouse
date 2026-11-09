@@ -6,21 +6,20 @@ from decimal import Decimal
 import pytest
 
 from backend.new_core.values.money import Money
-from backend.new_core import Imposition, InvalidInput, Paper, Sheet
+from backend.new_core import Format, Imposition, InvalidInput, Paper, Sheet
 
 
 def _sheet(width: int, height: int) -> Sheet:
     return Sheet(
         paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
-        height=height,
-        width=width,
+        format=Format(name="sheet", height=height, width=width),
     )
 
 
 def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
     """A 10 by 20 target on a 30 by 40 press sheet fits 6 and needs 10 cuts."""
     imposition = Imposition(
-        target=_sheet(10, 20),
+        target=Format(name="t", height=20, width=10),
         press_sheet=_sheet(30, 40),
         bleeds=0,
         spacing=0,
@@ -33,7 +32,7 @@ def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
 def test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid():
     """A 10 by 20 target on a 60 by 40 press sheet fits 12 and needs 14 cuts."""
     imposition = Imposition(
-        target=_sheet(10, 20),
+        target=Format(name="t", height=20, width=10),
         press_sheet=_sheet(60, 40),
         bleeds=0,
         spacing=0,
@@ -49,7 +48,7 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
     It fits 6 and needs 10 cuts.
     """
     imposition = Imposition(
-        target=_sheet(100, 100),
+        target=Format(name="t", height=100, width=100),
         press_sheet=_sheet(320, 450),
         bleeds=5,
         spacing=11,
@@ -60,19 +59,16 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
 
 
 def test_imposition_rejects_a_zero_cell_side():
-    """A target width of 0 makes count and cuts reject the zero cell side."""
-    imposition = Imposition(
-        target=_sheet(0, 10),
-        press_sheet=_sheet(30, 40),
-        bleeds=0,
-        spacing=0,
-    )
+    """A target width of 0 is rejected when the imposition is built."""
     message = (
         "Imposition: сторона ячейки равна 0, "
         "ширина ячейки=0 мм, высота ячейки=10 мм"
     )
 
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
-        imposition.count()
-    with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
-        imposition.cuts()
+        Imposition(
+            target=Format(name="t", height=10, width=0),
+            press_sheet=_sheet(30, 40),
+            bleeds=0,
+            spacing=0,
+        )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from backend.new_core import Printer, PressOperator, Sheet
+from backend.new_core import Printer, PressOperator
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.print_run.print_run import PrintRun
@@ -18,7 +18,6 @@ class PrintPricing:
     printer: Printer
     operator: PressOperator
     chroma: Chroma
-    paper: Sheet
     print_run: PrintRun
 
     def report(self) -> CostReport:
@@ -30,7 +29,8 @@ class PrintPricing:
             + printer.yellow * yellow
             + printer.black * black
         )
-        material = self.paper.price() + ink
+        paper = self.print_run.block.imposition.press_sheet.price()
+        material = paper + ink
         if self.chroma is Chroma.ZERO_ZERO:
             work = Money.zero()
         else:

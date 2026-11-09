@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from backend.new_core.materials.sheet import Sheet
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.personal.press_operator import PressOperatorID
@@ -18,5 +17,3 @@ class Print:
     printer_id: PrinterID
     operator_id: PressOperatorID
     chroma: Chroma
-    paper: Sheet
-

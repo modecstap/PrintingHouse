@@ -8,7 +8,6 @@ from decimal import ROUND_CEILING, Decimal
 from backend.new_core.values.percent import Percent
 from backend.new_core.part import Part
 from backend.new_core.errors import InvalidInput
-from backend.new_core.print_run.imposition import Imposition
 from backend.new_core.order.order import OrderID
 
 
@@ -38,13 +37,11 @@ class PrintRun:
             for_order: OrderID,
             block: Part,
             required_count: int,
-            imposition: Imposition,
     ) -> None:
         self.id = id
         self.for_order = for_order
         self.block = block
         self.required_count = required_count
-        self.imposition = imposition
 
         if self.required_count < 0:
             raise InvalidInput(
@@ -62,23 +59,23 @@ class PrintRun:
     def production_count(self) -> int:
         """Returns how many target sheets the run produces.
 
-        :return: the press target count times the sheets on one press target.
+        :return: the press sheet count times the sheets on one press sheet.
         """
-        return self.imposition_count() * self.imposition.count()
+        return self.imposition_count() * self.block.imposition.count()
 
     def imposition_count(self) -> int:
         """Returns how many press sheets the run prints.
 
-        :raises InvalidInput: if a cell side is zero, or if the press target
+        :raises InvalidInput: if a cell side is zero, or if the press sheet
         fits no positive number of target sheets.
 
         :return: required_count times a 3 percent waste allowance, divided
-        by the number of target sheets on one press target, rounded up
+        by the number of target sheets on one press sheet, rounded up
         to an integer.
         """
         sheets = (
                 Decimal(self.required_count)
                 * _WASTE_ALLOWANCE.factor()
-                / Decimal(self.imposition.count())
+                / Decimal(self.block.imposition.count())
         ).to_integral_value(rounding=ROUND_CEILING)
         return int(sheets)
