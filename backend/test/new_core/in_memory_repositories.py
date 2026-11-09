@@ -12,6 +12,11 @@ from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.laminator_repository import LaminatorIdOccupied
 from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.equipment.printer_repository import PrinterIdOccupied
+from backend.new_core.format import Format
+from backend.new_core.materials.film import Film, FilmID
+from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.sheet import Sheet, SheetID
+from backend.new_core.values.money import Money
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.repository import OrderIdOccupied, OrderNotFound
 from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
@@ -117,6 +122,69 @@ class InMemoryUnitOfWork:
             self.print_runs.by_order.clear()
             self.print_runs.by_order.update(runs_snapshot)
             raise
+
+
+@dataclass
+class InMemoryFilmRepository:
+    items: dict[FilmID, Film] = field(default_factory=dict)
+    _next_id: int = 1
+
+    def take(self, film_id: FilmID) -> Film:
+        return self.items[film_id]
+
+    def take_all(self) -> tuple[Film, ...]:
+        return tuple(
+            self.items[film_id]
+            for film_id in sorted(self.items, key=lambda item: item.value)
+        )
+
+    def add(self, name: str, price: Money, density: int) -> FilmID:
+        film_id = FilmID(self._next_id)
+        self._next_id += 1
+        self.items[film_id] = Film(
+            id=film_id,
+            name=name,
+            price=price,
+            density=density,
+        )
+        return film_id
+
+    def replace(self, film: Film) -> None:
+        if film.id not in self.items:
+            raise KeyError(film.id)
+        self.items[film.id] = film
+
+    def delete(self, film_id: FilmID) -> None:
+        del self.items[film_id]
+
+
+@dataclass
+class InMemorySheetRepository:
+    items: dict[SheetID, Sheet] = field(default_factory=dict)
+    _next_id: int = 1
+
+    def take(self, sheet_id: SheetID) -> Sheet:
+        return self.items[sheet_id]
+
+    def take_all(self) -> tuple[Sheet, ...]:
+        return tuple(
+            self.items[sheet_id]
+            for sheet_id in sorted(self.items, key=lambda item: item.value)
+        )
+
+    def add(self, paper: Paper, format: Format) -> SheetID:
+        sheet_id = SheetID(self._next_id)
+        self._next_id += 1
+        self.items[sheet_id] = Sheet(id=sheet_id, paper=paper, format=format)
+        return sheet_id
+
+    def replace(self, sheet: Sheet) -> None:
+        if sheet.id not in self.items:
+            raise KeyError(sheet.id)
+        self.items[sheet.id] = sheet
+
+    def delete(self, sheet_id: SheetID) -> None:
+        del self.items[sheet_id]
 
 
 @dataclass
