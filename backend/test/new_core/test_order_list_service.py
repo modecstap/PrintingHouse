@@ -1,6 +1,9 @@
 """Behavior of listing stored orders."""
 
+import pytest
+
 from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.order.product import Product
 from backend.new_core.order.service import OrderService
 from backend.test.new_core.in_memory_repositories import (
@@ -56,3 +59,15 @@ def test_should_list_orders_with_the_larger_id_first_when_a_limit_is_set():
 def test_should_return_an_empty_list_when_there_are_no_orders():
     listed = _list_service(InMemoryOrderRepository()).get_orders(10)
     assert listed == ()
+
+
+def test_get_order_returns_the_stored_order():
+    stored = _order(4)
+    orders = InMemoryOrderRepository(orders={stored.id: stored})
+
+    assert _list_service(orders).get_order(stored.id) is stored
+
+
+def test_get_order_raises_when_the_id_is_missing():
+    with pytest.raises(OrderNotFound):
+        _list_service(InMemoryOrderRepository()).get_order(OrderID(404))

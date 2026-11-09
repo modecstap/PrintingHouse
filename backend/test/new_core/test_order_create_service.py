@@ -10,7 +10,11 @@ from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
-from backend.new_core.order.service import OrderIdAllocationFailed, OrderService
+from backend.new_core.order.service import (
+    OrderIdAllocationFailed,
+    OrderService,
+    build_run_estimate,
+)
 from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
 from backend.test.new_core.in_memory_repositories import (
@@ -258,6 +262,40 @@ def test_save_raises_after_three_occupied_ids():
     assert len(uow.orders.orders) == 1
     assert OrderID(1) in uow.orders.orders
     assert not uow.print_runs.by_order
+
+
+def test_build_run_estimate_rejects_unknown_operation():
+    """An unsupported operation type raises TypeError from build_run_estimate."""
+    run, _, _, _, ctx = build_worked_run()
+
+    class _UnknownOperation:
+        pass
+
+    from dataclasses import replace
+
+    from backend.new_core.print_run.print_run import PrintRun
+
+    broken = PrintRun(
+        id=run.id,
+        for_order=run.for_order,
+        block=replace(run.block, operations=(_UnknownOperation(),)),
+        required_count=run.required_count,
+    )
+
+    with pytest.raises(TypeError, match="Unsupported run operation"):
+        build_run_estimate(
+            broken,
+            InMemoryPrinterRepository(items=dict(ctx.printers)),
+            InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
+            InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+            InMemoryLaminatorOperatorRepository(
+                items=dict(ctx.laminator_operators),
+            ),
+            InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
+            InMemoryDieCutterOperatorRepository(
+                items=dict(ctx.die_cut_operators),
+            ),
+        )
 
 
 def test_save_does_not_retry_on_invalid_input():

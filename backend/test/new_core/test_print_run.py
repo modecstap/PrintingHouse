@@ -651,3 +651,44 @@ def test_print_run_rejects_a_required_count_of_zero():
 
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         build_worked_run(required_count=0)
+
+
+def _die_cut_only_run(required_count: int) -> tuple[PrintRun, _RunPricingFixtures]:
+    run, _, _, _, ctx = build_worked_run(
+        required_count=required_count,
+        with_print=False,
+        with_laminate=False,
+        with_cut=False,
+    )
+    die_operator = DieCutterOperator(
+        id=DieCutterOperatorID(2),
+        salary_by_operation=Money(Decimal(8)),
+    )
+    _append_block_operation(run, DieCut(operator_id=die_operator.id))
+    ctx.die_cut_operators[die_operator.id] = die_operator
+    return run, ctx
+
+
+@pytest.mark.parametrize(
+    ("required_count", "press_sheets", "expected_markup"),
+    [
+        (10, 2, Decimal("2.4")),
+        (35, 7, Decimal("1.2")),
+        (577, 100, Decimal("0.4")),
+        (2908, 500, Decimal(0)),
+    ],
+)
+def test_sheet_cost_report_uses_volume_markup_tiers(
+    required_count: int,
+    press_sheets: int,
+    expected_markup: Decimal,
+):
+    """Volume markup is 30, 15, 5, or 0 percent by press sheet count."""
+    run, ctx = _die_cut_only_run(required_count)
+
+    assert run.imposition_count() == press_sheets
+
+    sheet = Accountant().sheet_cost_report(_estimate(run, ctx))
+
+    assert sheet.work == Money(Decimal(8))
+    assert sheet.markup == Money(expected_markup)

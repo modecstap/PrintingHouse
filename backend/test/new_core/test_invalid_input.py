@@ -6,6 +6,12 @@ from decimal import Decimal
 import pytest
 
 from backend.new_core.equipment.cutter import CutterID
+from backend.new_core.equipment.laminator import LaminatorID
+from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.personal.cutter_operator import CutterOperatorID
+from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
+from backend.new_core.personal.laminator_operator import LaminatorOperatorID
+from backend.new_core.personal.press_operator import PressOperatorID
 from backend.new_core.order.order import OrderID
 from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
@@ -228,3 +234,51 @@ def test_negative_measure_is_rejected(message: str, build):
 def test_every_invalid_field_is_reported(message: str, build):
     """Every invalid field is named in one error."""
     _rejects(message, build)
+
+
+@pytest.mark.parametrize(
+    ("message", "build"),
+    [
+        pytest.param(
+            "order id",
+            lambda: OrderID(-1),
+            id="order id",
+        ),
+        pytest.param(
+            "print run id",
+            lambda: PrintRunID(-1),
+            id="print run id",
+        ),
+        pytest.param(
+            "cutter id",
+            lambda: CutterID(-1),
+            id="cutter id",
+        ),
+        pytest.param("printer id", lambda: PrinterID(-1), id="printer id"),
+        pytest.param("laminator id", lambda: LaminatorID(-1), id="laminator id"),
+        pytest.param(
+            "press operator id",
+            lambda: PressOperatorID(-1),
+            id="press operator id",
+        ),
+        pytest.param(
+            "laminator operator id",
+            lambda: LaminatorOperatorID(-1),
+            id="laminator operator id",
+        ),
+        pytest.param(
+            "cutter operator id",
+            lambda: CutterOperatorID(-1),
+            id="cutter operator id",
+        ),
+        pytest.param(
+            "die cutter operator id",
+            lambda: DieCutterOperatorID(-1),
+            id="die cutter operator id",
+        ),
+    ],
+)
+def test_negative_id_is_rejected(message: str, build):
+    """A negative catalog or entity id is rejected at construction."""
+    with pytest.raises(InvalidInput, match=message):
+        build()
