@@ -10,6 +10,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
     InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
+    InMemoryFilmRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
     InMemoryOrderRepository,
@@ -43,6 +44,7 @@ def _list_service(orders: InMemoryOrderRepository) -> OrderService:
         cutters=InMemoryCutterRepository(),
         cutter_operators=InMemoryCutterOperatorRepository(),
         die_cut_operators=InMemoryDieCutterOperatorRepository(),
+        films=InMemoryFilmRepository(),
     )
 
 

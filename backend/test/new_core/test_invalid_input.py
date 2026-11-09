@@ -47,9 +47,11 @@ def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet
 
 
 def _fitting_imposition() -> Imposition:
+    press_sheet = _sheet(200, 300)
     return Imposition(
         target=Format(name="t", height=100, width=100),
-        press_sheet=_sheet(200, 300),
+        sheet_id=press_sheet.id,
+        press_sheet=press_sheet,
         bleeds=0,
         spacing=0,
     )
@@ -73,15 +75,17 @@ def test_imposition_rejects_count_when_nothing_fits():
     """A 100 by 100 target on a 50 by 50 press sheet is rejected at construction."""
     message = "Imposition: на печатный лист влезает 0 целевых листов"
 
-    _rejects(
-        message,
-        lambda: Imposition(
+    def _build() -> None:
+        press_sheet = _sheet(50, 50)
+        Imposition(
             target=Format(name="t", height=100, width=100),
-            press_sheet=_sheet(50, 50),
+            sheet_id=press_sheet.id,
+            press_sheet=press_sheet,
             bleeds=0,
             spacing=0,
-        ),
-    )
+        )
+
+    _rejects(message, _build)
 
 
 def test_print_run_rejects_a_zero_cell_side():
@@ -151,6 +155,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "Imposition: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
+                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=0,
@@ -161,6 +166,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "Imposition: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
+                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=0,
                 spacing=-1,
@@ -226,6 +232,7 @@ def test_negative_measure_is_rejected(message: str, build):
             "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
+                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=-1,

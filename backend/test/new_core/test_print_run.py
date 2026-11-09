@@ -147,26 +147,28 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=CutterOperatorID(1),
         salary_by_operation=Money(Decimal(7)),
     )
+    press_sheet = Sheet(
+        id=resolved_sheet_id,
+        paper=Paper(
+            density=press_density,
+            thickness=1,
+            name="press",
+            price_per_kilo=Money(Decimal(press_price)),
+        ),
+        format=Format(
+            name="press",
+            height=press_height,
+            width=press_width,
+        ),
+    )
     imposition = Imposition(
         target=Format(
             name="target",
             height=target_height,
             width=target_width,
         ),
-        press_sheet=Sheet(
-            id=resolved_sheet_id,
-            paper=Paper(
-                density=press_density,
-                thickness=1,
-                name="press",
-                price_per_kilo=Money(Decimal(press_price)),
-            ),
-            format=Format(
-                name="press",
-                height=press_height,
-                width=press_width,
-            ),
-        ),
+        sheet_id=resolved_sheet_id,
+        press_sheet=press_sheet,
         bleeds=0,
         spacing=0,
     )
@@ -185,7 +187,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             laminator_id=laminator.id,
             operator_id=laminator_operator.id,
             lamination=lamination,
-            film=film,
+            film_id=resolved_film_id,
         )
         run_operations.append(laminate)
     cut = None
@@ -222,7 +224,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         for_order=OrderID(1),
         required_count=required_count,
     )
-    sheet = imposition.press_sheet
+    sheet = press_sheet
     ctx = _RunPricingFixtures(
         printers={printer.id: printer},
         press_operators={press_operator.id: press_operator},
@@ -258,7 +260,7 @@ def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
                     laminator=ctx.laminators[operation.laminator_id],
                     operator=ctx.laminator_operators[operation.operator_id],
                     lamination=operation.lamination,
-                    film=operation.film,
+                    film=ctx.films[operation.film_id],
                     print_run=run,
                 ),
             )
@@ -536,7 +538,7 @@ def test_factories_append_in_call_order():
     assert printing.chroma is Chroma.FOUR_ZERO
     assert run.block.imposition.press_sheet.paper.name == "press"
     assert laminate.lamination is Lamination.ONE_ZERO
-    assert laminate.film.name == "film"
+    assert laminate.film_id == FilmID(1)
     assert die_cut.operator_id is operator.id
 
 

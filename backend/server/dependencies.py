@@ -84,6 +84,7 @@ def get_order_service(
         SqlCutterRepository(session),
         SqlCutterOperatorRepository(session),
         SqlDieCutterOperatorRepository(session),
+        SqlFilmRepository(session),
     )
 
 

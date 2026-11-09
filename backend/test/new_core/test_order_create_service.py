@@ -21,6 +21,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
     InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
+    InMemoryFilmRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
     InMemoryOrderRepository,
@@ -53,6 +54,7 @@ def _create_service(
         die_cut_operators=InMemoryDieCutterOperatorRepository(
             items=dict(ctx.die_cut_operators),
         ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
     )
 
 
@@ -299,6 +301,7 @@ def test_build_run_estimate_rejects_unknown_operation():
             InMemoryDieCutterOperatorRepository(
                 items=dict(ctx.die_cut_operators),
             ),
+            InMemoryFilmRepository(items=dict(ctx.films)),
         )
 
 

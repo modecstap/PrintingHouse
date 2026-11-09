@@ -11,6 +11,7 @@ from backend.new_core.accountant.pricing.print_pricing import PrintPricing
 from backend.new_core.accountant.pricing_strategy import PricingStrategy
 from backend.new_core.accountant.run_estimate import RunEstimate
 from backend.new_core.equipment.cutter_repository import CutterRepository
+from backend.new_core.materials.film_repository import FilmRepository
 from backend.new_core.equipment.laminator_repository import LaminatorRepository
 from backend.new_core.equipment.printer_repository import PrinterRepository
 from backend.new_core.operations.cut.cut import Cut
@@ -56,6 +57,7 @@ def build_run_estimate(
     cutters: CutterRepository,
     cutter_operators: CutterOperatorRepository,
     die_cut_operators: DieCutterOperatorRepository,
+    films: FilmRepository,
 ) -> RunEstimate:
     """Turns run operations into one run estimate.
 
@@ -67,6 +69,7 @@ def build_run_estimate(
     :param cutters:
     :param cutter_operators:
     :param die_cut_operators:
+    :param films:
 
     :raises KeyError: if a catalog id from an operation is missing.
     :raises TypeError: if an operation type is not supported.
@@ -93,7 +96,7 @@ def build_run_estimate(
                         operation.operator_id,
                     ),
                     lamination=operation.lamination,
-                    film=operation.film,
+                    film=films.take(operation.film_id),
                     print_run=run,
                 ),
             )
@@ -132,6 +135,7 @@ class OrderService:
         cutters: CutterRepository,
         cutter_operators: CutterOperatorRepository,
         die_cut_operators: DieCutterOperatorRepository,
+        films: FilmRepository,
     ) -> None:
         """Remembers the unit of work and catalogs.
 
@@ -143,6 +147,7 @@ class OrderService:
         :param cutters:
         :param cutter_operators:
         :param die_cut_operators:
+        :param films:
         """
         self._uow = uow
         self._printers = printers
@@ -152,6 +157,7 @@ class OrderService:
         self._cutters = cutters
         self._cutter_operators = cutter_operators
         self._die_cut_operators = die_cut_operators
+        self._films = films
         self._order_factory = OrderFactory(uow.orders)
         self._print_run_factory = PrintRunFactory(uow.print_runs)
 
@@ -251,6 +257,7 @@ class OrderService:
             self._cutters,
             self._cutter_operators,
             self._die_cut_operators,
+            self._films,
         )
 
     def _assemble(

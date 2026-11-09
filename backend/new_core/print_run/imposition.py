@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from backend.new_core.errors import InvalidInput
 from backend.new_core.format import Format
-from backend.new_core.materials.sheet import Sheet
+from backend.new_core.materials.sheet import Sheet, SheetID
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,7 +12,8 @@ class Imposition:
     """
 
     target: Format
-    press_sheet: Sheet
+    sheet_id: SheetID
+    press_sheet: Sheet | None
     bleeds: int
     spacing: int
 
@@ -20,9 +21,10 @@ class Imposition:
         """Rejects a negative bleed or spacing, or a layout that does not fit.
 
         :raises InvalidInput: if bleeds is below zero, if spacing is
-        below zero, if a cell side is zero, or if the grid fits no
-        positive number of target sheets. Negative bleeds or spacing are
-        reported first without a fit reason in the same error.
+        below zero, if a cell side is zero, if ``press_sheet.id`` does
+        not match ``sheet_id``, or if the grid fits no positive number
+        of target sheets. Negative bleeds or spacing are reported first
+        without a fit reason in the same error.
 
         :return: nothing. A bleed or spacing of zero stays.
         """
@@ -40,6 +42,17 @@ class Imposition:
                 subject="Imposition",
                 reason=reasons,
             )
+        if self.press_sheet is None:
+            return
+        if self.press_sheet.id != self.sheet_id:
+            raise InvalidInput(
+                subject="Imposition",
+                reason=(
+                    "id печатного листа не совпадает с каталогом, "
+                    f"sheet_id={self.sheet_id.value}, "
+                    f"id={self.press_sheet.id.value}"
+                ),
+            )
         count_x, count_y = self._axis_counts()
         item_count = count_x * count_y
         if item_count <= 0:
@@ -49,7 +62,7 @@ class Imposition:
             )
 
     def thickness(self) -> int:
-        return self.press_sheet.thickness()
+        return self._press_sheet().thickness()
 
     def count(self) -> int:
         """Returns how many target sheets fit on the press sheet.
@@ -69,7 +82,13 @@ class Imposition:
         count_x, count_y = self._axis_counts()
         return (max(0, count_x - 1) + max(0, count_y - 1)) * 2 + 4
 
+    def _press_sheet(self) -> Sheet:
+        if self.press_sheet is None:
+            raise RuntimeError("imposition has no press sheet")
+        return self.press_sheet
+
     def _axis_counts(self) -> tuple[int, int]:
+        press_sheet = self._press_sheet()
         cell_width = self.target.width + 2 * self.bleeds
         cell_height = self.target.height + 2 * self.bleeds
         if cell_width == 0 or cell_height == 0:
@@ -81,8 +100,8 @@ class Imposition:
                 ),
             )
 
-        usable_width = self.press_sheet.format.width - 2 * self.spacing
-        usable_height = self.press_sheet.format.height - 2 * self.spacing
+        usable_width = press_sheet.format.width - 2 * self.spacing
+        usable_height = press_sheet.format.height - 2 * self.spacing
         straight_x = usable_width // cell_width
         straight_y = usable_height // cell_height
         turned_x = usable_width // cell_height

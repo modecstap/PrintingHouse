@@ -6,9 +6,9 @@ from decimal import Decimal
 
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.format import Format
-from backend.new_core.materials.film import Film
+from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.paper import Paper
-from backend.new_core.materials.sheet import Sheet
+from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
@@ -63,20 +63,27 @@ def _format_from_dto(dto: FormatDto) -> Format:
     return Format(name=dto.name, height=dto.height, width=dto.width)
 
 
-def _sheet_from_dto(dto: SheetDto) -> Sheet:
+def _sheet_from_dto(dto: SheetDto, *, sheet_id: SheetID | None = None) -> Sheet:
     paper = Paper(
         density=dto.paper.density,
         thickness=dto.paper.thickness,
         name=dto.paper.name,
         price_per_kilo=_money_from_str(dto.paper.price_per_kilo),
     )
-    return Sheet(paper=paper, format=_format_from_dto(dto.format))
+    resolved_id = sheet_id or SheetID(0)
+    return Sheet(
+        id=resolved_id,
+        paper=paper,
+        format=_format_from_dto(dto.format),
+    )
 
 
 def _imposition_from_dto(dto: ImpositionDto) -> Imposition:
+    press_sheet = _sheet_from_dto(dto.press_sheet)
     return Imposition(
         target=_format_from_dto(dto.target),
-        press_sheet=_sheet_from_dto(dto.press_sheet),
+        sheet_id=press_sheet.id,
+        press_sheet=press_sheet,
         bleeds=dto.bleeds,
         spacing=dto.spacing,
     )
@@ -94,11 +101,7 @@ def _operation_from_dto(dto: RunOperationDto) -> RunOperation:
             laminator_id=LaminatorID(dto.laminator_id),
             operator_id=LaminatorOperatorID(dto.operator_id),
             lamination=Lamination[dto.lamination],
-            film=Film(
-                name=dto.film.name,
-                price=_money_from_str(dto.film.price),
-                density=dto.film.density,
-            ),
+            film_id=FilmID(0),
         )
     if isinstance(dto, CutOpDto):
         return Cut(
@@ -158,6 +161,8 @@ def _sheet_to_dto(sheet: Sheet) -> SheetDto:
 
 
 def _imposition_to_dto(imposition: Imposition) -> ImpositionDto:
+    if imposition.press_sheet is None:
+        raise RuntimeError("cannot map unhydrated imposition to dto")
     return ImpositionDto(
         target=_format_to_dto(imposition.target),
         press_sheet=_sheet_to_dto(imposition.press_sheet),
@@ -181,9 +186,9 @@ def _operation_to_dto(operation: RunOperation) -> RunOperationDto:
             operator_id=operation.operator_id.value,
             lamination=operation.lamination.name,
             film=FilmDto(
-                name=operation.film.name,
-                price=_money_to_str(operation.film.price),
-                density=operation.film.density,
+                name="",
+                price="0",
+                density=0,
             ),
         )
     if isinstance(operation, Cut):

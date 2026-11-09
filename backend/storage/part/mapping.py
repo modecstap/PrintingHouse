@@ -8,9 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.new_core.format import Format
-from backend.new_core.materials.film import Film
-from backend.new_core.materials.paper import Paper
-from backend.new_core.materials.sheet import Sheet
+from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.sheet import SheetID
 from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
@@ -20,7 +19,6 @@ from backend.new_core.operations.print.print import Print
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.part import Part
 from backend.new_core.print_run.imposition import Imposition
-from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
@@ -29,6 +27,7 @@ from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
+from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.part.tables import (
     PartCutRow,
     PartDieCutRow,
@@ -37,10 +36,6 @@ from backend.storage.part.tables import (
     PartPrintRow,
     PartRow,
 )
-
-
-def _money(amount: Decimal) -> Money:
-    return Money(amount)
 
 
 def part_row_to_part(session: Session, part_id: int) -> Part:
@@ -55,21 +50,12 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
     if row is None:
         raise LookupError(f"part id={part_id}")
 
+    sheet_id = SheetID(row.sheet_id)
+    sheet = SqlSheetRepository(session).take(sheet_id)
     imposition = Imposition(
         target=Format(row.target_name, row.target_height, row.target_width),
-        press_sheet=Sheet(
-            paper=Paper(
-                density=row.paper_density,
-                thickness=row.paper_thickness,
-                name=row.paper_name,
-                price_per_kilo=_money(row.paper_price_per_kilo),
-            ),
-            format=Format(
-                row.press_format_name,
-                row.press_format_height,
-                row.press_format_width,
-            ),
-        ),
+        sheet_id=sheet_id,
+        press_sheet=sheet,
         bleeds=row.bleeds,
         spacing=row.spacing,
     )
@@ -91,20 +77,15 @@ def persist_part(session: Session, part: Part) -> int:
     :return: the generated ``parts.id``.
     """
     imp = part.imposition
-    sheet = imp.press_sheet
+    if imp.press_sheet is None:
+        raise RuntimeError("cannot persist part with unhydrated imposition")
     row = PartRow(
         count=part.count,
         markup=part.markup.value,
         target_name=imp.target.name,
         target_height=imp.target.height,
         target_width=imp.target.width,
-        paper_density=sheet.paper.density,
-        paper_thickness=sheet.paper.thickness,
-        paper_name=sheet.paper.name,
-        paper_price_per_kilo=sheet.paper.price_per_kilo.amount,
-        press_format_name=sheet.format.name,
-        press_format_height=sheet.format.height,
-        press_format_width=sheet.format.width,
+        sheet_id=imp.sheet_id.value,
         bleeds=imp.bleeds,
         spacing=imp.spacing,
     )
@@ -157,11 +138,7 @@ def _load_operation_subtype(
             laminator_id=LaminatorID(sub.laminator_id),
             operator_id=LaminatorOperatorID(sub.operator_id),
             lamination=Lamination[sub.lamination],
-            film=Film(
-                name=sub.film_name,
-                price=_money(sub.film_price),
-                density=sub.film_density,
-            ),
+            film_id=FilmID(sub.film_id),
         )
     if op_row.kind == "cut":
         sub = session.get(PartCutRow, op_row.id)
@@ -204,9 +181,7 @@ def _persist_operation_subtype(
                 laminator_id=operation.laminator_id.value,
                 operator_id=operation.operator_id.value,
                 lamination=operation.lamination.name,
-                film_name=operation.film.name,
-                film_price=operation.film.price.amount,
-                film_density=operation.film.density,
+                film_id=operation.film_id.value,
             ),
         )
         return

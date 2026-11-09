@@ -21,6 +21,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
     InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
+    InMemoryFilmRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
     InMemoryOrderRepository,
@@ -50,6 +51,7 @@ def _service_from_fixtures(run, ctx) -> OrderService:
         die_cut_operators=InMemoryDieCutterOperatorRepository(
             items=dict(ctx.die_cut_operators),
         ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
     )
 
 
@@ -99,6 +101,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
         die_cut_operators=InMemoryDieCutterOperatorRepository(
             items=dict(ctx.die_cut_operators),
         ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
     )
 
     report = service.order_report(order.id)
@@ -163,6 +166,7 @@ def test_order_report_prices_die_cut_through_order_service():
         die_cut_operators=InMemoryDieCutterOperatorRepository(
             items=dict(ctx.die_cut_operators),
         ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
     )
 
     estimate = service._run_estimate(run)
