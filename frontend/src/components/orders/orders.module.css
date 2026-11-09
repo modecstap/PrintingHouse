@@ -1,0 +1,62 @@
+.calculatorContainer {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow-light);
+}
+
+.pageTitle {
+    display: flex;
+    text-align: left;
+    margin: 20px 15px;
+    color: var(--text);
+}
+
+.refreshButton {
+    background-color: var(--primary);
+    color: var(--highlight);
+    border: none;
+    font-size: 16px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 30px;
+    width: 30px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border, #ddd);
+}
+
+.rowButton {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.rowButton:hover {
+    background: var(--hover, rgba(0, 0, 0, 0.05));
+}
+
+.modalMessage {
+    margin: 0 0 16px;
+}
