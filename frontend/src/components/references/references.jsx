@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  EQUIPMENT_CATALOGS,
+  MATERIAL_CATALOGS,
+  STAFF_CATALOGS,
+} from "./catalog-defs";
+import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import styles from "./references.module.css";
 
@@ -142,6 +148,35 @@ export default function References() {
         </div>
         {saveError && <div role="alert">{saveError}</div>}
       </div>
+
+      <div className={styles.separator} />
+
+      <section aria-labelledby="references-equipment">
+        <h2 id="references-equipment" className={styles.groupHeading}>
+          Оборудование
+        </h2>
+        {EQUIPMENT_CATALOGS.map((def) => (
+          <CatalogPanel key={def.key} def={def} />
+        ))}
+      </section>
+
+      <section aria-labelledby="references-staff">
+        <h2 id="references-staff" className={styles.groupHeading}>
+          Персонал
+        </h2>
+        {STAFF_CATALOGS.map((def) => (
+          <CatalogPanel key={def.key} def={def} />
+        ))}
+      </section>
+
+      <section aria-labelledby="references-materials">
+        <h2 id="references-materials" className={styles.groupHeading}>
+          Материалы
+        </h2>
+        {MATERIAL_CATALOGS.map((def) => (
+          <CatalogPanel key={def.key} def={def} />
+        ))}
+      </section>
     </div>
   );
 }
