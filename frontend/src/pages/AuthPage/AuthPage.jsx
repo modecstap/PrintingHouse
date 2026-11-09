@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction";
-import FlexForm from "../../features/Form/FlexForm";
+import FlexForm from "../../components/generic/flex-form/flex-form";
 import Button from "../../components/generic/button/button";
 
 import styles from "./AuthPage.module.css";

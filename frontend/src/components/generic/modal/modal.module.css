@@ -1,0 +1,41 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: color-mix(in srgb, var(--bg-contrast) 50%, transparent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog {
+  position: relative;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--text-font);
+  text-transform: uppercase;
+  padding: var(--spacing-5);
+}
+
+.large {
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-4);
+  border: none;
+  background: var(--button-color);
+  color: var(--text-contrast);
+  font-family: var(--header-font);
+  font-weight: normal;
+  font-size: inherit;
+  cursor: pointer;
+}

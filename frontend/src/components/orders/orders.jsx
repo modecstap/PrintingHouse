@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Calculator from "../calculator/calculator";
-import Modal from "../../features/Modal/Modal";
+import Modal from "../generic/modal/modal";
 import {
   fetchOrderForm,
   fetchOrderReport,

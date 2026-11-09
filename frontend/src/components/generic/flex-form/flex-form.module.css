@@ -1,0 +1,46 @@
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.formTile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.formTile label {
+  text-align: left;
+  color: var(--text-color);
+}
+
+.formInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--text-color);
+  color: var(--text-color);
+  font: inherit;
+  outline: none;
+}
+
+.formInput:focus {
+  outline: none;
+}
+
+.formInput:disabled {
+  background: var(--bg-muted);
+  color: var(--text-contrast);
+}
+
+.formTile select.formInput:disabled {
+  background: transparent;
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

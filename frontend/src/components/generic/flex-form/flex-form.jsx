@@ -1,3 +1,5 @@
+import styles from "./flex-form.module.css";
+
 function parsePath(path) {
   return path
     .replace(/\[(\d+)\]/g, ".$1")
@@ -23,7 +25,7 @@ function updateByPath(obj, path, value) {
 
   keys.forEach((key, index) => {
     if (index === keys.length - 1) {
-      current[key] = value; // сохраняем значение как есть
+      current[key] = value;
       return;
     }
 
@@ -37,7 +39,7 @@ function updateByPath(obj, path, value) {
   return result;
 }
 
-export default function FormField({
+function FormField({
   label,
   path,
   data,
@@ -62,11 +64,11 @@ export default function FormField({
   };
 
   return (
-    <div className="form-tile">
+    <div className={styles.formTile}>
       <label>{label}</label>
 
       {type === "select" ? (
-        <select value={value ?? ""} onChange={handleChange}>
+        <select className={styles.formInput} value={value ?? ""} onChange={handleChange}>
           {options?.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -75,18 +77,40 @@ export default function FormField({
         </select>
       ) : type === "textarea" ? (
         <textarea
+          className={styles.formInput}
           rows={options.rows ?? 3}
           value={value ?? ""}
           onChange={handleChange}
         />
       ) : (
         <input
+          className={styles.formInput}
           type={type}
           step={step}
           value={value ?? ""}
           onChange={handleChange}
         />
       )}
+    </div>
+  );
+}
+
+export default function FlexForm({ fields, formData, setFormData }) {
+  return (
+    <div className={styles.formGrid}>
+      {fields.map((field) => (
+        <FormField
+          key={field.path}
+          label={field.label}
+          path={field.path}
+          data={formData}
+          setData={setFormData}
+          type={field.type}
+          step={field.step}
+          options={field.options}
+          valueParser={field.valueParser}
+        />
+      ))}
     </div>
   );
 }
