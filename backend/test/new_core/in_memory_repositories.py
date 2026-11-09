@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TypeVar
 
+from backend.new_core.equipment.cutter import Cutter, CutterID
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.order.order import Order, OrderID
@@ -137,6 +138,14 @@ class InMemoryLaminatorOperatorRepository:
 
     def take(self, operator_id: LaminatorOperatorID) -> LaminatorOperator:
         return self.items[operator_id]
+
+
+@dataclass
+class InMemoryCutterRepository:
+    items: dict[CutterID, Cutter] = field(default_factory=dict)
+
+    def take(self, cutter_id: CutterID) -> Cutter:
+        return self.items[cutter_id]
 
 
 @dataclass

@@ -10,6 +10,7 @@ from backend.new_core.accountant.pricing.laminate_pricing import LaminatePricing
 from backend.new_core.accountant.pricing.print_pricing import PrintPricing
 from backend.new_core.accountant.pricing_strategy import PricingStrategy
 from backend.new_core.accountant.run_estimate import RunEstimate
+from backend.new_core.equipment.cutter_repository import CutterRepository
 from backend.new_core.equipment.laminator_repository import LaminatorRepository
 from backend.new_core.equipment.printer_repository import PrinterRepository
 from backend.new_core.operations.cut.cut import Cut
@@ -53,6 +54,7 @@ def build_run_estimate(
     press_operators: PressOperatorRepository,
     laminators: LaminatorRepository,
     laminator_operators: LaminatorOperatorRepository,
+    cutters: CutterRepository,
     cutter_operators: CutterOperatorRepository,
     die_cut_operators: DieCutterOperatorRepository,
 ) -> RunEstimate:
@@ -63,6 +65,7 @@ def build_run_estimate(
     :param press_operators:
     :param laminators:
     :param laminator_operators:
+    :param cutters:
     :param cutter_operators:
     :param die_cut_operators:
 
@@ -98,7 +101,7 @@ def build_run_estimate(
         elif isinstance(operation, Cut):
             strategies.append(
                 CutPricing(
-                    cutter=operation.cutter,
+                    cutter=cutters.take(operation.cutter_id),
                     operator=cutter_operators.take(operation.operator_id),
                     print_run=run,
                 ),
@@ -127,6 +130,7 @@ class OrderService:
         press_operators: PressOperatorRepository,
         laminators: LaminatorRepository,
         laminator_operators: LaminatorOperatorRepository,
+        cutters: CutterRepository,
         cutter_operators: CutterOperatorRepository,
         die_cut_operators: DieCutterOperatorRepository,
     ) -> None:
@@ -137,6 +141,7 @@ class OrderService:
         :param press_operators:
         :param laminators:
         :param laminator_operators:
+        :param cutters:
         :param cutter_operators:
         :param die_cut_operators:
         """
@@ -145,6 +150,7 @@ class OrderService:
         self._press_operators = press_operators
         self._laminators = laminators
         self._laminator_operators = laminator_operators
+        self._cutters = cutters
         self._cutter_operators = cutter_operators
         self._die_cut_operators = die_cut_operators
         self._order_factory = OrderFactory(uow.orders)
@@ -243,6 +249,7 @@ class OrderService:
             self._press_operators,
             self._laminators,
             self._laminator_operators,
+            self._cutters,
             self._cutter_operators,
             self._die_cut_operators,
         )

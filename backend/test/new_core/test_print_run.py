@@ -177,7 +177,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     cut = None
     if with_cut:
         cut = Cut(
-            cutter=cutter,
+            cutter_id=cutter.id,
             operator_id=cutter_operator.id,
         )
         run_operations.append(cut)
@@ -248,7 +248,7 @@ def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
         elif isinstance(operation, Cut):
             strategies.append(
                 CutPricing(
-                    cutter=operation.cutter,
+                    cutter=ctx.cutters[operation.cutter_id],
                     operator=ctx.cutter_operators[operation.operator_id],
                     print_run=run,
                 ),

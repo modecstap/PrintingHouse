@@ -19,6 +19,7 @@ from backend.new_core.values.percent import Percent
 from backend.new_core import AdditionalWork, Accountant
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
+    InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
@@ -42,6 +43,7 @@ def _service_from_fixtures(run, ctx) -> OrderService:
         laminator_operators=InMemoryLaminatorOperatorRepository(
             items=dict(ctx.laminator_operators),
         ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
         cutter_operators=InMemoryCutterOperatorRepository(
             items=dict(ctx.cutter_operators),
         ),
@@ -90,6 +92,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
         laminator_operators=InMemoryLaminatorOperatorRepository(
             items=dict(ctx.laminator_operators),
         ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
         cutter_operators=InMemoryCutterOperatorRepository(
             items=dict(ctx.cutter_operators),
         ),
@@ -153,6 +156,7 @@ def test_order_report_prices_die_cut_through_order_service():
         laminator_operators=InMemoryLaminatorOperatorRepository(
             items=dict(ctx.laminator_operators),
         ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
         cutter_operators=InMemoryCutterOperatorRepository(
             items=dict(ctx.cutter_operators),
         ),

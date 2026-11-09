@@ -8,6 +8,7 @@ from backend.new_core.order.product import Product
 from backend.new_core.order.service import OrderService
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
+    InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
@@ -39,6 +40,7 @@ def _list_service(orders: InMemoryOrderRepository) -> OrderService:
         press_operators=InMemoryPressOperatorRepository(),
         laminators=InMemoryLaminatorRepository(),
         laminator_operators=InMemoryLaminatorOperatorRepository(),
+        cutters=InMemoryCutterRepository(),
         cutter_operators=InMemoryCutterOperatorRepository(),
         die_cut_operators=InMemoryDieCutterOperatorRepository(),
     )

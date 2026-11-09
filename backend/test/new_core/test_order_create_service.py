@@ -19,6 +19,7 @@ from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
+    InMemoryCutterRepository,
     InMemoryDieCutterOperatorRepository,
     InMemoryLaminatorOperatorRepository,
     InMemoryLaminatorRepository,
@@ -46,6 +47,7 @@ def _create_service(
         laminator_operators=InMemoryLaminatorOperatorRepository(
             items=dict(ctx.laminator_operators),
         ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
         cutter_operators=InMemoryCutterOperatorRepository(
             items=dict(ctx.cutter_operators),
         ),
@@ -104,6 +106,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
         repo.press_operators.update(other.press_operators)
         repo.laminators.update(other.laminators)
         repo.laminator_operators.update(other.laminator_operators)
+        repo.cutters.update(other.cutters)
         repo.cutter_operators.update(other.cutter_operators)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, run, ctx)
@@ -163,6 +166,7 @@ def test_save_maps_each_block_to_one_run_in_order():
         repo.press_operators.update(other.press_operators)
         repo.laminators.update(other.laminators)
         repo.laminator_operators.update(other.laminator_operators)
+        repo.cutters.update(other.cutters)
         repo.cutter_operators.update(other.cutter_operators)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, run, ctx)
@@ -291,6 +295,7 @@ def test_build_run_estimate_rejects_unknown_operation():
             InMemoryLaminatorOperatorRepository(
                 items=dict(ctx.laminator_operators),
             ),
+            InMemoryCutterRepository(items=dict(ctx.cutters)),
             InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
             InMemoryDieCutterOperatorRepository(
                 items=dict(ctx.die_cut_operators),

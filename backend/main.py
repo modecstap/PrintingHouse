@@ -1,11 +1,6 @@
 import asyncio
 import os
 
-from backend.server.app import serve
-from backend.server.server_config import ServerConfig
-from backend.storage.database import Database
-from backend.storage.db_config import DBConfig
-
 
 async def main():
     await wait_for_database()
