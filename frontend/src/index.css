@@ -1,13 +1,78 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@font-face {
+  font-family: "Lonetrail Bold";
+  src: url("../public/fonts/Lonetrail.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lonetrail Regular";
+  src: url("../public/fonts/Lonetrail.woff2") format("woff2");
+}
+
+:root {
+  --lonetrail-white: #f5eddc;
+  --lonetrail-grey: #181818;
+  --lonetrail-faded-grey: #413e3a;
+  --lonetrail-light-grey: #69645c;
+  --lonetrail-orange: #d0713c;
+  --lonetrail-orange-glow: #f5eddc;
+  --lonetrail-teal: #98bcb1;
+  --lonetrail-red: #a12525;
+  --lonetrail-yellow: #f3a730;
+  --lonetrail-olive: #618574;
+  --lonetrail-light-blue: #6e8596;
+  --lonetrail-blue: #526370;
+  --lonetrail-dark-blue: #343f47;
+  --lonetrail-brass: #cdc56a;
+
+  --text-color: var(--lonetrail-grey);
+  --text-contrast: var(--lonetrail-white);
+  --text-accent: var(--lonetrail-orange);
+  --text-muted: var(--lonetrail-light-grey);
+
+  --bg-color: var(--lonetrail-orange-glow);
+  --bg-contrast: var(--lonetrail-grey);
+  --bg-highlight: var(--lonetrail-yellow);
+  --bg-select: var(--lonetrail-orange);
+  --bg-muted: var(--lonetrail-faded-grey);
+  --bg-grid-color: color-mix(in srgb, var(--lonetrail-grey), transparent 95%);
+  --bg-grid:
+    linear-gradient(to right, var(--bg-grid-color) 1px, transparent 1px),
+    linear-gradient(to top, var(--bg-grid-color) 1px, transparent 1px),
+    linear-gradient(45deg, transparent 56px, var(--bg-grid-color) 57px, transparent 58px),
+    linear-gradient(-45deg, transparent 56px, var(--bg-grid-color) 57px, transparent 58px);
+
+  --button-color: var(--lonetrail-orange);
+  --button-contrast: var(--lonetrail-white);
+
+  --header-font: "Lonetrail Bold";
+  --text-font: "Lonetrail Regular";
+
+  --lonetrail-tricolor-vert: linear-gradient(to left,
+      var(--lonetrail-red) 33%,
+      var(--lonetrail-yellow) 33%,
+      var(--lonetrail-yellow) 66%,
+      var(--lonetrail-olive) 66%);
+  --lonetrail-tricolor-horiz: linear-gradient(to bottom,
+      var(--lonetrail-red) 33%,
+      var(--lonetrail-yellow) 33%,
+      var(--lonetrail-yellow) 66%,
+      var(--lonetrail-olive) 66%);
+
+  --spacing-1: 0.29rem;
+  --spacing-2: 0.44rem;
+  --spacing-3: 0.67rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.5rem;
+  --spacing-6: 2.25rem;
+  --spacing-7: 3.75rem;
+  --spacing-8: 5rem;
+  --spacing-9: 7.6rem;
+  --spacing-10: 11.25rem;
+
+  --transition-fast: 180ms ease;
+  --transition-base: 240ms ease;
 }
