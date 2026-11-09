@@ -32,7 +32,10 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     config_section = config.get_section(config.config_ini_section, {})
-    config_section["sqlalchemy.url"] = DBConfig.from_env().get_db_url("psycopg")
+    url = config.get_main_option("sqlalchemy.url")
+    if not url:
+        url = DBConfig.from_env().get_db_url("psycopg")
+    config_section["sqlalchemy.url"] = url
 
     connectable = engine_from_config(
         config_section,
