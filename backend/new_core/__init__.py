@@ -34,7 +34,6 @@ from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.accountant.run_estimate import RunEstimate
-from backend.new_core.accountant.run_estimate_view import RunEstimateView
 from backend.new_core.values.percent import Percent
 
 
@@ -66,5 +65,4 @@ __all__ = [
     "Percent",
     "Accountant",
     "RunEstimate",
-    "RunEstimateView",
 ]
