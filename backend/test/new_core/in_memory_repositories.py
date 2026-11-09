@@ -21,6 +21,7 @@ from backend.new_core.personal.laminator_operator import (
 )
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.new_core.print_run.print_run import PrintRun, PrintRunID
+from backend.new_core.reference.reference import Reference
 
 T = TypeVar("T")
 
@@ -148,3 +149,16 @@ class InMemoryDieCutterOperatorRepository:
 
     def take(self, operator_id: DieCutterOperatorID) -> DieCutterOperator:
         return self.items[operator_id]
+
+
+@dataclass
+class InMemoryReferenceRepository:
+    """Stores references in insertion order."""
+
+    rows: list[Reference] = field(default_factory=list)
+
+    def take_all(self) -> tuple[Reference, ...]:
+        return tuple(self.rows)
+
+    def save(self, reference: Reference) -> None:
+        self.rows.append(reference)
