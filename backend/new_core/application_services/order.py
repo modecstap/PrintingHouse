@@ -21,7 +21,7 @@ from backend.new_core.order.factory import OrderFactory
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderIdOccupied
-from backend.new_core.order.unit_of_work import OrderUnitOfWork
+from backend.new_core.application_services.unit_of_work import OrderUnitOfWork
 from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
 from backend.new_core.personal.die_cutter_operator_repository import (
     DieCutterOperatorRepository,
@@ -32,7 +32,6 @@ from backend.new_core.personal.laminator_operator_repository import (
 from backend.new_core.personal.press_operator_repository import PressOperatorRepository
 from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.print_run.print_run import PrintRun
-from backend.new_core.print_run.repository import PrintRunRepository
 
 _MAX_ORDER_ID_ATTEMPTS = 3
 

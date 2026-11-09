@@ -10,7 +10,7 @@ from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
-from backend.new_core.order.service import (
+from backend.new_core.application_services.order import (
     OrderIdAllocationFailed,
     OrderService,
     build_run_estimate,
@@ -26,7 +26,6 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryOrderRepository,
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
-    InMemoryPrintRunRepository,
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run

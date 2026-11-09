@@ -7,7 +7,7 @@ import pytest
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderNotFound
-from backend.new_core.order.service import OrderService
+from backend.new_core.application_services.order import OrderService
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
