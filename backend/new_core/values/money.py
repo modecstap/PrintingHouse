@@ -4,7 +4,7 @@ from backend.new_core.errors import InvalidPriceException
 
 
 def _decimal_factor(factor: object) -> Decimal | None:
-    if type(factor) is int or float:
+    if type(factor) in (int, float):
         return Decimal(factor)
     if type(factor) is Decimal:
         return factor
