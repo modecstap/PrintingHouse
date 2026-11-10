@@ -36,18 +36,34 @@ function applyCatalogsToForm(formState, catalogs) {
   return next;
 }
 
+function catalogStateFromLoadState(catalogLoadState) {
+  const merged = { ...EMPTY_CATALOGS, ...catalogLoadState.catalogs };
+  return {
+    status: catalogLoadState.status,
+    catalogs: merged,
+    message: catalogLoadState.message ?? null,
+  };
+}
+
 export function useCalculator({
   initialForm = emptyCalculatorForm(),
   initialReport = null,
   onSaved,
+  catalogLoadState,
 } = {}) {
+  const catalogsFromApp = catalogLoadState !== undefined;
+
   const [form, setForm] = useState(initialForm);
   const [report, setReport] = useState(initialReport);
-  const [catalogState, setCatalogState] = useState({
-    status: "loading",
-    catalogs: EMPTY_CATALOGS,
-    message: null,
-  });
+  const [catalogState, setCatalogState] = useState(() =>
+    catalogsFromApp
+      ? catalogStateFromLoadState(catalogLoadState)
+      : {
+          status: "loading",
+          catalogs: EMPTY_CATALOGS,
+          message: null,
+        },
+  );
   const [quoteState, setQuoteState] = useState({ status: "idle" });
   const [saveState, setSaveState] = useState({ status: "idle" });
   const [savedId, setSavedId] = useState(null);
@@ -61,6 +77,20 @@ export function useCalculator({
   const quoteRequestId = useRef(0);
 
   useEffect(() => {
+    if (!catalogsFromApp) {
+      return undefined;
+    }
+    const next = catalogStateFromLoadState(catalogLoadState);
+    setCatalogState(next);
+    if (next.status === "success") {
+      setForm((prev) => applyCatalogsToForm(prev, next.catalogs));
+    }
+  }, [catalogsFromApp, catalogLoadState]);
+
+  useEffect(() => {
+    if (catalogsFromApp) {
+      return undefined;
+    }
     const controller = new AbortController();
     loadCatalogs(controller.signal).then(({ catalogs, error }) => {
       if (controller.signal.aborted) {
@@ -77,7 +107,7 @@ export function useCalculator({
       }
     });
     return () => controller.abort();
-  }, []);
+  }, [catalogsFromApp]);
 
   useEffect(() => {
     const controller = new AbortController();

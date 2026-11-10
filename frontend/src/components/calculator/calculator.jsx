@@ -18,8 +18,7 @@ export default function Calculator({
   initialForm = emptyCalculatorForm(),
   initialReport = null,
   onSaved,
-  catalogs: _catalogs,
-  catalogLoadState: _catalogLoadState,
+  catalogLoadState,
 }) {
   const {
     form,
@@ -38,7 +37,7 @@ export default function Calculator({
     removeBlock,
     addBlock,
     handlePresetChange,
-  } = useCalculator({ initialForm, initialReport, onSaved });
+  } = useCalculator({ initialForm, initialReport, onSaved, catalogLoadState });
 
   const missingFields = calculatorFormMissingFieldLabels(form);
   const formReady = missingFields.length === 0;

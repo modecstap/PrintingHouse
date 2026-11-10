@@ -347,4 +347,65 @@ describe("Calculator", () => {
     expect(screen.queryByRole("button", { name: "В работу" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Обновить" })).not.toBeInTheDocument();
   });
+
+  it("should not fetch catalogs when catalogLoadState is passed from App", async () => {
+    const catalogLoadState = {
+      status: "success",
+      catalogs: {
+        printers: [PRINTER],
+        laminators: [],
+        cutters: [CUTTER],
+        pressOperators: [PRESS_OPERATOR],
+        laminatorOperators: [LAMINATOR_OPERATOR],
+        cutterOperators: [CUTTER_OPERATOR],
+        dieCutOperators: [],
+        sheets: [
+          {
+            id: 1,
+            paper: {
+              name: "A",
+              density: 150,
+              thickness: 1,
+              price_per_kilo: "80",
+            },
+            format: { name: "SRA3", width: 320, height: 450 },
+          },
+        ],
+        films: [],
+      },
+      errors: {},
+      message: null,
+    };
+
+    global.fetch = jest.fn((url, options) => {
+      if (url === "/api/references") {
+        return jsonResponse([]);
+      }
+      return jsonResponse({}, 404);
+    });
+
+    render(<Calculator catalogLoadState={catalogLoadState} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
+    });
+
+    const catalogUrls = [
+      "/api/equipment/printers",
+      "/api/equipment/laminators",
+      "/api/equipment/cutters",
+      "/api/staff/press-operators",
+      "/api/staff/laminator-operators",
+      "/api/staff/cutter-operators",
+      "/api/staff/die-cut-operators",
+      "/api/materials/sheets",
+      "/api/materials/films",
+    ];
+    for (const url of catalogUrls) {
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        url,
+        expect.objectContaining({ method: "GET" }),
+      );
+    }
+  });
 });
