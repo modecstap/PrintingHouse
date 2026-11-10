@@ -1,4 +1,5 @@
 import {
+  applyOperationCatalogDefaults,
   emptyCutOperation,
   emptyDieCutOperation,
   emptyLaminateOperation,
@@ -96,7 +97,10 @@ export default function BlockSection({
         return;
       }
       update({
-        operations: sortOperations([...block.operations, factory()]),
+        operations: sortOperations([
+          ...block.operations,
+          applyOperationCatalogDefaults(factory(), catalogs),
+        ]),
       });
       return;
     }

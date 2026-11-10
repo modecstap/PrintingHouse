@@ -1,5 +1,8 @@
 import {
+  applyCatalogDefaultsToForm,
+  emptyBlock,
   emptyCalculatorForm,
+  emptyPrintOperation,
   toOrderWrite,
   toCalculatorForm,
   toOrderReport,
@@ -100,6 +103,35 @@ function sampleForm() {
     ],
   };
 }
+
+describe("applyCatalogDefaultsToForm", () => {
+  it("should pick the first catalog entry for empty dropdown fields", () => {
+    const form = {
+      ...emptyCalculatorForm(),
+      blocks: [
+        {
+          ...emptyBlock(),
+          operations: [emptyPrintOperation()],
+        },
+      ],
+    };
+    const catalogs = {
+      printers: [{ id: 7 }],
+      pressOperators: [{ id: 3 }],
+      laminators: [],
+      cutters: [],
+      laminatorOperators: [],
+      cutterOperators: [],
+      dieCutOperators: [],
+      sheets: [{ id: 2, paper: { name: "A", density: 1, thickness: 1, price_per_kilo: "1" }, format: null }],
+      films: [],
+    };
+    const next = applyCatalogDefaultsToForm(form, catalogs);
+    expect(next.blocks[0].paperSheetId).toBe("2");
+    expect(next.blocks[0].operations[0].printerId).toBe("7");
+    expect(next.blocks[0].operations[0].operatorId).toBe("3");
+  });
+});
 
 describe("emptyCalculatorForm", () => {
   it("should return the default starting values from conventions", () => {

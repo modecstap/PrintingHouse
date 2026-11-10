@@ -4,8 +4,10 @@ import { fetchOrderForm } from "../orders/api/orders";
 import { loadCatalogs } from "./api/catalog";
 import { quoteOrder, saveOrder } from "./api/order";
 import {
+  applyCatalogDefaultsToForm,
   applyFilmsCatalogToForm,
   applySheetsCatalogToForm,
+  applyBlockCatalogDefaults,
   emptyBlock,
   emptyCalculatorForm,
 } from "./models/order";
@@ -23,7 +25,7 @@ const EMPTY_CATALOGS = {
 };
 
 function applyCatalogsToForm(formState, catalogs) {
-  let next = formState;
+  let next = applyCatalogDefaultsToForm(formState, catalogs);
   if (catalogs.sheets.length > 0) {
     next = applySheetsCatalogToForm(next, catalogs.sheets);
   }
@@ -173,7 +175,13 @@ export function useCalculator({
   };
 
   const addBlock = () => {
-    setForm({ ...form, blocks: [...form.blocks, emptyBlock()] });
+    setForm({
+      ...form,
+      blocks: [
+        ...form.blocks,
+        applyBlockCatalogDefaults(emptyBlock(), catalogState.catalogs),
+      ],
+    });
   };
 
   const handlePresetChange = async (event) => {

@@ -299,6 +299,75 @@ export function applyFilmsCatalogToForm(form, films) {
   };
 }
 
+function catalogFirstId(items) {
+  return items?.length > 0 ? String(items[0].id) : "";
+}
+
+export function applyOperationCatalogDefaults(operation, catalogs) {
+  if (operation.kind === "print") {
+    return {
+      ...operation,
+      printerId: operation.printerId || catalogFirstId(catalogs.printers),
+      operatorId:
+        operation.operatorId || catalogFirstId(catalogs.pressOperators),
+    };
+  }
+  if (operation.kind === "laminate") {
+    return {
+      ...operation,
+      laminatorId:
+        operation.laminatorId || catalogFirstId(catalogs.laminators),
+      operatorId:
+        operation.operatorId || catalogFirstId(catalogs.laminatorOperators),
+      filmId: operation.filmId || catalogFirstId(catalogs.films),
+    };
+  }
+  if (operation.kind === "cut") {
+    return {
+      ...operation,
+      cutterId: operation.cutterId || catalogFirstId(catalogs.cutters),
+      operatorId:
+        operation.operatorId || catalogFirstId(catalogs.cutterOperators),
+    };
+  }
+  if (operation.kind === "die_cut") {
+    return {
+      ...operation,
+      operatorId:
+        operation.operatorId || catalogFirstId(catalogs.dieCutOperators),
+    };
+  }
+  return operation;
+}
+
+export function applyBlockCatalogDefaults(block, catalogs) {
+  let next = { ...block };
+  if (next.paperSheetId === "" && catalogs.sheets?.length > 0) {
+    const sheet = catalogs.sheets[0];
+    next = {
+      ...next,
+      paperSheetId: String(sheet.id),
+      paper: paperFieldsFromSheet(sheet),
+      sheetFormat: sheetFormatFieldsFromSheet(sheet),
+    };
+  }
+  return {
+    ...next,
+    operations: next.operations.map((operation) =>
+      applyOperationCatalogDefaults(operation, catalogs),
+    ),
+  };
+}
+
+export function applyCatalogDefaultsToForm(form, catalogs) {
+  return {
+    ...form,
+    blocks: form.blocks.map((block) =>
+      applyBlockCatalogDefaults(block, catalogs),
+    ),
+  };
+}
+
 function mapBlockFromDto(block) {
   const { imposition } = block;
   return {
