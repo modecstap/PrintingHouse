@@ -6,7 +6,9 @@ import {
   replaceCatalog,
 } from "./api/catalog";
 import Button from "../generic/button/button";
+import { NumberField } from "../generic/number-field/number-field";
 import Table from "../generic/table/table";
+import { TextField } from "../generic/text-field/text-field";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
@@ -35,20 +37,21 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const renderInput = (field) => {
+  const renderField = (field) => {
     const inputId = `${def.key}-${field.name}`;
     const common = {
       id: inputId,
+      label: field.label,
       value: form[field.name] ?? "",
-      onChange: (event) => handleFieldChange(field.name, event.target.value),
+      onChange: (value) => handleFieldChange(field.name, value),
     };
     if (field.inputType === "number") {
-      return <input type="number" step="1" {...common} />;
+      return <NumberField {...common} />;
     }
     if (field.inputMode === "decimal") {
-      return <input type="text" inputMode="decimal" {...common} />;
+      return <TextField {...common} inputMode="decimal" />;
     }
-    return <input type="text" {...common} />;
+    return <TextField {...common} />;
   };
 
   const handleSave = () => {
@@ -163,20 +166,18 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
                   <legend>{fieldDef.legend}</legend>
                   <div className={styles.formRow}>
                     {fieldDef.fields.map((field) => (
-                      <label key={field.name} className={styles.field} htmlFor={`${def.key}-${field.name}`}>
-                        {field.label}
-                        {renderInput(field)}
-                      </label>
+                      <div key={field.name} className={styles.field}>
+                        {renderField(field)}
+                      </div>
                     ))}
                   </div>
                 </fieldset>
               );
             }
             return (
-              <label key={fieldDef.name} className={styles.field} htmlFor={`${def.key}-${fieldDef.name}`}>
-                {fieldDef.label}
-                {renderInput(fieldDef)}
-              </label>
+              <div key={fieldDef.name} className={styles.field}>
+                {renderField(fieldDef)}
+              </div>
             );
           })}
         </div>

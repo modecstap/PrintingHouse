@@ -43,7 +43,8 @@ function catalogGets(body = []) {
 }
 
 function templateBlock() {
-  return screen.getByLabelText("Имя").parentElement.parentElement.parentElement;
+  return screen.getByLabelText("Имя:").parentElement.parentElement.parentElement
+    .parentElement;
 }
 
 function templateTable() {
@@ -122,9 +123,9 @@ describe("References", () => {
       ).toBeInTheDocument();
     });
 
-    await userEvent.type(screen.getByLabelText("Имя"), "Новый");
-    await userEvent.type(screen.getByLabelText("Описание"), "Описание");
-    await userEvent.type(screen.getByLabelText("Заказ №"), "5");
+    await userEvent.type(screen.getByLabelText("Имя:"), "Новый");
+    await userEvent.type(screen.getByLabelText("Описание:"), "Описание");
+    await userEvent.type(screen.getByLabelText("Заказ №:"), "5");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -132,9 +133,9 @@ describe("References", () => {
     await waitFor(() => {
       expect(within(templateTable()).getByText("Новый")).toBeInTheDocument();
     });
-    expect(screen.getByLabelText("Имя")).toHaveValue("");
-    expect(screen.getByLabelText("Описание")).toHaveValue("");
-    expect(screen.getByLabelText("Заказ №")).toHaveValue(null);
+    expect(screen.getByLabelText("Имя:")).toHaveValue("");
+    expect(screen.getByLabelText("Описание:")).toHaveValue("");
+    expect(screen.getByLabelText("Заказ №:")).toHaveValue(null);
   });
 
   it("should show the server detail and keep the row out when the order is missing", async () => {
@@ -156,9 +157,9 @@ describe("References", () => {
       ).toBeInTheDocument();
     });
 
-    await userEvent.type(screen.getByLabelText("Имя"), "X");
-    await userEvent.type(screen.getByLabelText("Описание"), "Y");
-    await userEvent.type(screen.getByLabelText("Заказ №"), "99");
+    await userEvent.type(screen.getByLabelText("Имя:"), "X");
+    await userEvent.type(screen.getByLabelText("Описание:"), "Y");
+    await userEvent.type(screen.getByLabelText("Заказ №:"), "99");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -168,7 +169,7 @@ describe("References", () => {
         within(templateBlock()).getByRole("alert")
       ).toHaveTextContent("order missing");
     });
-    expect(screen.getByLabelText("Заказ №")).toHaveValue(99);
+    expect(screen.getByLabelText("Заказ №:")).toHaveValue(99);
 
     const tbody = templateTable().querySelector("tbody");
     expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
@@ -261,12 +262,12 @@ describe("References", () => {
 
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
-    await userEvent.type(within(region).getByLabelText("Номер"), "7");
-    await userEvent.type(within(region).getByLabelText("Запуск"), "100");
-    await userEvent.type(within(region).getByLabelText("C"), "1.5");
-    await userEvent.type(within(region).getByLabelText("M"), "2");
-    await userEvent.type(within(region).getByLabelText("Y"), "3");
-    await userEvent.type(within(region).getByLabelText("K"), "4");
+    await userEvent.type(within(region).getByLabelText("Номер:"), "7");
+    await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
+    await userEvent.type(within(region).getByLabelText("C:"), "1.5");
+    await userEvent.type(within(region).getByLabelText("M:"), "2");
+    await userEvent.type(within(region).getByLabelText("Y:"), "3");
+    await userEvent.type(within(region).getByLabelText("K:"), "4");
     await userEvent.click(
       within(region).getByRole("button", { name: "Сохранить" })
     );
@@ -291,8 +292,8 @@ describe("References", () => {
       expect(within(region).getByText(formatMoney("100"))).toBeInTheDocument();
     });
 
-    await userEvent.clear(within(region).getByLabelText("Номер"));
-    await userEvent.type(within(region).getByLabelText("Номер"), "7");
+    await userEvent.clear(within(region).getByLabelText("Номер:"));
+    await userEvent.type(within(region).getByLabelText("Номер:"), "7");
     await userEvent.click(
       within(region).getByRole("button", { name: "Сохранить" })
     );
@@ -302,7 +303,7 @@ describe("References", () => {
         "printer exists"
       );
     });
-    expect(within(region).getByLabelText("Номер")).toHaveValue(7);
+    expect(within(region).getByLabelText("Номер:")).toHaveValue(7);
   });
 
   it("should create a sheet, replace a film, and cancel edit without PUT", async () => {
@@ -359,16 +360,16 @@ describe("References", () => {
     const paperFieldset = within(sheets).getByRole("group", {
       name: "Бумага",
     });
-    await userEvent.type(within(paperFieldset).getByLabelText("Название"), "Офсет");
-    await userEvent.type(within(paperFieldset).getByLabelText("Плотность"), "80");
-    await userEvent.type(within(paperFieldset).getByLabelText("Толщина (мм)"), "1");
-    await userEvent.type(within(paperFieldset).getByLabelText("Цена за кг"), "90");
+    await userEvent.type(within(paperFieldset).getByLabelText("Название:"), "Офсет");
+    await userEvent.type(within(paperFieldset).getByLabelText("Плотность:"), "80");
+    await userEvent.type(within(paperFieldset).getByLabelText("Толщина (мм):"), "1");
+    await userEvent.type(within(paperFieldset).getByLabelText("Цена за кг:"), "90");
     const formatFieldset = within(sheets).getByRole("group", {
       name: "Формат листа",
     });
-    await userEvent.type(within(formatFieldset).getByLabelText("Название"), "SRA3");
-    await userEvent.type(within(formatFieldset).getByLabelText("Ширина (мм)"), "320");
-    await userEvent.type(within(formatFieldset).getByLabelText("Высота (мм)"), "450");
+    await userEvent.type(within(formatFieldset).getByLabelText("Название:"), "SRA3");
+    await userEvent.type(within(formatFieldset).getByLabelText("Ширина (мм):"), "320");
+    await userEvent.type(within(formatFieldset).getByLabelText("Высота (мм):"), "450");
     await userEvent.click(
       within(sheets).getByRole("button", { name: "Сохранить" })
     );
@@ -399,8 +400,8 @@ describe("References", () => {
     });
 
     await userEvent.click(within(films).getByRole("button", { name: "Изменить" }));
-    await userEvent.clear(within(films).getByLabelText("Цена"));
-    await userEvent.type(within(films).getByLabelText("Цена"), "35");
+    await userEvent.clear(within(films).getByLabelText("Цена:"));
+    await userEvent.type(within(films).getByLabelText("Цена:"), "35");
     await userEvent.click(
       within(films).getByRole("button", { name: "Сохранить" })
     );
@@ -414,7 +415,7 @@ describe("References", () => {
     });
 
     await userEvent.click(within(films).getByRole("button", { name: "Изменить" }));
-    await userEvent.type(within(films).getByLabelText("Название"), "X");
+    await userEvent.type(within(films).getByLabelText("Название:"), "X");
     await userEvent.click(within(films).getByRole("button", { name: "Отмена" }));
 
     expect(
@@ -422,7 +423,7 @@ describe("References", () => {
         ([u, o]) => u === "/api/materials/films/2" && o?.method === "PUT"
       )
     ).toHaveLength(1);
-    expect(within(films).getByLabelText("Название")).toHaveValue("");
+    expect(within(films).getByLabelText("Название:")).toHaveValue("");
   });
 
   it("should delete a cutter row and show load error only in that catalog", async () => {

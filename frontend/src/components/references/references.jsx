@@ -7,8 +7,10 @@ import {
 import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import Button from "../generic/button/button";
+import { NumberField } from "../generic/number-field/number-field";
 import pageStyles from "../generic/page/page.module.css";
 import Table from "../generic/table/table";
+import { TextField } from "../generic/text-field/text-field";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
@@ -80,40 +82,36 @@ export default function References({
 
       <div className={styles.calculatorBlock}>
         <div className={styles.formRow}>
-          <label className={styles.field}>
-            Имя
-            <input
-              type="text"
+          <div className={styles.field}>
+            <TextField
+              id="references-template-name"
+              label="Имя"
               value={form.name}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, name: event.target.value }))
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, name: value }))
               }
             />
-          </label>
-          <label className={styles.field}>
-            Описание
-            <input
-              type="text"
+          </div>
+          <div className={styles.field}>
+            <TextField
+              id="references-template-description"
+              label="Описание"
               value={form.description}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  description: event.target.value,
-                }))
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, description: value }))
               }
             />
-          </label>
-          <label className={styles.field}>
-            Заказ №
-            <input
-              type="number"
-              step="1"
+          </div>
+          <div className={styles.field}>
+            <NumberField
+              id="references-template-order-id"
+              label="Заказ №"
               value={form.orderId}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, orderId: event.target.value }))
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, orderId: value }))
               }
             />
-          </label>
+          </div>
         </div>
         <div className={styles.buttonRow}>
           <Button
