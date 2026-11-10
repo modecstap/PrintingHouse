@@ -13,7 +13,15 @@ const SAMPLE_PRODUCT = {
         bleeds: 2,
         spacing: 5,
       },
-      operations: [],
+      operations: [
+        {
+          kind: "print",
+          printer_id: 1,
+          operator_id: 4,
+          chroma: "FOUR_ZERO",
+        },
+        { kind: "cut", cutter_id: 2, operator_id: 6 },
+      ],
     },
   ],
   operations: [],
@@ -168,9 +176,11 @@ describe("Orders", () => {
     await userEvent.click(screen.getByRole("button", { name: /1.*10|10.*1/ }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
+      expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
     });
-    expect(screen.getByText("Цена изделия")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Цена изделия")).toBeInTheDocument();
+    });
   });
 
   it("should reload the list after a save from the open order", async () => {

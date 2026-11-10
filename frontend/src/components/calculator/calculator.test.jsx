@@ -114,20 +114,24 @@ const ORDER_DTO = { id: 42, count: 100, product: SAMPLE_PRODUCT };
 async function fillMandatoryPrintAndCut() {
   const printRegion = screen.getByRole("region", { name: /Печать/i });
   await userEvent.selectOptions(
-    within(printRegion).getByLabelText("Принтер"),
+    within(printRegion).getByLabelText("Принтер:"),
     "1",
   );
   await userEvent.selectOptions(
-    within(printRegion).getByLabelText("Печатник"),
+    within(printRegion).getByLabelText("Печать:"),
     "4",
+  );
+  await userEvent.selectOptions(
+    within(printRegion).getByLabelText("Цветность:"),
+    "FOUR_FOUR",
   );
   const cutRegion = screen.getByRole("region", { name: /^Рез$/i });
   await userEvent.selectOptions(
-    within(cutRegion).getByLabelText("Резак"),
+    within(cutRegion).getByLabelText("Резак:"),
     "2",
   );
   await userEvent.selectOptions(
-    within(cutRegion).getByLabelText("Оператор"),
+    within(cutRegion).getByLabelText("Рез:"),
     "6",
   );
 }
@@ -185,15 +189,15 @@ describe("Calculator", () => {
     expect(screen.getByText("Пропущено:")).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
+      expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
     });
 
-    await userEvent.clear(screen.getByLabelText("Тираж"));
-    await userEvent.type(screen.getByLabelText("Тираж"), "10");
-    await userEvent.clear(screen.getByLabelText("Ширина"));
-    await userEvent.type(screen.getByLabelText("Ширина"), "90");
-    await userEvent.clear(screen.getByLabelText("Высота"));
-    await userEvent.type(screen.getByLabelText("Высота"), "50");
+    await userEvent.clear(screen.getByLabelText("Тираж:"));
+    await userEvent.type(screen.getByLabelText("Тираж:"), "10");
+    await userEvent.clear(screen.getByLabelText("Ширина:"));
+    await userEvent.type(screen.getByLabelText("Ширина:"), "90");
+    await userEvent.clear(screen.getByLabelText("Высота:"));
+    await userEvent.type(screen.getByLabelText("Высота:"), "50");
     await fillMandatoryPrintAndCut();
 
     await waitFor(() => {
@@ -244,18 +248,18 @@ describe("Calculator", () => {
 
     await waitFor(() => {
       const printRegion = screen.getByRole("region", { name: /Печать/i });
-      expect(within(printRegion).getByLabelText("Принтер")).toHaveValue("1");
-      expect(within(printRegion).getByLabelText("Печатник")).toHaveValue("4");
+      expect(within(printRegion).getByLabelText("Принтер:")).toHaveValue("1");
+      expect(within(printRegion).getByLabelText("Печать:")).toHaveValue("4");
     });
 
     const operatorSelect = within(
       screen.getByRole("region", { name: /Печать/i }),
-    ).getByLabelText("Печатник");
+    ).getByLabelText("Печать:");
     const options = within(operatorSelect).getAllByRole("option");
     const labels = options.map((o) => o.textContent);
 
-    expect(labels.some((t) => t.includes("зарплата 5.00"))).toBe(true);
-    expect(labels.some((t) => t.includes("зарплата 6.00"))).toBe(false);
+    expect(labels.some((t) => t.includes("№ 4, 5.00 ₽"))).toBe(true);
+    expect(labels.some((t) => t.includes("№ 5,"))).toBe(false);
     expect(
       screen.queryByRole("button", { name: /создать|добавить.*принтер|оператор/i }),
     ).not.toBeInTheDocument();
@@ -282,15 +286,15 @@ describe("Calculator", () => {
     render(<Calculator initialReport={initialReport} />);
     await waitForCatalogs();
 
-    await userEvent.clear(screen.getByLabelText("Тираж"));
-    await userEvent.type(screen.getByLabelText("Тираж"), "10");
     await waitFor(() => {
-      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
+      expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
     });
-    await userEvent.clear(screen.getByLabelText("Ширина"));
-    await userEvent.type(screen.getByLabelText("Ширина"), "90");
-    await userEvent.clear(screen.getByLabelText("Высота"));
-    await userEvent.type(screen.getByLabelText("Высота"), "50");
+    await userEvent.clear(screen.getByLabelText("Тираж:"));
+    await userEvent.type(screen.getByLabelText("Тираж:"), "10");
+    await userEvent.clear(screen.getByLabelText("Ширина:"));
+    await userEvent.type(screen.getByLabelText("Ширина:"), "90");
+    await userEvent.clear(screen.getByLabelText("Высота:"));
+    await userEvent.type(screen.getByLabelText("Высота:"), "50");
     await fillMandatoryPrintAndCut();
 
     await waitFor(() => {
@@ -319,16 +323,16 @@ describe("Calculator", () => {
     await waitForCatalogs();
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Пресет")).toBeInTheDocument();
+      expect(screen.getByLabelText("Пресет:")).toBeInTheDocument();
     });
 
-    await userEvent.selectOptions(screen.getByLabelText("Пресет"), "42");
+    await userEvent.selectOptions(screen.getByLabelText("Пресет:"), "42");
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Тираж")).toHaveValue(100);
+      expect(screen.getByLabelText("Тираж:")).toHaveValue(100);
     });
-    expect(screen.getByLabelText("Ширина")).toHaveValue(90);
-    expect(screen.getByLabelText("Высота")).toHaveValue(50);
+    expect(screen.getByLabelText("Ширина:")).toHaveValue(90);
+    expect(screen.getByLabelText("Высота:")).toHaveValue(50);
   });
 
   it("should not offer calculate, delay, accept, or update", async () => {
