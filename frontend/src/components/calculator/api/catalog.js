@@ -6,7 +6,7 @@ import {
   toOperator,
   toPrinter,
   toSheet,
-} from "../models/catalog-label";
+} from "../../../lib/catalog-parsers";
 
 export async function fetchPrinters(signal) {
   const data = await requestJson("/api/equipment/printers", { signal });
