@@ -1,8 +1,10 @@
 import { useState } from "react";
 import styles from "./tabs.module.css";
 
-export function Tabs({ tabs }) {
-  const [selected, setSelected] = useState(tabs[0].id);
+export function Tabs({ tabs, defaultSelectedId }) {
+  const [selected, setSelected] = useState(
+    defaultSelectedId ?? tabs[0].id,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const { Content } = tabs.find((tab) => tab.id === selected);
 

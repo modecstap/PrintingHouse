@@ -12,7 +12,7 @@ const TABS = [
 ];
 
 function App() {
-  return <Tabs tabs={TABS} />;
+  return <Tabs tabs={TABS} defaultSelectedId="auth" />;
 }
 
 export default App;
