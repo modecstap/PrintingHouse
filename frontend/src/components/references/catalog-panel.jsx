@@ -12,7 +12,7 @@ function isFieldGroup(fieldDef) {
   return Array.isArray(fieldDef.fields);
 }
 
-export default function CatalogPanel({ def }) {
+export default function CatalogPanel({ def, onCatalogsInvalidated }) {
   const headingId = useId();
   const [listState, setListState] = useState({ status: "loading" });
   const [form, setForm] = useState(def.emptyForm);
@@ -88,6 +88,7 @@ export default function CatalogPanel({ def }) {
         setEditingId(null);
         setSaveState({ status: "idle" });
         bumpReload();
+        onCatalogsInvalidated?.();
       })
       .catch((error) => {
         setSaveState({ status: "error", message: error.message });
@@ -113,6 +114,7 @@ export default function CatalogPanel({ def }) {
     deleteCatalog(def.itemPath(row.id))
       .then(() => {
         bumpReload();
+        onCatalogsInvalidated?.();
         if (editingId === row.id) {
           setForm(def.emptyForm);
           setEditingId(null);

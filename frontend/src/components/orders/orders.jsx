@@ -9,7 +9,7 @@ import {
 import Button from "../generic/button/button";
 import styles from "./orders.module.css";
 
-export default function Orders() {
+export default function Orders({ catalogs, catalogLoadState }) {
   const [listState, setListState] = useState({ status: "loading" });
   const [selectedId, setSelectedId] = useState(null);
   const [modalState, setModalState] = useState(null);
@@ -168,6 +168,8 @@ export default function Orders() {
                 initialForm={modalState.form}
                 initialReport={modalState.report}
                 onSaved={handleSaved}
+                catalogs={catalogs}
+                catalogLoadState={catalogLoadState}
               />
             </>
           )}

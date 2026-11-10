@@ -11,7 +11,10 @@ import styles from "./references.module.css";
 
 const EMPTY_FORM = { name: "", description: "", orderId: "" };
 
-export default function References() {
+export default function References({
+  catalogs: _catalogs,
+  onCatalogsInvalidated,
+}) {
   const [listState, setListState] = useState({ status: "loading" });
   const [form, setForm] = useState(EMPTY_FORM);
   const [saveState, setSaveState] = useState({ status: "idle" });
@@ -152,7 +155,11 @@ export default function References() {
           Оборудование
         </h2>
         {EQUIPMENT_CATALOGS.map((def) => (
-          <CatalogPanel key={def.key} def={def} />
+          <CatalogPanel
+            key={def.key}
+            def={def}
+            onCatalogsInvalidated={onCatalogsInvalidated}
+          />
         ))}
       </section>
 
@@ -161,7 +168,11 @@ export default function References() {
           Персонал
         </h2>
         {STAFF_CATALOGS.map((def) => (
-          <CatalogPanel key={def.key} def={def} />
+          <CatalogPanel
+            key={def.key}
+            def={def}
+            onCatalogsInvalidated={onCatalogsInvalidated}
+          />
         ))}
       </section>
 
@@ -170,7 +181,11 @@ export default function References() {
           Материалы
         </h2>
         {MATERIAL_CATALOGS.map((def) => (
-          <CatalogPanel key={def.key} def={def} />
+          <CatalogPanel
+            key={def.key}
+            def={def}
+            onCatalogsInvalidated={onCatalogsInvalidated}
+          />
         ))}
       </section>
     </div>

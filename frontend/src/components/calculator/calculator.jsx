@@ -18,6 +18,8 @@ export default function Calculator({
   initialForm = emptyCalculatorForm(),
   initialReport = null,
   onSaved,
+  catalogs: _catalogs,
+  catalogLoadState: _catalogLoadState,
 }) {
   const {
     form,

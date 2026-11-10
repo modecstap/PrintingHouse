@@ -3,16 +3,41 @@ import Calculator from "./components/calculator/calculator";
 import Orders from "./components/orders/orders";
 import References from "./components/references/references";
 import Auth from "./components/auth/auth";
-
-const TABS = [
-  { id: "calculator", label: "Калькулятор", Content: Calculator },
-  { id: "orders", label: "Заказы", Content: Orders },
-  { id: "references", label: "Справочники", Content: References },
-  { id: "auth", label: "Вход", Content: Auth },
-];
+import { useCatalogs } from "./hooks/useCatalogs";
 
 function App() {
-  return <Tabs tabs={TABS} defaultSelectedId="auth" />;
+  const { catalogLoadState, reloadCatalogs } = useCatalogs();
+
+  const catalogProps = {
+    catalogs: catalogLoadState.catalogs,
+    catalogLoadState,
+  };
+
+  const tabs = [
+    {
+      id: "calculator",
+      label: "Калькулятор",
+      Content: () => <Calculator {...catalogProps} />,
+    },
+    {
+      id: "orders",
+      label: "Заказы",
+      Content: () => <Orders {...catalogProps} />,
+    },
+    {
+      id: "references",
+      label: "Справочники",
+      Content: () => (
+        <References
+          catalogs={catalogLoadState.catalogs}
+          onCatalogsInvalidated={reloadCatalogs}
+        />
+      ),
+    },
+    { id: "auth", label: "Вход", Content: Auth },
+  ];
+
+  return <Tabs tabs={tabs} defaultSelectedId="auth" />;
 }
 
 export default App;
