@@ -30,6 +30,7 @@ class _FakeOrderService:
     orders: tuple[Order, ...] = ()
     quote_error: Exception | None = None
     save_error: Exception | None = None
+    replace_error: Exception | None = None
     get_error: Exception | None = None
 
     def get_orders(self, limit: int) -> tuple[Order, ...]:
@@ -70,6 +71,12 @@ class _FakeOrderService:
         if self.save_error:
             raise self.save_error
         return self.save_id
+
+    def replace(self, order_id: OrderID, product, count: int) -> OrderID:
+        self.calls.append(f"replace:{order_id.value}:{count}")
+        if self.replace_error:
+            raise self.replace_error
+        return order_id
 
 
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
@@ -160,4 +167,24 @@ def test_quote_404_on_key_error():
     fake = _FakeOrderService(quote_error=KeyError("missing printer"))
     client, headers = _client_with_fake(fake)
     response = client.post("/api/orders/quote", headers=headers, json=_product_payload())
+    assert response.status_code == 404
+
+
+def test_replace_returns_same_id():
+    fake = _FakeOrderService()
+    client, headers = _client_with_fake(fake)
+    payload = _product_payload()
+    payload["count"] = 5
+    response = client.put("/api/orders/17", headers=headers, json=payload)
+    assert response.status_code == 200
+    assert response.json() == {"id": 17}
+    assert fake.calls == ["replace:17:5"]
+
+
+def test_replace_404_when_missing():
+    fake = _FakeOrderService(
+        replace_error=OrderNotFound("replace", OrderID(8)),
+    )
+    client, headers = _client_with_fake(fake)
+    response = client.put("/api/orders/8", headers=headers, json=_product_payload())
     assert response.status_code == 404

@@ -85,6 +85,35 @@ def test_save_with_unknown_printer_raises_integrity_error(db_session):
             repo.save(order)
 
 
+def test_replace_updates_count_and_product(db_session):
+    """Replace keeps order id and overwrites count and blocks."""
+    run, *_ , ctx = build_worked_run()
+    insert_catalogs_from_ctx(db_session, ctx)
+    repo = SqlOrderRepository(db_session)
+    order = Order(id=OrderID(6), product=product_from_run(run), count=2)
+
+    with db_session.begin():
+        repo.save(order)
+
+    updated = Order(id=OrderID(6), product=product_from_run(run), count=9)
+    with db_session.begin():
+        repo.replace(updated)
+
+    loaded = repo.take(OrderID(6))
+    assert loaded.count == 9
+    assert loaded.id == OrderID(6)
+
+
+def test_replace_missing_raises_order_not_found(db_session):
+    """Missing id on replace uses ``replace: заказа нет``."""
+    repo = SqlOrderRepository(db_session)
+    run, *_ , _ctx = build_worked_run()
+    order = Order(id=OrderID(11), product=product_from_run(run), count=1)
+    with pytest.raises(OrderNotFound, match="replace: заказа нет, id=11"):
+        with db_session.begin():
+            repo.replace(order)
+
+
 def test_take_latest_orders_by_descending_id(db_session):
     """``take_latest`` returns the highest ids first."""
     run, *_ , ctx = build_worked_run()

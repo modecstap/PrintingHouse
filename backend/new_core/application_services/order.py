@@ -248,6 +248,39 @@ class OrderService:
             raise RuntimeError("save exhausted retries without OrderIdOccupied")
         raise OrderIdAllocationFailed(last_occupied.order_id) from last_occupied
 
+    def replace(self, order_id: OrderID, product: Product, count: int) -> OrderID:
+        """Replaces an existing order and its print runs.
+
+        :param order_id:
+        :param product:
+        :param count:
+
+        :raises OrderNotFound: if the order does not exist.
+        :raises KeyError: if a catalog id is missing.
+        :raises TypeError: if an operation type is not supported.
+        :raises InvalidInput: if the product or run data is invalid.
+
+        :return: the same order id.
+        """
+
+        def work() -> OrderID:
+            self._uow.orders.take(order_id)
+            hydrated = self._hydrate_product(product)
+            order = Order(id=order_id, product=hydrated, count=count)
+            runs = tuple(
+                self._print_run_factory.create(
+                    for_order=order_id,
+                    block=block,
+                    required_count=count * block.count,
+                )
+                for block in hydrated.blocks
+            )
+            self._uow.orders.replace(order)
+            self._uow.print_runs.save_all_for_order(order_id, runs)
+            return order_id
+
+        return self._uow.transaction(work)
+
     def _run_estimate(self, run: PrintRun) -> RunEstimate:
         """Turns run operations into one run estimate.
 

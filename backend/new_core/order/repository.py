@@ -6,7 +6,7 @@ from typing import Literal, Protocol
 
 from backend.new_core.order.order import Order, OrderID
 
-OrderStoreOperation = Literal["take", "save"]
+OrderStoreOperation = Literal["take", "save", "replace"]
 
 
 class OrderNotFound(Exception):
@@ -77,6 +77,17 @@ class OrderRepository(Protocol):
         :raises OrderIdOccupied: if that id is already stored.
 
         :return: nothing. Existing rows are not overwritten.
+        """
+        ...
+
+    def replace(self, order: Order) -> None:
+        """Overwrites an existing order and its product graph.
+
+        :param order:
+
+        :raises OrderNotFound: if there is no order with this id.
+
+        :return: nothing.
         """
         ...
 

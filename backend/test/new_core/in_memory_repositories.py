@@ -66,6 +66,11 @@ class InMemoryOrderRepository:
             raise OrderIdOccupied("save", order.id)
         self.orders[order.id] = order
 
+    def replace(self, order: Order) -> None:
+        if order.id not in self.orders:
+            raise OrderNotFound("replace", order.id)
+        self.orders[order.id] = order
+
     def take_latest(self, limit: int) -> tuple[Order, ...]:
         if limit <= 0:
             return ()

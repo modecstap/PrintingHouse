@@ -64,3 +64,16 @@ def save_order(
     product = product_from_dto(body.product)
     order_id = service.save(product, body.count)
     return SaveOrderResponseDto(id=order_id.value)
+
+
+@router.put("/{order_id}", response_model=SaveOrderResponseDto)
+def replace_order(
+    order_id: int,
+    body: OrderWriteDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[OrderService, Depends(get_order_service)],
+) -> SaveOrderResponseDto:
+    """Replaces an existing order."""
+    product = product_from_dto(body.product)
+    stored_id = service.replace(OrderID(order_id), product, body.count)
+    return SaveOrderResponseDto(id=stored_id.value)

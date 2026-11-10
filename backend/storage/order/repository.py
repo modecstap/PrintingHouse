@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select, text
+from sqlalchemy import delete, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -18,6 +18,7 @@ from backend.storage.order.tables import (
     OrderRow,
 )
 from backend.storage.part.mapping import part_row_to_part, persist_part
+from backend.storage.part.tables import PartRow
 
 
 class SqlOrderRepository:
@@ -66,6 +67,63 @@ class SqlOrderRepository:
             self._session.flush()
         except IntegrityError as exc:
             raise OrderIdOccupied("save", order.id) from exc
+
+        for position, work in enumerate(order.product.operations):
+            self._session.add(
+                OrderAdditionalWorkRow(
+                    order_id=order.id.value,
+                    position=position,
+                    name=work.name,
+                    price=work.price.amount,
+                    description=work.description,
+                    markup=work.markup.value,
+                ),
+            )
+
+        for position, block in enumerate(order.product.blocks):
+            part_id = persist_part(self._session, block)
+            self._session.add(
+                OrderBlockRow(
+                    order_id=order.id.value,
+                    position=position,
+                    part_id=part_id,
+                ),
+            )
+
+    def replace(self, order: Order) -> None:
+        """Overwrites an existing order and its product graph.
+
+        :param order:
+
+        :raises OrderNotFound: if there is no order with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(OrderRow, order.id.value)
+        if row is None:
+            raise OrderNotFound("replace", order.id)
+
+        row.count = order.count
+
+        self._session.execute(
+            delete(OrderAdditionalWorkRow).where(
+                OrderAdditionalWorkRow.order_id == order.id.value,
+            ),
+        )
+
+        part_ids = self._session.execute(
+            select(OrderBlockRow.part_id).where(
+                OrderBlockRow.order_id == order.id.value,
+            ),
+        ).scalars().all()
+
+        self._session.execute(
+            delete(OrderBlockRow).where(
+                OrderBlockRow.order_id == order.id.value,
+            ),
+        )
+        for part_id in part_ids:
+            self._session.execute(delete(PartRow).where(PartRow.id == part_id))
 
         for position, work in enumerate(order.product.operations):
             self._session.add(
