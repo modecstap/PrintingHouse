@@ -1,6 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Orders from "./orders";
+import { jsonResponse } from "../../test-utils/json-response";
+import { renderWithToken } from "../../test-utils/render-with-token";
 
 const SAMPLE_PRODUCT = {
   blocks: [
@@ -35,14 +37,6 @@ const REPORT_RAW = {
   income: "30.00",
   impositions: [8],
 };
-
-function jsonResponse(data, status = 200) {
-  return Promise.resolve({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => data,
-  });
-}
 
 const SAMPLE_SHEET_CATALOG = [
   {
@@ -81,10 +75,6 @@ function stubCatalogFetch() {
 describe("Orders", () => {
   const originalFetch = global.fetch;
 
-  beforeEach(() => {
-    localStorage.setItem("access_token", "test-token");
-  });
-
   afterEach(() => {
     global.fetch = originalFetch;
     localStorage.clear();
@@ -101,7 +91,7 @@ describe("Orders", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<Orders />);
+    renderWithToken(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByText("1")).toBeInTheDocument();
@@ -126,7 +116,7 @@ describe("Orders", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<Orders />);
+    renderWithToken(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByRole("columnheader", { name: "ID" })).toBeInTheDocument();
@@ -143,7 +133,7 @@ describe("Orders", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<Orders />);
+    renderWithToken(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
@@ -167,7 +157,7 @@ describe("Orders", () => {
       return stubCatalogFetch()(url, options);
     });
 
-    render(<Orders />);
+    renderWithToken(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /1.*10|10.*1/ })).toBeInTheDocument();
@@ -208,7 +198,7 @@ describe("Orders", () => {
       return stubCatalogFetch()(url, options);
     });
 
-    render(<Orders />);
+    renderWithToken(<Orders />);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /1.*10|10.*1/ })).toBeInTheDocument();

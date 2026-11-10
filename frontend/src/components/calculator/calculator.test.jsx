@@ -1,7 +1,9 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Calculator from "./calculator";
 import { toOrderReport } from "./models/order";
+import { jsonResponse } from "../../test-utils/json-response";
+import { renderWithToken } from "../../test-utils/render-with-token";
 
 const PRINTER = {
   id: 1,
@@ -23,14 +25,6 @@ const QUOTE_REPORT_RAW = {
   income: "30.00",
   impositions: [8],
 };
-
-function jsonResponse(data, status = 200) {
-  return Promise.resolve({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => data,
-  });
-}
 
 function stubCatalogFetch(overrides = {}) {
   const catalogs = {
@@ -161,10 +155,6 @@ async function waitForCatalogs(fetchMock = global.fetch) {
 describe("Calculator", () => {
   const originalFetch = global.fetch;
 
-  beforeEach(() => {
-    localStorage.setItem("access_token", "test-token");
-  });
-
   afterEach(() => {
     global.fetch = originalFetch;
     localStorage.clear();
@@ -183,7 +173,7 @@ describe("Calculator", () => {
       return stubCatalogFetch()(url, options);
     });
 
-    render(<Calculator />);
+    renderWithToken(<Calculator />);
     await waitForCatalogs();
 
     expect(screen.getByText("Пропущено:")).toBeInTheDocument();
@@ -230,7 +220,7 @@ describe("Calculator", () => {
     });
 
     const onSaved = jest.fn();
-    render(<Calculator onSaved={onSaved} />);
+    renderWithToken(<Calculator onSaved={onSaved} />);
     await waitForCatalogs();
 
     await userEvent.click(screen.getByRole("button", { name: "Сохранить" }));
@@ -243,7 +233,7 @@ describe("Calculator", () => {
 
   it("should offer only press operators in a print operation", async () => {
     global.fetch = stubCatalogFetch();
-    render(<Calculator />);
+    renderWithToken(<Calculator />);
     await waitForCatalogs();
 
     await waitFor(() => {
@@ -283,7 +273,7 @@ describe("Calculator", () => {
       return stubCatalogFetch()(url, options);
     });
 
-    render(<Calculator initialReport={initialReport} />);
+    renderWithToken(<Calculator initialReport={initialReport} />);
     await waitForCatalogs();
 
     await waitFor(() => {
@@ -319,7 +309,7 @@ describe("Calculator", () => {
       return stubCatalogFetch()(url, options);
     });
 
-    render(<Calculator />);
+    renderWithToken(<Calculator />);
     await waitForCatalogs();
 
     await waitFor(() => {
@@ -337,7 +327,7 @@ describe("Calculator", () => {
 
   it("should not offer calculate, delay, accept, or update", async () => {
     global.fetch = stubCatalogFetch();
-    render(<Calculator />);
+    renderWithToken(<Calculator />);
     await waitForCatalogs();
 
     expect(
@@ -384,7 +374,7 @@ describe("Calculator", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<Calculator catalogLoadState={catalogLoadState} />);
+    renderWithToken(<Calculator catalogLoadState={catalogLoadState} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText("Бумага:")).toHaveValue("1");

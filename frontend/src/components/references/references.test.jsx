@@ -1,15 +1,9 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { formatMoney } from "../../lib/format-money";
 import References from "./references";
-
-function jsonResponse(data, status = 200) {
-  return Promise.resolve({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => data,
-  });
-}
+import { jsonResponse } from "../../test-utils/json-response";
+import { renderWithToken } from "../../test-utils/render-with-token";
 
 function empty204Response() {
   return Promise.resolve({
@@ -56,10 +50,6 @@ function templateTable() {
 describe("References", () => {
   const originalFetch = global.fetch;
 
-  beforeEach(() => {
-    localStorage.setItem("access_token", "test-token");
-  });
-
   afterEach(() => {
     global.fetch = originalFetch;
     localStorage.clear();
@@ -85,7 +75,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     await waitFor(() => {
       expect(within(templateTable()).getByText("Шаблон")).toBeInTheDocument();
@@ -115,7 +105,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     await waitFor(() => {
       expect(
@@ -149,7 +139,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     await waitFor(() => {
       expect(
@@ -183,7 +173,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Оборудование" })).toBeInTheDocument();
@@ -258,7 +248,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
@@ -352,7 +342,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     const sheets = await screen.findByRole("region", { name: "Листы" });
     const films = screen.getByRole("region", { name: "Плёнки" });
@@ -458,7 +448,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    render(<References />);
+    renderWithToken(<References />);
 
     const cutters = await screen.findByRole("region", { name: "Резаки" });
     await waitFor(() => {

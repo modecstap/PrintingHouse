@@ -1,23 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Auth from "./auth";
-import { AuthSessionProvider } from "../../lib/auth-session";
-
-function renderAuth() {
-  return render(
-    <AuthSessionProvider>
-      <Auth />
-    </AuthSessionProvider>,
-  );
-}
-
-function jsonResponse(data, status = 200) {
-  return Promise.resolve({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => data,
-  });
-}
+import { jsonResponse } from "../../test-utils/json-response";
+import { renderWithToken } from "../../test-utils/render-with-token";
 
 describe("Auth", () => {
   const originalFetch = global.fetch;
@@ -47,7 +32,7 @@ describe("Auth", () => {
       return jsonResponse({}, 404);
     });
 
-    const { container } = renderAuth();
+    const { container } = renderWithToken(<Auth />, { token: null });
     expect(screen.getByRole("heading", { name: "Вход" })).toBeInTheDocument();
     const [usernameInput, passwordInput] = container.querySelectorAll("input");
 
@@ -62,9 +47,7 @@ describe("Auth", () => {
   });
 
   it("should remove the access token when the user logs out", async () => {
-    localStorage.setItem("access_token", "jwt-abc");
-
-    renderAuth();
+    renderWithToken(<Auth />, { token: "jwt-abc" });
     await userEvent.click(screen.getByRole("button", { name: "Выйти" }));
 
     expect(localStorage.getItem("access_token")).toBeNull();
