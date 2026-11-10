@@ -1,5 +1,11 @@
 import { BackendIP } from "../constants/BackendIP";
 
+let unauthorizedHandler = null;
+
+export function setUnauthorizedHandler(fn) {
+  unauthorizedHandler = fn;
+}
+
 function authHeaders(body) {
   const token = localStorage.getItem("access_token");
   const headers = {
@@ -11,10 +17,20 @@ function authHeaders(body) {
   return headers;
 }
 
+function formatDetail(detail) {
+  if (Array.isArray(detail)) {
+    return detail.map((d) => `${d.loc?.join(" → ")}: ${d.msg}`).join("\n");
+  }
+  if (typeof detail === "string") {
+    return detail;
+  }
+  return JSON.stringify(detail);
+}
+
 async function readFailureDetail(response) {
   const data = await response.json().catch(() => null);
-  if (typeof data?.detail === "string") {
-    return data.detail;
+  if (data?.detail !== undefined && data?.detail !== null) {
+    return formatDetail(data.detail);
   }
   return `Ошибка сервера (${response.status})`;
 }
@@ -33,6 +49,11 @@ export async function requestJson(path, { method = "GET", body, signal } = {}) {
         return null;
       }
       return response.json();
+    }
+
+    if (response.status === 401) {
+      localStorage.removeItem("access_token");
+      unauthorizedHandler?.();
     }
 
     throw new Error(await readFailureDetail(response));

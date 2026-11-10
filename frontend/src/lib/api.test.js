@@ -1,4 +1,4 @@
-import { requestJson } from "./api";
+import { requestJson, setUnauthorizedHandler } from "./api";
 
 describe("requestJson", () => {
   const originalFetch = global.fetch;
@@ -53,6 +53,39 @@ describe("requestJson", () => {
     await expect(requestJson("/api/orders", { method: "POST", body: {} })).rejects.toThrow(
       "body.count: Input should be a valid integer",
     );
+  });
+
+  it("should reject with formatted validation array detail on 422", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        detail: [{ loc: ["body", "count"], msg: "field required" }],
+      }),
+    });
+
+    await expect(requestJson("/api/orders", { method: "POST", body: {} })).rejects.toThrow(
+      "body → count: field required",
+    );
+  });
+
+  it("should clear token and call unauthorized handler on 401", async () => {
+    localStorage.setItem("access_token", "stale");
+    const onUnauthorized = jest.fn();
+    setUnauthorizedHandler(onUnauthorized);
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ detail: "Unauthorized" }),
+    });
+
+    await expect(requestJson("/api/orders", { method: "GET" })).rejects.toThrow("Unauthorized");
+
+    expect(localStorage.getItem("access_token")).toBeNull();
+    expect(onUnauthorized).toHaveBeenCalled();
+
+    setUnauthorizedHandler(null);
   });
 
   it("should resolve to null on 204", async () => {
