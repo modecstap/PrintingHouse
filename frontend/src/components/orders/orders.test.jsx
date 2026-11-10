@@ -183,28 +183,27 @@ describe("Orders", () => {
     });
   });
 
-  it("should reload the list after a save from the open order", async () => {
+  it("should replace via PUT and reload the list without a new id", async () => {
     let listCallCount = 0;
+    let putCalled = false;
 
     global.fetch = jest.fn((url, options) => {
       if (url === "/api/orders" && (!options?.method || options.method === "GET")) {
         listCallCount += 1;
-        if (listCallCount === 1) {
-          return jsonResponse([{ id: 1, count: 10 }]);
-        }
-        return jsonResponse([
-          { id: 1, count: 10 },
-          { id: 16, count: 10 },
-        ]);
+        return jsonResponse([{ id: 1, count: 10 }]);
       }
-      if (url === "/api/orders/1") {
+      if (url === "/api/orders/1" && (!options?.method || options.method === "GET")) {
         return jsonResponse(ORDER_DTO);
       }
       if (url === "/api/orders/1/report") {
         return jsonResponse(REPORT_RAW);
       }
+      if (url === "/api/orders/1" && options?.method === "PUT") {
+        putCalled = true;
+        return jsonResponse({ id: 1 });
+      }
       if (url === "/api/orders" && options?.method === "POST") {
-        return jsonResponse({ id: 16 });
+        return jsonResponse({ id: 99 });
       }
       return stubCatalogFetch()(url, options);
     });
@@ -224,12 +223,16 @@ describe("Orders", () => {
     await userEvent.click(screen.getByRole("button", { name: "Сохранить" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("status")).toHaveTextContent("Заказ сохранён: 16");
+      expect(putCalled).toBe(true);
     });
-
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /16.*10|10.*16/ })).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent("Заказ сохранён: 1");
     });
     expect(listCallCount).toBeGreaterThanOrEqual(2);
+    expect(
+      global.fetch.mock.calls.some(
+        ([u, o]) => u === "/api/orders" && o?.method === "POST",
+      ),
+    ).toBe(false);
   });
 });

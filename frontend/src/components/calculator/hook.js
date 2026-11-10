@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchReferences } from "../references/api/references";
 import { fetchOrderForm } from "../orders/api/orders";
 import { loadCatalogs } from "./api/catalog";
-import { quoteOrder, saveOrder } from "./api/order";
+import { quoteOrder, replaceOrder, saveOrder } from "./api/order";
 import {
   applyCatalogDefaultsToForm,
   applyFilmsCatalogToForm,
@@ -48,6 +48,7 @@ function catalogStateFromLoadState(catalogLoadState) {
 export function useCalculator({
   initialForm = emptyCalculatorForm(),
   initialReport = null,
+  editingOrderId = null,
   onSaved,
   catalogLoadState,
 } = {}) {
@@ -206,7 +207,10 @@ export function useCalculator({
     );
     setSavedId(null);
     try {
-      const id = await saveOrder(form);
+      const id =
+        editingOrderId != null
+          ? await replaceOrder(editingOrderId, form)
+          : await saveOrder(form);
       setSavedId(id);
       setSaveState({ status: "success" });
       if (onSaved) {

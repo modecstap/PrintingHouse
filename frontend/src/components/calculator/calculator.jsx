@@ -17,6 +17,7 @@ import { useCalculator } from "./hook";
 export default function Calculator({
   initialForm = emptyCalculatorForm(),
   initialReport = null,
+  editingOrderId = null,
   onSaved,
   catalogLoadState,
 }) {
@@ -37,7 +38,13 @@ export default function Calculator({
     removeBlock,
     addBlock,
     handlePresetChange,
-  } = useCalculator({ initialForm, initialReport, onSaved, catalogLoadState });
+  } = useCalculator({
+    initialForm,
+    initialReport,
+    editingOrderId,
+    onSaved,
+    catalogLoadState,
+  });
 
   const missingFields = calculatorFormMissingFieldLabels(form);
   const formReady = missingFields.length === 0;

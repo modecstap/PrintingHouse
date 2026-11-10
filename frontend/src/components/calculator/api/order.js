@@ -20,3 +20,14 @@ export async function saveOrder(form) {
   }
   return raw.id;
 }
+
+export async function replaceOrder(orderId, form) {
+  const raw = await requestJson(`/api/orders/${orderId}`, {
+    method: "PUT",
+    body: toOrderWrite(form),
+  });
+  if (typeof raw?.id !== "number") {
+    throw new Error("order replace: id must be a number");
+  }
+  return raw.id;
+}

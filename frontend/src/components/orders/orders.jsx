@@ -167,6 +167,7 @@ export default function Orders({ catalogs, catalogLoadState }) {
                 key={selectedId}
                 initialForm={modalState.form}
                 initialReport={modalState.report}
+                editingOrderId={selectedId}
                 onSaved={handleSaved}
                 catalogs={catalogs}
                 catalogLoadState={catalogLoadState}
