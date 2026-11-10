@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class FormatDto(BaseModel):
@@ -19,9 +20,23 @@ class PaperDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     density: int
-    thickness: int
+    thickness: Decimal
     name: str
     price_per_kilo: str
+
+    @field_validator("thickness")
+    @classmethod
+    def validate_thickness(cls, value: Decimal) -> Decimal:
+        if value <= 0:
+            msg = f"толщина бумаги меньше или равна 0, толщина={value} мм"
+            raise ValueError(msg)
+        if value != value.quantize(Decimal("0.01")):
+            msg = (
+                f"толщина бумаги имеет более 2 знаков после запятой, "
+                f"толщина={value} мм"
+            )
+            raise ValueError(msg)
+        return value
 
 
 class SheetDto(BaseModel):

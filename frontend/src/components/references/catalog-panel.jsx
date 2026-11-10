@@ -46,7 +46,14 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
       onChange: (value) => handleFieldChange(field.name, value),
     };
     if (field.inputType === "number") {
-      return <NumberField {...common} />;
+      return (
+        <NumberField
+          {...common}
+          step={field.step}
+          min={field.min}
+          max={field.max}
+        />
+      );
     }
     if (field.inputMode === "decimal") {
       return <TextField {...common} inputMode="decimal" />;

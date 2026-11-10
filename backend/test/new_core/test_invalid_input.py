@@ -41,7 +41,12 @@ _ZERO_CELL = (
 def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
     return Sheet(
         id=sheet_id or SheetID(1),
-        paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(
+            density=60,
+            thickness=Decimal(1),
+            name="sheet",
+            price_per_kilo=Money(Decimal(0)),
+        ),
         format=Format(name="sheet", height=height, width=width),
     )
 
@@ -110,7 +115,31 @@ def test_paper_rejects_a_density_of_zero():
         "Paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
         lambda: Paper(
             density=0,
-            thickness=1,
+            thickness=Decimal(1),
+            name="press",
+            price_per_kilo=Money(Decimal(1000)),
+        ),
+    )
+
+
+def test_paper_accepts_fractional_thickness():
+    """A paper thickness of 0.15 mm is accepted."""
+    Paper(
+        density=60,
+        thickness=Decimal("0.15"),
+        name="press",
+        price_per_kilo=Money(Decimal(1000)),
+    )
+
+
+def test_paper_rejects_thickness_with_more_than_two_decimal_places():
+    """More than two fractional digits in thickness is rejected."""
+    _rejects(
+        "Paper: толщина бумаги имеет более 2 знаков после запятой, "
+        "толщина=0.151 мм",
+        lambda: Paper(
+            density=60,
+            thickness=Decimal("0.151"),
             name="press",
             price_per_kilo=Money(Decimal(1000)),
         ),
@@ -123,7 +152,7 @@ def test_paper_rejects_a_thickness_of_zero():
         "Paper: толщина бумаги меньше или равна 0, толщина=0 мм",
         lambda: Paper(
             density=60,
-            thickness=0,
+            thickness=Decimal(0),
             name="press",
             price_per_kilo=Money(Decimal(1000)),
         ),
@@ -217,7 +246,7 @@ def test_negative_measure_is_rejected(message: str, build):
             "толщина бумаги меньше или равна 0, толщина=0 мм",
             lambda: Paper(
                 density=0,
-                thickness=0,
+                thickness=Decimal(0),
                 name="press",
                 price_per_kilo=Money(Decimal(1000)),
             ),

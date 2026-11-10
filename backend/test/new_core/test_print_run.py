@@ -91,6 +91,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     press_salary: int = 5,
     lamination: Lamination = Lamination.ONE_ZERO,
     max_stack: int = 50,
+    paper_thickness: Decimal = Decimal(1),
     with_print: bool = True,
     with_laminate: bool = True,
     with_cut: bool = True,
@@ -151,7 +152,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=resolved_sheet_id,
         paper=Paper(
             density=press_density,
-            thickness=1,
+            thickness=paper_thickness,
             name="press",
             price_per_kilo=Money(Decimal(press_price)),
         ),

@@ -1,4 +1,4 @@
-import { toJsonInt } from "./catalog";
+import { toJsonDecimal, toJsonInt } from "./catalog";
 import { toPrinter, toPrinterList, toSheet, toFilm } from "../../../lib/catalog-parsers";
 
 describe("toPrinter", () => {
@@ -71,6 +71,18 @@ describe("toFilm", () => {
 describe("toPrinterList", () => {
   it("should throw when payload is not an array", () => {
     expect(() => toPrinterList({})).toThrow("printer: list must be an array");
+  });
+});
+
+describe("toJsonDecimal", () => {
+  it("should coerce a decimal string with one or two fractional digits", () => {
+    expect(toJsonDecimal("0.15")).toBe(0.15);
+    expect(toJsonDecimal(" 1.5 ")).toBe(1.5);
+    expect(toJsonDecimal("2")).toBe(2);
+  });
+
+  it("should return trimmed string when pattern does not match", () => {
+    expect(toJsonDecimal("0.151")).toBe("0.151");
   });
 });
 

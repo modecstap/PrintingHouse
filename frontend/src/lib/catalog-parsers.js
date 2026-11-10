@@ -57,6 +57,19 @@ export function toOperator(raw) {
   return { id: raw.id, salary_by_operation: raw.salary_by_operation };
 }
 
+function parsePaperThickness(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^-?\d+(\.\d{1,2})?$/.test(trimmed)) {
+      return Number(trimmed);
+    }
+  }
+  return null;
+}
+
 export function toSheet(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("sheet: id must be a number");
@@ -68,7 +81,8 @@ export function toSheet(raw) {
   if (typeof paper?.density !== "number") {
     throw new Error("sheet: paper.density must be a number");
   }
-  if (typeof paper?.thickness !== "number") {
+  const thickness = parsePaperThickness(paper?.thickness);
+  if (thickness === null) {
     throw new Error("sheet: paper.thickness must be a number");
   }
   if (typeof paper?.price_per_kilo !== "string") {
@@ -89,7 +103,7 @@ export function toSheet(raw) {
     paper: {
       name: paper.name,
       density: paper.density,
-      thickness: paper.thickness,
+      thickness,
       price_per_kilo: paper.price_per_kilo,
     },
     format: {

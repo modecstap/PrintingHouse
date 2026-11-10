@@ -115,7 +115,7 @@ describe("References", () => {
 
     await userEvent.type(screen.getByLabelText("Имя:"), "Новый");
     await userEvent.type(screen.getByLabelText("Описание:"), "Описание");
-    await userEvent.type(screen.getByLabelText("Заказ №:"), "5");
+    await userEvent.type(screen.getByLabelText("Заказ:"), "5");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -125,7 +125,7 @@ describe("References", () => {
     });
     expect(screen.getByLabelText("Имя:")).toHaveValue("");
     expect(screen.getByLabelText("Описание:")).toHaveValue("");
-    expect(screen.getByLabelText("Заказ №:")).toHaveValue(null);
+    expect(screen.getByLabelText("Заказ:")).toHaveValue(null);
   });
 
   it("should show the server detail and keep the row out when the order is missing", async () => {
@@ -149,7 +149,7 @@ describe("References", () => {
 
     await userEvent.type(screen.getByLabelText("Имя:"), "X");
     await userEvent.type(screen.getByLabelText("Описание:"), "Y");
-    await userEvent.type(screen.getByLabelText("Заказ №:"), "99");
+    await userEvent.type(screen.getByLabelText("Заказ:"), "99");
     await userEvent.click(
       within(templateBlock()).getByRole("button", { name: "Сохранить" })
     );
@@ -159,7 +159,7 @@ describe("References", () => {
         within(templateBlock()).getByRole("alert")
       ).toHaveTextContent("order missing");
     });
-    expect(screen.getByLabelText("Заказ №:")).toHaveValue(99);
+    expect(screen.getByLabelText("Заказ:")).toHaveValue(99);
 
     const tbody = templateTable().querySelector("tbody");
     expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
@@ -205,7 +205,7 @@ describe("References", () => {
 
     expect(
       within(templateTable()).getByRole("columnheader", {
-        name: "Заказ №",
+        name: "Заказ",
       })
     ).toBeInTheDocument();
   });
@@ -352,14 +352,14 @@ describe("References", () => {
     });
     await userEvent.type(within(paperFieldset).getByLabelText("Название:"), "Офсет");
     await userEvent.type(within(paperFieldset).getByLabelText("Плотность:"), "80");
-    await userEvent.type(within(paperFieldset).getByLabelText("Толщина (мм):"), "1");
+    await userEvent.type(within(paperFieldset).getByLabelText("Толщина:"), "1");
     await userEvent.type(within(paperFieldset).getByLabelText("Цена за кг:"), "90");
     const formatFieldset = within(sheets).getByRole("group", {
       name: "Формат листа",
     });
     await userEvent.type(within(formatFieldset).getByLabelText("Название:"), "SRA3");
-    await userEvent.type(within(formatFieldset).getByLabelText("Ширина (мм):"), "320");
-    await userEvent.type(within(formatFieldset).getByLabelText("Высота (мм):"), "450");
+    await userEvent.type(within(formatFieldset).getByLabelText("Ширина:"), "320");
+    await userEvent.type(within(formatFieldset).getByLabelText("Высота:"), "450");
     await userEvent.click(
       within(sheets).getByRole("button", { name: "Сохранить" })
     );
@@ -414,6 +414,71 @@ describe("References", () => {
       )
     ).toHaveLength(1);
     expect(within(films).getByLabelText("Название:")).toHaveValue("");
+  });
+
+  it("should create a sheet with fractional thickness and show it in the table", async () => {
+    let sheetGets = 0;
+
+    global.fetch = jest.fn((url, options) => {
+      if (url === "/api/references") {
+        return jsonResponse([]);
+      }
+      if (url === "/api/materials/sheets" && options?.method === "POST") {
+        return jsonResponse({ id: 1 });
+      }
+      if (url === "/api/materials/sheets") {
+        sheetGets += 1;
+        if (sheetGets <= 1) {
+          return jsonResponse([]);
+        }
+        return jsonResponse([
+          {
+            id: 10,
+            paper: {
+              name: "Тонкая",
+              density: 80,
+              thickness: 0.15,
+              price_per_kilo: "90",
+            },
+            format: { name: "SRA3", width: 320, height: 450 },
+          },
+        ]);
+      }
+      const catalog = catalogGets()(url);
+      if (catalog) {
+        return catalog;
+      }
+      return jsonResponse({}, 404);
+    });
+
+    renderWithToken(<References />);
+
+    const sheets = await screen.findByRole("region", { name: "Листы" });
+    const paperFieldset = within(sheets).getByRole("group", { name: "Бумага" });
+    await userEvent.type(within(paperFieldset).getByLabelText("Название:"), "Тонкая");
+    await userEvent.type(within(paperFieldset).getByLabelText("Плотность:"), "80");
+    await userEvent.type(within(paperFieldset).getByLabelText("Толщина:"), "0.15");
+    await userEvent.type(within(paperFieldset).getByLabelText("Цена за кг:"), "90");
+    const formatFieldset = within(sheets).getByRole("group", {
+      name: "Формат листа",
+    });
+    await userEvent.type(within(formatFieldset).getByLabelText("Название:"), "SRA3");
+    await userEvent.type(within(formatFieldset).getByLabelText("Ширина:"), "320");
+    await userEvent.type(within(formatFieldset).getByLabelText("Высота:"), "450");
+    await userEvent.click(
+      within(sheets).getByRole("button", { name: "Сохранить" }),
+    );
+
+    await waitFor(() => {
+      const postCall = global.fetch.mock.calls.find(
+        ([u, o]) => u === "/api/materials/sheets" && o?.method === "POST",
+      );
+      expect(JSON.parse(postCall[1].body).paper.thickness).toBe(0.15);
+    });
+
+    await waitFor(() => {
+      expect(within(sheets).getByText("0.15")).toBeInTheDocument();
+    });
   });
 
   it("should delete a cutter row and show load error only in that catalog", async () => {

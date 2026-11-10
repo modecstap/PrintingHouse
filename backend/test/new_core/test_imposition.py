@@ -13,7 +13,12 @@ from backend.new_core import Format, Imposition, InvalidInput, Paper, Sheet
 def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
     return Sheet(
         id=sheet_id or SheetID(1),
-        paper=Paper(density=60, thickness=1, name="sheet", price_per_kilo=Money(Decimal(0))),
+        paper=Paper(
+            density=60,
+            thickness=Decimal(1),
+            name="sheet",
+            price_per_kilo=Money(Decimal(0)),
+        ),
         format=Format(name="sheet", height=height, width=width),
     )
 

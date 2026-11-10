@@ -1,7 +1,9 @@
 import { formatMoney } from "../../lib/format-money";
+import { formatThicknessMm } from "../../lib/format-thickness-mm";
 import {
   toCutterList,
   toFilmList,
+  toJsonDecimal,
   toJsonInt,
   toLaminatorList,
   toOperatorList,
@@ -11,6 +13,7 @@ import {
 
 const MONEY = { inputMode: "decimal" };
 const INT = { inputType: "number" };
+const THICKNESS_MM = { inputType: "number", step: "0.01" };
 
 function staffCatalog({ key, title, listPath }) {
   const itemPath = (id) => `${listPath}/${id}`;
@@ -131,11 +134,11 @@ const CUTTERS = {
   canReplace: false,
   columns: [
     { header: "Номер", render: (row) => row.id },
-    { header: "Макс. стопа", render: (row) => row.max_stack },
+    { header: "Стопа", render: (row) => row.max_stack },
   ],
   fields: [
     { name: "id", label: "Номер", ...INT },
-    { name: "max_stack", label: "Макс. стопа", ...INT },
+    { name: "max_stack", label: "Стопа", ...INT },
   ],
   emptyForm: { id: "", max_stack: "" },
   formFromRow: undefined,
@@ -161,14 +164,14 @@ const SHEETS = {
     { header: "Номер", render: (row) => row.id },
     { header: "Название", render: (row) => row.paper.name },
     { header: "Плотность", render: (row) => row.paper.density },
-    { header: "Толщина (мм)", render: (row) => row.paper.thickness },
+    { header: "Толщина", render: (row) => formatThicknessMm(row.paper.thickness) },
     {
       header: "Цена за кг",
       render: (row) => formatMoney(row.paper.price_per_kilo),
     },
     { header: "Название", render: (row) => row.format.name },
-    { header: "Ширина (мм)", render: (row) => row.format.width },
-    { header: "Высота (мм)", render: (row) => row.format.height },
+    { header: "Ширина", render: (row) => row.format.width },
+    { header: "Высота", render: (row) => row.format.height },
   ],
   fields: [
     {
@@ -176,7 +179,7 @@ const SHEETS = {
       fields: [
         { name: "paper_name", label: "Название" },
         { name: "paper_density", label: "Плотность", ...INT },
-        { name: "paper_thickness", label: "Толщина (мм)", ...INT },
+        { name: "paper_thickness", label: "Толщина", ...THICKNESS_MM },
         { name: "paper_price_per_kilo", label: "Цена за кг", ...MONEY },
       ],
     },
@@ -184,8 +187,8 @@ const SHEETS = {
       legend: "Формат листа",
       fields: [
         { name: "format_name", label: "Название" },
-        { name: "format_width", label: "Ширина (мм)", ...INT },
-        { name: "format_height", label: "Высота (мм)", ...INT },
+        { name: "format_width", label: "Ширина", ...INT },
+        { name: "format_height", label: "Высота", ...INT },
       ],
     },
   ],
@@ -214,7 +217,7 @@ const SHEETS = {
       paper: {
         name: form.paper_name.trim(),
         density: toJsonInt(form.paper_density),
-        thickness: toJsonInt(form.paper_thickness),
+        thickness: toJsonDecimal(form.paper_thickness),
         price_per_kilo: form.paper_price_per_kilo.trim(),
       },
       format: {

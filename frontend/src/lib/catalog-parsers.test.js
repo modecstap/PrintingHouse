@@ -71,6 +71,54 @@ describe("toOperator", () => {
 });
 
 describe("toSheet", () => {
+  it("should parse paper thickness from API decimal string", () => {
+    expect(
+      toSheet({
+        id: 3,
+        paper: {
+          name: "Тонкая",
+          density: 80,
+          thickness: "0.15",
+          price_per_kilo: "50",
+        },
+        format: { name: "A4", width: 210, height: 297 },
+      }),
+    ).toEqual({
+      id: 3,
+      paper: {
+        name: "Тонкая",
+        density: 80,
+        thickness: 0.15,
+        price_per_kilo: "50",
+      },
+      format: { name: "A4", height: 297, width: 210 },
+    });
+  });
+
+  it("should parse fractional paper thickness", () => {
+    expect(
+      toSheet({
+        id: 3,
+        paper: {
+          name: "Тонкая",
+          density: 80,
+          thickness: 0.15,
+          price_per_kilo: "50",
+        },
+        format: { name: "A4", width: 210, height: 297 },
+      }),
+    ).toEqual({
+      id: 3,
+      paper: {
+        name: "Тонкая",
+        density: 80,
+        thickness: 0.15,
+        price_per_kilo: "50",
+      },
+      format: { name: "A4", height: 297, width: 210 },
+    });
+  });
+
   it("should parse a sheet with paper and format", () => {
     expect(
       toSheet({

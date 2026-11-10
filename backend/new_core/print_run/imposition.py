@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from backend.new_core.errors import InvalidInput
 from backend.new_core.format import Format
@@ -61,7 +62,7 @@ class Imposition:
                 reason=f"на печатный лист влезает {item_count} целевых листов",
             )
 
-    def thickness(self) -> int:
+    def thickness(self) -> Decimal:
         return self._press_sheet().thickness()
 
     def count(self) -> int:

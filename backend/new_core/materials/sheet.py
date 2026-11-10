@@ -49,7 +49,7 @@ class Sheet:
             / Decimal(1000)
         )
 
-    def thickness(self) -> int:
+    def thickness(self) -> Decimal:
         """Returns the thickness of the sheet.
 
         :return: the thickness of the sheet in mm.

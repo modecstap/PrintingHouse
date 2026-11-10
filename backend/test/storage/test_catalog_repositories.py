@@ -120,7 +120,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     repo = SqlSheetRepository(db_session)
     paper = Paper(
         density=100,
-        thickness=1,
+        thickness=Decimal(1),
         name="dup",
         price_per_kilo=Money(Decimal("10")),
     )
@@ -135,7 +135,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
         id=first_id,
         paper=Paper(
             density=120,
-            thickness=2,
+            thickness=Decimal(2),
             name="new",
             price_per_kilo=Money(Decimal("12")),
         ),
@@ -144,6 +144,30 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     repo.replace(updated)
     db_session.commit()
     assert repo.take(first_id) == updated
+
+
+def test_sheet_round_trip_fractional_thickness(db_session):
+    """Fractional and whole thickness values round-trip through storage."""
+    repo = SqlSheetRepository(db_session)
+    fractional = Paper(
+        density=80,
+        thickness=Decimal("0.15"),
+        name="тонкая",
+        price_per_kilo=Money(Decimal("10")),
+    )
+    fmt = Format(name="SRA3", height=450, width=320)
+    sheet_id = repo.add(fractional, fmt)
+    db_session.commit()
+    loaded = repo.take(sheet_id)
+    assert loaded.paper.thickness == Decimal("0.15")
+
+    whole_id = repo.add(
+        Paper(100, Decimal(1), "целая", Money(Decimal("5"))),
+        fmt,
+    )
+    db_session.commit()
+    whole = repo.take(whole_id)
+    assert whole.paper.thickness.quantize(Decimal("0.01")) == Decimal("1.00")
 
 
 @pytest.mark.parametrize(
@@ -173,7 +197,7 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
             SheetID(404),
             Sheet(
                 id=SheetID(404),
-                paper=Paper(1, 1, "x", Money(Decimal("1"))),
+                paper=Paper(1, Decimal(1), "x", Money(Decimal("1"))),
                 format=Format("f", 1, 1),
             ),
         ),
@@ -213,7 +237,7 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
     """A sheet still referenced by ``parts.sheet_id`` cannot be removed."""
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
-        Paper(100, 1, "press", Money(Decimal("1"))),
+        Paper(100, Decimal(1), "press", Money(Decimal("1"))),
         Format("press", 300, 200),
     )
     db_session.flush()

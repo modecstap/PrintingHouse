@@ -65,7 +65,7 @@ export default function References({
             <tr>
               <th scope="col">Имя</th>
               <th scope="col">Описание</th>
-              <th scope="col">Заказ №</th>
+              <th scope="col">Заказ</th>
             </tr>
           </thead>
           <tbody>
@@ -105,7 +105,7 @@ export default function References({
           <div className={styles.field}>
             <NumberField
               id="references-template-order-id"
-              label="Заказ №"
+              label="Заказ"
               value={form.orderId}
               onChange={(value) =>
                 setForm((prev) => ({ ...prev, orderId: value }))

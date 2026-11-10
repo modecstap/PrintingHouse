@@ -23,3 +23,14 @@ export function toJsonInt(value) {
   }
   return value;
 }
+
+export function toJsonDecimal(value) {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^-?\d+(\.\d{1,2})?$/.test(trimmed)) {
+      return Number(trimmed);
+    }
+    return trimmed;
+  }
+  return value;
+}
