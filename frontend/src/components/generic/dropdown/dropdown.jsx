@@ -14,7 +14,9 @@ export function Dropdown({
       <label className={styles.label} htmlFor={id}>{label}:</label>
       <select
         id={id}
-        className={styles.input}
+        className={`${styles.input}${
+          value === "" || value == null ? ` ${styles.inputUnset}` : ""
+        }`}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}

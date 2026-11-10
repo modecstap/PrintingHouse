@@ -211,7 +211,7 @@ export default function BlockSection({
         existingKinds={existingKinds}
         onToggle={setOperationKindEnabled}
       />
-      <div>
+      <div className={styles.operations}>
         {sortOperations(block.operations).map((operation) => (
           <OperationFields
             key={operation.clientKey}

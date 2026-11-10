@@ -41,7 +41,7 @@ function emptyPrintOperation() {
     kind: "print",
     printerId: "",
     operatorId: "",
-    chroma: "ZERO_ZERO",
+    chroma: "",
   };
 }
 
@@ -51,7 +51,7 @@ function emptyLaminateOperation() {
     kind: "laminate",
     laminatorId: "",
     operatorId: "",
-    lamination: "DONT",
+    lamination: "",
     filmId: "",
     film: { name: "", price: "0", density: "0" },
   };
@@ -452,6 +452,10 @@ function isCoercibleIdField(value) {
   return raw !== "" && SIGNED_INT_STRING.test(raw);
 }
 
+function isNonEmptyStringField(value) {
+  return String(value ?? "").trim() !== "";
+}
+
 function isCoercibleMoneyField(value) {
   const raw = String(value ?? "").trim();
   return raw !== "" && DECIMAL_STRING.test(raw);
@@ -500,6 +504,11 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
       isCoercibleIdField(operation.operatorId),
       `${labelPrefix}Печатник`,
     );
+    pushWhenInvalid(
+      missing,
+      isNonEmptyStringField(operation.chroma),
+      `${labelPrefix}Цветность`,
+    );
     return;
   }
   if (operation.kind === "laminate") {
@@ -517,6 +526,11 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
       missing,
       isCoercibleIdField(operation.filmId),
       `${labelPrefix}Плёнка`,
+    );
+    pushWhenInvalid(
+      missing,
+      isNonEmptyStringField(operation.lamination),
+      `${labelPrefix}Кратность`,
     );
     return;
   }

@@ -94,6 +94,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             label="Цветность"
             value={operation.chroma}
             onChange={(v) => onChange({ ...operation, chroma: v })}
+            emptyOptionLabel="—"
             options={CHROMA_OPTIONS}
           />
         </div>
@@ -161,6 +162,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             label="Кратность"
             value={operation.lamination}
             onChange={(v) => onChange({ ...operation, lamination: v })}
+            emptyOptionLabel="—"
             options={LAMINATION_OPTIONS}
           />
           <Dropdown

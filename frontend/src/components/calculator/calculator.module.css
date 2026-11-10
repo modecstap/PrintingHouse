@@ -106,3 +106,9 @@
   bottom: var(--spacing-8);
   z-index: 100;
 }
+
+.operations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}

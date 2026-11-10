@@ -168,6 +168,7 @@ describe("calculatorFormMissingFieldLabels", () => {
     expect(missing).toContain("Ширина");
     expect(missing).toContain("Высота");
     expect(missing).toContain("Бумага");
+    expect(missing).toContain("Печать: Цветность");
   });
 
   it("should be empty for a fully filled sample form", () => {
@@ -226,7 +227,7 @@ describe("toOrderWrite", () => {
                 kind: "print",
                 printer_id: "",
                 operator_id: "",
-                chroma: "ZERO_ZERO",
+                chroma: "",
               },
               { kind: "cut", cutter_id: "", operator_id: "" },
             ],
