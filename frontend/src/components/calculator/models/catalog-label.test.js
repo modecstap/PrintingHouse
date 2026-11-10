@@ -109,18 +109,34 @@ describe("catalog labels", () => {
     expect(cutterLabel({ id: 8, max_stack: 40 })).toBe("№ 8, макс. стопа 40");
   });
 
-  it("should format sheet label with paper properties", () => {
+  it("should format sheet label with format name", () => {
     expect(
       sheetLabel({
         id: 1,
         paper: {
-          name: "Офсет",
-          density: 80,
+          name: "офисная",
+          density: 60,
           thickness: 1,
           price_per_kilo: "50",
         },
+        format: { name: "А3", width: 297, height: 420 },
       }),
-    ).toBe("Офсет, 80 г/м², 1 мм, 50.00 ₽/кг");
+    ).toBe("офисная - 60 - А3");
+  });
+
+  it("should format sheet label with width x height when format name is empty", () => {
+    expect(
+      sheetLabel({
+        id: 2,
+        paper: {
+          name: "офисная",
+          density: 120,
+          thickness: 1,
+          price_per_kilo: "50",
+        },
+        format: { name: "", width: 470, height: 360 },
+      }),
+    ).toBe("офисная - 120 - 470x360");
   });
 
   it("should parse a film and format its label", () => {

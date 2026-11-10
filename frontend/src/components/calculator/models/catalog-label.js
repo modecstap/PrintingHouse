@@ -118,9 +118,16 @@ export function toSheet(raw) {
   };
 }
 
+function sheetSizeLabel(format) {
+  if (format.name.trim() !== "") {
+    return format.name;
+  }
+  return `${format.width}x${format.height}`;
+}
+
 export function sheetLabel(sheet) {
-  const { paper } = sheet;
-  return `${paper.name}, ${paper.density} г/м², ${paper.thickness} мм, ${formatMoney(paper.price_per_kilo)}/кг`;
+  const { paper, format } = sheet;
+  return `${paper.name} - ${paper.density} - ${sheetSizeLabel(format)}`;
 }
 
 export function toFilm(raw) {
