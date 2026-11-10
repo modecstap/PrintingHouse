@@ -1,5 +1,6 @@
 import {
   calculatorFormMissingFieldLabels,
+  emptyAdditionalWork,
   emptyCalculatorForm,
 } from "./models/order";
 import AdditionalWorkSection from "./components/additional-work-section";
@@ -78,8 +79,24 @@ export default function Calculator({
             value={form.count}
             onChange={(v) => setForm({ ...form, count: v })}
           />
+          <div className={styles.addActions}>
+            <Button type="button" onClick={addBlock}>
+              + Блок
+            </Button>
+            <Button
+              type="button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  additionalWorks: [...form.additionalWorks, emptyAdditionalWork()],
+                })
+              }
+            >
+              + Работа
+            </Button>
+          </div>
       </div>
-      
+
       {form.blocks.map((block, index) => (
         <BlockSection
           key={block.clientKey}
@@ -91,10 +108,6 @@ export default function Calculator({
           onRemove={() => removeBlock(block.clientKey)}
         />
       ))}
-
-      <Button type="button" onClick={addBlock}>
-        + Блок
-      </Button>
 
       <AdditionalWorkSection
         works={form.additionalWorks}

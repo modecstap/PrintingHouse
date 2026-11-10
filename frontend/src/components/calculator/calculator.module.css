@@ -27,6 +27,12 @@
   padding: var(--spacing-2);
 }
 
+.addActions {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-4);
+}
+
 .calculatorBlock{
   display: flex;
   flex-direction: column;

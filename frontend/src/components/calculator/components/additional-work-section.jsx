@@ -1,4 +1,3 @@
-import { emptyAdditionalWork } from "../models/order";
 import Button from "../../generic/button/button";
 import { TextField } from "../../generic/text-field/text-field";
 import styles from "../calculator.module.css";
@@ -16,13 +15,8 @@ export default function AdditionalWorkSection({ works, onChange }) {
     onChange(works.filter((work) => work.clientKey !== clientKey));
   };
 
-  const addWork = () => {
-    onChange([...works, emptyAdditionalWork()]);
-  };
-
   return (
     <section className={styles.calculatorBlock}>
-      <h3>Доп. работы</h3>
       {works.map((work) => {
         const idPrefix = work.clientKey;
         return (
@@ -66,9 +60,6 @@ export default function AdditionalWorkSection({ works, onChange }) {
           </article>
         );
       })}
-      <Button type="button" onClick={addWork}>
-        + Работа
-      </Button>
     </section>
   );
 }
