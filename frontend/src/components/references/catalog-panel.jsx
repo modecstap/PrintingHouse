@@ -6,6 +6,7 @@ import {
   replaceCatalog,
 } from "./api/catalog";
 import Button from "../generic/button/button";
+import Table from "../generic/table/table";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
@@ -116,7 +117,7 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
       {listStatus === "error" && <div role="alert">{listError}</div>}
 
       {listStatus === "success" && (
-        <table className={styles.table}>
+        <Table>
           <thead>
             <tr>
               {def.columns.map((col, index) => (
@@ -150,7 +151,7 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
 
       <div className={styles.calculatorBlock}>

@@ -8,6 +8,7 @@ import {
 } from "./api/orders";
 import Button from "../generic/button/button";
 import pageStyles from "../generic/page/page.module.css";
+import Table from "../generic/table/table";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./orders.module.css";
 
@@ -98,7 +99,7 @@ export default function Orders({ catalogs, catalogLoadState }) {
       {listStatus === "error" && <div role="alert">{listError}</div>}
 
       {listStatus === "success" && (
-        <table className={styles.table}>
+        <Table>
           <thead>
             <tr>
               <th scope="col">ID</th>
@@ -121,7 +122,7 @@ export default function Orders({ catalogs, catalogLoadState }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
 
       {selectedId != null && (

@@ -8,6 +8,7 @@ import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import Button from "../generic/button/button";
 import pageStyles from "../generic/page/page.module.css";
+import Table from "../generic/table/table";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
@@ -57,7 +58,7 @@ export default function References({
       {listStatus === "error" && <div role="alert">{listError}</div>}
 
       {listStatus === "success" && (
-        <table className={styles.table}>
+        <Table>
           <thead>
             <tr>
               <th scope="col">Имя</th>
@@ -74,7 +75,7 @@ export default function References({
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
 
       <div className={styles.calculatorBlock}>
