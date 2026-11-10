@@ -7,7 +7,6 @@ export default function MissingFieldsView({ fields }) {
 
   return (
     <section>
-      <h2>Результаты</h2>
       <p className={styles.missingFieldsHeading}>Пропущено:</p>
       <ul className={styles.missingFieldsList}>
         {fields.map((label) => (

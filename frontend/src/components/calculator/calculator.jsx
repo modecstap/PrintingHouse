@@ -42,7 +42,8 @@ export default function Calculator({
 
   return (
     <div className={styles.page}>
-      <div>
+      <div className={styles.layout}>
+        <div className={styles.inputColumn}>
           <div className={styles.heading}>
             <h2>Калькулятор</h2>
             {referencesState.status === "success" &&
@@ -95,26 +96,26 @@ export default function Calculator({
               + Работа
             </Button>
           </div>
-      </div>
 
-      {form.blocks.map((block, index) => (
-        <BlockSection
-          key={block.clientKey}
-          block={block}
-          index={index}
-          soleBlock={form.blocks.length === 1}
-          catalogs={catalogState.catalogs}
-          onChange={(next) => updateBlock(block.clientKey, next)}
-          onRemove={() => removeBlock(block.clientKey)}
-        />
-      ))}
+          {form.blocks.map((block, index) => (
+            <BlockSection
+              key={block.clientKey}
+              block={block}
+              index={index}
+              soleBlock={form.blocks.length === 1}
+              catalogs={catalogState.catalogs}
+              onChange={(next) => updateBlock(block.clientKey, next)}
+              onRemove={() => removeBlock(block.clientKey)}
+            />
+          ))}
 
-      <AdditionalWorkSection
-        works={form.additionalWorks}
-        onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
-      />
-      
-      <div>
+          <AdditionalWorkSection
+            works={form.additionalWorks}
+            onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
+          />
+        </div>
+
+        <aside className={styles.outputColumn} aria-label="Результат расчёта">
           {!formReady ? (
             <MissingFieldsView fields={missingFields} />
           ) : (
@@ -138,7 +139,8 @@ export default function Calculator({
               {`Заказ сохранён: ${savedId}`}
             </div>
           )}
-        </div>
+        </aside>
+      </div>
     </div>
   );
 }
