@@ -12,19 +12,16 @@ function jsonResponse(data, status = 200) {
 
 describe("Auth", () => {
   const originalFetch = global.fetch;
-  let alertSpy;
 
   beforeEach(() => {
     if (!global.structuredClone) {
       global.structuredClone = (value) => JSON.parse(JSON.stringify(value));
     }
-    alertSpy = jest.spyOn(window, "alert").mockImplementation(() => {});
     localStorage.clear();
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
-    alertSpy.mockRestore();
     localStorage.clear();
   });
 
@@ -52,7 +49,7 @@ describe("Auth", () => {
     await waitFor(() => {
       expect(localStorage.getItem("access_token")).toBe("jwt-abc");
     });
-    expect(alertSpy).toHaveBeenCalledWith("ВХОД ВЫПОЛНЕН: ТОКЕН СОХРАНЁН");
+    expect(screen.getByText("Вход выполнен: токен сохранён")).toBeInTheDocument();
   });
 
   it("should remove the access token when the user logs out", async () => {
@@ -62,6 +59,6 @@ describe("Auth", () => {
     await userEvent.click(screen.getByRole("button", { name: "Выйти" }));
 
     expect(localStorage.getItem("access_token")).toBeNull();
-    expect(alertSpy).toHaveBeenCalledWith("ВЫХОД ВЫПОЛНЕН");
+    expect(screen.getByText("Выход выполнен")).toBeInTheDocument();
   });
 });

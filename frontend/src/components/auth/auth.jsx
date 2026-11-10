@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAsyncAction } from "../../hooks/useAsyncAction";
+import { requestJson } from "../../lib/api";
 import FlexForm from "../generic/flex-form/flex-form";
 import Button from "../generic/button/button";
 
@@ -19,7 +19,9 @@ const fields = [
 ];
 
 const Auth = () => {
-  const { loading, error, successMsg, execute } = useAsyncAction();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -28,25 +30,34 @@ const Auth = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccessMsg(null);
 
-    const res = await execute(
-      "/auth/token",
-      {
-        username: formData.username,
-        password: formData.password,
-      },
-      { method: "POST" }
-    );
+    try {
+      const res = await requestJson("/auth/token", {
+        method: "POST",
+        body: {
+          username: formData.username,
+          password: formData.password,
+        },
+      });
 
-    if (res?.access_token) {
-      localStorage.setItem("access_token", res.access_token);
-      alert("ВХОД ВЫПОЛНЕН: ТОКЕН СОХРАНЁН");
+      if (res?.access_token) {
+        localStorage.setItem("access_token", res.access_token);
+        setSuccessMsg("Вход выполнен: токен сохранён");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Произошла неизвестная ошибка");
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
-    alert("ВЫХОД ВЫПОЛНЕН");
+    setError(null);
+    setSuccessMsg("Выход выполнен");
   };
 
   return (
