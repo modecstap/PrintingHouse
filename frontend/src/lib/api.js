@@ -1,4 +1,4 @@
-import { BackendIP } from "../constants/BackendIP";
+export const BackendIP = "";
 
 let unauthorizedHandler = null;
 
