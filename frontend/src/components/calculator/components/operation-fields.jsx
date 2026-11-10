@@ -80,7 +80,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
           />
           <Dropdown
             id={`${idPrefix}-press-operator`}
-            label="Печатник"
+            label="Печать"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
@@ -147,7 +147,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
           />
           <Dropdown
             id={`${idPrefix}-laminate-operator`}
-            label="Оператор"
+            label="Ламинация"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
@@ -158,7 +158,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
           />
           <Dropdown
             id={`${idPrefix}-lamination`}
-            label="Ламинация"
+            label="Кратность"
             value={operation.lamination}
             onChange={(v) => onChange({ ...operation, lamination: v })}
             options={LAMINATION_OPTIONS}
@@ -200,7 +200,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
           />
           <Dropdown
             id={`${idPrefix}-cut-operator`}
-            label="Оператор"
+            label="Рез"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
@@ -224,7 +224,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
         <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-die-cut-operator`}
-            label="Оператор"
+            label="Высечка"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"

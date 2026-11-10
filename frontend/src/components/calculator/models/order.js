@@ -74,6 +74,27 @@ function emptyDieCutOperation() {
   };
 }
 
+const BLOCK_OPERATION_KIND_ORDER = ["print", "laminate", "cut", "die_cut"];
+
+function sortBlockOperations(operations) {
+  return [...operations].sort(
+    (a, b) =>
+      BLOCK_OPERATION_KIND_ORDER.indexOf(a.kind) -
+      BLOCK_OPERATION_KIND_ORDER.indexOf(b.kind),
+  );
+}
+
+function ensureMandatoryBlockOperations(operations) {
+  const next = [...operations];
+  if (!next.some((op) => op.kind === "print")) {
+    next.push(emptyPrintOperation());
+  }
+  if (!next.some((op) => op.kind === "cut")) {
+    next.push(emptyCutOperation());
+  }
+  return sortBlockOperations(next);
+}
+
 export function emptyBlock() {
   return {
     clientKey: newClientKey(),
@@ -90,7 +111,7 @@ export function emptyBlock() {
     sheetFormat: { name: "", width: "0", height: "0" },
     bleeds: "0",
     spacing: "0",
-    operations: [],
+    operations: [emptyPrintOperation(), emptyCutOperation()],
   };
 }
 
@@ -353,7 +374,7 @@ export function applyBlockCatalogDefaults(block, catalogs) {
   }
   return {
     ...next,
-    operations: next.operations.map((operation) =>
+    operations: ensureMandatoryBlockOperations(next.operations).map((operation) =>
       applyOperationCatalogDefaults(operation, catalogs),
     ),
   };

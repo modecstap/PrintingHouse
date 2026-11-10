@@ -155,7 +155,7 @@ describe("emptyCalculatorForm", () => {
     expect(block.sheetFormat).toEqual({ name: "", width: "0", height: "0" });
     expect(block.bleeds).toBe("0");
     expect(block.spacing).toBe("0");
-    expect(block.operations).toEqual([]);
+    expect(block.operations.map((op) => op.kind)).toEqual(["print", "cut"]);
     expect(typeof block.clientKey).toBe("string");
     expect(block.clientKey.length).toBeGreaterThan(0);
   });
@@ -221,7 +221,15 @@ describe("toOrderWrite", () => {
               bleeds: 0,
               spacing: 0,
             },
-            operations: [],
+            operations: [
+              {
+                kind: "print",
+                printer_id: "",
+                operator_id: "",
+                chroma: "ZERO_ZERO",
+              },
+              { kind: "cut", cutter_id: "", operator_id: "" },
+            ],
           },
         ],
         operations: [],
@@ -231,13 +239,8 @@ describe("toOrderWrite", () => {
 
   it("should send an empty printer id as an empty string", () => {
     const form = emptyCalculatorForm();
-    form.blocks[0].operations.push({
-      clientKey: "p",
-      kind: "print",
-      printerId: "",
-      operatorId: "",
-      chroma: "ZERO_ZERO",
-    });
+    const printOp = form.blocks[0].operations.find((op) => op.kind === "print");
+    printOp.printerId = "";
     const body = toOrderWrite(form);
     expect(body.product.blocks[0].operations[0].printer_id).toBe("");
   });

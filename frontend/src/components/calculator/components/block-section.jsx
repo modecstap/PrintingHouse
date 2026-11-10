@@ -1,9 +1,7 @@
 import {
   applyOperationCatalogDefaults,
-  emptyCutOperation,
   emptyDieCutOperation,
   emptyLaminateOperation,
-  emptyPrintOperation,
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
 import OperationFields from "./operation-fields";
@@ -42,14 +40,12 @@ function sheetFormatFromSheet(sheet) {
   };
 }
 
-const OPERATION_KINDS = [
-  { kind: "print", label: "Печать", factory: emptyPrintOperation },
+const TOGGLE_OPERATION_KINDS = [
   { kind: "laminate", label: "Ламинация", factory: emptyLaminateOperation },
-  { kind: "cut", label: "Рез", factory: emptyCutOperation },
   { kind: "die_cut", label: "Высечка", factory: emptyDieCutOperation },
 ];
 
-const KIND_ORDER = OPERATION_KINDS.map((row) => row.kind);
+const KIND_ORDER = ["print", "laminate", "cut", "die_cut"];
 
 function sortOperations(operations) {
   return [...operations].sort(
@@ -232,7 +228,7 @@ export default function BlockSection({
 function OperationKindToggles({ idPrefix, existingKinds, onToggle }) {
   return (
     <div className={styles.operationKinds}>
-      {OPERATION_KINDS.map(({ kind, label, factory }) => {
+      {TOGGLE_OPERATION_KINDS.map(({ kind, label, factory }) => {
         const inputId = `${idPrefix}-kind-${kind}`;
         return (
           <Checkbox

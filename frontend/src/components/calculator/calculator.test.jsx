@@ -14,6 +14,8 @@ const PRINTER = {
 
 const PRESS_OPERATOR = { id: 4, salary_by_operation: "5" };
 const LAMINATOR_OPERATOR = { id: 5, salary_by_operation: "6" };
+const CUTTER = { id: 2, max_stack: 40 };
+const CUTTER_OPERATOR = { id: 6, salary_by_operation: "7" };
 
 const QUOTE_REPORT_RAW = {
   product_price: "12.50",
@@ -34,10 +36,10 @@ function stubCatalogFetch(overrides = {}) {
   const catalogs = {
     printers: [PRINTER],
     laminators: [],
-    cutters: [],
+    cutters: [CUTTER],
     pressOperators: [PRESS_OPERATOR],
     laminatorOperators: [LAMINATOR_OPERATOR],
-    cutterOperators: [],
+    cutterOperators: [CUTTER_OPERATOR],
     dieCutOperators: [],
     sheets: [
       {
@@ -109,6 +111,27 @@ const SAMPLE_PRODUCT = {
 
 const ORDER_DTO = { id: 42, count: 100, product: SAMPLE_PRODUCT };
 
+async function fillMandatoryPrintAndCut() {
+  const printRegion = screen.getByRole("region", { name: /Печать/i });
+  await userEvent.selectOptions(
+    within(printRegion).getByLabelText("Принтер"),
+    "1",
+  );
+  await userEvent.selectOptions(
+    within(printRegion).getByLabelText("Печатник"),
+    "4",
+  );
+  const cutRegion = screen.getByRole("region", { name: /^Рез$/i });
+  await userEvent.selectOptions(
+    within(cutRegion).getByLabelText("Резак"),
+    "2",
+  );
+  await userEvent.selectOptions(
+    within(cutRegion).getByLabelText("Оператор"),
+    "6",
+  );
+}
+
 async function waitForCatalogs(fetchMock = global.fetch) {
   await waitFor(() => {
     const catalogUrls = [
@@ -171,17 +194,7 @@ describe("Calculator", () => {
     await userEvent.type(screen.getByLabelText("Ширина"), "90");
     await userEvent.clear(screen.getByLabelText("Высота"));
     await userEvent.type(screen.getByLabelText("Высота"), "50");
-    await userEvent.click(screen.getByRole("checkbox", { name: "Печать" }));
-
-    const operationRegion = screen.getByRole("region", { name: /Печать/i });
-    await userEvent.selectOptions(
-      within(operationRegion).getByLabelText("Принтер"),
-      "1",
-    );
-    await userEvent.selectOptions(
-      within(operationRegion).getByLabelText("Печатник"),
-      "4",
-    );
+    await fillMandatoryPrintAndCut();
 
     await waitFor(() => {
       expect(screen.getByRole("status")).toHaveTextContent("Счёт...");
@@ -229,7 +242,11 @@ describe("Calculator", () => {
     render(<Calculator />);
     await waitForCatalogs();
 
-    await userEvent.click(screen.getByRole("checkbox", { name: "Печать" }));
+    await waitFor(() => {
+      const printRegion = screen.getByRole("region", { name: /Печать/i });
+      expect(within(printRegion).getByLabelText("Принтер")).toHaveValue("1");
+      expect(within(printRegion).getByLabelText("Печатник")).toHaveValue("4");
+    });
 
     const operatorSelect = within(
       screen.getByRole("region", { name: /Печать/i }),
@@ -274,6 +291,7 @@ describe("Calculator", () => {
     await userEvent.type(screen.getByLabelText("Ширина"), "90");
     await userEvent.clear(screen.getByLabelText("Высота"));
     await userEvent.type(screen.getByLabelText("Высота"), "50");
+    await fillMandatoryPrintAndCut();
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
