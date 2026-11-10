@@ -69,7 +69,6 @@ export default function OperationFields({
     return (
       <article
         className={styles.operationCard}
-        aria-label={heading}
         role="region"
       >
         <SectionHeading heading={heading} onRemove={onRemove} />
@@ -171,9 +170,6 @@ export default function OperationFields({
             onChange={(v) => onChange({ ...operation, lamination: v })}
             options={LAMINATION_OPTIONS}
           />
-        </div>
-        <p className={styles.legend}>Плёнка</p>
-        <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-film`}
             label="Плёнка"
@@ -257,7 +253,6 @@ export default function OperationFields({
 function SectionHeading({ heading, onRemove }) {
   return (
     <div className={styles.operationHeading}>
-      <h4>{heading}</h4>
       <Button type="button" onClick={onRemove}>
         Удалить
       </Button>

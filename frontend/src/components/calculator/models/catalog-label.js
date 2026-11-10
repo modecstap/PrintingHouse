@@ -60,19 +60,19 @@ export function toOperator(raw) {
 }
 
 export function printerLabel(printer) {
-  return `№ ${printer.id}, запуск ${formatMoney(printer.startup)}, C ${formatMoney(printer.cyan)}, M ${formatMoney(printer.magenta)}, Y ${formatMoney(printer.yellow)}, K ${formatMoney(printer.black)}`;
+  return `№ ${printer.id}`;
 }
 
 export function laminatorLabel(laminator) {
-  return `№ ${laminator.id}, запуск ${formatMoney(laminator.startup)}`;
+  return `№ ${laminator.id}`;
 }
 
 export function cutterLabel(cutter) {
-  return `№ ${cutter.id}, макс. стопа ${cutter.max_stack}`;
+  return `№ ${cutter.id}`;
 }
 
 export function operatorLabel(operator) {
-  return `№ ${operator.id}, зарплата ${formatMoney(operator.salary_by_operation)}`;
+  return `№ ${operator.id}, ${formatMoney(operator.salary_by_operation)}`;
 }
 
 export function toSheet(raw) {

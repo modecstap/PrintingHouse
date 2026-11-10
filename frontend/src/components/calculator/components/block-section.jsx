@@ -115,14 +115,8 @@ export default function BlockSection({
 
   return (
     <section className={styles.calculatorBlock}>
-      <div className={styles.operationHeading}>
+      <div className={styles.heading}>
         <h3 className={styles.blockHeading}>{`Блок ${index + 1}`}</h3>
-        <Button type="button" onClick={onRemove} disabled={soleBlock}>
-          Удалить
-        </Button>
-      </div>
-
-      <div className={styles.fieldRow}>
         <TextField
           id={`${idPrefix}-block-count`}
           label="Копии"
@@ -132,61 +126,60 @@ export default function BlockSection({
         />
         <TextField
           id={`${idPrefix}-markup`}
-          label="Наценка (%)"
+          label="Наценка"
           value={block.markup}
           type="number"
           onChange={(v) => update({ markup: v })}
         />
+        <Button type="button" onClick={onRemove} disabled={soleBlock}>
+          Удалить
+        </Button>
       </div>
 
-      <p className={styles.legend}>Формат</p>
-      <div className={styles.fieldRow}>
-        <TextField
-          id={`${idPrefix}-target-width`}
-          label="Ширина (мм)"
-          value={block.target.width}
-          type="number"
-          onChange={(v) => update({ target: { ...block.target, width: v } })}
-        />
-        <TextField
-          id={`${idPrefix}-target-height`}
-          label="Высота (мм)"
-          value={block.target.height}
-          type="number"
-          onChange={(v) => update({ target: { ...block.target, height: v } })}
-        />
-      </div>
-
-      <p className={styles.legend}>Бумага</p>
-      <div className={styles.fieldRow}>
-        <Dropdown
-          id={`${idPrefix}-paper-sheet`}
-          label="Бумага"
-          value={paperSheetValue}
-          onChange={selectPaperSheet}
-          emptyOptionLabel="—"
-          options={catalogs.sheets.map((sheet) => ({
-            value: String(sheet.id),
-            label: sheetLabel(sheet),
-          }))}
-        />
-      </div>
-
-      <div className={styles.fieldRow}>
-        <TextField
-          id={`${idPrefix}-bleeds`}
-          label="Вылеты (мм)"
-          value={block.bleeds}
-          type="number"
-          onChange={(v) => update({ bleeds: v })}
-        />
-        <TextField
-          id={`${idPrefix}-spacing`}
-          label="Поля листа (мм)"
-          value={block.spacing}
-          type="number"
-          onChange={(v) => update({ spacing: v })}
-        />
+      <div className={styles.blockContent}>
+        <div className={styles.left}>
+          <TextField
+            id={`${idPrefix}-target-width`}
+            label="Ширина"
+            value={block.target.width}
+            type="number"
+            onChange={(v) => update({ target: { ...block.target, width: v } })}
+          />
+          <TextField
+            id={`${idPrefix}-target-height`}
+            label="Высота"
+            value={block.target.height}
+            type="number"
+            onChange={(v) => update({ target: { ...block.target, height: v } })}
+          />
+        </div>
+        <div className={styles.right}>
+          <Dropdown
+            id={`${idPrefix}-paper-sheet`}
+            label="Бумага"
+            value={paperSheetValue}
+            onChange={selectPaperSheet}
+            emptyOptionLabel="—"
+            options={catalogs.sheets.map((sheet) => ({
+              value: String(sheet.id),
+                label: sheetLabel(sheet),
+              }))}
+          />
+          <TextField
+            id={`${idPrefix}-bleeds`}
+            label="Вылеты"
+            value={block.bleeds}
+            type="number"
+            onChange={(v) => update({ bleeds: v })}
+          />
+          <TextField
+            id={`${idPrefix}-spacing`}
+            label="Поля"
+            value={block.spacing}
+            type="number"
+            onChange={(v) => update({ spacing: v })}
+          />
+        </div>
       </div>
       
       <EdgeButtonRow
@@ -220,27 +213,35 @@ function EdgeButtonRow({
   onDieCut,
 }) {
   return (
-    <div className={styles.fieldRow}>
-      {!existingKinds.has("print") ? (
-        <Button type="button" onClick={onPrint}>
-          + Печать
-        </Button>
-      ) : null}
-      {!existingKinds.has("laminate") ? (
-        <Button type="button" onClick={onLaminate}>
-          + Ламинация
-        </Button>
-      ) : null}
-      {!existingKinds.has("cut") ? (
-        <Button type="button" onClick={onCut}>
-          + Рез
-        </Button>
-      ) : null}
-      {!existingKinds.has("die_cut") ? (
-        <Button type="button" onClick={onDieCut}>
-          + Высечка
-        </Button>
-      ) : null}
+    <div className={styles.edgeActions}>
+      <div className={styles.edgePrint}>
+        {!existingKinds.has("print") ? (
+          <Button type="button" onClick={onPrint}>
+            + Печать
+          </Button>
+        ) : null}
+      </div>
+      <div className={styles.edgeLaminate}>
+        {!existingKinds.has("laminate") ? (
+          <Button type="button" onClick={onLaminate}>
+            + Ламинация
+          </Button>
+        ) : null}
+      </div>
+      <div className={styles.edgeCut}>
+        {!existingKinds.has("cut") ? (
+          <Button type="button" onClick={onCut}>
+            + Рез
+          </Button>
+        ) : null}
+      </div>
+      <div className={styles.edgeDie}>
+        {!existingKinds.has("die_cut") ? (
+          <Button type="button" onClick={onDieCut}>
+            + Высечка
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

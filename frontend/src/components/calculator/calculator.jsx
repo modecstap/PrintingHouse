@@ -35,37 +35,36 @@ export default function Calculator({
 
   return (
     <div className={styles.page}>
-      <div className={styles.fieldRow}>
+      <div className={styles.heading}>
         <h2 className={styles.pageTitle}>Калькулятор</h2>
+        {referencesState.status === "success" &&
+          referencesState.references.length > 0 && (
+            <Dropdown
+              id="calculator-preset"
+              label="Пресет"
+              value={selectedPresetId}
+              onChange={(v) =>
+                handlePresetChange({ target: { value: v } })
+              }
+              disabled={actionBusy || presetBusy}
+              emptyOptionLabel="Нет"
+              options={referencesState.references.map((row) => ({
+                value: row.order_id,
+                label: row.description
+                  ? `${row.name} (${row.description})`
+                  : row.name,
+              }))}
+            />
+          )}
+
+        <NumberField
+          id="order-count"
+          label="Тираж"
+          value={form.count}
+          onChange={(v) => setForm({ ...form, count: v })}
+        />
       </div>
-
-      {referencesState.status === "success" &&
-        referencesState.references.length > 0 && (
-          <Dropdown
-            id="calculator-preset"
-            label="Пресет"
-            value={selectedPresetId}
-            onChange={(v) =>
-              handlePresetChange({ target: { value: v } })
-            }
-            disabled={actionBusy || presetBusy}
-            emptyOptionLabel="Нет"
-            options={referencesState.references.map((row) => ({
-              value: row.order_id,
-              label: row.description
-                ? `${row.name} (${row.description})`
-                : row.name,
-            }))}
-          />
-        )}
-
-      <NumberField
-        id="order-count"
-        label="Тираж"
-        value={form.count}
-        onChange={(v) => setForm({ ...form, count: v })}
-      />
-
+      
       {form.blocks.map((block, index) => (
         <BlockSection
           key={block.clientKey}

@@ -11,7 +11,7 @@ export function Dropdown({
 }) {
   return (
     <div className={styles.field}>
-      <label htmlFor={id}>{label}</label>
+      <label className={styles.label} htmlFor={id}>{label}</label>
       <select
         id={id}
         className={styles.input}

@@ -36,7 +36,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
                 Удалить
               </Button>
             </div>
-            <div className={styles.fieldRow}>
+            <div className={styles.fieldRow4}>
               <TextField
                 id={`${idPrefix}-name`}
                 label="Название"
