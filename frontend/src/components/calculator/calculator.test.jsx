@@ -155,7 +155,7 @@ describe("Calculator", () => {
 
     await userEvent.clear(screen.getByLabelText("Тираж"));
     await userEvent.type(screen.getByLabelText("Тираж"), "10");
-    await userEvent.click(screen.getByRole("button", { name: "+ Печать" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: "Печать" }));
 
     const operationRegion = screen.getByRole("region", { name: /Печать/i });
     await userEvent.selectOptions(
@@ -213,7 +213,7 @@ describe("Calculator", () => {
     render(<Calculator />);
     await waitForCatalogs();
 
-    await userEvent.click(screen.getByRole("button", { name: "+ Печать" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: "Печать" }));
 
     const operatorSelect = within(
       screen.getByRole("region", { name: /Печать/i }),

@@ -5,7 +5,6 @@ import {
   operatorLabel,
   printerLabel,
 } from "../models/catalog-label";
-import Button from "../../generic/button/button";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import styles from "../calculator.module.css";
 
@@ -56,12 +55,7 @@ function resolveFilmId(filmId, film, films) {
   return match ? String(match.id) : "";
 }
 
-export default function OperationFields({
-  operation,
-  catalogs,
-  onChange,
-  onRemove,
-}) {
+export default function OperationFields({ operation, catalogs, onChange }) {
   const heading = KIND_HEADING[operation.kind] ?? operation.kind;
   const idPrefix = `${operation.clientKey}`;
 
@@ -70,8 +64,8 @@ export default function OperationFields({
       <article
         className={styles.operationCard}
         role="region"
+        aria-label={heading}
       >
-        <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-printer`}
@@ -139,7 +133,6 @@ export default function OperationFields({
         aria-label={heading}
         role="region"
       >
-        <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-laminator`}
@@ -193,7 +186,6 @@ export default function OperationFields({
         aria-label={heading}
         role="region"
       >
-        <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-cutter`}
@@ -229,7 +221,6 @@ export default function OperationFields({
         aria-label={heading}
         role="region"
       >
-        <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
           <Dropdown
             id={`${idPrefix}-die-cut-operator`}
@@ -248,14 +239,4 @@ export default function OperationFields({
   }
 
   return null;
-}
-
-function SectionHeading({ heading, onRemove }) {
-  return (
-    <div className={styles.operationHeading}>
-      <Button type="button" onClick={onRemove}>
-        Удалить
-      </Button>
-    </div>
-  );
 }

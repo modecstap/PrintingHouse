@@ -9,6 +9,7 @@ import OperationFields from "./operation-fields";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import Button from "../../generic/button/button";
 import { TextField } from "../../generic/text-field/text-field";
+import { Checkbox } from "../../generic/checkbox/checkbox";
 import styles from "../calculator.module.css";
 
 function emptyPaperFields() {
@@ -38,6 +39,21 @@ function sheetFormatFromSheet(sheet) {
     width: String(sheet.format.width),
     height: String(sheet.format.height),
   };
+}
+
+const OPERATION_KINDS = [
+  { kind: "print", label: "Печать", factory: emptyPrintOperation },
+  { kind: "laminate", label: "Ламинация", factory: emptyLaminateOperation },
+  { kind: "cut", label: "Рез", factory: emptyCutOperation },
+  { kind: "die_cut", label: "Высечка", factory: emptyDieCutOperation },
+];
+
+const KIND_ORDER = OPERATION_KINDS.map((row) => row.kind);
+
+function sortOperations(operations) {
+  return [...operations].sort(
+    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
+  );
 }
 
 function resolvePaperSheetId(paperSheetId, paper, sheets) {
@@ -74,14 +90,19 @@ export default function BlockSection({
     });
   };
 
-  const removeOperation = (clientKey) => {
+  const setOperationKindEnabled = (kind, factory, enabled) => {
+    if (enabled) {
+      if (block.operations.some((op) => op.kind === kind)) {
+        return;
+      }
+      update({
+        operations: sortOperations([...block.operations, factory()]),
+      });
+      return;
+    }
     update({
-      operations: block.operations.filter((op) => op.clientKey !== clientKey),
+      operations: block.operations.filter((op) => op.kind !== kind),
     });
-  };
-
-  const addOperation = (factory) => {
-    update({ operations: [...block.operations, factory()] });
   };
 
   const selectPaperSheet = (sheetId) => {
@@ -182,66 +203,40 @@ export default function BlockSection({
         </div>
       </div>
       
-      <EdgeButtonRow
+      <OperationKindToggles
+        idPrefix={idPrefix}
         existingKinds={existingKinds}
-        onPrint={() => addOperation(emptyPrintOperation)}
-        onLaminate={() => addOperation(emptyLaminateOperation)}
-        onCut={() => addOperation(emptyCutOperation)}
-        onDieCut={() => addOperation(emptyDieCutOperation)}
+        onToggle={setOperationKindEnabled}
       />
-
-      {block.operations.map((operation) => (
-        <OperationFields
-          key={operation.clientKey}
-          operation={operation}
-          catalogs={catalogs}
-          onChange={(next) => updateOperation(operation.clientKey, next)}
-          onRemove={() => removeOperation(operation.clientKey)}
-        />
-      ))}
-
-      
+      <div>
+        {sortOperations(block.operations).map((operation) => (
+          <OperationFields
+            key={operation.clientKey}
+            operation={operation}
+            catalogs={catalogs}
+            onChange={(next) => updateOperation(operation.clientKey, next)}
+          />
+        ))}
+      </div>
     </section>
   );
 }
 
-function EdgeButtonRow({
-  existingKinds,
-  onPrint,
-  onLaminate,
-  onCut,
-  onDieCut,
-}) {
+function OperationKindToggles({ idPrefix, existingKinds, onToggle }) {
   return (
-    <div className={styles.edgeActions}>
-      <div className={styles.edgePrint}>
-        {!existingKinds.has("print") ? (
-          <Button type="button" onClick={onPrint}>
-            + Печать
-          </Button>
-        ) : null}
-      </div>
-      <div className={styles.edgeLaminate}>
-        {!existingKinds.has("laminate") ? (
-          <Button type="button" onClick={onLaminate}>
-            + Ламинация
-          </Button>
-        ) : null}
-      </div>
-      <div className={styles.edgeCut}>
-        {!existingKinds.has("cut") ? (
-          <Button type="button" onClick={onCut}>
-            + Рез
-          </Button>
-        ) : null}
-      </div>
-      <div className={styles.edgeDie}>
-        {!existingKinds.has("die_cut") ? (
-          <Button type="button" onClick={onDieCut}>
-            + Высечка
-          </Button>
-        ) : null}
-      </div>
+    <div className={styles.operationKinds}>
+      {OPERATION_KINDS.map(({ kind, label, factory }) => {
+        const inputId = `${idPrefix}-kind-${kind}`;
+        return (
+          <Checkbox
+            key={kind}
+            id={inputId}
+            label={label}
+            checked={existingKinds.has(kind)}
+            onChange={(next) => onToggle(kind, factory, next)}
+          />
+        );
+      })}
     </div>
   );
 }

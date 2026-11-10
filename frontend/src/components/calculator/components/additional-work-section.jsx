@@ -27,8 +27,13 @@ export default function AdditionalWorkSection({ works, onChange }) {
         const idPrefix = work.clientKey;
         return (
           <article key={work.clientKey} className={styles.operationCard}>
-            <div className={styles.operationHeading}>
-              <span>{work.name || "Работа"}</span>
+            <div className={styles.heading}>
+              <TextField
+                id={`${idPrefix}-name`}
+                label="Работа"
+                value={work.name}
+                onChange={(v) => updateWork(work.clientKey, { name: v })}
+              />
               <Button
                 type="button"
                 onClick={() => removeWork(work.clientKey)}
@@ -36,13 +41,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
                 Удалить
               </Button>
             </div>
-            <div className={styles.fieldRow4}>
-              <TextField
-                id={`${idPrefix}-name`}
-                label="Название"
-                value={work.name}
-                onChange={(v) => updateWork(work.clientKey, { name: v })}
-              />
+            <div className={styles.fieldRow}>
               <TextField
                 id={`${idPrefix}-price`}
                 label="Стоимость"

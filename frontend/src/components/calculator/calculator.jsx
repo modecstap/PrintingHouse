@@ -36,7 +36,7 @@ export default function Calculator({
   return (
     <div className={styles.page}>
       <div className={styles.heading}>
-        <h2 className={styles.pageTitle}>Калькулятор</h2>
+        <h2>Калькулятор</h2>
         {referencesState.status === "success" &&
           referencesState.references.length > 0 && (
             <Dropdown
@@ -56,14 +56,14 @@ export default function Calculator({
               }))}
             />
           )}
+      </div>
 
-        <NumberField
+      <NumberField
           id="order-count"
           label="Тираж"
           value={form.count}
           onChange={(v) => setForm({ ...form, count: v })}
         />
-      </div>
       
       {form.blocks.map((block, index) => (
         <BlockSection

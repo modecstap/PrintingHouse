@@ -17,23 +17,34 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-3);
   background: var(--bg-highlight);
+  padding: var(--spacing-2);
 }
 
-.edgeActions {
+.calculatorBlock{
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--spacing-6);
 }
 
 .blockContent {
-  display: flex;
-  justify-content: space-between;
+  width: 100%;
+  display: grid;
+  grid-column-gap: var(--spacing-8);
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .fieldRow {
   width: 100%;
   display: grid;
-  gap: var(--spacing-8);
+  grid-column-gap: var(--spacing-8);
+  grid-row-gap: var(--spacing-2);
   grid-template-columns: 1fr 1fr 1fr;
+}
+
+.operationKinds {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--spacing-4);
 }

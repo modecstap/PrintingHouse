@@ -1,0 +1,40 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.labelText {
+  text-decoration: none;
+}
+
+.root:has(.input:checked) .labelText {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.root:has(.input:disabled) {
+  cursor: not-allowed;
+  color: var(--text-contrast);
+}
+
+.root:has(.input:focus-visible) .labelText {
+  outline: 1px solid var(--text-color);
+  outline-offset: 2px;
+}
