@@ -41,35 +41,44 @@ export default function Calculator({
 
   return (
     <div className={styles.page}>
-      <div className={styles.heading}>
-        <h2>Калькулятор</h2>
-        {referencesState.status === "success" &&
-          referencesState.references.length > 0 && (
-            <Dropdown
-              id="calculator-preset"
-              label="Пресет"
-              value={selectedPresetId}
-              onChange={(v) =>
-                handlePresetChange({ target: { value: v } })
-              }
+      <div>
+          <div className={styles.heading}>
+            <h2>Калькулятор</h2>
+            {referencesState.status === "success" &&
+              referencesState.references.length > 0 && (
+              <Dropdown
+                id="calculator-preset"
+                label="Пресет"
+                value={selectedPresetId}
+                onChange={(v) =>
+                  handlePresetChange({ target: { value: v } })
+                }
+                disabled={actionBusy || presetBusy}
+                emptyOptionLabel="Нет"
+                options={referencesState.references.map((row) => ({
+                  value: row.order_id,
+                  label: row.description
+                    ? `${row.name} (${row.description})`
+                    : row.name,
+                }))}
+              />
+            )}
+            <Button
+              type="button"
+              onClick={handleSave}
               disabled={actionBusy || presetBusy}
-              emptyOptionLabel="Нет"
-              options={referencesState.references.map((row) => ({
-                value: row.order_id,
-                label: row.description
-                  ? `${row.name} (${row.description})`
-                  : row.name,
-              }))}
-            />
-          )}
-      </div>
+            >
+              Сохранить
+            </Button>
+          </div>
 
-      <NumberField
-          id="order-count"
-          label="Тираж"
-          value={form.count}
-          onChange={(v) => setForm({ ...form, count: v })}
-        />
+          <NumberField
+            id="order-count"
+            label="Тираж"
+            value={form.count}
+            onChange={(v) => setForm({ ...form, count: v })}
+          />
+      </div>
       
       {form.blocks.map((block, index) => (
         <BlockSection
@@ -91,40 +100,32 @@ export default function Calculator({
         works={form.additionalWorks}
         onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
       />
+      
+      <div>
+          {!formReady ? (
+            <MissingFieldsView fields={missingFields} />
+          ) : (
+            <ReportView report={report} />
+          )}
 
-      {!formReady ? (
-        <MissingFieldsView fields={missingFields} />
-      ) : (
-        <ReportView report={report} />
-      )}
+          {formReady && quoteState.status === "loading" && (
+            <div className={styles.statusMessage} role="status">
+              Счёт...
+            </div>
+          )}
 
-      {formReady && quoteState.status === "loading" && (
-        <div className={styles.statusMessage} role="status">
-          Счёт...
+          {actionError && (
+            <div className={styles.errorMessage} role="alert">
+              {actionError}
+            </div>
+          )}
+
+          {savedId !== null && (
+            <div className={styles.statusMessage} role="status">
+              {`Заказ сохранён: ${savedId}`}
+            </div>
+          )}
         </div>
-      )}
-
-      <div className={styles.buttonRow}>
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={actionBusy || presetBusy}
-        >
-          Сохранить
-        </Button>
-      </div>
-
-      {actionError && (
-        <div className={styles.errorMessage} role="alert">
-          {actionError}
-        </div>
-      )}
-
-      {savedId !== null && (
-        <div className={styles.statusMessage} role="status">
-          {`Заказ сохранён: ${savedId}`}
-        </div>
-      )}
     </div>
   );
 }

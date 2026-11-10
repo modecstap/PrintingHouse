@@ -13,6 +13,12 @@
   min-height: 100%;
 }
 
+.toper{
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-4);
+}
+
 .heading {
   display: flex;
   justify-content: space-between;
@@ -56,4 +62,9 @@
 .missingFieldsList {
   margin: var(--spacing-2) 0 0;
   padding-left: var(--spacing-6);
+}
+
+.reportTable{
+  width: 100%;
+  text-align: left;
 }

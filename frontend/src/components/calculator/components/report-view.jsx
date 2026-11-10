@@ -8,7 +8,6 @@ export default function ReportView({ report }) {
 
   return (
     <section>
-      <h2>Результаты</h2>
       <table className={styles.reportTable}>
         <tbody>
           <tr>
