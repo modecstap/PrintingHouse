@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   calculatorFormMissingFieldLabels,
   emptyAdditionalWork,
@@ -39,6 +40,7 @@ export default function Calculator({
 
   const missingFields = calculatorFormMissingFieldLabels(form);
   const formReady = missingFields.length === 0;
+  const [profitHidden, setProfitHidden] = useState(false);
 
   return (
     <div className={styles.page}>
@@ -104,6 +106,7 @@ export default function Calculator({
               index={index}
               soleBlock={form.blocks.length === 1}
               catalogs={catalogState.catalogs}
+              profitHidden={profitHidden}
               onChange={(next) => updateBlock(block.clientKey, next)}
               onRemove={() => removeBlock(block.clientKey)}
             />
@@ -111,6 +114,7 @@ export default function Calculator({
 
           <AdditionalWorkSection
             works={form.additionalWorks}
+            profitHidden={profitHidden}
             onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
           />
         </div>
@@ -119,7 +123,7 @@ export default function Calculator({
           {!formReady ? (
             <MissingFieldsView fields={missingFields} />
           ) : (
-            <ReportView report={report} />
+            <ReportView report={report} profitHidden={profitHidden} />
           )}
 
           {formReady && quoteState.status === "loading" && (
@@ -140,6 +144,16 @@ export default function Calculator({
             </div>
           )}
         </aside>
+      </div>
+
+      <div className={styles.privacyToggle}>
+        <Button
+          type="button"
+          aria-pressed={profitHidden}
+          onClick={() => setProfitHidden((v) => !v)}
+        >
+          {profitHidden ? "Показать" : "Скрыть"}
+        </Button>
       </div>
     </div>
   );

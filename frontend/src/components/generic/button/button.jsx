@@ -6,6 +6,7 @@ export default function Button({
   disabled,
   type = "button",
   "aria-label": ariaLabel,
+  "aria-pressed": ariaPressed,
 }) {
   return (
     <button
@@ -14,6 +15,7 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
+      aria-pressed={ariaPressed}
     >
       {children}
     </button>

@@ -1,7 +1,7 @@
 import { formatMoney } from "../../../lib/format-money";
 import styles from "../calculator.module.css";
 
-export default function ReportView({ report }) {
+export default function ReportView({ report, profitHidden }) {
   if (!report) {
     return null;
   }
@@ -18,7 +18,7 @@ export default function ReportView({ report }) {
             <th scope="row">Цена тиража</th>
             <td>{formatMoney(report.order_price)}</td>
           </tr>
-          <tr>
+          <tr className={profitHidden ? styles.sensitiveBlur : undefined}>
             <th scope="row">Прибыль</th>
             <td>{formatMoney(report.income)}</td>
           </tr>

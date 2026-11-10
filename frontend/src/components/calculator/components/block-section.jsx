@@ -76,6 +76,7 @@ export default function BlockSection({
   index,
   catalogs,
   soleBlock,
+  profitHidden,
   onChange,
   onRemove,
 }) {
@@ -149,13 +150,15 @@ export default function BlockSection({
           type="number"
           onChange={(v) => update({ count: v })}
         />
-        <TextField
-          id={`${idPrefix}-markup`} 
-          label="Наценка"
-          value={block.markup}
-          type="number"
-          onChange={(v) => update({ markup: v })}
-        />
+        <div className={profitHidden ? styles.sensitiveBlur : undefined}>
+          <TextField
+            id={`${idPrefix}-markup`}
+            label="Наценка"
+            value={block.markup}
+            type="number"
+            onChange={(v) => update({ markup: v })}
+          />
+        </div>
         <Button type="button" onClick={onRemove} disabled={soleBlock}>
           Удалить
         </Button>

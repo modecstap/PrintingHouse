@@ -93,3 +93,16 @@
   width: 100%;
   text-align: left;
 }
+
+.sensitiveBlur {
+  opacity: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.privacyToggle {
+  position: fixed;
+  right: var(--spacing-8);
+  bottom: var(--spacing-8);
+  z-index: 100;
+}
