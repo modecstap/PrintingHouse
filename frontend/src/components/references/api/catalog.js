@@ -1,6 +1,13 @@
 import { requestJson } from "../../../lib/api";
+import {
+  CATALOG_LIST_LOADERS,
+  fetchCatalogList,
+} from "../../../lib/catalog-api";
 
 export async function fetchCatalog(path, parseList, signal) {
+  if (CATALOG_LIST_LOADERS[path]) {
+    return fetchCatalogList(path, signal);
+  }
   const data = await requestJson(path, { signal });
   return parseList(data);
 }
