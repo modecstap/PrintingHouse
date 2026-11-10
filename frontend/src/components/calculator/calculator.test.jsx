@@ -39,7 +39,13 @@ function stubCatalogFetch(overrides = {}) {
     laminatorOperators: [LAMINATOR_OPERATOR],
     cutterOperators: [],
     dieCutOperators: [],
-    sheets: [],
+    sheets: [
+      {
+        id: 1,
+        paper: { name: "A", density: 150, thickness: 1, price_per_kilo: "80" },
+        format: { name: "SRA3", width: 320, height: 450 },
+      },
+    ],
     films: [],
     ...overrides,
   };
@@ -137,7 +143,7 @@ describe("Calculator", () => {
     localStorage.clear();
   });
 
-  it("should show the quote report when the user calculates", async () => {
+  it("should show the quote report when the form is complete", async () => {
   let resolveQuote;
     const quotePending = new Promise((resolve) => {
       resolveQuote = resolve;
@@ -153,8 +159,18 @@ describe("Calculator", () => {
     render(<Calculator />);
     await waitForCatalogs();
 
+    expect(screen.getByText("Пропущено:")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
+    });
+
     await userEvent.clear(screen.getByLabelText("Тираж"));
     await userEvent.type(screen.getByLabelText("Тираж"), "10");
+    await userEvent.clear(screen.getByLabelText("Ширина"));
+    await userEvent.type(screen.getByLabelText("Ширина"), "90");
+    await userEvent.clear(screen.getByLabelText("Высота"));
+    await userEvent.type(screen.getByLabelText("Высота"), "50");
     await userEvent.click(screen.getByRole("checkbox", { name: "Печать" }));
 
     const operationRegion = screen.getByRole("region", { name: /Печать/i });
@@ -167,9 +183,9 @@ describe("Calculator", () => {
       "4",
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Рассчитать" }));
-
-    expect(screen.getByRole("button", { name: "Счёт..." })).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("Счёт...");
+    });
     expect(screen.getByRole("button", { name: "Сохранить" })).toBeDisabled();
 
     resolveQuote();
@@ -249,7 +265,15 @@ describe("Calculator", () => {
     render(<Calculator initialReport={initialReport} />);
     await waitForCatalogs();
 
-    await userEvent.click(screen.getByRole("button", { name: "Рассчитать" }));
+    await userEvent.clear(screen.getByLabelText("Тираж"));
+    await userEvent.type(screen.getByLabelText("Тираж"), "10");
+    await waitFor(() => {
+      expect(screen.getByLabelText("Бумага")).toHaveValue("1");
+    });
+    await userEvent.clear(screen.getByLabelText("Ширина"));
+    await userEvent.type(screen.getByLabelText("Ширина"), "90");
+    await userEvent.clear(screen.getByLabelText("Высота"));
+    await userEvent.type(screen.getByLabelText("Высота"), "50");
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
@@ -285,15 +309,18 @@ describe("Calculator", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Тираж")).toHaveValue(100);
     });
-    expect(screen.getByLabelText("Ширина (мм)")).toHaveValue(90);
-    expect(screen.getByLabelText("Высота (мм)")).toHaveValue(50);
+    expect(screen.getByLabelText("Ширина")).toHaveValue(90);
+    expect(screen.getByLabelText("Высота")).toHaveValue(50);
   });
 
-  it("should not offer delay, accept, or update", async () => {
+  it("should not offer calculate, delay, accept, or update", async () => {
     global.fetch = stubCatalogFetch();
     render(<Calculator />);
     await waitForCatalogs();
 
+    expect(
+      screen.queryByRole("button", { name: "Рассчитать" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Отложить" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "В работу" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Обновить" })).not.toBeInTheDocument();

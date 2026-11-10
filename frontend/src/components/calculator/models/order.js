@@ -415,6 +415,193 @@ export function toCalculatorForm(order) {
 }
 
 const DECIMAL_STRING = /^-?\d+(\.\d+)?$/;
+const SIGNED_INT_STRING = /^-?\d+$/;
+
+function isCoercibleIntegerField(value) {
+  const raw =
+    typeof value === "string" ? value.trim() : String(value ?? "").trim();
+  return raw !== "" && SIGNED_INT_STRING.test(raw);
+}
+
+function isCoercibleIdField(value) {
+  if (value === "" || value === undefined || value === null) {
+    return false;
+  }
+  const raw = String(value).trim();
+  return raw !== "" && SIGNED_INT_STRING.test(raw);
+}
+
+function isCoercibleMoneyField(value) {
+  const raw = String(value ?? "").trim();
+  return raw !== "" && DECIMAL_STRING.test(raw);
+}
+
+function isPositiveIntegerField(value) {
+  if (!isCoercibleIntegerField(value)) {
+    return false;
+  }
+  return Number(String(value).trim()) > 0;
+}
+
+const OPERATION_KIND_LABEL = {
+  print: "Печать",
+  laminate: "Ламинация",
+  cut: "Рез",
+  die_cut: "Высечка",
+};
+
+function blockLabelPrefix(blockCount, index) {
+  return blockCount > 1 ? `Блок ${index + 1}: ` : "";
+}
+
+function additionalWorkLabelPrefix(workCount, index) {
+  return workCount > 1 ? `Доп. работа ${index + 1}: ` : "Доп. работа: ";
+}
+
+function pushWhenInvalid(missing, isValid, label) {
+  if (!isValid) {
+    missing.push(label);
+  }
+}
+
+function collectOperationMissingLabels(operation, blockPrefix, missing) {
+  const kindLabel = OPERATION_KIND_LABEL[operation.kind] ?? operation.kind;
+  const labelPrefix = blockPrefix ? `${blockPrefix}${kindLabel}: ` : `${kindLabel}: `;
+
+  if (operation.kind === "print") {
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.printerId),
+      `${labelPrefix}Принтер`,
+    );
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.operatorId),
+      `${labelPrefix}Печатник`,
+    );
+    return;
+  }
+  if (operation.kind === "laminate") {
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.laminatorId),
+      `${labelPrefix}Ламинатор`,
+    );
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.operatorId),
+      `${labelPrefix}Оператор`,
+    );
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.filmId),
+      `${labelPrefix}Плёнка`,
+    );
+    return;
+  }
+  if (operation.kind === "cut") {
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.cutterId),
+      `${labelPrefix}Резак`,
+    );
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.operatorId),
+      `${labelPrefix}Оператор`,
+    );
+    return;
+  }
+  if (operation.kind === "die_cut") {
+    pushWhenInvalid(
+      missing,
+      isCoercibleIdField(operation.operatorId),
+      `${labelPrefix}Оператор`,
+    );
+  }
+}
+
+function collectBlockMissingLabels(block, blockCount, blockIndex, missing) {
+  const prefix = blockLabelPrefix(blockCount, blockIndex);
+  pushWhenInvalid(
+    missing,
+    isCoercibleIntegerField(block.count),
+    `${prefix}Копии`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleIntegerField(block.markup),
+    `${prefix}Наценка`,
+  );
+  pushWhenInvalid(
+    missing,
+    isPositiveIntegerField(block.target.width),
+    `${prefix}Ширина`,
+  );
+  pushWhenInvalid(
+    missing,
+    isPositiveIntegerField(block.target.height),
+    `${prefix}Высота`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleIdField(block.paperSheetId),
+    `${prefix}Бумага`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleIntegerField(block.bleeds),
+    `${prefix}Вылеты`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleIntegerField(block.spacing),
+    `${prefix}Поля`,
+  );
+  for (const operation of block.operations) {
+    collectOperationMissingLabels(operation, prefix, missing);
+  }
+}
+
+function collectAdditionalWorkMissingLabels(work, workCount, workIndex, missing) {
+  const prefix = additionalWorkLabelPrefix(workCount, workIndex);
+  pushWhenInvalid(
+    missing,
+    String(work.name ?? "").trim() !== "",
+    `${prefix}Работа`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleMoneyField(work.price),
+    `${prefix}Стоимость`,
+  );
+  pushWhenInvalid(
+    missing,
+    isCoercibleIntegerField(work.markup),
+    `${prefix}Наценка`,
+  );
+}
+
+export function calculatorFormMissingFieldLabels(form) {
+  const missing = [];
+  if (!form?.blocks?.length) {
+    missing.push("Блок");
+    return missing;
+  }
+  pushWhenInvalid(missing, isPositiveIntegerField(form.count), "Тираж");
+  form.blocks.forEach((block, index) => {
+    collectBlockMissingLabels(block, form.blocks.length, index, missing);
+  });
+  const works = form.additionalWorks ?? [];
+  works.forEach((work, index) => {
+    collectAdditionalWorkMissingLabels(work, works.length, index, missing);
+  });
+  return missing;
+}
+
+export function isCalculatorFormReadyForQuote(form) {
+  return calculatorFormMissingFieldLabels(form).length === 0;
+}
 
 function requireDecimalString(raw, field) {
   if (typeof raw !== "string" || !DECIMAL_STRING.test(raw)) {

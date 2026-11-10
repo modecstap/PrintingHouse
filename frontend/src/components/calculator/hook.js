@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchReferences } from "../references/api/references";
 import { fetchOrderForm } from "../orders/api/orders";
 import { loadCatalogs } from "./api/catalog";
@@ -10,6 +10,7 @@ import {
   applyBlockCatalogDefaults,
   emptyBlock,
   emptyCalculatorForm,
+  isCalculatorFormReadyForQuote,
 } from "./models/order";
 
 const EMPTY_CATALOGS = {
@@ -57,6 +58,7 @@ export function useCalculator({
   });
   const [selectedPresetId, setSelectedPresetId] = useState("");
   const [presetLoadState, setPresetLoadState] = useState({ status: "idle" });
+  const quoteRequestId = useRef(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -118,23 +120,54 @@ export function useCalculator({
               ? referencesState.message
               : null;
 
-  const handleQuote = async () => {
-    setQuoteState({ status: "loading" });
-    setSaveState((prev) =>
-      prev.status === "error" ? { status: "idle" } : prev,
-    );
-    try {
-      const nextReport = await quoteOrder(form);
-      setReport(nextReport);
-      setQuoteState({ status: "success" });
-    } catch (error) {
-      setQuoteState({
-        status: "error",
-        message:
-          error instanceof Error ? error.message : "Произошла неизвестная ошибка",
-      });
+  const presetBusy = presetLoadState.status === "loading";
+
+  useEffect(() => {
+    if (
+      catalogState.status !== "success" ||
+      presetBusy ||
+      !isCalculatorFormReadyForQuote(form)
+    ) {
+      return undefined;
     }
-  };
+
+    const requestId = ++quoteRequestId.current;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      setQuoteState({ status: "loading" });
+      setSaveState((prev) =>
+        prev.status === "error" ? { status: "idle" } : prev,
+      );
+      quoteOrder(form, controller.signal)
+        .then((nextReport) => {
+          if (requestId !== quoteRequestId.current) {
+            return;
+          }
+          setReport(nextReport);
+          setQuoteState({ status: "success" });
+        })
+        .catch((error) => {
+          if (error?.name === "AbortError") {
+            return;
+          }
+          if (requestId !== quoteRequestId.current) {
+            return;
+          }
+          setQuoteState({
+            status: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Произошла неизвестная ошибка",
+          });
+        });
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [form, catalogState.status, presetBusy]);
 
   const handleSave = async () => {
     setSaveState({ status: "loading" });
@@ -214,8 +247,6 @@ export function useCalculator({
     }
   };
 
-  const presetBusy = presetLoadState.status === "loading";
-
   return {
     form,
     setForm,
@@ -228,7 +259,6 @@ export function useCalculator({
     actionBusy,
     actionError,
     presetBusy,
-    handleQuote,
     handleSave,
     updateBlock,
     removeBlock,

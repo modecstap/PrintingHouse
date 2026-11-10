@@ -1,6 +1,10 @@
-import { emptyCalculatorForm } from "./models/order";
+import {
+  calculatorFormMissingFieldLabels,
+  emptyCalculatorForm,
+} from "./models/order";
 import AdditionalWorkSection from "./components/additional-work-section";
 import BlockSection from "./components/block-section";
+import MissingFieldsView from "./components/missing-fields-view";
 import ReportView from "./components/report-view";
 import Button from "../generic/button/button";
 import { Dropdown } from "../generic/dropdown/dropdown";
@@ -25,13 +29,15 @@ export default function Calculator({
     actionBusy,
     actionError,
     presetBusy,
-    handleQuote,
     handleSave,
     updateBlock,
     removeBlock,
     addBlock,
     handlePresetChange,
   } = useCalculator({ initialForm, initialReport, onSaved });
+
+  const missingFields = calculatorFormMissingFieldLabels(form);
+  const formReady = missingFields.length === 0;
 
   return (
     <div className={styles.page}>
@@ -86,16 +92,19 @@ export default function Calculator({
         onChange={(additionalWorks) => setForm({ ...form, additionalWorks })}
       />
 
-      <ReportView report={report} />
+      {!formReady ? (
+        <MissingFieldsView fields={missingFields} />
+      ) : (
+        <ReportView report={report} />
+      )}
+
+      {formReady && quoteState.status === "loading" && (
+        <div className={styles.statusMessage} role="status">
+          Счёт...
+        </div>
+      )}
 
       <div className={styles.buttonRow}>
-        <Button
-          type="button"
-          onClick={handleQuote}
-          disabled={actionBusy || presetBusy}
-        >
-          {quoteState.status === "loading" ? "Счёт..." : "Рассчитать"}
-        </Button>
         <Button
           type="button"
           onClick={handleSave}

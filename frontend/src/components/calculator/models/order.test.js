@@ -3,6 +3,8 @@ import {
   emptyBlock,
   emptyCalculatorForm,
   emptyPrintOperation,
+  calculatorFormMissingFieldLabels,
+  isCalculatorFormReadyForQuote,
   toOrderWrite,
   toCalculatorForm,
   toOrderReport,
@@ -156,6 +158,46 @@ describe("emptyCalculatorForm", () => {
     expect(block.operations).toEqual([]);
     expect(typeof block.clientKey).toBe("string");
     expect(block.clientKey.length).toBeGreaterThan(0);
+  });
+});
+
+describe("calculatorFormMissingFieldLabels", () => {
+  it("should list order and block fields for the empty default form", () => {
+    const missing = calculatorFormMissingFieldLabels(emptyCalculatorForm());
+    expect(missing).toContain("Тираж");
+    expect(missing).toContain("Ширина");
+    expect(missing).toContain("Высота");
+    expect(missing).toContain("Бумага");
+  });
+
+  it("should be empty for a fully filled sample form", () => {
+    expect(calculatorFormMissingFieldLabels(sampleForm())).toEqual([]);
+  });
+});
+
+describe("isCalculatorFormReadyForQuote", () => {
+  it("should be false for the empty default form", () => {
+    expect(isCalculatorFormReadyForQuote(emptyCalculatorForm())).toBe(false);
+  });
+
+  it("should be true for a fully filled sample form", () => {
+    expect(isCalculatorFormReadyForQuote(sampleForm())).toBe(true);
+  });
+
+  it("should be false when an additional work name is empty", () => {
+    const form = {
+      ...sampleForm(),
+      additionalWorks: [
+        {
+          clientKey: "work-key",
+          name: "",
+          price: "10.00",
+          description: "x",
+          markup: "0",
+        },
+      ],
+    };
+    expect(isCalculatorFormReadyForQuote(form)).toBe(false);
   });
 });
 

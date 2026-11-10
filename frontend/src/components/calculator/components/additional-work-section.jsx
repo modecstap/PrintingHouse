@@ -57,7 +57,7 @@ export default function AdditionalWorkSection({ works, onChange }) {
               />
               <TextField
                 id={`${idPrefix}-work-markup`}
-                label="Наценка (%)"
+                label="Наценка"
                 value={work.markup}
                 type="number"
                 onChange={(v) => updateWork(work.clientKey, { markup: v })}
