@@ -7,6 +7,7 @@ import {
   fetchOrderSummaries,
 } from "./api/orders";
 import Button from "../generic/button/button";
+import pageStyles from "../generic/page/page.module.css";
 import styles from "./orders.module.css";
 
 export default function Orders({ catalogs, catalogLoadState }) {
@@ -103,8 +104,8 @@ export default function Orders({ catalogs, catalogLoadState }) {
   };
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageTitle}>
+    <div className={pageStyles.page}>
+      <div className={pageStyles.pageTitle}>
         <h1>Заказы</h1>
         <Button
           type="button"

@@ -7,6 +7,7 @@ import {
 import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import Button from "../generic/button/button";
+import pageStyles from "../generic/page/page.module.css";
 import styles from "./references.module.css";
 
 const EMPTY_FORM = { name: "", description: "", orderId: "" };
@@ -69,8 +70,8 @@ export default function References({
     saveState.status === "error" ? saveState.message : null;
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageTitle}>
+    <div className={pageStyles.page}>
+      <div className={pageStyles.pageTitle}>
         <h1>Справочники</h1>
       </div>
 

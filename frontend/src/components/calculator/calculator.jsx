@@ -11,6 +11,7 @@ import ReportView from "./components/report-view";
 import Button from "../generic/button/button";
 import { Dropdown } from "../generic/dropdown/dropdown";
 import { NumberField } from "../generic/number-field/number-field";
+import pageStyles from "../generic/page/page.module.css";
 import styles from "./calculator.module.css";
 import { useCalculator } from "./hook";
 
@@ -51,7 +52,7 @@ export default function Calculator({
   const [profitHidden, setProfitHidden] = useState(false);
 
   return (
-    <div className={styles.page}>
+    <div className={pageStyles.page}>
       <div className={styles.layout}>
         <div className={styles.inputColumn}>
           <div className={styles.heading}>

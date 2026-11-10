@@ -4,6 +4,7 @@ import { useAuthSession } from "../../lib/auth-session";
 import FlexForm from "../generic/flex-form/flex-form";
 import Button from "../generic/button/button";
 
+import pageStyles from "../generic/page/page.module.css";
 import styles from "./auth.module.css";
 
 const fields = [
@@ -63,7 +64,7 @@ const Auth = () => {
   };
 
   return (
-    <div className={styles.page}>
+    <div className={pageStyles.page}>
       <h2>Вход</h2>
 
       <form onSubmit={onSubmit}>
