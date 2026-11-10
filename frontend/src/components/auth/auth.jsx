@@ -1,24 +1,11 @@
 import { useState } from "react";
 import { requestJson } from "../../lib/api";
 import { useAuthSession } from "../../lib/auth-session";
-import FlexForm from "../generic/flex-form/flex-form";
 import Button from "../generic/button/button";
+import { TextField } from "../generic/text-field/text-field";
 
 import pageStyles from "../generic/page/page.module.css";
 import styles from "./auth.module.css";
-
-const fields = [
-  {
-    label: "Логин",
-    path: "username",
-    type: "text",
-  },
-  {
-    label: "Пароль",
-    path: "password",
-    type: "password",
-  },
-];
 
 const Auth = () => {
   const { login, logout: sessionLogout } = useAuthSession();
@@ -68,10 +55,21 @@ const Auth = () => {
       <h2>Вход</h2>
 
       <form onSubmit={onSubmit}>
-        <FlexForm
-          fields={fields}
-          formData={formData}
-          setFormData={setFormData}
+        <TextField
+          id="auth-username"
+          label="Логин"
+          type="text"
+          value={formData.username}
+          onChange={(username) => setFormData((prev) => ({ ...prev, username }))}
+          disabled={loading}
+        />
+        <TextField
+          id="auth-password"
+          label="Пароль"
+          type="password"
+          value={formData.password}
+          onChange={(password) => setFormData((prev) => ({ ...prev, password }))}
+          disabled={loading}
         />
 
         <div className={styles.buttonRow}>
