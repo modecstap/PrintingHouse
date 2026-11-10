@@ -1,14 +1,16 @@
 import { useState } from "react";
 import styles from "./tabs.module.css";
 
-export function Tabs({ tabs, defaultSelectedId }) {
+export function Tabs({ tabs, defaultSelectedId, isTabDisabled }) {
   const [selected, setSelected] = useState(
     defaultSelectedId ?? tabs[0].id,
   );
   const [menuOpen, setMenuOpen] = useState(false);
-  const { Content } = tabs.find((tab) => tab.id === selected);
 
   const selectTab = (id) => {
+    if (isTabDisabled?.(id)) {
+      return;
+    }
     setSelected(id);
     setMenuOpen(false);
   };
@@ -28,21 +30,37 @@ export function Tabs({ tabs, defaultSelectedId }) {
         >
           ☰
         </button>
-        {tabs.map(({ id, label }) => (
-          <button
-            key={id}
-            className={styles.tab}
-            type="button"
-            role="tab"
-            aria-selected={id === selected}
-            onClick={() => selectTab(id)}
-          >
-            {label}
-          </button>
-        ))}
+        {tabs.map(({ id, label }) => {
+          const disabled = isTabDisabled?.(id) ?? false;
+          return (
+            <button
+              key={id}
+              className={styles.tab}
+              type="button"
+              role="tab"
+              aria-selected={id === selected}
+              disabled={disabled}
+              title={
+                disabled ? "Войдите, чтобы открыть этот раздел" : undefined
+              }
+              onClick={() => selectTab(id)}
+            >
+              {label}
+            </button>
+          );
+        })}
       </nav>
-      <div className={styles.content} role="tabpanel">
-        <Content />
+      <div className={styles.content}>
+        {tabs.map(({ id, Content }) => (
+          <div
+            key={id}
+            role="tabpanel"
+            hidden={id !== selected}
+            className={styles.panel}
+          >
+            <Content />
+          </div>
+        ))}
       </div>
     </div>
   );

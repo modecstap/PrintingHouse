@@ -49,6 +49,15 @@
   min-width: 0;
 }
 
+.panel {
+  height: 100%;
+}
+
+.tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1000px) {
   .layout {
     flex-direction: column;

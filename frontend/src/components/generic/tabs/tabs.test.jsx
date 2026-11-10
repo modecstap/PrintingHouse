@@ -44,15 +44,33 @@ describe("Tabs", () => {
     expect(screen.queryByText(/equipment/i)).not.toBeInTheDocument();
   });
 
-  it("should show orders content when the Orders tab is selected", async () => {
+  it("should mount every tab and hide inactive panels", () => {
     render(<Tabs tabs={TABS} />);
 
     expect(screen.getByTestId("calculator-mock")).toBeInTheDocument();
-    expect(screen.queryByTestId("orders-mock")).not.toBeInTheDocument();
+    expect(screen.getByTestId("orders-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("references-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("auth-mock")).toBeInTheDocument();
+
+    const calculatorPanel = screen.getByTestId("calculator-mock").parentElement;
+    const ordersPanel = screen.getByTestId("orders-mock").parentElement;
+
+    expect(calculatorPanel).not.toHaveAttribute("hidden");
+    expect(ordersPanel).toHaveAttribute("hidden");
+  });
+
+  it("should keep calculator mounted when the Orders tab is selected", async () => {
+    render(<Tabs tabs={TABS} />);
 
     await userEvent.click(screen.getByRole("tab", { name: "Заказы" }));
 
     expect(screen.getByTestId("orders-mock")).toBeInTheDocument();
-    expect(screen.queryByTestId("calculator-mock")).not.toBeInTheDocument();
+    expect(screen.getByTestId("calculator-mock")).toBeInTheDocument();
+
+    const calculatorPanel = screen.getByTestId("calculator-mock").parentElement;
+    const ordersPanel = screen.getByTestId("orders-mock").parentElement;
+
+    expect(ordersPanel).not.toHaveAttribute("hidden");
+    expect(calculatorPanel).toHaveAttribute("hidden");
   });
 });
