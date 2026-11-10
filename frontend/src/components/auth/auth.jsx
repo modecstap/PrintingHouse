@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { requestJson } from "../../lib/api";
+import { useAuthSession } from "../../lib/auth-session";
 import FlexForm from "../generic/flex-form/flex-form";
 import Button from "../generic/button/button";
 
@@ -19,6 +20,7 @@ const fields = [
 ];
 
 const Auth = () => {
+  const { login, logout: sessionLogout } = useAuthSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -44,7 +46,7 @@ const Auth = () => {
       });
 
       if (res?.access_token) {
-        localStorage.setItem("access_token", res.access_token);
+        login(res.access_token);
         setSuccessMsg("Вход выполнен: токен сохранён");
       }
     } catch (err) {
@@ -55,7 +57,7 @@ const Auth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem("access_token");
+    sessionLogout();
     setError(null);
     setSuccessMsg("Выход выполнен");
   };

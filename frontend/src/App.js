@@ -4,9 +4,11 @@ import Orders from "./components/orders/orders";
 import References from "./components/references/references";
 import Auth from "./components/auth/auth";
 import { useCatalogs } from "./hooks/useCatalogs";
+import { AuthSessionProvider, useAuthSession } from "./lib/auth-session";
 
-function App() {
+function AppTabs() {
   const { catalogLoadState, reloadCatalogs } = useCatalogs();
+  const { isAuthenticated } = useAuthSession();
 
   const catalogProps = {
     catalogs: catalogLoadState.catalogs,
@@ -37,7 +39,23 @@ function App() {
     { id: "auth", label: "Вход", Content: Auth },
   ];
 
-  return <Tabs tabs={tabs} defaultSelectedId="auth" />;
+  const isTabDisabled = (id) => !isAuthenticated && id !== "auth";
+
+  return (
+    <Tabs
+      tabs={tabs}
+      defaultSelectedId="auth"
+      isTabDisabled={isTabDisabled}
+    />
+  );
+}
+
+function App() {
+  return (
+    <AuthSessionProvider>
+      <AppTabs />
+    </AuthSessionProvider>
+  );
 }
 
 export default App;

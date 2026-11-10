@@ -1,6 +1,15 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Auth from "./auth";
+import { AuthSessionProvider } from "../../lib/auth-session";
+
+function renderAuth() {
+  return render(
+    <AuthSessionProvider>
+      <Auth />
+    </AuthSessionProvider>,
+  );
+}
 
 function jsonResponse(data, status = 200) {
   return Promise.resolve({
@@ -38,7 +47,7 @@ describe("Auth", () => {
       return jsonResponse({}, 404);
     });
 
-    const { container } = render(<Auth />);
+    const { container } = renderAuth();
     expect(screen.getByRole("heading", { name: "Вход" })).toBeInTheDocument();
     const [usernameInput, passwordInput] = container.querySelectorAll("input");
 
@@ -55,7 +64,7 @@ describe("Auth", () => {
   it("should remove the access token when the user logs out", async () => {
     localStorage.setItem("access_token", "jwt-abc");
 
-    render(<Auth />);
+    renderAuth();
     await userEvent.click(screen.getByRole("button", { name: "Выйти" }));
 
     expect(localStorage.getItem("access_token")).toBeNull();
