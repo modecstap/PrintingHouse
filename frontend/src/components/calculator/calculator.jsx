@@ -3,6 +3,8 @@ import AdditionalWorkSection from "./components/additional-work-section";
 import BlockSection from "./components/block-section";
 import ReportView from "./components/report-view";
 import Button from "../generic/button/button";
+import { Dropdown } from "../generic/dropdown/dropdown";
+import { NumberField } from "../generic/number-field/number-field";
 import styles from "./calculator.module.css";
 import { useCalculator } from "./hook";
 
@@ -39,36 +41,30 @@ export default function Calculator({
 
       {referencesState.status === "success" &&
         referencesState.references.length > 0 && (
-          <div className={styles.fieldGroup}>
-            <label htmlFor="calculator-preset">Пресет</label>
-            <select
-              id="calculator-preset"
-              value={selectedPresetId}
-              onChange={handlePresetChange}
-              disabled={actionBusy || presetBusy}
-            >
-              <option value="">Нет</option>
-              {referencesState.references.map((row) => (
-                <option key={`${row.name}-${row.order_id}`} value={row.order_id}>
-                  {row.description
-                    ? `${row.name} (${row.description})`
-                    : row.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Dropdown
+            id="calculator-preset"
+            label="Пресет"
+            value={selectedPresetId}
+            onChange={(v) =>
+              handlePresetChange({ target: { value: v } })
+            }
+            disabled={actionBusy || presetBusy}
+            emptyOptionLabel="Нет"
+            options={referencesState.references.map((row) => ({
+              value: row.order_id,
+              label: row.description
+                ? `${row.name} (${row.description})`
+                : row.name,
+            }))}
+          />
         )}
 
-      <div className={styles.fieldGroup}>
-        <label htmlFor="order-count">Тираж</label>
-        <input
-          id="order-count"
-          type="number"
-          step="1"
-          value={form.count}
-          onChange={(e) => setForm({ ...form, count: e.target.value })}
-        />
-      </div>
+      <NumberField
+        id="order-count"
+        label="Тираж"
+        value={form.count}
+        onChange={(v) => setForm({ ...form, count: v })}
+      />
 
       {form.blocks.map((block, index) => (
         <BlockSection

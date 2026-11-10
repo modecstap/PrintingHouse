@@ -5,25 +5,11 @@ import {
   emptyPrintOperation,
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
-import OperationFields, { CatalogSelect } from "./operation-fields";
+import OperationFields from "./operation-fields";
+import { Dropdown } from "../../generic/dropdown/dropdown";
 import Button from "../../generic/button/button";
+import { TextField } from "../../generic/text-field/text-field";
 import styles from "../calculator.module.css";
-
-function TextField({ id, label, value, onChange, type = "text", inputMode }) {
-  return (
-    <div className={styles.fieldGroup}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        step={type === "number" ? "1" : undefined}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
 
 function emptyPaperFields() {
   return {
@@ -173,11 +159,12 @@ export default function BlockSection({
 
       <p className={styles.legend}>Бумага</p>
       <div className={styles.fieldRow}>
-        <CatalogSelect
+        <Dropdown
           id={`${idPrefix}-paper-sheet`}
           label="Бумага"
           value={paperSheetValue}
           onChange={selectPaperSheet}
+          emptyOptionLabel="—"
           options={catalogs.sheets.map((sheet) => ({
             value: String(sheet.id),
             label: sheetLabel(sheet),

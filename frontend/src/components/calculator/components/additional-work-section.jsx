@@ -1,22 +1,7 @@
 import { emptyAdditionalWork } from "../models/order";
 import Button from "../../generic/button/button";
+import { TextField } from "../../generic/text-field/text-field";
 import styles from "../calculator.module.css";
-
-function TextField({ id, label, value, onChange, type = "text", inputMode }) {
-  return (
-    <div className={styles.fieldGroup}>
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        step={type === "number" ? "1" : undefined}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
 
 export default function AdditionalWorkSection({ works, onChange }) {
   const updateWork = (clientKey, partial) => {

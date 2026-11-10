@@ -1,3 +1,4 @@
+import { Dropdown } from "../dropdown/dropdown";
 import styles from "./flex-form.module.css";
 
 function parsePath(path) {
@@ -48,8 +49,10 @@ function FormField({
   step,
   options = {},
   valueParser,
+  emptyOptionLabel,
 }) {
   const value = getByPath(data, path);
+  const fieldId = String(path);
 
   const handleChange = (e) => {
     let val = e.target.value;
@@ -61,33 +64,48 @@ function FormField({
     setData((prev) => updateByPath(prev, path, val));
   };
 
+  const handleSelect = (val) => {
+    let parsed = val;
+    if (valueParser) {
+      parsed = valueParser(val);
+    }
+    setData((prev) => updateByPath(prev, path, parsed));
+  };
+
   return (
     <div className={styles.formTile}>
-      <label>{label}</label>
-
       {type === "select" ? (
-        <select className={styles.formInput} value={value ?? ""} onChange={handleChange}>
-          {options?.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          id={fieldId}
+          label={label}
+          value={value ?? ""}
+          onChange={handleSelect}
+          options={options}
+          emptyOptionLabel={emptyOptionLabel}
+        />
       ) : type === "textarea" ? (
-        <textarea
-          className={styles.formInput}
-          rows={options.rows ?? 3}
-          value={value ?? ""}
-          onChange={handleChange}
-        />
+        <>
+          <label htmlFor={fieldId}>{label}</label>
+          <textarea
+            id={fieldId}
+            className={styles.formInput}
+            rows={options.rows ?? 3}
+            value={value ?? ""}
+            onChange={handleChange}
+          />
+        </>
       ) : (
-        <input
-          className={styles.formInput}
-          type={type}
-          step={step}
-          value={value ?? ""}
-          onChange={handleChange}
-        />
+        <>
+          <label htmlFor={fieldId}>{label}</label>
+          <input
+            id={fieldId}
+            className={styles.formInput}
+            type={type}
+            step={step}
+            value={value ?? ""}
+            onChange={handleChange}
+          />
+        </>
       )}
     </div>
   );
@@ -107,6 +125,7 @@ export default function FlexForm({ fields, formData, setFormData }) {
           step={field.step}
           options={field.options}
           valueParser={field.valueParser}
+          emptyOptionLabel={field.emptyOptionLabel}
         />
       ))}
     </div>

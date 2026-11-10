@@ -6,6 +6,7 @@ import {
   printerLabel,
 } from "../models/catalog-label";
 import Button from "../../generic/button/button";
+import { Dropdown } from "../../generic/dropdown/dropdown";
 import styles from "../calculator.module.css";
 
 const CHROMA_OPTIONS = [
@@ -22,22 +23,6 @@ const LAMINATION_OPTIONS = [
   { value: "ONE_ZERO", label: "1+0" },
   { value: "ONE_ONE", label: "1+1" },
 ];
-
-export function CatalogSelect({ id, label, value, onChange, options }) {
-  return (
-    <div className={styles.fieldGroup}>
-      <label htmlFor={id}>{label}</label>
-      <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">—</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 const KIND_HEADING = {
   print: "Печать",
@@ -89,40 +74,35 @@ export default function OperationFields({
       >
         <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-printer`}
             label="Принтер"
             value={operation.printerId}
             onChange={(v) => onChange({ ...operation, printerId: v })}
+            emptyOptionLabel="—"
             options={catalogs.printers.map((p) => ({
               value: String(p.id),
               label: printerLabel(p),
             }))}
           />
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-press-operator`}
             label="Печатник"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
+            emptyOptionLabel="—"
             options={catalogs.pressOperators.map((o) => ({
               value: String(o.id),
               label: operatorLabel(o),
             }))}
           />
-          <div className={styles.fieldGroup}>
-            <label htmlFor={`${idPrefix}-chroma`}>Цветность</label>
-            <select
-              id={`${idPrefix}-chroma`}
-              value={operation.chroma}
-              onChange={(e) => onChange({ ...operation, chroma: e.target.value })}
-            >
-              {CHROMA_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Dropdown
+            id={`${idPrefix}-chroma`}
+            label="Цветность"
+            value={operation.chroma}
+            onChange={(v) => onChange({ ...operation, chroma: v })}
+            options={CHROMA_OPTIONS}
+          />
         </div>
       </article>
     );
@@ -162,50 +142,44 @@ export default function OperationFields({
       >
         <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-laminator`}
             label="Ламинатор"
             value={operation.laminatorId}
             onChange={(v) => onChange({ ...operation, laminatorId: v })}
+            emptyOptionLabel="—"
             options={catalogs.laminators.map((l) => ({
               value: String(l.id),
               label: laminatorLabel(l),
             }))}
           />
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-laminate-operator`}
             label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
+            emptyOptionLabel="—"
             options={catalogs.laminatorOperators.map((o) => ({
               value: String(o.id),
               label: operatorLabel(o),
             }))}
           />
-          <div className={styles.fieldGroup}>
-            <label htmlFor={`${idPrefix}-lamination`}>Ламинация</label>
-            <select
-              id={`${idPrefix}-lamination`}
-              value={operation.lamination}
-              onChange={(e) =>
-                onChange({ ...operation, lamination: e.target.value })
-              }
-            >
-              {LAMINATION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Dropdown
+            id={`${idPrefix}-lamination`}
+            label="Ламинация"
+            value={operation.lamination}
+            onChange={(v) => onChange({ ...operation, lamination: v })}
+            options={LAMINATION_OPTIONS}
+          />
         </div>
         <p className={styles.legend}>Плёнка</p>
         <div className={styles.fieldRow}>
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-film`}
             label="Плёнка"
             value={filmValue}
             onChange={selectFilm}
+            emptyOptionLabel="—"
             options={films.map((film) => ({
               value: String(film.id),
               label: filmLabel(film),
@@ -225,21 +199,23 @@ export default function OperationFields({
       >
         <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-cutter`}
             label="Резак"
             value={operation.cutterId}
             onChange={(v) => onChange({ ...operation, cutterId: v })}
+            emptyOptionLabel="—"
             options={catalogs.cutters.map((c) => ({
               value: String(c.id),
               label: cutterLabel(c),
             }))}
           />
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-cut-operator`}
             label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
+            emptyOptionLabel="—"
             options={catalogs.cutterOperators.map((o) => ({
               value: String(o.id),
               label: operatorLabel(o),
@@ -259,11 +235,12 @@ export default function OperationFields({
       >
         <SectionHeading heading={heading} onRemove={onRemove} />
         <div className={styles.fieldRow}>
-          <CatalogSelect
+          <Dropdown
             id={`${idPrefix}-die-cut-operator`}
             label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
+            emptyOptionLabel="—"
             options={catalogs.dieCutOperators.map((o) => ({
               value: String(o.id),
               label: operatorLabel(o),
