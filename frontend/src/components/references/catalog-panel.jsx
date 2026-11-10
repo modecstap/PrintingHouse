@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import {
   createCatalog,
   deleteCatalog,
@@ -6,6 +6,7 @@ import {
   replaceCatalog,
 } from "./api/catalog";
 import Button from "../generic/button/button";
+import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
 function isFieldGroup(fieldDef) {
@@ -14,44 +15,20 @@ function isFieldGroup(fieldDef) {
 
 export default function CatalogPanel({ def, onCatalogsInvalidated }) {
   const headingId = useId();
-  const [listState, setListState] = useState({ status: "loading" });
+  const {
+    data: rows,
+    status: listStatus,
+    error: listError,
+    reload: reloadList,
+  } = useAbortableLoad(
+    (signal) => fetchCatalog(def.listPath, def.parseList, signal),
+    [def.listPath, def.parseList],
+  );
   const [form, setForm] = useState(def.emptyForm);
   const [saveState, setSaveState] = useState({ status: "idle" });
   const [deleteError, setDeleteError] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [reloadNonce, setReloadNonce] = useState(0);
   const [deletingId, setDeletingId] = useState(null);
-  const listAbortRef = useRef(null);
-
-  const startListLoad = useCallback(() => {
-    listAbortRef.current?.abort();
-    const controller = new AbortController();
-    listAbortRef.current = controller;
-    setListState({ status: "loading" });
-
-    fetchCatalog(def.listPath, def.parseList, controller.signal)
-      .then((rows) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "success", rows });
-      })
-      .catch((error) => {
-        if (error?.name === "AbortError" || controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "error", message: error.message });
-      });
-  }, [def.listPath, def.parseList]);
-
-  useEffect(() => {
-    startListLoad();
-    return () => {
-      listAbortRef.current?.abort();
-    };
-  }, [reloadNonce, startListLoad]);
-
-  const bumpReload = () => setReloadNonce((n) => n + 1);
 
   const handleFieldChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -87,7 +64,7 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
         setForm(def.emptyForm);
         setEditingId(null);
         setSaveState({ status: "idle" });
-        bumpReload();
+        reloadList();
         onCatalogsInvalidated?.();
       })
       .catch((error) => {
@@ -113,7 +90,7 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
     setDeletingId(row.id);
     deleteCatalog(def.itemPath(row.id))
       .then(() => {
-        bumpReload();
+        reloadList();
         onCatalogsInvalidated?.();
         if (editingId === row.id) {
           setForm(def.emptyForm);
@@ -134,13 +111,11 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
     <section aria-labelledby={headingId} className={styles.catalogPanel}>
       <h3 id={headingId}>{def.title}</h3>
 
-      {listState.status === "loading" && <div>Загрузка...</div>}
+      {listStatus === "loading" && <div>Загрузка...</div>}
 
-      {listState.status === "error" && (
-        <div role="alert">{listState.message}</div>
-      )}
+      {listStatus === "error" && <div role="alert">{listError}</div>}
 
-      {listState.status === "success" && (
+      {listStatus === "success" && (
         <table className={styles.table}>
           <thead>
             <tr>
@@ -153,7 +128,7 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
             </tr>
           </thead>
           <tbody>
-            {listState.rows.map((row) => (
+            {rows.map((row) => (
               <tr key={row.id}>
                 {def.columns.map((col, index) => (
                   <td key={`${col.header}-${index}`}>{col.render(row)}</td>

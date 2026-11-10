@@ -8,42 +8,19 @@ import {
 } from "./api/orders";
 import Button from "../generic/button/button";
 import pageStyles from "../generic/page/page.module.css";
+import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./orders.module.css";
 
 export default function Orders({ catalogs, catalogLoadState }) {
-  const [listState, setListState] = useState({ status: "loading" });
+  const {
+    data: orders,
+    status: listStatus,
+    error: listError,
+    reload: startListLoad,
+  } = useAbortableLoad((signal) => fetchOrderSummaries(signal), []);
   const [selectedId, setSelectedId] = useState(null);
   const [modalState, setModalState] = useState(null);
-  const listAbortRef = useRef(null);
   const modalAbortRef = useRef(null);
-
-  const startListLoad = () => {
-    listAbortRef.current?.abort();
-    const controller = new AbortController();
-    listAbortRef.current = controller;
-    setListState({ status: "loading" });
-
-    fetchOrderSummaries(controller.signal)
-      .then((orders) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "success", orders });
-      })
-      .catch((error) => {
-        if (error?.name === "AbortError" || controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "error", message: error.message });
-      });
-  };
-
-  useEffect(() => {
-    startListLoad();
-    return () => {
-      listAbortRef.current?.abort();
-    };
-  }, []);
 
   useEffect(() => {
     if (selectedId == null) {
@@ -116,13 +93,11 @@ export default function Orders({ catalogs, catalogLoadState }) {
         </Button>
       </div>
 
-      {listState.status === "loading" && <div>Загрузка...</div>}
+      {listStatus === "loading" && <div>Загрузка...</div>}
 
-      {listState.status === "error" && (
-        <div role="alert">{listState.message}</div>
-      )}
+      {listStatus === "error" && <div role="alert">{listError}</div>}
 
-      {listState.status === "success" && (
+      {listStatus === "success" && (
         <table className={styles.table}>
           <thead>
             <tr>
@@ -131,7 +106,7 @@ export default function Orders({ catalogs, catalogLoadState }) {
             </tr>
           </thead>
           <tbody>
-            {listState.orders.map((order) => (
+            {orders.map((order) => (
               <tr key={order.id}>
                 <td colSpan={2} style={{ padding: 0, border: "none" }}>
                   <button

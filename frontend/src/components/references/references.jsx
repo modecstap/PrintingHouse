@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   EQUIPMENT_CATALOGS,
   MATERIAL_CATALOGS,
@@ -8,6 +8,7 @@ import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import Button from "../generic/button/button";
 import pageStyles from "../generic/page/page.module.css";
+import { useAbortableLoad } from "../../hooks/useAbortableLoad";
 import styles from "./references.module.css";
 
 const EMPTY_FORM = { name: "", description: "", orderId: "" };
@@ -16,38 +17,14 @@ export default function References({
   catalogs: _catalogs,
   onCatalogsInvalidated,
 }) {
-  const [listState, setListState] = useState({ status: "loading" });
+  const {
+    data: references,
+    status: listStatus,
+    error: listError,
+    reload: startListLoad,
+  } = useAbortableLoad((signal) => fetchReferences(signal), []);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saveState, setSaveState] = useState({ status: "idle" });
-  const listAbortRef = useRef(null);
-
-  const startListLoad = () => {
-    listAbortRef.current?.abort();
-    const controller = new AbortController();
-    listAbortRef.current = controller;
-    setListState({ status: "loading" });
-
-    fetchReferences(controller.signal)
-      .then((references) => {
-        if (controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "success", references });
-      })
-      .catch((error) => {
-        if (error?.name === "AbortError" || controller.signal.aborted) {
-          return;
-        }
-        setListState({ status: "error", message: error.message });
-      });
-  };
-
-  useEffect(() => {
-    startListLoad();
-    return () => {
-      listAbortRef.current?.abort();
-    };
-  }, []);
 
   const handleSave = () => {
     setSaveState({ status: "loading" });
@@ -75,13 +52,11 @@ export default function References({
         <h1>Справочники</h1>
       </div>
 
-      {listState.status === "loading" && <div>Загрузка...</div>}
+      {listStatus === "loading" && <div>Загрузка...</div>}
 
-      {listState.status === "error" && (
-        <div role="alert">{listState.message}</div>
-      )}
+      {listStatus === "error" && <div role="alert">{listError}</div>}
 
-      {listState.status === "success" && (
+      {listStatus === "success" && (
         <table className={styles.table}>
           <thead>
             <tr>
@@ -91,7 +66,7 @@ export default function References({
             </tr>
           </thead>
           <tbody>
-            {listState.references.map((row) => (
+            {references.map((row) => (
               <tr key={`${row.name}-${row.order_id}`}>
                 <td>{row.name}</td>
                 <td>{row.description}</td>
