@@ -5,6 +5,10 @@ import {
   operatorLabel,
   printerLabel,
 } from "../models/catalog-label";
+import {
+  emptyFilmFields,
+  filmOptionFromCatalog,
+} from "../models/order";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import styles from "../calculator.module.css";
 
@@ -29,18 +33,6 @@ const KIND_HEADING = {
   cut: "Рез",
   die_cut: "Высечка",
 };
-
-function emptyFilmFields() {
-  return { name: "", price: "0", density: "0" };
-}
-
-function filmFromCatalog(film) {
-  return {
-    name: film.name,
-    price: film.price,
-    density: String(film.density),
-  };
-}
 
 function resolveFilmId(filmId, film, films) {
   if (filmId) {
@@ -122,7 +114,7 @@ export default function OperationFields({ operation, catalogs, onChange }) {
       onChange({
         ...operation,
         filmId,
-        film: filmFromCatalog(film),
+        film: filmOptionFromCatalog(film),
       });
     };
 

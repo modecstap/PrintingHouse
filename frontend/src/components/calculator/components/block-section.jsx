@@ -2,6 +2,10 @@ import {
   applyOperationCatalogDefaults,
   emptyDieCutOperation,
   emptyLaminateOperation,
+  emptyPaperFields,
+  paperFromSheet,
+  sheetFormatFromSheet,
+  sortBlockOperationsByKind,
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
 import OperationFields from "./operation-fields";
@@ -11,47 +15,10 @@ import { TextField } from "../../generic/text-field/text-field";
 import { Checkbox } from "../../generic/checkbox/checkbox";
 import styles from "../calculator.module.css";
 
-function emptyPaperFields() {
-  return {
-    name: "",
-    density: "",
-    thickness: "",
-    price_per_kilo: "0",
-  };
-}
-
-function paperFromSheet(sheet) {
-  return {
-    name: sheet.paper.name,
-    density: String(sheet.paper.density),
-    thickness: String(sheet.paper.thickness),
-    price_per_kilo: sheet.paper.price_per_kilo,
-  };
-}
-
-function sheetFormatFromSheet(sheet) {
-  if (!sheet.format) {
-    return { name: "", width: "0", height: "0" };
-  }
-  return {
-    name: sheet.format.name,
-    width: String(sheet.format.width),
-    height: String(sheet.format.height),
-  };
-}
-
 const TOGGLE_OPERATION_KINDS = [
   { kind: "laminate", label: "Ламинация", factory: emptyLaminateOperation },
   { kind: "die_cut", label: "Высечка", factory: emptyDieCutOperation },
 ];
-
-const KIND_ORDER = ["print", "laminate", "cut", "die_cut"];
-
-function sortOperations(operations) {
-  return [...operations].sort(
-    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
-  );
-}
 
 function resolvePaperSheetId(paperSheetId, paper, sheets) {
   if (paperSheetId) {
@@ -94,7 +61,7 @@ export default function BlockSection({
         return;
       }
       update({
-        operations: sortOperations([
+        operations: sortBlockOperationsByKind([
           ...block.operations,
           applyOperationCatalogDefaults(factory(), catalogs),
         ]),
@@ -212,7 +179,7 @@ export default function BlockSection({
         onToggle={setOperationKindEnabled}
       />
       <div className={styles.operations}>
-        {sortOperations(block.operations).map((operation) => (
+        {sortBlockOperationsByKind(block.operations).map((operation) => (
           <OperationFields
             key={operation.clientKey}
             operation={operation}

@@ -76,7 +76,7 @@ function emptyDieCutOperation() {
 
 const BLOCK_OPERATION_KIND_ORDER = ["print", "laminate", "cut", "die_cut"];
 
-function sortBlockOperations(operations) {
+export function sortBlockOperationsByKind(operations) {
   return [...operations].sort(
     (a, b) =>
       BLOCK_OPERATION_KIND_ORDER.indexOf(a.kind) -
@@ -92,7 +92,7 @@ function ensureMandatoryBlockOperations(operations) {
   if (!next.some((op) => op.kind === "cut")) {
     next.push(emptyCutOperation());
   }
-  return sortBlockOperations(next);
+  return sortBlockOperationsByKind(next);
 }
 
 export function emptyBlock() {
@@ -242,7 +242,16 @@ function mapOperationFromDto(operation) {
   throw new Error(`order: unknown operation kind ${operation.kind}`);
 }
 
-function paperFieldsFromSheet(sheet) {
+export function emptyPaperFields() {
+  return {
+    name: "",
+    density: "",
+    thickness: "",
+    price_per_kilo: "0",
+  };
+}
+
+export function paperFromSheet(sheet) {
   return {
     name: sheet.paper.name,
     density: String(sheet.paper.density),
@@ -251,7 +260,7 @@ function paperFieldsFromSheet(sheet) {
   };
 }
 
-function sheetFormatFieldsFromSheet(sheet) {
+export function sheetFormatFromSheet(sheet) {
   if (!sheet.format) {
     return { name: "", width: "0", height: "0" };
   }
@@ -262,7 +271,11 @@ function sheetFormatFieldsFromSheet(sheet) {
   };
 }
 
-function filmFieldsFromCatalog(film) {
+export function emptyFilmFields() {
+  return { name: "", price: "0", density: "0" };
+}
+
+export function filmOptionFromCatalog(film) {
   return {
     name: film.name,
     price: film.price,
@@ -283,7 +296,7 @@ function applyFilmsToOperations(operations, films) {
     }
     return {
       ...operation,
-      film: filmFieldsFromCatalog(film),
+      film: filmOptionFromCatalog(film),
     };
   });
 }
@@ -303,8 +316,8 @@ export function applySheetsCatalogToForm(form, sheets) {
       }
       return {
         ...block,
-        paper: paperFieldsFromSheet(sheet),
-        sheetFormat: sheetFormatFieldsFromSheet(sheet),
+        paper: paperFromSheet(sheet),
+        sheetFormat: sheetFormatFromSheet(sheet),
       };
     }),
   };
@@ -368,8 +381,8 @@ export function applyBlockCatalogDefaults(block, catalogs) {
     next = {
       ...next,
       paperSheetId: String(sheet.id),
-      paper: paperFieldsFromSheet(sheet),
-      sheetFormat: sheetFormatFieldsFromSheet(sheet),
+      paper: paperFromSheet(sheet),
+      sheetFormat: sheetFormatFromSheet(sheet),
     };
   }
   return {
