@@ -141,16 +141,16 @@ export default function BlockSection({
   return (
     <section className={styles.calculatorBlock}>
       <div className={styles.heading}>
-        <h3 className={styles.blockHeading}>{`Блок ${index + 1}`}</h3>
+        <h3 className={styles.blockHeading}>{`Часть ${index + 1}`}</h3>
         <TextField
           id={`${idPrefix}-block-count`}
-          label="Копии"
+          label="Листов"
           value={block.count}
           type="number"
           onChange={(v) => update({ count: v })}
         />
         <TextField
-          id={`${idPrefix}-markup`}
+          id={`${idPrefix}-markup`} 
           label="Наценка"
           value={block.markup}
           type="number"
