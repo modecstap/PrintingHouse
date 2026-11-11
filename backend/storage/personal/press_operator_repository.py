@@ -32,6 +32,7 @@ class SqlPressOperatorRepository:
             raise KeyError(operator_id)
         return PressOperator(
             id=operator_id,
+            name=row.name,
             salary_by_operation=Money(row.salary_by_operation),
         )
 
@@ -45,6 +46,7 @@ class SqlPressOperatorRepository:
         return tuple(
             PressOperator(
                 id=PressOperatorID(row.id),
+                name=row.name,
                 salary_by_operation=Money(row.salary_by_operation),
             )
             for row in rows
@@ -63,6 +65,7 @@ class SqlPressOperatorRepository:
             self._session.add(
                 PressOperatorRow(
                     id=operator.id.value,
+                    name=operator.name,
                     salary_by_operation=operator.salary_by_operation.amount,
                 ),
             )

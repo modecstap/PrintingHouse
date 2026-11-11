@@ -29,7 +29,7 @@ class SqlCutterRepository:
         row = self._session.get(CutterRow, cutter_id.value)
         if row is None:
             raise KeyError(cutter_id)
-        return Cutter(id=cutter_id, max_stack=row.max_stack)
+        return Cutter(id=cutter_id, name=row.name, max_stack=row.max_stack)
 
     def take_all(self) -> tuple[Cutter, ...]:
         """Returns every stored cutter.
@@ -39,7 +39,8 @@ class SqlCutterRepository:
         stmt = select(CutterRow).order_by(CutterRow.id)
         rows = self._session.execute(stmt).scalars().all()
         return tuple(
-            Cutter(id=CutterID(row.id), max_stack=row.max_stack) for row in rows
+            Cutter(id=CutterID(row.id), name=row.name, max_stack=row.max_stack)
+            for row in rows
         )
 
     def save(self, cutter: Cutter) -> None:
@@ -53,7 +54,11 @@ class SqlCutterRepository:
         """
         try:
             self._session.add(
-                CutterRow(id=cutter.id.value, max_stack=cutter.max_stack),
+                CutterRow(
+                    id=cutter.id.value,
+                    name=cutter.name,
+                    max_stack=cutter.max_stack,
+                ),
             )
             self._session.flush()
         except IntegrityError as exc:

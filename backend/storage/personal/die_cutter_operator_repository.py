@@ -37,6 +37,7 @@ class SqlDieCutterOperatorRepository:
             raise KeyError(operator_id)
         return DieCutterOperator(
             id=operator_id,
+            name=row.name,
             salary_by_operation=Money(row.salary_by_operation),
         )
 
@@ -50,6 +51,7 @@ class SqlDieCutterOperatorRepository:
         return tuple(
             DieCutterOperator(
                 id=DieCutterOperatorID(row.id),
+                name=row.name,
                 salary_by_operation=Money(row.salary_by_operation),
             )
             for row in rows
@@ -68,6 +70,7 @@ class SqlDieCutterOperatorRepository:
             self._session.add(
                 DieCutterOperatorRow(
                     id=operator.id.value,
+                    name=operator.name,
                     salary_by_operation=operator.salary_by_operation.amount,
                 ),
             )

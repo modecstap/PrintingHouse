@@ -30,7 +30,11 @@ class SqlLaminatorRepository:
         row = self._session.get(LaminatorRow, laminator_id.value)
         if row is None:
             raise KeyError(laminator_id)
-        return Laminator(id=laminator_id, startup=Money(row.startup))
+        return Laminator(
+            id=laminator_id,
+            name=row.name,
+            startup=Money(row.startup),
+        )
 
     def take_all(self) -> tuple[Laminator, ...]:
         """Returns every stored laminator.
@@ -40,7 +44,11 @@ class SqlLaminatorRepository:
         stmt = select(LaminatorRow).order_by(LaminatorRow.id)
         rows = self._session.execute(stmt).scalars().all()
         return tuple(
-            Laminator(id=LaminatorID(row.id), startup=Money(row.startup))
+            Laminator(
+                id=LaminatorID(row.id),
+                name=row.name,
+                startup=Money(row.startup),
+            )
             for row in rows
         )
 
@@ -57,6 +65,7 @@ class SqlLaminatorRepository:
             self._session.add(
                 LaminatorRow(
                     id=laminator.id.value,
+                    name=laminator.name,
                     startup=laminator.startup.amount,
                 ),
             )

@@ -32,6 +32,7 @@ class SqlCutterOperatorRepository:
             raise KeyError(operator_id)
         return CutterOperator(
             id=operator_id,
+            name=row.name,
             salary_by_operation=Money(row.salary_by_operation),
         )
 
@@ -45,6 +46,7 @@ class SqlCutterOperatorRepository:
         return tuple(
             CutterOperator(
                 id=CutterOperatorID(row.id),
+                name=row.name,
                 salary_by_operation=Money(row.salary_by_operation),
             )
             for row in rows
@@ -63,6 +65,7 @@ class SqlCutterOperatorRepository:
             self._session.add(
                 CutterOperatorRow(
                     id=operator.id.value,
+                    name=operator.name,
                     salary_by_operation=operator.salary_by_operation.amount,
                 ),
             )

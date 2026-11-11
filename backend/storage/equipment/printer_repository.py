@@ -56,6 +56,7 @@ class SqlPrinterRepository:
             self._session.add(
                 PrinterRow(
                     id=printer.id.value,
+                    name=printer.name,
                     startup=printer.startup.amount,
                     cyan=printer.cyan.amount,
                     magenta=printer.magenta.amount,
@@ -85,6 +86,7 @@ class SqlPrinterRepository:
     def _printer_from_row(printer_id: PrinterID, row: PrinterRow) -> Printer:
         return Printer(
             id=printer_id,
+            name=row.name,
             startup=Money(row.startup),
             cyan=Money(row.cyan),
             magenta=Money(row.magenta),

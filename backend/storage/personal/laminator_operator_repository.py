@@ -37,6 +37,7 @@ class SqlLaminatorOperatorRepository:
             raise KeyError(operator_id)
         return LaminatorOperator(
             id=operator_id,
+            name=row.name,
             salary_by_operation=Money(row.salary_by_operation),
         )
 
@@ -50,6 +51,7 @@ class SqlLaminatorOperatorRepository:
         return tuple(
             LaminatorOperator(
                 id=LaminatorOperatorID(row.id),
+                name=row.name,
                 salary_by_operation=Money(row.salary_by_operation),
             )
             for row in rows
@@ -68,6 +70,7 @@ class SqlLaminatorOperatorRepository:
             self._session.add(
                 LaminatorOperatorRow(
                     id=operator.id.value,
+                    name=operator.name,
                     salary_by_operation=operator.salary_by_operation.amount,
                 ),
             )
