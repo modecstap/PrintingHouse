@@ -27,6 +27,7 @@ function staffCatalog({ key, title, listPath }) {
     canReplace: false,
     columns: [
       { header: "Номер", render: (row) => row.id },
+      { header: "Название", render: (row) => row.name },
       {
         header: "Зарплата",
         render: (row) => formatMoney(row.salary_by_operation),
@@ -34,13 +35,15 @@ function staffCatalog({ key, title, listPath }) {
     ],
     fields: [
       { name: "id", label: "Номер", ...INT },
+      { name: "name", label: "Название" },
       { name: "salary_by_operation", label: "Зарплата", ...MONEY },
     ],
-    emptyForm: { id: "", salary_by_operation: "" },
+    emptyForm: { id: "", name: "", salary_by_operation: "" },
     formFromRow: undefined,
     toPayload(form) {
       return {
         id: toJsonInt(form.id),
+        name: form.name.trim(),
         salary_by_operation: form.salary_by_operation.trim(),
       };
     },
@@ -59,6 +62,7 @@ const PRINTERS = {
   canReplace: false,
   columns: [
     { header: "Номер", render: (row) => row.id },
+    { header: "Название", render: (row) => row.name },
     { header: "Запуск", render: (row) => formatMoney(row.startup) },
     { header: "C", render: (row) => formatMoney(row.cyan) },
     { header: "M", render: (row) => formatMoney(row.magenta) },
@@ -67,6 +71,7 @@ const PRINTERS = {
   ],
   fields: [
     { name: "id", label: "Номер", ...INT },
+    { name: "name", label: "Название" },
     { name: "startup", label: "Запуск", ...MONEY },
     { name: "cyan", label: "C", ...MONEY },
     { name: "magenta", label: "M", ...MONEY },
@@ -75,6 +80,7 @@ const PRINTERS = {
   ],
   emptyForm: {
     id: "",
+    name: "",
     startup: "",
     cyan: "",
     magenta: "",
@@ -85,6 +91,7 @@ const PRINTERS = {
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
+      name: form.name.trim(),
       startup: form.startup.trim(),
       cyan: form.cyan.trim(),
       magenta: form.magenta.trim(),
@@ -106,17 +113,20 @@ const LAMINATORS = {
   canReplace: false,
   columns: [
     { header: "Номер", render: (row) => row.id },
+    { header: "Название", render: (row) => row.name },
     { header: "Запуск", render: (row) => formatMoney(row.startup) },
   ],
   fields: [
     { name: "id", label: "Номер", ...INT },
+    { name: "name", label: "Название" },
     { name: "startup", label: "Запуск", ...MONEY },
   ],
-  emptyForm: { id: "", startup: "" },
+  emptyForm: { id: "", name: "", startup: "" },
   formFromRow: undefined,
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
+      name: form.name.trim(),
       startup: form.startup.trim(),
     };
   },
@@ -134,17 +144,20 @@ const CUTTERS = {
   canReplace: false,
   columns: [
     { header: "Номер", render: (row) => row.id },
+    { header: "Название", render: (row) => row.name },
     { header: "Стопа", render: (row) => row.max_stack },
   ],
   fields: [
     { name: "id", label: "Номер", ...INT },
+    { name: "name", label: "Название" },
     { name: "max_stack", label: "Стопа", ...INT },
   ],
-  emptyForm: { id: "", max_stack: "" },
+  emptyForm: { id: "", name: "", max_stack: "" },
   formFromRow: undefined,
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
+      name: form.name.trim(),
       max_stack: toJsonInt(form.max_stack),
     };
   },
