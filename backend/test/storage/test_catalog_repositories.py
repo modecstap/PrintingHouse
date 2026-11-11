@@ -21,6 +21,7 @@ from backend.storage.equipment.laminator_repository import SqlLaminatorRepositor
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
+from backend.storage.materials.tables import SheetRow
 from backend.storage.part.tables import PartLaminateRow, PartOperationRow, PartRow
 from backend.storage.personal.cutter_operator_repository import SqlCutterOperatorRepository
 from backend.storage.personal.laminator_operator_repository import (
@@ -169,6 +170,45 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     db_session.commit()
     whole = repo.take(whole_id)
     assert whole.paper.thickness.quantize(Decimal("0.01")) == Decimal("1.00")
+
+
+def test_sheet_distinct_paper_types_dedup_and_sort(db_session):
+    """``distinct_paper_types`` deduplicates canonical values and sorts ascending."""
+    repo = SqlSheetRepository(db_session)
+    paper = Paper(
+        density=100,
+        thickness=Decimal(1),
+        type=PaperType("офсет"),
+        price_per_kilo=Money(Decimal("10")),
+    )
+    fmt_a = Format(name="SRA3", height=450, width=320)
+    fmt_b = Format(name="A2", height=594, width=420)
+    repo.add(paper, fmt_a)
+    repo.add(paper, fmt_b)
+    db_session.add(
+        SheetRow(
+            paper_density=80,
+            paper_thickness=Decimal(1),
+            paper_name="  офсет  ",
+            paper_price_per_kilo=Decimal("5"),
+            format_name="A3",
+            format_height=420,
+            format_width=297,
+        ),
+    )
+    db_session.add(
+        SheetRow(
+            paper_density=90,
+            paper_thickness=Decimal(1),
+            paper_name="мелованная",
+            paper_price_per_kilo=Decimal("6"),
+            format_name="A4",
+            format_height=297,
+            format_width=210,
+        ),
+    )
+    db_session.commit()
+    assert repo.distinct_paper_types() == ("мелованная", "офсет")
 
 
 @pytest.mark.parametrize(

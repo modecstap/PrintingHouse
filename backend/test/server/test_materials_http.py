@@ -23,6 +23,7 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 @dataclass
 class _FakeMaterialCatalogService:
     films_rows: tuple[Film, ...] = ()
+    paper_types_rows: tuple[str, ...] = ()
     calls: list[str] = field(default_factory=list)
     missing_film_ids: set[int] = field(default_factory=set)
     created_film_id: int = 7
@@ -67,6 +68,10 @@ class _FakeMaterialCatalogService:
 
     def delete_sheet(self, sheet_id: SheetID) -> None:
         pass
+
+    def paper_types(self) -> tuple[str, ...]:
+        self.calls.append("list_paper_types")
+        return self.paper_types_rows
 
 
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
@@ -136,3 +141,27 @@ def test_delete_film_204():
     response = client.delete("/api/materials/films/3", headers=headers)
     assert response.status_code == 204
     assert fake.calls == ["delete:3"]
+
+
+def test_paper_types_require_token():
+    fake = _FakeMaterialCatalogService()
+    client, _ = _client_with_fake(fake)
+    assert client.get("/api/materials/paper-types").status_code == 401
+
+
+def test_paper_types_200_returns_list_from_service():
+    fake = _FakeMaterialCatalogService(paper_types_rows=("a", "b"))
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/paper-types", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == ["a", "b"]
+    assert fake.calls == ["list_paper_types"]
+
+
+def test_paper_types_empty_catalog_returns_empty_list():
+    fake = _FakeMaterialCatalogService(paper_types_rows=())
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/paper-types", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+    assert fake.calls == ["list_paper_types"]
