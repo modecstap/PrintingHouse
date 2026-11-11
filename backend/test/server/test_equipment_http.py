@@ -89,6 +89,7 @@ def test_save_printer_204():
         json={
             "id": 1,
             "name": "Тест",
+            "spacing": 0,
             "startup": "0",
             "cyan": "0",
             "magenta": "0",
