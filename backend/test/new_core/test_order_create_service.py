@@ -6,6 +6,7 @@ from decimal import Decimal
 import pytest
 
 from backend.new_core import AdditionalWork, InvalidInput, Percent
+from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.materials.film import FilmID
@@ -63,10 +64,15 @@ def _create_service(
     )
 
 
-def _product_from_run(run, *, extra_block=None) -> Product:
+def _product_from_run(
+    run,
+    *,
+    extra_block=None,
+    parts_markup: Percent = Percent(0),
+) -> Product:
     blocks = (run.block,) if extra_block is None else (run.block, extra_block)
     return Product(
-        parts_markup=Percent(0),
+        parts_markup=parts_markup,
         blocks=blocks,
         operations=(
             AdditionalWork(
@@ -124,6 +130,32 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
     report = service.quote(product, count=1)
 
     assert report.impositions == (6, 12)
+
+
+def test_quote_applies_product_parts_markup_to_each_block():
+    """One ``parts_markup`` prices every print run like a single-block product."""
+    run, _, _, _, ctx = build_worked_run()
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    markup = Percent(10)
+    accountant = Accountant()
+
+    def sheet_markups(blocks: tuple) -> tuple:
+        product = Product(parts_markup=markup, blocks=blocks, operations=())
+        order, runs = service._assemble(product, count=4)
+        return tuple(
+            accountant.sheet_cost_report(
+                service._run_estimate(
+                    service._rehydrate_run(r),
+                    order.product.parts_markup,
+                ),
+            ).markup
+            for r in runs
+        )
+
+    reference = sheet_markups((run.block,))[0]
+    for block_markup in sheet_markups((run.block, run.block)):
+        assert block_markup == reference
 
 
 def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
