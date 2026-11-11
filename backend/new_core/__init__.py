@@ -3,6 +3,8 @@
 from backend.new_core.errors import InvalidInput
 
 from backend.new_core.format import Format
+from backend.new_core.materials.film_density import FilmDensity
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Paper, Sheet
 from backend.new_core.print_run.imposition import Imposition
@@ -46,7 +48,9 @@ __all__ = [
     "Product",
     "Order",
     "Paper",
+    "PaperDensity",
     "PaperType",
+    "FilmDensity",
     "Format",
     "Sheet",
     "Imposition",
