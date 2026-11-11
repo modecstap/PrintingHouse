@@ -1,19 +1,19 @@
 import { formatMoney } from "../../../lib/format-money";
 
 export function printerLabel(printer) {
-  return `№ ${printer.id}`;
+  return printer.name;
 }
 
 export function laminatorLabel(laminator) {
-  return `№ ${laminator.id}`;
+  return laminator.name;
 }
 
 export function cutterLabel(cutter) {
-  return `№ ${cutter.id}`;
+  return cutter.name;
 }
 
 export function operatorLabel(operator) {
-  return `№ ${operator.id}, ${formatMoney(operator.salary_by_operation)}`;
+  return operator.name;
 }
 
 function sheetSizeLabel(format) {

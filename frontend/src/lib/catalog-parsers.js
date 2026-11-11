@@ -2,6 +2,9 @@ export function toPrinter(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("printer: id must be a number");
   }
+  if (typeof raw?.name !== "string") {
+    throw new Error("printer: name must be a string");
+  }
   if (typeof raw?.startup !== "string") {
     throw new Error("printer: startup must be a string");
   }
@@ -19,6 +22,7 @@ export function toPrinter(raw) {
   }
   return {
     id: raw.id,
+    name: raw.name,
     startup: raw.startup,
     cyan: raw.cyan,
     magenta: raw.magenta,
@@ -31,30 +35,43 @@ export function toLaminator(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("laminator: id must be a number");
   }
+  if (typeof raw?.name !== "string") {
+    throw new Error("laminator: name must be a string");
+  }
   if (typeof raw?.startup !== "string") {
     throw new Error("laminator: startup must be a string");
   }
-  return { id: raw.id, startup: raw.startup };
+  return { id: raw.id, name: raw.name, startup: raw.startup };
 }
 
 export function toCutter(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("cutter: id must be a number");
   }
+  if (typeof raw?.name !== "string") {
+    throw new Error("cutter: name must be a string");
+  }
   if (typeof raw?.max_stack !== "number") {
     throw new Error("cutter: max_stack must be a number");
   }
-  return { id: raw.id, max_stack: raw.max_stack };
+  return { id: raw.id, name: raw.name, max_stack: raw.max_stack };
 }
 
 export function toOperator(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("operator: id must be a number");
   }
+  if (typeof raw?.name !== "string") {
+    throw new Error("operator: name must be a string");
+  }
   if (typeof raw?.salary_by_operation !== "string") {
     throw new Error("operator: salary_by_operation must be a string");
   }
-  return { id: raw.id, salary_by_operation: raw.salary_by_operation };
+  return {
+    id: raw.id,
+    name: raw.name,
+    salary_by_operation: raw.salary_by_operation,
+  };
 }
 
 function parsePaperThickness(value) {
