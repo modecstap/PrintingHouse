@@ -25,6 +25,8 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 class _FakeMaterialCatalogService:
     films_rows: tuple[Film, ...] = ()
     paper_types_rows: tuple[str, ...] = ()
+    paper_densities_rows: tuple[int, ...] = ()
+    film_densities_rows: tuple[int, ...] = ()
     calls: list[str] = field(default_factory=list)
     missing_film_ids: set[int] = field(default_factory=set)
     created_film_id: int = 7
@@ -73,6 +75,14 @@ class _FakeMaterialCatalogService:
     def paper_types(self) -> tuple[str, ...]:
         self.calls.append("list_paper_types")
         return self.paper_types_rows
+
+    def paper_densities(self) -> tuple[int, ...]:
+        self.calls.append("list_paper_densities")
+        return self.paper_densities_rows
+
+    def film_densities(self) -> tuple[int, ...]:
+        self.calls.append("list_film_densities")
+        return self.film_densities_rows
 
 
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
@@ -171,3 +181,51 @@ def test_paper_types_empty_catalog_returns_empty_list():
     assert response.status_code == 200
     assert response.json() == []
     assert fake.calls == ["list_paper_types"]
+
+
+def test_paper_densities_require_token():
+    fake = _FakeMaterialCatalogService()
+    client, _ = _client_with_fake(fake)
+    assert client.get("/api/materials/paper-densities").status_code == 401
+
+
+def test_paper_densities_200_returns_list_from_service():
+    fake = _FakeMaterialCatalogService(paper_densities_rows=(80, 100))
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/paper-densities", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == [80, 100]
+    assert fake.calls == ["list_paper_densities"]
+
+
+def test_paper_densities_empty_catalog_returns_empty_list():
+    fake = _FakeMaterialCatalogService(paper_densities_rows=())
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/paper-densities", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+    assert fake.calls == ["list_paper_densities"]
+
+
+def test_film_densities_require_token():
+    fake = _FakeMaterialCatalogService()
+    client, _ = _client_with_fake(fake)
+    assert client.get("/api/materials/film-densities").status_code == 401
+
+
+def test_film_densities_200_returns_list_from_service():
+    fake = _FakeMaterialCatalogService(film_densities_rows=(50, 120))
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/film-densities", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == [50, 120]
+    assert fake.calls == ["list_film_densities"]
+
+
+def test_film_densities_empty_catalog_returns_empty_list():
+    fake = _FakeMaterialCatalogService(film_densities_rows=())
+    client, headers = _client_with_fake(fake)
+    response = client.get("/api/materials/film-densities", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+    assert fake.calls == ["list_film_densities"]
