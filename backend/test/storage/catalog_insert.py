@@ -115,7 +115,7 @@ def insert_sheet(session: Session, sheet: Sheet) -> None:
             id=sheet.id.value,
             paper_density=sheet.paper.density,
             paper_thickness=sheet.paper.thickness,
-            paper_name=sheet.paper.name,
+            paper_name=sheet.paper.type.value,
             paper_price_per_kilo=sheet.paper.price_per_kilo.amount,
             format_name=sheet.format.name,
             format_height=sheet.format.height,

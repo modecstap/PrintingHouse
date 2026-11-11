@@ -9,6 +9,7 @@ from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
@@ -45,7 +46,7 @@ def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet
         paper=Paper(
             density=60,
             thickness=Decimal(1),
-            name="sheet",
+            type=PaperType("sheet"),
             price_per_kilo=Money(Decimal(0)),
         ),
         format=Format(name="sheet", height=height, width=width),
@@ -116,7 +117,7 @@ def test_paper_rejects_a_density_of_zero():
         lambda: Paper(
             density=0,
             thickness=Decimal(1),
-            name="press",
+            type=PaperType("press"),
             price_per_kilo=Money(Decimal(1000)),
         ),
     )
@@ -127,7 +128,7 @@ def test_paper_accepts_fractional_thickness():
     Paper(
         density=60,
         thickness=Decimal("0.15"),
-        name="press",
+        type=PaperType("press"),
         price_per_kilo=Money(Decimal(1000)),
     )
 
@@ -140,7 +141,7 @@ def test_paper_rejects_thickness_with_more_than_two_decimal_places():
         lambda: Paper(
             density=60,
             thickness=Decimal("0.151"),
-            name="press",
+            type=PaperType("press"),
             price_per_kilo=Money(Decimal(1000)),
         ),
     )
@@ -153,7 +154,7 @@ def test_paper_rejects_a_thickness_of_zero():
         lambda: Paper(
             density=60,
             thickness=Decimal(0),
-            name="press",
+            type=PaperType("press"),
             price_per_kilo=Money(Decimal(1000)),
         ),
     )
@@ -253,7 +254,7 @@ def test_negative_measure_is_rejected(message: str, build):
             lambda: Paper(
                 density=0,
                 thickness=Decimal(0),
-                name="press",
+                type=PaperType("press"),
                 price_per_kilo=Money(Decimal(1000)),
             ),
             id="paper",

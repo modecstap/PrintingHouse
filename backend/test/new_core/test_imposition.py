@@ -8,6 +8,7 @@ import pytest
 from backend.new_core.values.money import Money
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core import Format, Imposition, InvalidInput, Paper, Sheet
+from backend.new_core.materials.paper_type import PaperType
 
 
 def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
@@ -16,7 +17,7 @@ def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet
         paper=Paper(
             density=60,
             thickness=Decimal(1),
-            name="sheet",
+            type=PaperType("sheet"),
             price_per_kilo=Money(Decimal(0)),
         ),
         format=Format(name="sheet", height=height, width=width),

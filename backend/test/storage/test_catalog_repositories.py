@@ -11,6 +11,7 @@ from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
@@ -121,7 +122,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     paper = Paper(
         density=100,
         thickness=Decimal(1),
-        name="dup",
+        type=PaperType("dup"),
         price_per_kilo=Money(Decimal("10")),
     )
     fmt = Format(name="SRA3", height=450, width=320)
@@ -136,7 +137,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
         paper=Paper(
             density=120,
             thickness=Decimal(2),
-            name="new",
+            type=PaperType("new"),
             price_per_kilo=Money(Decimal("12")),
         ),
         format=Format(name="A2", height=594, width=420),
@@ -152,7 +153,7 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     fractional = Paper(
         density=80,
         thickness=Decimal("0.15"),
-        name="тонкая",
+        type=PaperType("тонкая"),
         price_per_kilo=Money(Decimal("10")),
     )
     fmt = Format(name="SRA3", height=450, width=320)
@@ -162,7 +163,7 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     assert loaded.paper.thickness == Decimal("0.15")
 
     whole_id = repo.add(
-        Paper(100, Decimal(1), "целая", Money(Decimal("5"))),
+        Paper(100, Decimal(1), PaperType("целая"), Money(Decimal("5"))),
         fmt,
     )
     db_session.commit()
@@ -197,7 +198,7 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
             SheetID(404),
             Sheet(
                 id=SheetID(404),
-                paper=Paper(1, Decimal(1), "x", Money(Decimal("1"))),
+                paper=Paper(1, Decimal(1), PaperType("x"), Money(Decimal("1"))),
                 format=Format("f", 1, 1),
             ),
         ),
@@ -237,7 +238,7 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
     """A sheet still referenced by ``parts.sheet_id`` cannot be removed."""
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
-        Paper(100, Decimal(1), "press", Money(Decimal("1"))),
+        Paper(100, Decimal(1), PaperType("press"), Money(Decimal("1"))),
         Format("press", 300, 200),
     )
     db_session.flush()

@@ -44,6 +44,7 @@ from backend.new_core import (
     AdditionalWork,
     Order,
     Paper,
+    PaperType,
     Percent,
     PressOperator,
     Print,
@@ -154,7 +155,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         paper=Paper(
             density=press_density,
             thickness=paper_thickness,
-            name="press",
+            type=PaperType("press"),
             price_per_kilo=Money(Decimal(press_price)),
         ),
         format=Format(
@@ -545,7 +546,7 @@ def test_factories_append_in_call_order():
 
     assert run.block.operations == (printing, laminate, cut, die_cut)
     assert printing.chroma is Chroma.FOUR_ZERO
-    assert run.block.imposition.press_sheet.paper.name == "press"
+    assert run.block.imposition.press_sheet.paper.type.value == "press"
     assert laminate.lamination is Lamination.ONE_ZERO
     assert laminate.film_id == FilmID(1)
     assert die_cut.operator_id is operator.id

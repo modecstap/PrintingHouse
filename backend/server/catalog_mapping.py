@@ -19,6 +19,7 @@ from backend.new_core.personal.laminator_operator import (
 )
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.new_core.values.money import Money
@@ -151,7 +152,7 @@ def sheet_to_read_dto(sheet: Sheet) -> SheetReadDto:
         paper=PaperDto(
             density=sheet.paper.density,
             thickness=sheet.paper.thickness,
-            name=sheet.paper.name,
+            name=sheet.paper.type.value,
             price_per_kilo=str(sheet.paper.price_per_kilo.amount),
         ),
         format=_format_to_dto(sheet.format),
@@ -162,7 +163,7 @@ def sheet_from_write_dto(dto: SheetDto) -> tuple[Paper, Format]:
     paper = Paper(
         density=dto.paper.density,
         thickness=dto.paper.thickness,
-        name=dto.paper.name,
+        type=PaperType(dto.paper.name),
         price_per_kilo=_money(dto.paper.price_per_kilo),
     )
     return paper, _format_from_dto(dto.format)

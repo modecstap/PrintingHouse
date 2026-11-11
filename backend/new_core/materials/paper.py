@@ -1,8 +1,9 @@
-"""One paper grade: density, thickness, name, and price."""
+"""One paper grade: density, thickness, type, and price."""
 
 from dataclasses import dataclass
 from decimal import Decimal
 
+from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.values.money import Money
 from backend.new_core.errors import InvalidInput
 
@@ -10,12 +11,13 @@ from backend.new_core.errors import InvalidInput
 @dataclass(frozen=True, slots=True)
 class Paper:
     """
-    Value Object. The density, the thickness, the name, and the price of one kilogram of a paper grade.
+    Value Object. The density, the thickness, the paper type, and the price
+    of one kilogram of a paper grade.
     """
 
     density: int
     thickness: Decimal
-    name: str
+    type: PaperType
     price_per_kilo: Money
 
     def __post_init__(self) -> None:
