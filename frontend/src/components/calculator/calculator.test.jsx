@@ -87,10 +87,10 @@ function stubCatalogFetch(overrides = {}) {
 }
 
 const SAMPLE_PRODUCT = {
+  parts_markup: 30,
   blocks: [
     {
       count: 2,
-      markup: 30,
       imposition: {
         target: { name: "Визитка", width: 90, height: 50 },
         sheet_id: null,
@@ -112,6 +112,8 @@ const ORDER_DTO = {
 };
 
 async function fillMandatoryPrintAndCut() {
+  await userEvent.clear(screen.getByLabelText("Листов:"));
+  await userEvent.type(screen.getByLabelText("Листов:"), "1");
   const printRegion = screen.getByRole("region", { name: /Печать/i });
   await userEvent.selectOptions(
     within(printRegion).getByLabelText("Принтер:"),
@@ -328,6 +330,7 @@ describe("Calculator", () => {
       expect(screen.getByLabelText("Тираж:")).toHaveValue(100);
     });
     expect(screen.getByLabelText("Описание:")).toHaveValue("Тестовый заказ");
+    expect(screen.getByLabelText("Наценка:")).toHaveValue(30);
     expect(screen.getByLabelText("Ширина:")).toHaveValue(90);
     expect(screen.getByLabelText("Высота:")).toHaveValue(50);
   });

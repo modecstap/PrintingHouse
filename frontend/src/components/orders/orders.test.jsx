@@ -5,10 +5,10 @@ import { jsonResponse } from "../../test-utils/json-response";
 import { renderWithToken } from "../../test-utils/render-with-token";
 
 const SAMPLE_PRODUCT = {
+  parts_markup: 30,
   blocks: [
     {
       count: 2,
-      markup: 30,
       imposition: {
         target: { name: "Визитка", width: 90, height: 50 },
         sheet_id: 1,

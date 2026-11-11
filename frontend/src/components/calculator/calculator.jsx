@@ -98,6 +98,15 @@ export default function Calculator({
             value={form.description}
             onChange={(v) => setForm({ ...form, description: v })}
           />
+          <div className={profitHidden ? styles.sensitiveBlur : undefined}>
+            <TextField
+              id="order-parts-markup"
+              label="Наценка"
+              type="number"
+              value={form.partsMarkup}
+              onChange={(v) => setForm({ ...form, partsMarkup: v })}
+            />
+          </div>
           <div className={styles.addActions}>
             <Button type="button" onClick={addBlock}>
               + Блок
@@ -122,7 +131,6 @@ export default function Calculator({
               index={index}
               soleBlock={form.blocks.length === 1}
               catalogs={catalogState.catalogs}
-              profitHidden={profitHidden}
               onChange={(next) => updateBlock(block.clientKey, next)}
               onRemove={() => removeBlock(block.clientKey)}
             />
