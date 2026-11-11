@@ -26,6 +26,7 @@ class Printer:
 
     id: PrinterID
     name: str
+    spacing: int
     startup: Money
     cyan: Money
     magenta: Money
@@ -41,3 +42,8 @@ class Printer:
             )
         if stripped != self.name:
             object.__setattr__(self, "name", stripped)
+        if self.spacing < 0:
+            raise InvalidInput(
+                subject="printer",
+                reason=f"поля меньше 0, поля={self.spacing} мм",
+            )
