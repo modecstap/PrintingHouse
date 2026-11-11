@@ -69,6 +69,7 @@ def _block(count: int) -> Part:
     return Part(
         imposition=_fitting_imposition(),
         count=count,
+        need_spacing=False,
         operations=(),
     )
 

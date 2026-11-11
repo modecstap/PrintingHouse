@@ -15,6 +15,7 @@ class Part:
 
     imposition: Imposition
     count: int
+    need_spacing: bool
     operations: tuple[RunOperation, ...]
 
     def __post_init__(self) -> None:

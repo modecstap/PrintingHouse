@@ -63,6 +63,7 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
     return Part(
         imposition=imposition,
         count=row.count,
+        need_spacing=False,
         operations=operations,
     )
 

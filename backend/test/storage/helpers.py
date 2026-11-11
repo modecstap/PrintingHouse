@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -34,7 +35,7 @@ def make_order(
 def product_from_run(run: PrintRun, *, parts_markup: Percent = Percent(0)) -> Product:
     return Product(
         parts_markup=parts_markup,
-        blocks=(run.block,),
+        blocks=(replace(run.block, need_spacing=False),),
         operations=(
             AdditionalWork(
                 name="сборка",
@@ -50,4 +51,4 @@ def assert_print_run_equal(stored: PrintRun, expected: PrintRun) -> None:
     assert stored.id == expected.id
     assert stored.for_order == expected.for_order
     assert stored.required_count == expected.required_count
-    assert stored.block == expected.block
+    assert stored.block == replace(expected.block, need_spacing=False)

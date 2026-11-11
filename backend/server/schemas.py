@@ -137,6 +137,7 @@ class PartDto(BaseModel):
 
     imposition: ImpositionDto
     count: int
+    need_spacing: bool = True
     operations: tuple[RunOperationDto, ...]
 
 

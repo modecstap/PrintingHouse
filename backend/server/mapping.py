@@ -97,6 +97,7 @@ def _part_from_dto(dto: PartDto) -> Part:
     return Part(
         imposition=_imposition_from_dto(dto.imposition),
         count=dto.count,
+        need_spacing=dto.need_spacing,
         operations=tuple(_operation_from_dto(op) for op in dto.operations),
     )
 
@@ -171,6 +172,7 @@ def _part_to_dto(part: Part) -> PartDto:
     return PartDto(
         imposition=_imposition_to_dto(part.imposition),
         count=part.count,
+        need_spacing=part.need_spacing,
         operations=tuple(_operation_to_dto(op) for op in part.operations),
     )
 

@@ -36,6 +36,7 @@ from backend.new_core.personal.laminator_operator_repository import (
 )
 from backend.new_core.personal.press_operator_repository import PressOperatorRepository
 from backend.new_core.print_run.factory import PrintRunFactory
+from backend.new_core.print_run.imposition_factory import ImpositionFactory
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.percent import Percent
 
@@ -170,6 +171,7 @@ class OrderService:
         self._sheets = sheets
         self._order_factory = OrderFactory(uow.orders)
         self._print_run_factory = PrintRunFactory(uow.print_runs)
+        self._imposition_factory = ImpositionFactory(sheets, printers)
 
     def get_orders(self, limit: int) -> tuple[Order, ...]:
         """Returns the latest orders by id.
@@ -357,8 +359,7 @@ class OrderService:
         return replace(
             product,
             blocks=tuple(
-                self._hydrate_part(block, apply_printer_spacing=True)
-                for block in product.blocks
+                self._hydrate_part(block) for block in product.blocks
             ),
         )
 
@@ -370,41 +371,53 @@ class OrderService:
                 return operation
         return None
 
-    def _hydrate_part(
-        self,
-        block: Part,
-        *,
-        apply_printer_spacing: bool = False,
-    ) -> Part:
+    def _hydrate_part(self, block: Part) -> Part:
         """Hydrates imposition and validates laminate film ids for one block.
 
-        When ``apply_printer_spacing`` is true, ``imposition.spacing`` is taken
-        from the printer of the first :class:`Print` operation; otherwise spacing
-        stays on the block imposition (stored runs on rehydrate).
+        When ``need_spacing`` is true, ``imposition.spacing`` is taken from the
+        printer of the first :class:`Print` operation; otherwise spacing stays on
+        the block imposition (stored runs on rehydrate).
 
         :param block:
-        :param apply_printer_spacing:
 
         :raises KeyError: if a referenced sheet, film, or printer id is missing.
 
         :return: the block with catalog ``press_sheet`` and final spacing.
         """
         imposition = block.imposition
-        sheet = self._sheets.take(imposition.sheet_id)
-        spacing = imposition.spacing
-        if apply_printer_spacing:
+        if block.need_spacing:
             print_op = self._first_print(block)
             if print_op is not None:
-                spacing = self._printers.take(print_op.printer_id).spacing
-        hydrated_imposition = replace(
-            imposition,
-            spacing=spacing,
-            press_sheet=sheet,
-        )
+                hydrated_imposition = self._imposition_factory.create_for_printer(
+                    target=imposition.target,
+                    sheet_id=imposition.sheet_id,
+                    bleeds=imposition.bleeds,
+                    printer_id=print_op.printer_id,
+                )
+            else:
+                hydrated_imposition = self._imposition_factory.create(
+                    target=imposition.target,
+                    sheet_id=imposition.sheet_id,
+                    press_sheet=self._sheets.take(imposition.sheet_id),
+                    bleeds=imposition.bleeds,
+                    spacing=imposition.spacing,
+                )
+        else:
+            hydrated_imposition = self._imposition_factory.create(
+                target=imposition.target,
+                sheet_id=imposition.sheet_id,
+                press_sheet=self._sheets.take(imposition.sheet_id),
+                bleeds=imposition.bleeds,
+                spacing=imposition.spacing,
+            )
         for operation in block.operations:
             if isinstance(operation, Laminate):
                 self._films.take(operation.film_id)
-        return replace(block, imposition=hydrated_imposition)
+        return replace(
+            block,
+            imposition=hydrated_imposition,
+            need_spacing=False,
+        )
 
     def _rehydrate_run(self, run: PrintRun) -> PrintRun:
         """Rebuilds a stored run with catalog sheet and film rows.

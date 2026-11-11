@@ -210,6 +210,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     block = Part(
         imposition=imposition,
         count=3,
+        need_spacing=True,
         operations=tuple(run_operations),
     )
     Order(
