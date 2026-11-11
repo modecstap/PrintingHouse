@@ -221,11 +221,12 @@ class OrderService:
         estimates = tuple(self._run_estimate(run) for run in runs)
         return Accountant().order_report(order, estimates)
 
-    def save(self, product: Product, count: int) -> OrderID:
+    def save(self, product: Product, count: int, description: str = "") -> OrderID:
         """Persists the order and one print run per block.
 
         :param product:
         :param count:
+        :param description:
 
         :raises OrderIdAllocationFailed: after three occupied order ids.
         :raises InvalidInput: if the product or run data is invalid.
@@ -236,7 +237,7 @@ class OrderService:
         for _ in range(_MAX_ORDER_ID_ATTEMPTS):
             try:
                 def work() -> OrderID:
-                    order, runs = self._assemble(product, count)
+                    order, runs = self._assemble(product, count, description)
                     self._uow.orders.save(order)
                     self._uow.print_runs.save_all_for_order(order.id, runs)
                     return order.id
@@ -248,12 +249,19 @@ class OrderService:
             raise RuntimeError("save exhausted retries without OrderIdOccupied")
         raise OrderIdAllocationFailed(last_occupied.order_id) from last_occupied
 
-    def replace(self, order_id: OrderID, product: Product, count: int) -> OrderID:
+    def replace(
+        self,
+        order_id: OrderID,
+        product: Product,
+        count: int,
+        description: str = "",
+    ) -> OrderID:
         """Replaces an existing order and its print runs.
 
         :param order_id:
         :param product:
         :param count:
+        :param description:
 
         :raises OrderNotFound: if the order does not exist.
         :raises KeyError: if a catalog id is missing.
@@ -270,7 +278,7 @@ class OrderService:
                 id=order_id,
                 product=hydrated,
                 count=count,
-                description="",
+                description=description,
                 created_at=existing.created_at,
             )
             runs = tuple(
@@ -313,9 +321,10 @@ class OrderService:
         self,
         product: Product,
         count: int,
+        description: str = "",
     ) -> tuple[Order, tuple[PrintRun, ...]]:
         hydrated = self._hydrate_product(product)
-        order = self._order_factory.create(hydrated, count)
+        order = self._order_factory.create(hydrated, count, description)
         runs = tuple(
             self._print_run_factory.create(
                 for_order=order.id,

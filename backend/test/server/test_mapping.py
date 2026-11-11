@@ -115,10 +115,13 @@ def test_order_id_dumps_as_int():
         id=OrderID(7),
         product=product,
         count=3,
-        description="",
+        description="визитки",
         created_at=TEST_ORDER_CREATED_AT,
     )
-    assert order_to_dto(order).id == 7
+    dto = order_to_dto(order)
+    assert dto.id == 7
+    assert dto.description == "визитки"
+    assert dto.created_at == TEST_ORDER_CREATED_AT
 
 
 def test_reference_round_trip():

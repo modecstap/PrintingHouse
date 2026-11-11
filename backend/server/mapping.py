@@ -208,6 +208,8 @@ def order_to_dto(order: Order) -> OrderDto:
     return OrderDto(
         id=order.id.value,
         count=order.count,
+        description=order.description,
+        created_at=order.created_at,
         product=product_to_dto(order.product),
     )
 

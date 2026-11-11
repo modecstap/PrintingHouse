@@ -66,14 +66,20 @@ class _FakeOrderService:
             impositions=(2,),
         )
 
-    def save(self, product, count: int) -> OrderID:
-        self.calls.append(f"save:{count}")
+    def save(self, product, count: int, description: str = "") -> OrderID:
+        self.calls.append(f"save:{count}:{description}")
         if self.save_error:
             raise self.save_error
         return self.save_id
 
-    def replace(self, order_id: OrderID, product, count: int) -> OrderID:
-        self.calls.append(f"replace:{order_id.value}:{count}")
+    def replace(
+        self,
+        order_id: OrderID,
+        product,
+        count: int,
+        description: str = "",
+    ) -> OrderID:
+        self.calls.append(f"replace:{order_id.value}:{count}:{description}")
         if self.replace_error:
             raise self.replace_error
         return order_id
@@ -129,6 +135,15 @@ def test_save_returns_id():
     assert response.json() == {"id": 42}
 
 
+def test_save_passes_description_to_service():
+    fake = _FakeOrderService()
+    client, headers = _client_with_fake(fake)
+    payload = _product_payload()
+    payload["description"] = "листовка"
+    client.post("/api/orders", headers=headers, json=payload)
+    assert fake.calls == ["save:2:листовка"]
+
+
 def test_get_order_404():
     fake = _FakeOrderService(get_error=OrderNotFound("take", OrderID(1)))
     client, headers = _client_with_fake(fake)
@@ -178,7 +193,7 @@ def test_replace_returns_same_id():
     response = client.put("/api/orders/17", headers=headers, json=payload)
     assert response.status_code == 200
     assert response.json() == {"id": 17}
-    assert fake.calls == ["replace:17:5"]
+    assert fake.calls == ["replace:17:5:"]
 
 
 def test_replace_404_when_missing():

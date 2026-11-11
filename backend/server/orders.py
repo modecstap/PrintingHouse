@@ -62,7 +62,7 @@ def save_order(
 ) -> SaveOrderResponseDto:
     """Persists a new order."""
     product = product_from_dto(body.product)
-    order_id = service.save(product, body.count)
+    order_id = service.save(product, body.count, body.description)
     return SaveOrderResponseDto(id=order_id.value)
 
 
@@ -75,5 +75,10 @@ def replace_order(
 ) -> SaveOrderResponseDto:
     """Replaces an existing order."""
     product = product_from_dto(body.product)
-    stored_id = service.replace(OrderID(order_id), product, body.count)
+    stored_id = service.replace(
+        OrderID(order_id),
+        product,
+        body.count,
+        body.description,
+    )
     return SaveOrderResponseDto(id=stored_id.value)

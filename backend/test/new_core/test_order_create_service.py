@@ -200,10 +200,11 @@ def test_save_persists_order_and_runs():
     service = _create_service(uow, run, ctx)
     product = _product_from_run(run)
 
-    order_id = service.save(product, count=4)
+    order_id = service.save(product, count=4, description="буклет")
 
     stored = uow.orders.take(order_id)
     assert stored.count == 4
+    assert stored.description == "буклет"
     runs = uow.print_runs.take_all_for_order(order_id)
     assert len(runs) == 1
     assert runs[0].for_order == order_id
@@ -360,6 +361,24 @@ def test_build_run_estimate_rejects_unknown_operation():
             ),
             InMemoryFilmRepository(items=dict(ctx.films)),
         )
+
+
+def test_replace_keeps_created_at_and_updates_description():
+    """Replace updates description and count but keeps the original created_at."""
+    run, _, _, _, ctx = build_worked_run()
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    product = _product_from_run(run)
+
+    order_id = service.save(product, count=4, description="старое")
+    created_at = uow.orders.take(order_id).created_at
+
+    service.replace(order_id, product, count=8, description="новое")
+    stored = uow.orders.take(order_id)
+
+    assert stored.count == 8
+    assert stored.description == "новое"
+    assert stored.created_at == created_at
 
 
 def test_save_does_not_retry_on_invalid_input():
