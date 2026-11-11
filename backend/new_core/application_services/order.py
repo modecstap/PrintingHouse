@@ -345,32 +345,62 @@ class OrderService:
         return order, runs
 
     def _hydrate_product(self, product: Product) -> Product:
-        """Loads catalog sheet and film rows referenced by the product.
+        """Loads catalog rows and applies printer spacing on client products.
 
         :param product:
 
-        :raises KeyError: if a referenced sheet or film id is missing.
+        :raises KeyError: if a referenced sheet, film, or printer id is missing.
 
-        :return: a product whose blocks use current catalog ``press_sheet``
-        values and whose laminate operations reference known film ids.
+        :return: a product whose blocks use catalog ``press_sheet``, printer
+        ``spacing`` on the first print operation, and known laminate film ids.
         """
         return replace(
             product,
-            blocks=tuple(self._hydrate_part(block) for block in product.blocks),
+            blocks=tuple(
+                self._hydrate_part(block, apply_printer_spacing=True)
+                for block in product.blocks
+            ),
         )
 
-    def _hydrate_part(self, block: Part) -> Part:
+    @staticmethod
+    def _first_print(block: Part) -> Print | None:
+        """Returns the first print operation in block order, if any."""
+        for operation in block.operations:
+            if isinstance(operation, Print):
+                return operation
+        return None
+
+    def _hydrate_part(
+        self,
+        block: Part,
+        *,
+        apply_printer_spacing: bool = False,
+    ) -> Part:
         """Hydrates imposition and validates laminate film ids for one block.
 
+        When ``apply_printer_spacing`` is true, ``imposition.spacing`` is taken
+        from the printer of the first :class:`Print` operation; otherwise spacing
+        stays on the block imposition (stored runs on rehydrate).
+
         :param block:
+        :param apply_printer_spacing:
 
-        :raises KeyError: if a referenced sheet or film id is missing.
+        :raises KeyError: if a referenced sheet, film, or printer id is missing.
 
-        :return: the block with ``press_sheet`` loaded from the catalog.
+        :return: the block with catalog ``press_sheet`` and final spacing.
         """
         imposition = block.imposition
         sheet = self._sheets.take(imposition.sheet_id)
-        hydrated_imposition = replace(imposition, press_sheet=sheet)
+        spacing = imposition.spacing
+        if apply_printer_spacing:
+            print_op = self._first_print(block)
+            if print_op is not None:
+                spacing = self._printers.take(print_op.printer_id).spacing
+        hydrated_imposition = replace(
+            imposition,
+            spacing=spacing,
+            press_sheet=sheet,
+        )
         for operation in block.operations:
             if isinstance(operation, Laminate):
                 self._films.take(operation.film_id)
