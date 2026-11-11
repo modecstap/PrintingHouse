@@ -110,24 +110,38 @@ export default function Orders({ catalogs, catalogLoadState }) {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td colSpan={4} style={{ padding: 0, border: "none" }}>
-                  <button
-                    type="button"
-                    className={styles.rowButton}
-                    onClick={() => setSelectedId(order.id)}
-                  >
-                    <span>{order.id}</span>
-                    <span>{order.count}</span>
-                    <span className={styles.descriptionCell}>
-                      {order.description}
-                    </span>
-                    <span>{formatOrderCreatedDate(order.created_at)}</span>
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {orders.map((order) => {
+              const rowLabel = [
+                order.id,
+                order.count,
+                order.description,
+                formatOrderCreatedDate(order.created_at),
+              ]
+                .filter((part) => part !== "")
+                .join(", ");
+
+              return (
+                <tr
+                  key={order.id}
+                  className={styles.row}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={rowLabel}
+                  onClick={() => setSelectedId(order.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedId(order.id);
+                    }
+                  }}
+                >
+                  <td>{order.id}</td>
+                  <td>{order.count}</td>
+                  <td className={styles.descriptionCell}>{order.description}</td>
+                  <td>{formatOrderCreatedDate(order.created_at)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </Table>
       )}

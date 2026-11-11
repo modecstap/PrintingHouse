@@ -4,21 +4,11 @@
   font-weight: normal;
 }
 
-.rowButton {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  width: 100%;
-  text-align: left;
-  padding: var(--spacing-2) var(--spacing-4);
-  margin: 0;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
+.row {
   cursor: pointer;
 }
 
-.rowButton:hover {
+.row:hover td {
   background: color-mix(in srgb, var(--text-color) 8%, transparent);
 }
 
