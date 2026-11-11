@@ -1,6 +1,6 @@
 """Behavior of order quote and save use cases."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 
 import pytest
@@ -9,6 +9,7 @@ from backend.new_core import AdditionalWork, InvalidInput, Percent
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.part import Part
 from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.order.order import Order, OrderID
@@ -64,6 +65,21 @@ def _create_service(
     )
 
 
+def _set_printer_spacing(ctx, spacing: int) -> PrinterID:
+    printer_id = next(iter(ctx.printers))
+    ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=spacing)
+    return printer_id
+
+
+def _block_with_client_spacing(block: Part, spacing: int) -> Part:
+    imposition = replace(
+        block.imposition,
+        spacing=spacing,
+        press_sheet=None,
+    )
+    return replace(block, imposition=imposition)
+
+
 def _product_from_run(
     run,
     *,
@@ -83,6 +99,107 @@ def _product_from_run(
             ),
         ),
     )
+
+
+def test_quote_and_save_hydrate_spacing_from_first_print_printer():
+    """Client imposition spacing is replaced by the catalog printer on assemble."""
+    run, _, _, _, ctx = build_worked_run()
+    _set_printer_spacing(ctx, 5)
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    block = _block_with_client_spacing(run.block, 99)
+    product = Product(parts_markup=Percent(0), blocks=(block,), operations=())
+
+    _, runs = service._assemble(product, count=1)
+    assert runs[0].block.imposition.spacing == 5
+
+    order_id = service.save(product, count=1)
+    stored_runs = uow.print_runs.take_all_for_order(order_id)
+    assert stored_runs[0].block.imposition.spacing == 5
+
+
+def test_quote_ignores_client_imposition_spacing_for_layout():
+    """Two client spacing values yield the same imposition counts when printer matches."""
+    run, _, _, _, ctx = build_worked_run()
+    _set_printer_spacing(ctx, 5)
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+
+    product_low = Product(
+        parts_markup=Percent(0),
+        blocks=(_block_with_client_spacing(run.block, 0),),
+        operations=(),
+    )
+    product_high = Product(
+        parts_markup=Percent(0),
+        blocks=(_block_with_client_spacing(run.block, 99),),
+        operations=(),
+    )
+
+    assert service.quote(product_low, count=4).impositions == service.quote(
+        product_high,
+        count=4,
+    ).impositions
+
+
+def test_rehydrate_run_keeps_stored_spacing_when_catalog_printer_changes():
+    """order_report path does not overwrite spacing from the updated printer catalog."""
+    run, printing, _, _, ctx = build_worked_run()
+    printer_id = printing.printer_id
+    ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=5)
+    printers = InMemoryPrinterRepository(items=dict(ctx.printers))
+    uow = InMemoryUnitOfWork()
+    service = OrderService(
+        uow=uow,
+        printers=printers,
+        press_operators=InMemoryPressOperatorRepository(
+            items=dict(ctx.press_operators),
+        ),
+        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+        laminator_operators=InMemoryLaminatorOperatorRepository(
+            items=dict(ctx.laminator_operators),
+        ),
+        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
+        cutter_operators=InMemoryCutterOperatorRepository(
+            items=dict(ctx.cutter_operators),
+        ),
+        die_cut_operators=InMemoryDieCutterOperatorRepository(
+            items=dict(ctx.die_cut_operators),
+        ),
+        films=InMemoryFilmRepository(items=dict(ctx.films)),
+        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
+    )
+    product = Product(
+        parts_markup=Percent(0),
+        blocks=(_block_with_client_spacing(run.block, 0),),
+        operations=(),
+    )
+    order_id = service.save(product, count=1)
+    printers.items[printer_id] = replace(printers.items[printer_id], spacing=99)
+
+    stored = uow.print_runs.take_all_for_order(order_id)[0]
+    assert stored.block.imposition.spacing == 5
+    assert service._rehydrate_run(stored).block.imposition.spacing == 5
+
+
+def test_replace_reapplies_printer_spacing_on_client_product():
+    """Replace runs the client product through hydrate and uses printer spacing."""
+    run, _, _, _, ctx = build_worked_run()
+    _set_printer_spacing(ctx, 5)
+    uow = InMemoryUnitOfWork()
+    service = _create_service(uow, run, ctx)
+    product = _product_from_run(run)
+
+    order_id = service.save(product, count=1)
+    updated = Product(
+        parts_markup=Percent(0),
+        blocks=(_block_with_client_spacing(run.block, 99),),
+        operations=(),
+    )
+    service.replace(order_id, updated, count=2)
+
+    runs = uow.print_runs.take_all_for_order(order_id)
+    assert runs[0].block.imposition.spacing == 5
 
 
 def test_quote_returns_report_and_does_not_write_stores():
