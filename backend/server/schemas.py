@@ -206,6 +206,7 @@ class PrinterDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     id: int
+    name: str
     startup: str
     cyan: str
     magenta: str
@@ -217,6 +218,7 @@ class LaminatorDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     id: int
+    name: str
     startup: str
 
 
@@ -224,6 +226,7 @@ class CutterDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     id: int
+    name: str
     max_stack: int
 
 
@@ -231,4 +234,5 @@ class OperatorDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     id: int
+    name: str
     salary_by_operation: str
