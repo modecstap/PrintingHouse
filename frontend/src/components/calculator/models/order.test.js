@@ -16,10 +16,10 @@ const sampleWriteJson = {
   count: 10,
   description: "Визитки",
   product: {
+    parts_markup: 30,
     blocks: [
       {
         count: 2,
-        markup: 30,
         imposition: {
           target: { name: "", width: 90, height: 50 },
           sheet_id: 1,
@@ -50,11 +50,11 @@ function sampleForm() {
   return {
     count: "10",
     description: "Визитки",
+    partsMarkup: "30",
     blocks: [
       {
         clientKey: "block-key",
         count: "2",
-        markup: "30",
         target: { name: "Визитка", width: "90", height: "50" },
         paperSheetId: "1",
         paper: {
@@ -143,11 +143,11 @@ describe("emptyCalculatorForm", () => {
     const form = emptyCalculatorForm();
     expect(form.count).toBe("0");
     expect(form.description).toBe("");
+    expect(form.partsMarkup).toBe("0");
     expect(form.additionalWorks).toEqual([]);
     expect(form.blocks).toHaveLength(1);
     const block = form.blocks[0];
     expect(block.count).toBe("0");
-    expect(block.markup).toBe("0");
     expect(block.target).toEqual({ name: "", width: "0", height: "0" });
     expect(block.paperSheetId).toBe("");
     expect(block.paper).toEqual({
@@ -218,10 +218,10 @@ describe("toOrderWrite", () => {
       count: 0,
       description: "",
       product: {
+        parts_markup: 0,
         blocks: [
           {
             count: 0,
-            markup: 0,
             imposition: {
               target: { name: "", width: 0, height: 0 },
               sheet_id: "",
@@ -259,8 +259,8 @@ describe("toCalculatorForm", () => {
     const form = toCalculatorForm(order);
     expect(form.count).toBe("10");
     expect(form.description).toBe("Визитки");
+    expect(form.partsMarkup).toBe("30");
     expect(form.blocks[0].count).toBe("2");
-    expect(form.blocks[0].markup).toBe("30");
     expect(form.blocks[0].target.width).toBe("90");
     expect(form.blocks[0].paperSheetId).toBe("1");
     expect(form.blocks[0].operations[0].printerId).toBe("1");
@@ -275,7 +275,11 @@ describe("toCalculatorForm", () => {
 
   it("should throw when product has zero blocks", () => {
     expect(() =>
-      toCalculatorForm({ id: 1, count: 1, product: { blocks: [], operations: [] } }),
+      toCalculatorForm({
+        id: 1,
+        count: 1,
+        product: { parts_markup: 0, blocks: [], operations: [] },
+      }),
     ).toThrow("order: product.blocks must not be empty");
   });
 });

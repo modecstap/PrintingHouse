@@ -99,7 +99,6 @@ export function emptyBlock() {
   return {
     clientKey: newClientKey(),
     count: "0",
-    markup: "0",
     target: { name: "", width: "0", height: "0" },
     paperSheetId: "",
     paper: {
@@ -129,6 +128,7 @@ export function emptyCalculatorForm() {
   return {
     count: "0",
     description: "",
+    partsMarkup: "0",
     blocks: [emptyBlock()],
     additionalWorks: [],
   };
@@ -171,7 +171,6 @@ function mapOperationToWrite(operation) {
 function mapBlockToWrite(block) {
   return {
     count: coerceIntegerField(block.count),
-    markup: coerceIntegerField(block.markup),
     imposition: {
       target: {
         name: "",
@@ -191,6 +190,7 @@ export function toOrderWrite(form) {
     count: coerceIntegerField(form.count),
     description: String(form.description ?? ""),
     product: {
+      parts_markup: coerceIntegerField(form.partsMarkup),
       blocks: form.blocks.map(mapBlockToWrite),
       operations: form.additionalWorks.map((work) => ({
         name: work.name,
@@ -409,7 +409,6 @@ function mapBlockFromDto(block) {
   return {
     clientKey: newClientKey(),
     count: numberToFormString(block.count),
-    markup: numberToFormString(block.markup),
     target: {
       name: imposition.target.name,
       width: numberToFormString(imposition.target.width),
@@ -440,6 +439,7 @@ export function toCalculatorForm(order) {
   return {
     count: numberToFormString(order.count),
     description: order.description ?? "",
+    partsMarkup: numberToFormString(order.product.parts_markup),
     blocks: blocks.map(mapBlockFromDto),
     additionalWorks: (order.product.operations ?? []).map((work) => ({
       clientKey: newClientKey(),
@@ -581,11 +581,6 @@ function collectBlockMissingLabels(block, blockCount, blockIndex, missing) {
   );
   pushWhenInvalid(
     missing,
-    isCoercibleIntegerField(block.markup),
-    `${prefix}Наценка`,
-  );
-  pushWhenInvalid(
-    missing,
     isPositiveIntegerField(block.target.width),
     `${prefix}Ширина`,
   );
@@ -640,6 +635,7 @@ export function calculatorFormMissingFieldLabels(form) {
     return missing;
   }
   pushWhenInvalid(missing, isPositiveIntegerField(form.count), "Тираж");
+  pushWhenInvalid(missing, isCoercibleIntegerField(form.partsMarkup), "Наценка");
   form.blocks.forEach((block, index) => {
     collectBlockMissingLabels(block, form.blocks.length, index, missing);
   });
