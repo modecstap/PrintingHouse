@@ -13,7 +13,7 @@ describe("useCatalogs", () => {
 
   it("should call loadCatalogs once on mount", async () => {
     loadCatalogs.mockResolvedValue({
-      catalogs: { printers: [{ id: 1 }] },
+      catalogs: { printers: [{ id: 1, name: "Принтер 1" }] },
       error: null,
       errors: {},
     });
@@ -28,7 +28,7 @@ describe("useCatalogs", () => {
     });
 
     expect(result.current.catalogLoadState.catalogs.printers).toEqual([
-      { id: 1 },
+      { id: 1, name: "Принтер 1" },
     ]);
     expect(result.current.catalogLoadState.catalogs.laminators).toEqual(
       EMPTY_CATALOGS.laminators,

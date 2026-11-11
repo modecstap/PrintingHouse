@@ -11,27 +11,32 @@ describe("catalog labels", () => {
   it("should format printer label", () => {
     const printer = {
       id: 3,
+      name: "Принтер 3",
       startup: "10",
       cyan: "0.1",
       magenta: "0.2",
       yellow: "0.3",
       black: "0.4",
     };
-    expect(printerLabel(printer)).toBe("№ 3");
+    expect(printerLabel(printer)).toBe("Принтер 3");
   });
 
-  it("should format operator label with money", () => {
-    expect(operatorLabel({ id: 4, salary_by_operation: "5" })).toBe(
-      "№ 4, 5.00 ₽",
-    );
+  it("should format operator label from name", () => {
+    expect(
+      operatorLabel({ id: 4, name: "№ 4", salary_by_operation: "5" }),
+    ).toBe("№ 4");
   });
 
   it("should format laminator label", () => {
-    expect(laminatorLabel({ id: 2, startup: "5" })).toBe("№ 2");
+    expect(laminatorLabel({ id: 2, name: "Ламинатор 2", startup: "5" })).toBe(
+      "Ламинатор 2",
+    );
   });
 
   it("should format cutter label", () => {
-    expect(cutterLabel({ id: 8, max_stack: 40 })).toBe("№ 8");
+    expect(cutterLabel({ id: 8, name: "Резак 8", max_stack: 40 })).toBe(
+      "Резак 8",
+    );
   });
 
   it("should format sheet label with format name", () => {

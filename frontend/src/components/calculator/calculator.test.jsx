@@ -7,6 +7,7 @@ import { renderWithToken } from "../../test-utils/render-with-token";
 
 const PRINTER = {
   id: 1,
+  name: "Принтер 1",
   startup: "10",
   cyan: "0.1",
   magenta: "0.2",
@@ -14,10 +15,18 @@ const PRINTER = {
   black: "0.4",
 };
 
-const PRESS_OPERATOR = { id: 4, salary_by_operation: "5" };
-const LAMINATOR_OPERATOR = { id: 5, salary_by_operation: "6" };
-const CUTTER = { id: 2, max_stack: 40 };
-const CUTTER_OPERATOR = { id: 6, salary_by_operation: "7" };
+const PRESS_OPERATOR = { id: 4, name: "№ 4", salary_by_operation: "5" };
+const LAMINATOR_OPERATOR = {
+  id: 5,
+  name: "Оператор 5",
+  salary_by_operation: "6",
+};
+const CUTTER = { id: 2, name: "Резак 2", max_stack: 40 };
+const CUTTER_OPERATOR = {
+  id: 6,
+  name: "Оператор 6",
+  salary_by_operation: "7",
+};
 
 const QUOTE_REPORT_RAW = {
   product_price: "12.50",
@@ -285,7 +294,7 @@ describe("Calculator", () => {
     const options = within(operatorSelect).getAllByRole("option");
     const labels = options.map((o) => o.textContent);
 
-    expect(labels.some((t) => t.includes("№ 4, 5.00 ₽"))).toBe(true);
+    expect(labels.some((t) => t === "№ 4")).toBe(true);
     expect(labels.some((t) => t.includes("№ 5,"))).toBe(false);
     expect(
       screen.queryByRole("button", { name: /создать|добавить.*принтер|оператор/i }),

@@ -121,8 +121,8 @@ describe("applyCatalogDefaultsToForm", () => {
       ],
     };
     const catalogs = {
-      printers: [{ id: 7 }],
-      pressOperators: [{ id: 3 }],
+      printers: [{ id: 7, name: "Принтер 7" }],
+      pressOperators: [{ id: 3, name: "Оператор 3" }],
       laminators: [],
       cutters: [],
       laminatorOperators: [],

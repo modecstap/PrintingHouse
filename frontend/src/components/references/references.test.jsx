@@ -233,6 +233,7 @@ describe("References", () => {
         return jsonResponse([
           {
             id: 7,
+            name: "Тест",
             startup: "100",
             cyan: "1.5",
             magenta: "2",
@@ -253,6 +254,7 @@ describe("References", () => {
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
     await userEvent.type(within(region).getByLabelText("Номер:"), "7");
+    await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
     await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
     await userEvent.type(within(region).getByLabelText("C:"), "1.5");
     await userEvent.type(within(region).getByLabelText("M:"), "2");
@@ -269,6 +271,7 @@ describe("References", () => {
       expect(postCall).toBeDefined();
       expect(JSON.parse(postCall[1].body)).toEqual({
         id: 7,
+        name: "Тест",
         startup: "100",
         cyan: "1.5",
         magenta: "2",
@@ -495,7 +498,7 @@ describe("References", () => {
       if (url === "/api/equipment/cutters") {
         cutterGets += 1;
         if (cutterGets <= 1) {
-          return jsonResponse([{ id: 3, max_stack: 100 }]);
+          return jsonResponse([{ id: 3, name: "Резак 3", max_stack: 100 }]);
         }
         return jsonResponse([]);
       }

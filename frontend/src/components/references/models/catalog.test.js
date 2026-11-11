@@ -6,6 +6,7 @@ describe("toPrinter", () => {
     expect(
       toPrinter({
         id: 1,
+        name: "Принтер 1",
         startup: "10",
         cyan: "1",
         magenta: "2",
@@ -14,6 +15,7 @@ describe("toPrinter", () => {
       }),
     ).toEqual({
       id: 1,
+      name: "Принтер 1",
       startup: "10",
       cyan: "1",
       magenta: "2",

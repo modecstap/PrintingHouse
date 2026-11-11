@@ -13,6 +13,7 @@ describe("toPrinter", () => {
     expect(
       toPrinter({
         id: 1,
+        name: "Принтер 1",
         startup: "10",
         cyan: "0.1",
         magenta: "0.2",
@@ -21,6 +22,7 @@ describe("toPrinter", () => {
       }),
     ).toEqual({
       id: 1,
+      name: "Принтер 1",
       startup: "10",
       cyan: "0.1",
       magenta: "0.2",
@@ -30,9 +32,22 @@ describe("toPrinter", () => {
   });
 
   it("should throw when printer id is not a number", () => {
-    expect(() => toPrinter({ id: "1", startup: "10" })).toThrow(
+    expect(() => toPrinter({ id: "1", name: "X", startup: "10" })).toThrow(
       "printer: id must be a number",
     );
+  });
+
+  it("should throw when printer name is missing", () => {
+    expect(() =>
+      toPrinter({
+        id: 1,
+        startup: "10",
+        cyan: "1",
+        magenta: "2",
+        yellow: "3",
+        black: "4",
+      }),
+    ).toThrow("printer: name must be a string");
   });
 
   it("should throw when id is not a number", () => {
@@ -51,20 +66,31 @@ describe("toPrinter", () => {
 
 describe("toLaminator", () => {
   it("should parse a laminator", () => {
-    expect(toLaminator({ id: 2, startup: "5" })).toEqual({ id: 2, startup: "5" });
+    expect(toLaminator({ id: 2, name: "Ламинатор", startup: "5" })).toEqual({
+      id: 2,
+      name: "Ламинатор",
+      startup: "5",
+    });
   });
 });
 
 describe("toCutter", () => {
   it("should parse a cutter", () => {
-    expect(toCutter({ id: 8, max_stack: 40 })).toEqual({ id: 8, max_stack: 40 });
+    expect(toCutter({ id: 8, name: "Резак", max_stack: 40 })).toEqual({
+      id: 8,
+      name: "Резак",
+      max_stack: 40,
+    });
   });
 });
 
 describe("toOperator", () => {
   it("should parse an operator", () => {
-    expect(toOperator({ id: 4, salary_by_operation: "5" })).toEqual({
+    expect(
+      toOperator({ id: 4, name: "№ 4", salary_by_operation: "5" }),
+    ).toEqual({
       id: 4,
+      name: "№ 4",
       salary_by_operation: "5",
     });
   });
