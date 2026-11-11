@@ -25,4 +25,15 @@ class Laminator:
     """A laminator and its startup price."""
 
     id: LaminatorID
+    name: str
     startup: Money
+
+    def __post_init__(self) -> None:
+        stripped = self.name.strip()
+        if not stripped:
+            raise InvalidInput(
+                subject="laminator",
+                reason="название не задано",
+            )
+        if stripped != self.name:
+            object.__setattr__(self, "name", stripped)

@@ -25,4 +25,15 @@ class PressOperator:
     """The person who runs a press, and the salary for one operation."""
 
     id: PressOperatorID
+    name: str
     salary_by_operation: Money
+
+    def __post_init__(self) -> None:
+        stripped = self.name.strip()
+        if not stripped:
+            raise InvalidInput(
+                subject="press operator",
+                reason="название не задано",
+            )
+        if stripped != self.name:
+            object.__setattr__(self, "name", stripped)

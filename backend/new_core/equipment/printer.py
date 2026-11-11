@@ -25,8 +25,19 @@ class Printer:
     """A printer: its startup and the price of each ink."""
 
     id: PrinterID
+    name: str
     startup: Money
     cyan: Money
     magenta: Money
     yellow: Money
     black: Money
+
+    def __post_init__(self) -> None:
+        stripped = self.name.strip()
+        if not stripped:
+            raise InvalidInput(
+                subject="printer",
+                reason="название не задано",
+            )
+        if stripped != self.name:
+            object.__setattr__(self, "name", stripped)

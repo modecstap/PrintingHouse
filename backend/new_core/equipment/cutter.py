@@ -24,16 +24,25 @@ class Cutter:
     """A cutter and the tallest stack it can cut."""
 
     id: CutterID
+    name: str
     max_stack: int
 
     def __post_init__(self) -> None:
-        """Rejects a stack height that is not positive.
+        """Rejects a blank name and a stack height that is not positive.
 
-        :raises InvalidInput: if max_stack is below zero, or if it is zero
-        after a negative height is rejected.
+        :raises InvalidInput: if the name is blank after strip, if max_stack
+        is below zero, or if it is zero after a negative height is rejected.
 
         :return: nothing.
         """
+        stripped = self.name.strip()
+        if not stripped:
+            raise InvalidInput(
+                subject="cutter",
+                reason="название не задано",
+            )
+        if stripped != self.name:
+            object.__setattr__(self, "name", stripped)
         if self.max_stack < 0:
             raise InvalidInput(
                 "cutter",
