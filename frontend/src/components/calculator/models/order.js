@@ -109,7 +109,6 @@ export function emptyBlock() {
     },
     sheetFormat: { name: "", width: "0", height: "0" },
     bleeds: "0",
-    spacing: "0",
     operations: [emptyPrintOperation(), emptyCutOperation()],
   };
 }
@@ -179,7 +178,7 @@ function mapBlockToWrite(block) {
       },
       sheet_id: coerceIdField(block.paperSheetId),
       bleeds: coerceIntegerField(block.bleeds),
-      spacing: coerceIntegerField(block.spacing),
+      spacing: 0,
     },
     operations: block.operations.map(mapOperationToWrite),
   };
@@ -426,7 +425,6 @@ function mapBlockFromDto(block) {
     },
     sheetFormat: { name: "", width: "0", height: "0" },
     bleeds: numberToFormString(imposition.bleeds),
-    spacing: numberToFormString(imposition.spacing),
     operations: block.operations.map(mapOperationFromDto),
   };
 }
@@ -598,11 +596,6 @@ function collectBlockMissingLabels(block, blockCount, blockIndex, missing) {
     missing,
     isCoercibleIntegerField(block.bleeds),
     `${prefix}Вылеты`,
-  );
-  pushWhenInvalid(
-    missing,
-    isCoercibleIntegerField(block.spacing),
-    `${prefix}Поля`,
   );
   for (const operation of block.operations) {
     collectOperationMissingLabels(operation, prefix, missing);

@@ -219,13 +219,6 @@ export default function BlockSection({
             type="number"
             onChange={(v) => update({ bleeds: v })}
           />
-          <TextField
-            id={`${idPrefix}-spacing`}
-            label="Поля"
-            value={block.spacing}
-            type="number"
-            onChange={(v) => update({ spacing: v })}
-          />
         </div>
       </div>
       
