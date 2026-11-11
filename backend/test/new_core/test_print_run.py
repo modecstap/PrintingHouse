@@ -125,6 +125,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     printer = Printer(
         id=PrinterID(1),
         name="№ 1",
+        spacing=0,
         startup=Money(Decimal(printer_startup)),
         cyan=Money(Decimal(1)),
         magenta=Money(Decimal(1)),

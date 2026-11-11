@@ -33,6 +33,7 @@ def insert_printer(session: Session, printer: Printer) -> None:
         PrinterRow(
             id=printer.id.value,
             name=printer.name,
+            spacing=printer.spacing,
             startup=printer.startup.amount,
             cyan=printer.cyan.amount,
             magenta=printer.magenta.amount,

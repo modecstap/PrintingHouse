@@ -79,6 +79,7 @@ def test_printer_save_list_delete_round_trip(db_session):
     printer = Printer(
         id=PrinterID(10),
         name="№ 10",
+        spacing=0,
         startup=Money(Decimal("1")),
         cyan=Money(Decimal("2")),
         magenta=Money(Decimal("3")),
@@ -97,6 +98,30 @@ def test_printer_save_list_delete_round_trip(db_session):
     db_session.commit()
     with pytest.raises(PrinterIdOccupied):
         repo.save(printer)
+
+
+def test_printer_spacing_round_trip(db_session):
+    """``spacing`` survives save and load."""
+    from decimal import Decimal
+
+    from backend.new_core.equipment.printer import Printer
+    from backend.new_core.values.money import Money
+
+    repo = SqlPrinterRepository(db_session)
+    printer = Printer(
+        id=PrinterID(11),
+        name="№ 11",
+        spacing=7,
+        startup=Money(Decimal(0)),
+        cyan=Money(Decimal(0)),
+        magenta=Money(Decimal(0)),
+        yellow=Money(Decimal(0)),
+        black=Money(Decimal(0)),
+    )
+    repo.save(printer)
+    db_session.commit()
+    assert repo.take(PrinterID(11)).spacing == 7
+    assert repo.take_all() == (printer,)
 
 
 def test_film_add_take_all_replace_take_round_trip(db_session):
