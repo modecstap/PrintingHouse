@@ -169,6 +169,7 @@ describe("calculatorFormMissingFieldLabels", () => {
   it("should list order and block fields for the empty default form", () => {
     const missing = calculatorFormMissingFieldLabels(emptyCalculatorForm());
     expect(missing).toContain("Тираж");
+    expect(missing).toContain("Листов");
     expect(missing).toContain("Ширина");
     expect(missing).toContain("Высота");
     expect(missing).toContain("Бумага");

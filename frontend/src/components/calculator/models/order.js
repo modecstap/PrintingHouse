@@ -576,8 +576,8 @@ function collectBlockMissingLabels(block, blockCount, blockIndex, missing) {
   const prefix = blockLabelPrefix(blockCount, blockIndex);
   pushWhenInvalid(
     missing,
-    isCoercibleIntegerField(block.count),
-    `${prefix}Копии`,
+    isPositiveIntegerField(block.count),
+    `${prefix}Листов`,
   );
   pushWhenInvalid(
     missing,
