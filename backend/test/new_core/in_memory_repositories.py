@@ -163,6 +163,10 @@ class InMemoryFilmRepository:
     def delete(self, film_id: FilmID) -> None:
         del self.items[film_id]
 
+    def distinct_film_densities(self) -> tuple[int, ...]:
+        values = {film.density.value for film in self.items.values()}
+        return tuple(sorted(values))
+
 
 @dataclass
 class InMemorySheetRepository:
@@ -194,6 +198,10 @@ class InMemorySheetRepository:
 
     def distinct_paper_types(self) -> tuple[str, ...]:
         values = {sheet.paper.type.value for sheet in self.items.values()}
+        return tuple(sorted(values))
+
+    def distinct_paper_densities(self) -> tuple[int, ...]:
+        values = {sheet.paper.density.value for sheet in self.items.values()}
         return tuple(sorted(values))
 
 

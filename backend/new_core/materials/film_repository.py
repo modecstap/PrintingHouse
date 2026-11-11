@@ -61,3 +61,10 @@ class FilmRepository(Protocol):
         :return: nothing.
         """
         ...
+
+    def distinct_film_densities(self) -> tuple[int, ...]:
+        """Returns unique film densities across stored films.
+
+        :return: densities in ascending numeric order.
+        """
+        ...

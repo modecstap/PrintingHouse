@@ -90,6 +90,18 @@ class SqlFilmRepository:
             raise KeyError(film_id)
         self._session.delete(row)
 
+    def distinct_film_densities(self) -> tuple[int, ...]:
+        """Returns unique film densities across stored films.
+
+        :return: densities in ascending numeric order.
+        """
+        stmt = (
+            select(FilmRow.density)
+            .distinct()
+            .order_by(FilmRow.density)
+        )
+        return tuple(self._session.execute(stmt).scalars().all())
+
     @staticmethod
     def _film_from_row(film_id: FilmID, row: FilmRow) -> Film:
         return Film(

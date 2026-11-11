@@ -68,3 +68,10 @@ class SheetRepository(Protocol):
         :return: canonical type strings in ascending order.
         """
         ...
+
+    def distinct_paper_densities(self) -> tuple[int, ...]:
+        """Returns unique paper densities across stored sheets.
+
+        :return: densities in ascending numeric order.
+        """
+        ...

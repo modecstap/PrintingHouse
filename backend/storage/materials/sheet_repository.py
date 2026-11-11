@@ -120,6 +120,18 @@ class SqlSheetRepository:
             canonical.append(value)
         return tuple(sorted(canonical))
 
+    def distinct_paper_densities(self) -> tuple[int, ...]:
+        """Returns unique paper densities across stored sheets.
+
+        :return: densities in ascending numeric order.
+        """
+        stmt = (
+            select(SheetRow.paper_density)
+            .distinct()
+            .order_by(SheetRow.paper_density)
+        )
+        return tuple(self._session.execute(stmt).scalars().all())
+
     @staticmethod
     def _sheet_from_row(sheet_id: SheetID, row: SheetRow) -> Sheet:
         return Sheet(
