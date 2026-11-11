@@ -134,3 +134,17 @@ class MaterialCatalogService:
         :return: canonical type strings in ascending order.
         """
         return self._sheets.distinct_paper_types()
+
+    def paper_densities(self) -> tuple[int, ...]:
+        """Returns unique paper densities from stored sheets.
+
+        :return: densities in ascending numeric order.
+        """
+        return self._sheets.distinct_paper_densities()
+
+    def film_densities(self) -> tuple[int, ...]:
+        """Returns unique film densities from stored films.
+
+        :return: densities in ascending numeric order.
+        """
+        return self._films.distinct_film_densities()

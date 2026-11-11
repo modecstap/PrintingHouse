@@ -95,6 +95,24 @@ def list_paper_types(
     return list(service.paper_types())
 
 
+@router.get("/paper-densities", response_model=list[int])
+def list_paper_densities(
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+) -> list[int]:
+    """Returns unique paper densities across stored sheets."""
+    return list(service.paper_densities())
+
+
+@router.get("/film-densities", response_model=list[int])
+def list_film_densities(
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+) -> list[int]:
+    """Returns unique film densities across stored films."""
+    return list(service.film_densities())
+
+
 @router.get("/sheets", response_model=list[SheetReadDto])
 def list_sheets(
     _user: Annotated[str, Depends(require_user)],
