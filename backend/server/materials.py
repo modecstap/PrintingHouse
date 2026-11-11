@@ -86,6 +86,15 @@ def delete_film(
     return Response(status_code=204)
 
 
+@router.get("/paper-types", response_model=list[str])
+def list_paper_types(
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+) -> list[str]:
+    """Returns unique paper type names across stored sheets."""
+    return list(service.paper_types())
+
+
 @router.get("/sheets", response_model=list[SheetReadDto])
 def list_sheets(
     _user: Annotated[str, Depends(require_user)],

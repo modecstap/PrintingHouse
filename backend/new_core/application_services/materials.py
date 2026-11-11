@@ -127,3 +127,10 @@ class MaterialCatalogService:
         :return: nothing.
         """
         self._sheets.delete(sheet_id)
+
+    def paper_types(self) -> tuple[str, ...]:
+        """Returns unique paper type names from stored sheets.
+
+        :return: canonical type strings in ascending order.
+        """
+        return self._sheets.distinct_paper_types()
