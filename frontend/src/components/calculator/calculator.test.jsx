@@ -26,6 +26,35 @@ const QUOTE_REPORT_RAW = {
   impositions: [8],
 };
 
+const SHEET_FORMAT = { name: "SRA3", width: 320, height: 450 };
+
+const FILTER_TEST_SHEETS = [
+  {
+    id: 1,
+    paper: { name: "офсет", density: 80, thickness: 1, price_per_kilo: "50" },
+    format: SHEET_FORMAT,
+  },
+  {
+    id: 2,
+    paper: { name: "офсет", density: 120, thickness: 1, price_per_kilo: "60" },
+    format: SHEET_FORMAT,
+  },
+  {
+    id: 3,
+    paper: {
+      name: "мелованная",
+      density: 150,
+      thickness: 1,
+      price_per_kilo: "80",
+    },
+    format: SHEET_FORMAT,
+  },
+];
+
+function blockSection(partNumber) {
+  return screen.getByText(`Часть ${partNumber}`).closest("section");
+}
+
 function stubCatalogFetch(overrides = {}) {
   const catalogs = {
     printers: [PRINTER],
@@ -407,5 +436,102 @@ describe("Calculator", () => {
         expect.objectContaining({ method: "GET" }),
       );
     }
+  });
+
+  describe("paper sheet filters", () => {
+    function renderWithFilterSheets() {
+      global.fetch = stubCatalogFetch({ sheets: FILTER_TEST_SHEETS });
+      renderWithToken(<Calculator />);
+      return waitForCatalogs();
+    }
+
+    it("should list only sheets matching the paper type filter", async () => {
+      await renderWithFilterSheets();
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
+      });
+
+      const section = blockSection(1);
+      await userEvent.selectOptions(
+        within(section).getByLabelText("Тип бумаги:"),
+        "офсет",
+      );
+
+      const sheetSelect = within(section).getByLabelText("Бумага:");
+      const optionValues = within(sheetSelect)
+        .getAllByRole("option")
+        .map((o) => o.value);
+      expect(optionValues).toEqual(["", "1", "2"]);
+    });
+
+    it("should clear paper sheet when the filter excludes the current sheet", async () => {
+      await renderWithFilterSheets();
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
+      });
+
+      const section = blockSection(1);
+      await userEvent.selectOptions(
+        within(section).getByLabelText("Бумага:"),
+        "3",
+      );
+      await userEvent.selectOptions(
+        within(section).getByLabelText("Тип бумаги:"),
+        "офсет",
+      );
+
+      expect(within(section).getByLabelText("Бумага:")).toHaveValue("");
+    });
+
+    it("should keep paper sheet when the filter still includes it", async () => {
+      await renderWithFilterSheets();
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Бумага:")).toHaveValue("1");
+      });
+
+      const section = blockSection(1);
+      await userEvent.selectOptions(
+        within(section).getByLabelText("Тип бумаги:"),
+        "офсет",
+      );
+
+      expect(within(section).getByLabelText("Бумага:")).toHaveValue("1");
+    });
+
+    it("should list all sheets when both filters are empty", async () => {
+      await renderWithFilterSheets();
+
+      const section = blockSection(1);
+      const sheetSelect = within(section).getByLabelText("Бумага:");
+      await waitFor(() => {
+        const optionValues = within(sheetSelect)
+          .getAllByRole("option")
+          .map((o) => o.value);
+        expect(optionValues).toEqual(["", "1", "2", "3"]);
+      });
+    });
+
+    it("should keep paper filters independent across blocks", async () => {
+      await renderWithFilterSheets();
+
+      await userEvent.click(screen.getByRole("button", { name: "+ Блок" }));
+
+      const section1 = blockSection(1);
+      const section2 = blockSection(2);
+
+      await userEvent.selectOptions(
+        within(section1).getByLabelText("Тип бумаги:"),
+        "офсет",
+      );
+
+      const sheet2 = within(section2).getByLabelText("Бумага:");
+      const optionValues = within(sheet2)
+        .getAllByRole("option")
+        .map((o) => o.value);
+      expect(optionValues).toEqual(["", "1", "2", "3"]);
+    });
   });
 });

@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   applyOperationCatalogDefaults,
   emptyDieCutOperation,
@@ -8,6 +9,13 @@ import {
   sortBlockOperationsByKind,
 } from "../models/order";
 import { sheetLabel } from "../models/catalog-label";
+import {
+  filterSheetsByPaperFilters,
+  isSelectedPaperSheetInFilteredList,
+  resolvePaperSheetId,
+  uniquePaperDensityOptionsFromSheets,
+  uniquePaperTypeOptionsFromSheets,
+} from "../models/sheet-paper-filters";
 import OperationFields from "./operation-fields";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import Button from "../../generic/button/button";
@@ -20,20 +28,6 @@ const TOGGLE_OPERATION_KINDS = [
   { kind: "die_cut", label: "Высечка", factory: emptyDieCutOperation },
 ];
 
-function resolvePaperSheetId(paperSheetId, paper, sheets) {
-  if (paperSheetId) {
-    return paperSheetId;
-  }
-  const match = sheets.find(
-    (sheet) =>
-      sheet.paper.name === paper.name &&
-      String(sheet.paper.density) === String(paper.density) &&
-      String(sheet.paper.thickness) === String(paper.thickness) &&
-      sheet.paper.price_per_kilo === paper.price_per_kilo,
-  );
-  return match ? String(match.id) : "";
-}
-
 export default function BlockSection({
   block,
   index,
@@ -43,6 +37,24 @@ export default function BlockSection({
   onRemove,
 }) {
   const idPrefix = block.clientKey;
+  const sheets = catalogs.sheets ?? [];
+
+  const [paperTypeFilter, setPaperTypeFilter] = useState("");
+  const [paperDensityFilter, setPaperDensityFilter] = useState("");
+
+  const paperTypeOptions = useMemo(
+    () => uniquePaperTypeOptionsFromSheets(sheets),
+    [sheets],
+  );
+  const paperDensityOptions = useMemo(
+    () => uniquePaperDensityOptionsFromSheets(sheets),
+    [sheets],
+  );
+  const filteredSheets = useMemo(
+    () =>
+      filterSheetsByPaperFilters(sheets, paperTypeFilter, paperDensityFilter),
+    [sheets, paperTypeFilter, paperDensityFilter],
+  );
 
   const update = (partial) => onChange({ ...block, ...partial });
 
@@ -81,7 +93,7 @@ export default function BlockSection({
       });
       return;
     }
-    const sheet = catalogs.sheets.find((row) => String(row.id) === sheetId);
+    const sheet = sheets.find((row) => String(row.id) === sheetId);
     if (!sheet) {
       update({ paperSheetId: sheetId });
       return;
@@ -96,8 +108,46 @@ export default function BlockSection({
   const paperSheetValue = resolvePaperSheetId(
     block.paperSheetId,
     block.paper,
-    catalogs.sheets,
+    sheets,
   );
+
+  const onPaperTypeFilterChange = (nextType) => {
+    const nextFiltered = filterSheetsByPaperFilters(
+      sheets,
+      nextType,
+      paperDensityFilter,
+    );
+    if (
+      !isSelectedPaperSheetInFilteredList(
+        block.paperSheetId,
+        block.paper,
+        sheets,
+        nextFiltered,
+      )
+    ) {
+      selectPaperSheet("");
+    }
+    setPaperTypeFilter(nextType);
+  };
+
+  const onPaperDensityFilterChange = (nextDensity) => {
+    const nextFiltered = filterSheetsByPaperFilters(
+      sheets,
+      paperTypeFilter,
+      nextDensity,
+    );
+    if (
+      !isSelectedPaperSheetInFilteredList(
+        block.paperSheetId,
+        block.paper,
+        sheets,
+        nextFiltered,
+      )
+    ) {
+      selectPaperSheet("");
+    }
+    setPaperDensityFilter(nextDensity);
+  };
 
   const existingKinds = new Set(block.operations.map((op) => op.kind));
 
@@ -136,15 +186,31 @@ export default function BlockSection({
         </div>
         <div className={styles.right}>
           <Dropdown
+            id={`${idPrefix}-paper-type-filter`}
+            label="Тип бумаги"
+            value={paperTypeFilter}
+            onChange={onPaperTypeFilterChange}
+            emptyOptionLabel="—"
+            options={paperTypeOptions}
+          />
+          <Dropdown
+            id={`${idPrefix}-paper-density-filter`}
+            label="Плотность"
+            value={paperDensityFilter}
+            onChange={onPaperDensityFilterChange}
+            emptyOptionLabel="—"
+            options={paperDensityOptions}
+          />
+          <Dropdown
             id={`${idPrefix}-paper-sheet`}
             label="Бумага"
             value={paperSheetValue}
             onChange={selectPaperSheet}
             emptyOptionLabel="—"
-            options={catalogs.sheets.map((sheet) => ({
+            options={filteredSheets.map((sheet) => ({
               value: String(sheet.id),
-                label: sheetLabel(sheet),
-              }))}
+              label: sheetLabel(sheet),
+            }))}
           />
           <TextField
             id={`${idPrefix}-bleeds`}
