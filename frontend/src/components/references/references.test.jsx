@@ -234,6 +234,7 @@ describe("References", () => {
           {
             id: 7,
             name: "Тест",
+            spacing: 3,
             startup: "100",
             cyan: "1.5",
             magenta: "2",
@@ -255,6 +256,7 @@ describe("References", () => {
 
     await userEvent.type(within(region).getByLabelText("Номер:"), "7");
     await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
+    await userEvent.type(within(region).getByLabelText("Поля:"), "3");
     await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
     await userEvent.type(within(region).getByLabelText("C:"), "1.5");
     await userEvent.type(within(region).getByLabelText("M:"), "2");
@@ -272,6 +274,7 @@ describe("References", () => {
       expect(JSON.parse(postCall[1].body)).toEqual({
         id: 7,
         name: "Тест",
+        spacing: 3,
         startup: "100",
         cyan: "1.5",
         magenta: "2",

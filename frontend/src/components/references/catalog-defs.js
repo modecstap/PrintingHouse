@@ -63,6 +63,7 @@ const PRINTERS = {
   columns: [
     { header: "Номер", render: (row) => row.id },
     { header: "Название", render: (row) => row.name },
+    { header: "Поля", render: (row) => row.spacing },
     { header: "Запуск", render: (row) => formatMoney(row.startup) },
     { header: "C", render: (row) => formatMoney(row.cyan) },
     { header: "M", render: (row) => formatMoney(row.magenta) },
@@ -72,6 +73,7 @@ const PRINTERS = {
   fields: [
     { name: "id", label: "Номер", ...INT },
     { name: "name", label: "Название" },
+    { name: "spacing", label: "Поля", ...INT },
     { name: "startup", label: "Запуск", ...MONEY },
     { name: "cyan", label: "C", ...MONEY },
     { name: "magenta", label: "M", ...MONEY },
@@ -81,6 +83,7 @@ const PRINTERS = {
   emptyForm: {
     id: "",
     name: "",
+    spacing: "",
     startup: "",
     cyan: "",
     magenta: "",
@@ -92,6 +95,7 @@ const PRINTERS = {
     return {
       id: toJsonInt(form.id),
       name: form.name.trim(),
+      spacing: toJsonInt(form.spacing),
       startup: form.startup.trim(),
       cyan: form.cyan.trim(),
       magenta: form.magenta.trim(),
