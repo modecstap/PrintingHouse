@@ -1,8 +1,9 @@
 """Orders, blocks, and product additional work."""
 
+from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Integer, Numeric, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.schema import Base
@@ -15,6 +16,10 @@ class OrderRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     count: Mapped[int] = mapped_column(Integer)
+    description: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
 
 
 class OrderBlockRow(Base):
