@@ -45,7 +45,7 @@ class Sheet:
             Decimal(self.format.width)
             * Decimal(self.format.height)
             / Decimal(1_000_000)
-            * Decimal(self.paper.density)
+            * Decimal(self.paper.density.value)
             / Decimal(1000)
         )
 

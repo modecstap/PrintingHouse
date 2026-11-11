@@ -14,6 +14,7 @@ from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.equipment.printer_repository import PrinterIdOccupied
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.paper import Paper
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.values.money import Money
@@ -150,7 +151,7 @@ class InMemoryFilmRepository:
             id=film_id,
             name=name,
             price=price,
-            density=density,
+            density=FilmDensity(density),
         )
         return film_id
 

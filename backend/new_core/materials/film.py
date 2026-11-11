@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from backend.new_core.errors import InvalidInput
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.values.money import Money
 
 
@@ -26,10 +27,9 @@ class Film:
     Entity. A film row in the materials catalog.
 
     Density does not change the money of a run.
-    The constructor does not check the sign of density.
     """
 
     id: FilmID
     name: str
     price: Money
-    density: int
+    density: FilmDensity

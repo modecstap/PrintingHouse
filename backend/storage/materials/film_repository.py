@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.new_core.materials.film import Film, FilmID
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.values.money import Money
 from backend.storage.materials.tables import FilmRow
 
@@ -48,10 +49,11 @@ class SqlFilmRepository:
 
         :return: the assigned film id.
         """
+        wrapped_density = FilmDensity(density)
         row = FilmRow(
             name=name,
             price=price.amount,
-            density=density,
+            density=wrapped_density.value,
         )
         self._session.add(row)
         self._session.flush()
@@ -71,7 +73,7 @@ class SqlFilmRepository:
             raise KeyError(film.id)
         row.name = film.name
         row.price = film.price.amount
-        row.density = film.density
+        row.density = film.density.value
         self._session.flush()
 
     def delete(self, film_id: FilmID) -> None:
@@ -94,5 +96,5 @@ class SqlFilmRepository:
             id=film_id,
             name=row.name,
             price=Money(row.price),
-            density=row.density,
+            density=FilmDensity(row.density),
         )

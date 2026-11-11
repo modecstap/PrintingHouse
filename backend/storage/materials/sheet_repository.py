@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.new_core.format import Format
 from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.values.money import Money
@@ -51,7 +52,7 @@ class SqlSheetRepository:
         :return: the assigned sheet id.
         """
         row = SheetRow(
-            paper_density=paper.density,
+            paper_density=paper.density.value,
             paper_thickness=paper.thickness,
             paper_name=paper.type.value,
             paper_price_per_kilo=paper.price_per_kilo.amount,
@@ -75,7 +76,7 @@ class SqlSheetRepository:
         row = self._session.get(SheetRow, sheet.id.value)
         if row is None:
             raise KeyError(sheet.id)
-        row.paper_density = sheet.paper.density
+        row.paper_density = sheet.paper.density.value
         row.paper_thickness = sheet.paper.thickness
         row.paper_name = sheet.paper.type.value
         row.paper_price_per_kilo = sheet.paper.price_per_kilo.amount
@@ -124,7 +125,7 @@ class SqlSheetRepository:
         return Sheet(
             id=sheet_id,
             paper=Paper(
-                density=row.paper_density,
+                density=PaperDensity(row.paper_density),
                 thickness=row.paper_thickness,
                 type=PaperType(row.paper_name),
                 price_per_kilo=Money(row.paper_price_per_kilo),

@@ -18,7 +18,9 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperatorID,
 )
 from backend.new_core.materials.film import Film, FilmID
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
@@ -125,7 +127,7 @@ def film_to_read_dto(film: Film) -> FilmReadDto:
         id=film.id.value,
         name=film.name,
         price=str(film.price.amount),
-        density=film.density,
+        density=film.density.value,
     )
 
 
@@ -135,7 +137,12 @@ def film_from_write_dto(dto: FilmDto) -> tuple[str, Money, int]:
 
 def film_replace_from_dto(film_id: int, dto: FilmDto) -> Film:
     name, price, density = film_from_write_dto(dto)
-    return Film(id=FilmID(film_id), name=name, price=price, density=density)
+    return Film(
+        id=FilmID(film_id),
+        name=name,
+        price=price,
+        density=FilmDensity(density),
+    )
 
 
 def _format_from_dto(dto: FormatDto) -> Format:
@@ -150,7 +157,7 @@ def sheet_to_read_dto(sheet: Sheet) -> SheetReadDto:
     return SheetReadDto(
         id=sheet.id.value,
         paper=PaperDto(
-            density=sheet.paper.density,
+            density=sheet.paper.density.value,
             thickness=sheet.paper.thickness,
             name=sheet.paper.type.value,
             price_per_kilo=str(sheet.paper.price_per_kilo.amount),
@@ -161,7 +168,7 @@ def sheet_to_read_dto(sheet: Sheet) -> SheetReadDto:
 
 def sheet_from_write_dto(dto: SheetDto) -> tuple[Paper, Format]:
     paper = Paper(
-        density=dto.paper.density,
+        density=PaperDensity(dto.paper.density),
         thickness=dto.paper.thickness,
         type=PaperType(dto.paper.name),
         price_per_kilo=_money(dto.paper.price_per_kilo),

@@ -16,6 +16,7 @@ from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.order.order import OrderID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
@@ -44,6 +45,7 @@ from backend.new_core import (
     AdditionalWork,
     Order,
     Paper,
+    PaperDensity,
     PaperType,
     Percent,
     PressOperator,
@@ -143,7 +145,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=resolved_film_id,
         name="film",
         price=Money(Decimal(3)),
-        density=77,
+        density=FilmDensity(77),
     )
     cutter = Cutter(id=CutterID(1), max_stack=max_stack)
     cutter_operator = CutterOperator(
@@ -153,7 +155,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     press_sheet = Sheet(
         id=resolved_sheet_id,
         paper=Paper(
-            density=press_density,
+            density=PaperDensity(press_density),
             thickness=paper_thickness,
             type=PaperType("press"),
             price_per_kilo=Money(Decimal(press_price)),

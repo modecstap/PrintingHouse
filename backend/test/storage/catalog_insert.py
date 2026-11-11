@@ -104,7 +104,7 @@ def insert_film(session: Session, film: Film) -> None:
             id=film.id.value,
             name=film.name,
             price=film.price.amount,
-            density=film.density,
+            density=film.density.value,
         ),
     )
 
@@ -113,7 +113,7 @@ def insert_sheet(session: Session, sheet: Sheet) -> None:
     session.add(
         SheetRow(
             id=sheet.id.value,
-            paper_density=sheet.paper.density,
+            paper_density=sheet.paper.density.value,
             paper_thickness=sheet.paper.thickness,
             paper_name=sheet.paper.type.value,
             paper_price_per_kilo=sheet.paper.price_per_kilo.amount,

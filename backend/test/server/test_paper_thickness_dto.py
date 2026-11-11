@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from backend.new_core import Format, Paper, PaperType, Sheet
+from backend.new_core import Format, Paper, PaperDensity, PaperType, Sheet
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.values.money import Money
 from backend.server.catalog_mapping import sheet_from_write_dto, sheet_to_read_dto
@@ -41,7 +41,7 @@ def test_sheet_dto_round_trip_fractional_thickness():
     sheet = Sheet(
         id=SheetID(1),
         paper=Paper(
-            density=80,
+            density=PaperDensity(80),
             thickness=Decimal("0.15"),
             type=PaperType("офсет"),
             price_per_kilo=Money(Decimal("90")),
@@ -55,3 +55,4 @@ def test_sheet_dto_round_trip_fractional_thickness():
     paper, _fmt = sheet_from_write_dto(write)
     assert paper.thickness == Decimal("0.15")
     assert dto.paper.name == paper.type.value == write.paper.name
+    assert dto.paper.density == paper.density.value == write.paper.density

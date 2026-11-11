@@ -9,6 +9,7 @@ from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.materials.film import FilmID
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
@@ -44,7 +45,7 @@ def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet
     return Sheet(
         id=sheet_id or SheetID(1),
         paper=Paper(
-            density=60,
+            density=PaperDensity(60),
             thickness=Decimal(1),
             type=PaperType("sheet"),
             price_per_kilo=Money(Decimal(0)),
@@ -113,20 +114,15 @@ def test_product_rejects_empty_blocks():
 def test_paper_rejects_a_density_of_zero():
     """A paper density of 0 is rejected."""
     _rejects(
-        "Paper: плотность бумаги меньше или равна 0, плотность=0 г/м²",
-        lambda: Paper(
-            density=0,
-            thickness=Decimal(1),
-            type=PaperType("press"),
-            price_per_kilo=Money(Decimal(1000)),
-        ),
+        "PaperDensity: плотность бумаги меньше или равна 0, плотность=0 г/м²",
+        lambda: PaperDensity(0),
     )
 
 
 def test_paper_accepts_fractional_thickness():
     """A paper thickness of 0.15 mm is accepted."""
     Paper(
-        density=60,
+        density=PaperDensity(60),
         thickness=Decimal("0.15"),
         type=PaperType("press"),
         price_per_kilo=Money(Decimal(1000)),
@@ -139,7 +135,7 @@ def test_paper_rejects_thickness_with_more_than_two_decimal_places():
         "Paper: толщина бумаги имеет более 2 знаков после запятой, "
         "толщина=0.151 мм",
         lambda: Paper(
-            density=60,
+            density=PaperDensity(60),
             thickness=Decimal("0.151"),
             type=PaperType("press"),
             price_per_kilo=Money(Decimal(1000)),
@@ -152,7 +148,7 @@ def test_paper_rejects_a_thickness_of_zero():
     _rejects(
         "Paper: толщина бумаги меньше или равна 0, толщина=0 мм",
         lambda: Paper(
-            density=60,
+            density=PaperDensity(60),
             thickness=Decimal(0),
             type=PaperType("press"),
             price_per_kilo=Money(Decimal(1000)),
@@ -249,10 +245,9 @@ def test_negative_measure_is_rejected(message: str, build):
     ("message", "build"),
     [
         pytest.param(
-            "Paper: плотность бумаги меньше или равна 0, плотность=0 г/м²; "
-            "толщина бумаги меньше или равна 0, толщина=0 мм",
+            "Paper: толщина бумаги меньше или равна 0, толщина=0 мм",
             lambda: Paper(
-                density=0,
+                density=PaperDensity(60),
                 thickness=Decimal(0),
                 type=PaperType("press"),
                 price_per_kilo=Money(Decimal(1000)),

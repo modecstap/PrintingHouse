@@ -11,7 +11,9 @@ from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
@@ -110,7 +112,7 @@ def test_film_add_take_all_replace_take_round_trip(db_session):
         id=first_id,
         name="renamed",
         price=Money(Decimal("2")),
-        density=60,
+        density=FilmDensity(60),
     )
     repo.replace(updated)
     db_session.commit()
@@ -121,7 +123,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     """``add``, ``take_all``, ``replace``, and ``take`` round-trip a sheet."""
     repo = SqlSheetRepository(db_session)
     paper = Paper(
-        density=100,
+        density=PaperDensity(100),
         thickness=Decimal(1),
         type=PaperType("dup"),
         price_per_kilo=Money(Decimal("10")),
@@ -136,7 +138,7 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     updated = Sheet(
         id=first_id,
         paper=Paper(
-            density=120,
+            density=PaperDensity(120),
             thickness=Decimal(2),
             type=PaperType("new"),
             price_per_kilo=Money(Decimal("12")),
@@ -152,7 +154,7 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     """Fractional and whole thickness values round-trip through storage."""
     repo = SqlSheetRepository(db_session)
     fractional = Paper(
-        density=80,
+        density=PaperDensity(80),
         thickness=Decimal("0.15"),
         type=PaperType("тонкая"),
         price_per_kilo=Money(Decimal("10")),
@@ -164,7 +166,7 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     assert loaded.paper.thickness == Decimal("0.15")
 
     whole_id = repo.add(
-        Paper(100, Decimal(1), PaperType("целая"), Money(Decimal("5"))),
+        Paper(PaperDensity(100), Decimal(1), PaperType("целая"), Money(Decimal("5"))),
         fmt,
     )
     db_session.commit()
@@ -176,7 +178,7 @@ def test_sheet_distinct_paper_types_dedup_and_sort(db_session):
     """``distinct_paper_types`` deduplicates canonical values and sorts ascending."""
     repo = SqlSheetRepository(db_session)
     paper = Paper(
-        density=100,
+        density=PaperDensity(100),
         thickness=Decimal(1),
         type=PaperType("офсет"),
         price_per_kilo=Money(Decimal("10")),
@@ -231,14 +233,24 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
         (
             lambda session: SqlFilmRepository(session),
             FilmID(404),
-            Film(id=FilmID(404), name="x", price=Money(Decimal("1")), density=1),
+            Film(
+                id=FilmID(404),
+                name="x",
+                price=Money(Decimal("1")),
+                density=FilmDensity(1),
+            ),
         ),
         (
             lambda session: SqlSheetRepository(session),
             SheetID(404),
             Sheet(
                 id=SheetID(404),
-                paper=Paper(1, Decimal(1), PaperType("x"), Money(Decimal("1"))),
+                paper=Paper(
+                    PaperDensity(1),
+                    Decimal(1),
+                    PaperType("x"),
+                    Money(Decimal("1")),
+                ),
                 format=Format("f", 1, 1),
             ),
         ),
@@ -278,7 +290,7 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
     """A sheet still referenced by ``parts.sheet_id`` cannot be removed."""
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
-        Paper(100, Decimal(1), PaperType("press"), Money(Decimal("1"))),
+        Paper(PaperDensity(100), Decimal(1), PaperType("press"), Money(Decimal("1"))),
         Format("press", 300, 200),
     )
     db_session.flush()

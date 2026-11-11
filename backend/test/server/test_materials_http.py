@@ -12,6 +12,7 @@ from backend.auth.passwords import hash_password
 from backend.auth.tokens import create_access_token
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
+from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.paper import Paper
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.values.money import Money
@@ -120,14 +121,19 @@ def test_replace_film_204():
         id=FilmID(5),
         name="gloss",
         price=Money(Decimal("1")),
-        density=90,
+        density=FilmDensity(90),
     )
 
 
 def test_get_film_404_when_service_raises_key_error():
     fake = _FakeMaterialCatalogService(
         films_rows=(
-            Film(id=FilmID(1), name="x", price=Money(Decimal("1")), density=1),
+            Film(
+                id=FilmID(1),
+                name="x",
+                price=Money(Decimal("1")),
+                density=FilmDensity(1),
+            ),
         ),
         missing_film_ids={9},
     )

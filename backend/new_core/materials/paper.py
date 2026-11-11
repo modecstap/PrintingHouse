@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.values.money import Money
 from backend.new_core.errors import InvalidInput
@@ -15,26 +16,21 @@ class Paper:
     of one kilogram of a paper grade.
     """
 
-    density: int
+    density: PaperDensity
     thickness: Decimal
     type: PaperType
     price_per_kilo: Money
 
     def __post_init__(self) -> None:
-        """Rejects invalid density or thickness.
+        """Rejects invalid thickness.
 
-        :raises InvalidInput: if density is below one, if thickness is not a
-        positive Decimal with at most two fractional digits. Both failures are
-        reported together.
+        :raises InvalidInput: if thickness is not a positive Decimal with at
+        most two fractional digits.
 
         :return: nothing. A negative price never reaches this method,
         because Money rejects it first.
         """
         reasons: list[str] = []
-        if self.density <= 0:
-            reasons.append(
-                f"плотность бумаги меньше или равна 0, плотность={self.density} г/м²",
-            )
         if type(self.thickness) is not Decimal:
             reasons.append(
                 f"толщина бумаги должна быть Decimal, толщина={self.thickness!r}",
