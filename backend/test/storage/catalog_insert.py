@@ -32,6 +32,7 @@ def insert_printer(session: Session, printer: Printer) -> None:
     session.add(
         PrinterRow(
             id=printer.id.value,
+            name=printer.name,
             startup=printer.startup.amount,
             cyan=printer.cyan.amount,
             magenta=printer.magenta.amount,
@@ -45,6 +46,7 @@ def insert_laminator(session: Session, laminator: Laminator) -> None:
     session.add(
         LaminatorRow(
             id=laminator.id.value,
+            name=laminator.name,
             startup=laminator.startup.amount,
         ),
     )
@@ -52,7 +54,7 @@ def insert_laminator(session: Session, laminator: Laminator) -> None:
 
 def insert_cutter(session: Session, cutter: Cutter) -> None:
     session.add(
-        CutterRow(id=cutter.id.value, max_stack=cutter.max_stack),
+        CutterRow(id=cutter.id.value, name=cutter.name, max_stack=cutter.max_stack),
     )
 
 
@@ -60,6 +62,7 @@ def insert_press_operator(session: Session, operator: PressOperator) -> None:
     session.add(
         PressOperatorRow(
             id=operator.id.value,
+            name=operator.name,
             salary_by_operation=operator.salary_by_operation.amount,
         ),
     )
@@ -72,6 +75,7 @@ def insert_laminator_operator(
     session.add(
         LaminatorOperatorRow(
             id=operator.id.value,
+            name=operator.name,
             salary_by_operation=operator.salary_by_operation.amount,
         ),
     )
@@ -81,6 +85,7 @@ def insert_cutter_operator(session: Session, operator: CutterOperator) -> None:
     session.add(
         CutterOperatorRow(
             id=operator.id.value,
+            name=operator.name,
             salary_by_operation=operator.salary_by_operation.amount,
         ),
     )
@@ -93,6 +98,7 @@ def insert_die_cutter_operator(
     session.add(
         DieCutterOperatorRow(
             id=operator.id.value,
+            name=operator.name,
             salary_by_operation=operator.salary_by_operation.amount,
         ),
     )

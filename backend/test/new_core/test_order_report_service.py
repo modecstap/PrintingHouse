@@ -144,6 +144,7 @@ def test_order_report_prices_die_cut_through_order_service():
     )
     die_operator = DieCutterOperator(
         id=DieCutterOperatorID(2),
+        name="№ 2",
         salary_by_operation=Money(Decimal(8)),
     )
     _append_block_operation(run, DieCut(operator_id=die_operator.id))

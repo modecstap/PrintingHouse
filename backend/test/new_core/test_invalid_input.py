@@ -160,7 +160,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
     """A stack height of 0 is rejected."""
     _rejects(
         "cutter: высота стопы равна 0, высота=0 мм",
-        lambda: Cutter(id=CutterID(1), max_stack=0),
+        lambda: Cutter(id=CutterID(1), name="№ 1", max_stack=0),
     )
 
 
@@ -231,7 +231,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
         ),
         pytest.param(
             "cutter: высота стопы меньше 0, высота=-1 мм",
-            lambda: Cutter(id=CutterID(1), max_stack=-1),
+            lambda: Cutter(id=CutterID(1), name="№ 1", max_stack=-1),
             id="stack",
         ),
     ],

@@ -78,6 +78,7 @@ def test_printer_save_list_delete_round_trip(db_session):
     repo = SqlPrinterRepository(db_session)
     printer = Printer(
         id=PrinterID(10),
+        name="№ 10",
         startup=Money(Decimal("1")),
         cyan=Money(Decimal("2")),
         magenta=Money(Decimal("3")),

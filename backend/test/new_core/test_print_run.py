@@ -124,6 +124,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     """
     printer = Printer(
         id=PrinterID(1),
+        name="№ 1",
         startup=Money(Decimal(printer_startup)),
         cyan=Money(Decimal(1)),
         magenta=Money(Decimal(1)),
@@ -132,11 +133,13 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     )
     press_operator = PressOperator(
         id=PressOperatorID(1),
+        name="№ 1",
         salary_by_operation=Money(Decimal(press_salary)),
     )
-    laminator = Laminator(id=LaminatorID(1), startup=Money(Decimal(10)))
+    laminator = Laminator(id=LaminatorID(1), name="№ 1", startup=Money(Decimal(10)))
     laminator_operator = LaminatorOperator(
         id=LaminatorOperatorID(1),
+        name="№ 1",
         salary_by_operation=Money(Decimal(4)),
     )
     resolved_sheet_id = sheet_id or SheetID(1)
@@ -147,9 +150,10 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         price=Money(Decimal(3)),
         density=FilmDensity(77),
     )
-    cutter = Cutter(id=CutterID(1), max_stack=max_stack)
+    cutter = Cutter(id=CutterID(1), name="№ 1", max_stack=max_stack)
     cutter_operator = CutterOperator(
         id=CutterOperatorID(1),
+        name="№ 1",
         salary_by_operation=Money(Decimal(7)),
     )
     press_sheet = Sheet(
@@ -514,6 +518,7 @@ def test_cost_report_adds_the_die_cutter_salary_once():
     )
     die_operator = DieCutterOperator(
         id=DieCutterOperatorID(2),
+        name="№ 2",
         salary_by_operation=Money(Decimal(8)),
     )
     _append_block_operation(run, DieCut(operator_id=die_operator.id))
@@ -540,6 +545,7 @@ def test_factories_append_in_call_order():
     run, printing, laminate, cut, ctx = build_worked_run()
     operator = DieCutterOperator(
         id=DieCutterOperatorID(2),
+        name="№ 2",
         salary_by_operation=Money(Decimal(8)),
     )
     die_cut = DieCut(operator_id=operator.id)
@@ -698,6 +704,7 @@ def _die_cut_only_run(required_count: int) -> tuple[PrintRun, _RunPricingFixture
     )
     die_operator = DieCutterOperator(
         id=DieCutterOperatorID(2),
+        name="№ 2",
         salary_by_operation=Money(Decimal(8)),
     )
     _append_block_operation(run, DieCut(operator_id=die_operator.id))
