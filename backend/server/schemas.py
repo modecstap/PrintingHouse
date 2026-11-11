@@ -207,6 +207,7 @@ class PrinterDto(BaseModel):
 
     id: int
     name: str
+    spacing: int
     startup: str
     cyan: str
     magenta: str

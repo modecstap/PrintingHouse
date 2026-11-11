@@ -47,6 +47,7 @@ def printer_to_dto(printer: Printer) -> PrinterDto:
     return PrinterDto(
         id=printer.id.value,
         name=printer.name,
+        spacing=printer.spacing,
         startup=str(printer.startup.amount),
         cyan=str(printer.cyan.amount),
         magenta=str(printer.magenta.amount),
@@ -59,6 +60,7 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
     return Printer(
         id=PrinterID(dto.id),
         name=dto.name,
+        spacing=dto.spacing,
         startup=_money(dto.startup),
         cyan=_money(dto.cyan),
         magenta=_money(dto.magenta),
