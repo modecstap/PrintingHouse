@@ -128,6 +128,7 @@ export function emptyAdditionalWork() {
 export function emptyCalculatorForm() {
   return {
     count: "0",
+    description: "",
     blocks: [emptyBlock()],
     additionalWorks: [],
   };
@@ -188,6 +189,7 @@ function mapBlockToWrite(block) {
 export function toOrderWrite(form) {
   return {
     count: coerceIntegerField(form.count),
+    description: String(form.description ?? ""),
     product: {
       blocks: form.blocks.map(mapBlockToWrite),
       operations: form.additionalWorks.map((work) => ({
@@ -437,6 +439,7 @@ export function toCalculatorForm(order) {
   }
   return {
     count: numberToFormString(order.count),
+    description: order.description ?? "",
     blocks: blocks.map(mapBlockFromDto),
     additionalWorks: (order.product.operations ?? []).map((work) => ({
       clientKey: newClientKey(),
@@ -677,6 +680,14 @@ export function toOrderReport(raw) {
   };
 }
 
+export function formatOrderCreatedDate(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("order: created_at is not a valid date");
+  }
+  return date.toLocaleDateString("ru-RU");
+}
+
 export function toOrderSummary(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("order: id must be a number");
@@ -684,7 +695,15 @@ export function toOrderSummary(raw) {
   if (typeof raw?.count !== "number") {
     throw new Error("order: count must be a number");
   }
-  return { id: raw.id, count: raw.count };
+  if (typeof raw?.created_at !== "string" || raw.created_at.trim() === "") {
+    throw new Error("order: created_at must be a non-empty string");
+  }
+  return {
+    id: raw.id,
+    count: raw.count,
+    description: String(raw.description ?? ""),
+    created_at: raw.created_at,
+  };
 }
 
 export {

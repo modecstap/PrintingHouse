@@ -29,7 +29,27 @@ const SAMPLE_PRODUCT = {
   operations: [],
 };
 
-const ORDER_DTO = { id: 1, count: 10, product: SAMPLE_PRODUCT };
+const ORDER_DTO = {
+  id: 1,
+  count: 10,
+  description: "",
+  created_at: "2026-06-15T12:00:00Z",
+  product: SAMPLE_PRODUCT,
+};
+
+const LIST_SUMMARY = {
+  id: 1,
+  count: 10,
+  description: "Визитки",
+  created_at: "2026-11-11T00:00:00Z",
+};
+
+const LIST_SUMMARY_2 = {
+  id: 2,
+  count: 5,
+  description: "",
+  created_at: "2026-01-01T00:00:00Z",
+};
 
 const REPORT_RAW = {
   product_price: "12.50",
@@ -83,10 +103,7 @@ describe("Orders", () => {
   it("should show id and count from the order list", async () => {
     global.fetch = jest.fn((url, options) => {
       if (url === "/api/orders" && (!options?.method || options.method === "GET")) {
-        return jsonResponse([
-          { id: 1, count: 10 },
-          { id: 2, count: 5 },
-        ]);
+        return jsonResponse([LIST_SUMMARY, LIST_SUMMARY_2]);
       }
       return jsonResponse({}, 404);
     });
@@ -101,6 +118,15 @@ describe("Orders", () => {
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "ID" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Количество" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Описание" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Дата создания" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Визитки")).toBeInTheDocument();
+    expect(screen.getByText("11.11.2026")).toBeInTheDocument();
+    expect(screen.getByText("01.01.2026")).toBeInTheDocument();
 
     expect(screen.queryByRole("button", { name: "Отложить" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "В работу" })).not.toBeInTheDocument();
@@ -146,7 +172,7 @@ describe("Orders", () => {
   it("should fill the calculator and show the report when a row is opened", async () => {
     global.fetch = jest.fn((url, options) => {
       if (url === "/api/orders" && (!options?.method || options.method === "GET")) {
-        return jsonResponse([{ id: 1, count: 10 }]);
+        return jsonResponse([LIST_SUMMARY]);
       }
       if (url === "/api/orders/1" && (!options?.method || options.method === "GET")) {
         return jsonResponse(ORDER_DTO);
@@ -180,7 +206,7 @@ describe("Orders", () => {
     global.fetch = jest.fn((url, options) => {
       if (url === "/api/orders" && (!options?.method || options.method === "GET")) {
         listCallCount += 1;
-        return jsonResponse([{ id: 1, count: 10 }]);
+        return jsonResponse([LIST_SUMMARY]);
       }
       if (url === "/api/orders/1" && (!options?.method || options.method === "GET")) {
         return jsonResponse(ORDER_DTO);

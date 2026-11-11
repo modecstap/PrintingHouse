@@ -103,7 +103,13 @@ const SAMPLE_PRODUCT = {
   operations: [],
 };
 
-const ORDER_DTO = { id: 42, count: 100, product: SAMPLE_PRODUCT };
+const ORDER_DTO = {
+  id: 42,
+  count: 100,
+  description: "Тестовый заказ",
+  created_at: "2026-06-15T12:00:00Z",
+  product: SAMPLE_PRODUCT,
+};
 
 async function fillMandatoryPrintAndCut() {
   const printRegion = screen.getByRole("region", { name: /Печать/i });
@@ -321,6 +327,7 @@ describe("Calculator", () => {
     await waitFor(() => {
       expect(screen.getByLabelText("Тираж:")).toHaveValue(100);
     });
+    expect(screen.getByLabelText("Описание:")).toHaveValue("Тестовый заказ");
     expect(screen.getByLabelText("Ширина:")).toHaveValue(90);
     expect(screen.getByLabelText("Высота:")).toHaveValue(50);
   });

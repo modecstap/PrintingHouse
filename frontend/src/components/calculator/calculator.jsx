@@ -11,6 +11,7 @@ import ReportView from "./components/report-view";
 import Button from "../generic/button/button";
 import { Dropdown } from "../generic/dropdown/dropdown";
 import { NumberField } from "../generic/number-field/number-field";
+import { TextField } from "../generic/text-field/text-field";
 import pageStyles from "../generic/page/page.module.css";
 import styles from "./calculator.module.css";
 import { useCalculator } from "./hook";
@@ -90,6 +91,12 @@ export default function Calculator({
             label="Тираж"
             value={form.count}
             onChange={(v) => setForm({ ...form, count: v })}
+          />
+          <TextField
+            id="order-description"
+            label="Описание"
+            value={form.description}
+            onChange={(v) => setForm({ ...form, description: v })}
           />
           <div className={styles.addActions}>
             <Button type="button" onClick={addBlock}>

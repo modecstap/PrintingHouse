@@ -10,6 +10,7 @@ import Button from "../generic/button/button";
 import pageStyles from "../generic/page/page.module.css";
 import Table from "../generic/table/table";
 import { useAbortableLoad } from "../../hooks/useAbortableLoad";
+import { formatOrderCreatedDate } from "../calculator/models/order";
 import styles from "./orders.module.css";
 
 export default function Orders({ catalogs, catalogLoadState }) {
@@ -104,12 +105,14 @@ export default function Orders({ catalogs, catalogLoadState }) {
             <tr>
               <th scope="col">ID</th>
               <th scope="col">Количество</th>
+              <th scope="col">Описание</th>
+              <th scope="col">Дата создания</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td colSpan={2} style={{ padding: 0, border: "none" }}>
+                <td colSpan={4} style={{ padding: 0, border: "none" }}>
                   <button
                     type="button"
                     className={styles.rowButton}
@@ -117,6 +120,10 @@ export default function Orders({ catalogs, catalogLoadState }) {
                   >
                     <span>{order.id}</span>
                     <span>{order.count}</span>
+                    <span className={styles.descriptionCell}>
+                      {order.description}
+                    </span>
+                    <span>{formatOrderCreatedDate(order.created_at)}</span>
                   </button>
                 </td>
               </tr>

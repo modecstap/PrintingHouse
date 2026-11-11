@@ -6,7 +6,7 @@
 
 .rowButton {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   width: 100%;
   text-align: left;
   padding: var(--spacing-2) var(--spacing-4);
@@ -20,6 +20,13 @@
 
 .rowButton:hover {
   background: color-mix(in srgb, var(--text-color) 8%, transparent);
+}
+
+.descriptionCell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .modalMessage {

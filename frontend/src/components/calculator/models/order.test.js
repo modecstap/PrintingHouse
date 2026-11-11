@@ -8,11 +8,13 @@ import {
   toOrderWrite,
   toCalculatorForm,
   toOrderReport,
+  formatOrderCreatedDate,
   toOrderSummary,
 } from "./order";
 
 const sampleWriteJson = {
   count: 10,
+  description: "Визитки",
   product: {
     blocks: [
       {
@@ -47,6 +49,7 @@ const sampleWriteJson = {
 function sampleForm() {
   return {
     count: "10",
+    description: "Визитки",
     blocks: [
       {
         clientKey: "block-key",
@@ -139,6 +142,7 @@ describe("emptyCalculatorForm", () => {
   it("should return the default starting values from conventions", () => {
     const form = emptyCalculatorForm();
     expect(form.count).toBe("0");
+    expect(form.description).toBe("");
     expect(form.additionalWorks).toEqual([]);
     expect(form.blocks).toHaveLength(1);
     const block = form.blocks[0];
@@ -211,6 +215,7 @@ describe("toOrderWrite", () => {
     const form = emptyCalculatorForm();
     expect(toOrderWrite(form)).toEqual({
       count: 0,
+      description: "",
       product: {
         blocks: [
           {
@@ -249,9 +254,10 @@ describe("toOrderWrite", () => {
 
 describe("toCalculatorForm", () => {
   it("should map OrderDto to string form fields and new client keys", () => {
-    const order = { id: 99, ...sampleWriteJson };
+    const order = { id: 99, created_at: "2026-06-15T12:00:00Z", ...sampleWriteJson };
     const form = toCalculatorForm(order);
     expect(form.count).toBe("10");
+    expect(form.description).toBe("Визитки");
     expect(form.blocks[0].count).toBe("2");
     expect(form.blocks[0].markup).toBe("30");
     expect(form.blocks[0].target.width).toBe("90");
@@ -301,14 +307,55 @@ describe("toOrderReport", () => {
   });
 });
 
+describe("formatOrderCreatedDate", () => {
+  it("should format an ISO date for ru-RU locale", () => {
+    expect(formatOrderCreatedDate("2026-06-15T12:00:00Z")).toBe("15.06.2026");
+  });
+
+  it("should throw when the string is not a valid date", () => {
+    expect(() => formatOrderCreatedDate("not-a-date")).toThrow(
+      "order: created_at is not a valid date",
+    );
+  });
+});
+
 describe("toOrderSummary", () => {
-  it("should return id and count only", () => {
-    expect(toOrderSummary({ id: 3, count: 10 })).toEqual({ id: 3, count: 10 });
+  it("should return id, count, description, and created_at", () => {
+    expect(
+      toOrderSummary({
+        id: 3,
+        count: 10,
+        description: "Визитки",
+        created_at: "2026-06-15T12:00:00Z",
+      }),
+    ).toEqual({
+      id: 3,
+      count: 10,
+      description: "Визитки",
+      created_at: "2026-06-15T12:00:00Z",
+    });
+  });
+
+  it("should default description to an empty string", () => {
+    expect(
+      toOrderSummary({ id: 3, count: 10, created_at: "2026-06-15T12:00:00Z" }),
+    ).toEqual({
+      id: 3,
+      count: 10,
+      description: "",
+      created_at: "2026-06-15T12:00:00Z",
+    });
   });
 
   it("should throw when id is a string", () => {
-    expect(() => toOrderSummary({ id: "3", count: 10 })).toThrow(
-      "order: id must be a number",
+    expect(() =>
+      toOrderSummary({ id: "3", count: 10, created_at: "2026-06-15T12:00:00Z" }),
+    ).toThrow("order: id must be a number");
+  });
+
+  it("should throw when created_at is missing", () => {
+    expect(() => toOrderSummary({ id: 3, count: 10 })).toThrow(
+      "order: created_at must be a non-empty string",
     );
   });
 });
