@@ -9,7 +9,7 @@ from backend.new_core.order.repository import OrderNotFound
 from backend.storage.order.unit_of_work import SqlOrderUnitOfWork
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
-from backend.test.storage.helpers import product_from_run
+from backend.test.storage.helpers import make_order, product_from_run
 
 
 def _run_for_order(run: PrintRun, order_id: OrderID) -> PrintRun:
@@ -21,7 +21,7 @@ def test_transaction_rolls_back_orders_and_print_runs(db_session):
     run, *_ , ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
-    order = Order(id=OrderID(4), product=product_from_run(run), count=2)
+    order = make_order(4, product_from_run(run), 2)
     stored_run = _run_for_order(run, order.id)
 
     def work() -> None:
@@ -42,7 +42,7 @@ def test_transaction_commits_orders_and_print_runs(db_session):
     run, *_ , ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
-    order = Order(id=OrderID(8), product=product_from_run(run), count=2)
+    order = make_order(8, product_from_run(run), 2)
     stored_run = _run_for_order(run, order.id)
 
     def work() -> None:
@@ -60,7 +60,7 @@ def test_rollback_does_not_rewind_order_id_sequence(db_session):
     run, *_ , ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
-    order = Order(id=OrderID(0), product=product_from_run(run), count=1)
+    order = make_order(0, product_from_run(run), 1)
 
     assert uow.orders.generate_id() == OrderID(0)
     db_session.commit()

@@ -62,7 +62,12 @@ class SqlOrderRepository:
         """
         try:
             self._session.add(
-                OrderRow(id=order.id.value, count=order.count),
+                OrderRow(
+                    id=order.id.value,
+                    count=order.count,
+                    description=order.description,
+                    created_at=order.created_at,
+                ),
             )
             self._session.flush()
         except IntegrityError as exc:
@@ -104,6 +109,7 @@ class SqlOrderRepository:
             raise OrderNotFound("replace", order.id)
 
         row.count = order.count
+        row.description = order.description
 
         self._session.execute(
             delete(OrderAdditionalWorkRow).where(
@@ -199,4 +205,6 @@ class SqlOrderRepository:
             id=order_id,
             product=Product(blocks=blocks, operations=operations),
             count=row.count,
+            description=row.description,
+            created_at=row.created_at,
         )

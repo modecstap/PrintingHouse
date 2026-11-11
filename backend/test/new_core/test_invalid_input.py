@@ -16,6 +16,7 @@ from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.new_core.order.order import OrderID
 from backend.new_core.print_run.print_run import PrintRunID
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 from backend.new_core.values.money import Money
 from backend.new_core import (
     Part,
@@ -208,6 +209,8 @@ def test_cutter_rejects_a_stack_height_of_zero():
                 id=OrderID(1),
                 product=Product(blocks=(_block(0),), operations=()),
                 count=-1,
+                description="",
+                created_at=TEST_ORDER_CREATED_AT,
             ),
             id="order count",
         ),

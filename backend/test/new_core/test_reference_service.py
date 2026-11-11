@@ -12,6 +12,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryReferenceRepository,
 )
 from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _service(
@@ -38,6 +39,8 @@ def test_save_stores_reference_when_order_exists():
         id=OrderID(3),
         product=Product(blocks=(run.block,), operations=()),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     orders = InMemoryOrderRepository(orders={order.id: order})
     refs = InMemoryReferenceRepository()
@@ -62,11 +65,15 @@ def test_reference_orders_loads_orders_in_reference_order():
         id=OrderID(1),
         product=Product(blocks=(run.block,), operations=()),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     second = Order(
         id=OrderID(2),
         product=Product(blocks=(run.block,), operations=()),
         count=2,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     orders = InMemoryOrderRepository(orders={first.id: first, second.id: second})
     refs = InMemoryReferenceRepository()

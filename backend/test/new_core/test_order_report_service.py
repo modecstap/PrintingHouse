@@ -33,6 +33,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _service_from_fixtures(run, ctx) -> OrderService:
@@ -83,6 +84,8 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
             ),
         ),
         count=4,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
 
     orders = InMemoryOrderRepository(orders={order.id: order})
@@ -148,6 +151,8 @@ def test_order_report_prices_die_cut_through_order_service():
         id=OrderID(5),
         product=Product(blocks=(run.block,), operations=()),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     uow = InMemoryUnitOfWork(
         orders=InMemoryOrderRepository(orders={order.id: order}),

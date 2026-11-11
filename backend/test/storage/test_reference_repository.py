@@ -6,7 +6,7 @@ from backend.storage.order.repository import SqlOrderRepository
 from backend.storage.reference.repository import SqlReferenceRepository
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
-from backend.test.storage.helpers import product_from_run
+from backend.test.storage.helpers import make_order, product_from_run
 from backend.new_core import Order
 
 
@@ -16,7 +16,7 @@ def test_save_appends_references_in_insertion_order(db_session):
     insert_catalogs_from_ctx(db_session, ctx)
     orders = SqlOrderRepository(db_session)
     refs = SqlReferenceRepository(db_session)
-    order = Order(id=OrderID(6), product=product_from_run(run), count=1)
+    order = make_order(6, product_from_run(run), 1)
 
     with db_session.begin():
         orders.save(order)

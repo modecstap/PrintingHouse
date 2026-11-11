@@ -20,6 +20,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _order(order_id: int) -> Order:
@@ -32,6 +33,8 @@ def _order(order_id: int) -> Order:
         id=OrderID(order_id),
         product=Product(blocks=(run.block,), operations=()),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
 
 

@@ -16,7 +16,7 @@ from backend.server import dependencies
 from backend.server.app import create_app
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
-from backend.test.storage.helpers import product_from_run
+from backend.test.storage.helpers import make_order, product_from_run
 
 
 @dataclass
@@ -63,7 +63,7 @@ def test_references_without_token_401():
 def test_list_and_orders_happy_path():
     run, *_ = build_worked_run()
     product = product_from_run(run)
-    order = Order(id=OrderID(1), product=product, count=1)
+    order = make_order(1, product, 1)
     ref = Reference(name="r1", description="d", order_id=order.id)
     fake = _FakeReferenceService(references_rows=(ref,), orders_rows=(order,))
     client, headers = _client_with_fake(fake)

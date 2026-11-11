@@ -264,9 +264,15 @@ class OrderService:
         """
 
         def work() -> OrderID:
-            self._uow.orders.take(order_id)
+            existing = self._uow.orders.take(order_id)
             hydrated = self._hydrate_product(product)
-            order = Order(id=order_id, product=hydrated, count=count)
+            order = Order(
+                id=order_id,
+                product=hydrated,
+                count=count,
+                description="",
+                created_at=existing.created_at,
+            )
             runs = tuple(
                 self._print_run_factory.create(
                     for_order=order_id,

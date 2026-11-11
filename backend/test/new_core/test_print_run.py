@@ -52,6 +52,7 @@ from backend.new_core import (
     Product,
     Sheet,
 )
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 @dataclass
@@ -218,6 +219,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             ),
         ),
         count=4,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     run = PrintRun(
         id=PrintRunID(1),
@@ -635,6 +638,8 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
             ),
         ),
         count=4,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
 
     estimate = _estimate(run, ctx)

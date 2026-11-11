@@ -33,6 +33,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _create_service(
@@ -272,6 +273,8 @@ def test_save_retries_on_occupied_order_id():
         id=OrderID(1),
         product=_product_from_run(run),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     orders = _SeededOrderRepository(
         orders={OrderID(1): existing},
@@ -304,6 +307,8 @@ def test_save_raises_after_three_occupied_ids():
         id=OrderID(1),
         product=_product_from_run(run),
         count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
     )
     orders = _AlwaysOccupiedOrderRepository(
         orders={OrderID(1): seed},

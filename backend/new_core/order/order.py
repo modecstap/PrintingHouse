@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from backend.new_core.errors import InvalidInput
 from backend.new_core.order.product import Product
@@ -23,6 +24,8 @@ class Order:
     id: OrderID
     product: Product
     count: int
+    description: str
+    created_at: datetime
 
     def __post_init__(self) -> None:
         """Rejects a negative order count.

@@ -20,7 +20,7 @@ from backend.server.mapping import (
 )
 from backend.server.schemas import ProductDto, ReferenceDto
 from backend.test.new_core.test_print_run import build_worked_run
-from backend.test.storage.helpers import product_from_run
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
 def _product_with_die_cut() -> Product:
@@ -111,7 +111,13 @@ def test_dump_uses_enum_names_not_values():
 
 def test_order_id_dumps_as_int():
     product = product_from_run(build_worked_run()[0])
-    order = Order(id=OrderID(7), product=product, count=3)
+    order = Order(
+        id=OrderID(7),
+        product=product,
+        count=3,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
+    )
     assert order_to_dto(order).id == 7
 
 

@@ -151,7 +151,15 @@ def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None
 def insert_minimal_order_row(session: Session, order_id: int) -> None:
     """Placeholder order row so print-run FK tests can insert runs."""
     from backend.storage.order.tables import OrderRow
+    from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
-    session.add(OrderRow(id=order_id, count=1))
+    session.add(
+        OrderRow(
+            id=order_id,
+            count=1,
+            description="",
+            created_at=TEST_ORDER_CREATED_AT,
+        ),
+    )
     session.flush()
     session.commit()
