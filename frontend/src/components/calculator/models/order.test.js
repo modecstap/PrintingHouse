@@ -24,7 +24,7 @@ const sampleWriteJson = {
           target: { name: "", width: 90, height: 50 },
           sheet_id: 1,
           bleeds: 2,
-          spacing: 5,
+          spacing: 0,
         },
         operations: [
           { kind: "print", printer_id: 1, operator_id: 4, chroma: "FOUR_ZERO" },
@@ -65,7 +65,6 @@ function sampleForm() {
         },
         sheetFormat: { name: "SRA3", width: "320", height: "450" },
         bleeds: "2",
-        spacing: "5",
         operations: [
           {
             clientKey: "print-key",
@@ -158,7 +157,6 @@ describe("emptyCalculatorForm", () => {
     });
     expect(block.sheetFormat).toEqual({ name: "", width: "0", height: "0" });
     expect(block.bleeds).toBe("0");
-    expect(block.spacing).toBe("0");
     expect(block.operations.map((op) => op.kind)).toEqual(["print", "cut"]);
     expect(typeof block.clientKey).toBe("string");
     expect(block.clientKey.length).toBeGreaterThan(0);
