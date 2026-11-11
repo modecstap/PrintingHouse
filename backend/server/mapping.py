@@ -97,7 +97,6 @@ def _part_from_dto(dto: PartDto) -> Part:
     return Part(
         imposition=_imposition_from_dto(dto.imposition),
         count=dto.count,
-        markup=Percent(dto.markup),
         operations=tuple(_operation_from_dto(op) for op in dto.operations),
     )
 
@@ -119,6 +118,7 @@ def product_from_dto(dto: ProductDto) -> Product:
     :return: ``Product`` instance.
     """
     return Product(
+        parts_markup=Percent(dto.parts_markup),
         blocks=tuple(_part_from_dto(block) for block in dto.blocks),
         operations=tuple(_additional_work_from_dto(op) for op in dto.operations),
     )
@@ -171,7 +171,6 @@ def _part_to_dto(part: Part) -> PartDto:
     return PartDto(
         imposition=_imposition_to_dto(part.imposition),
         count=part.count,
-        markup=part.markup.value,
         operations=tuple(_operation_to_dto(op) for op in part.operations),
     )
 
@@ -193,6 +192,7 @@ def product_to_dto(product: Product) -> ProductDto:
     :return: DTO tree.
     """
     return ProductDto(
+        parts_markup=product.parts_markup.value,
         blocks=tuple(_part_to_dto(block) for block in product.blocks),
         operations=tuple(_additional_work_to_dto(op) for op in product.operations),
     )

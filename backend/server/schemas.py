@@ -133,11 +133,10 @@ RunOperationDto = Annotated[
 
 
 class PartDto(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     imposition: ImpositionDto
     count: int
-    markup: int
     operations: tuple[RunOperationDto, ...]
 
 
@@ -153,6 +152,7 @@ class AdditionalWorkDto(BaseModel):
 class ProductDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
+    parts_markup: int
     blocks: tuple[PartDto, ...]
     operations: tuple[AdditionalWorkDto, ...] = ()
 

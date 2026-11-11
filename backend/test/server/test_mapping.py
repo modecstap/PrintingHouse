@@ -10,6 +10,7 @@ from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.part import Part
+from backend.new_core.values.percent import Percent
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.server.mapping import (
     order_to_dto,
@@ -30,6 +31,7 @@ def _product_with_die_cut() -> Product:
         operations=run.block.operations + (DieCut(operator_id=DieCutterOperatorID(2)),),
     )
     return Product(
+        parts_markup=Percent(0),
         blocks=(block,),
         operations=product_from_run(run).operations,
     )
@@ -81,6 +83,7 @@ def test_extra_nested_press_sheet_ignored():
 
 def test_unknown_kind_rejected():
     payload = {
+        "parts_markup": 0,
         "blocks": [
             {
                 "imposition": {
@@ -90,8 +93,29 @@ def test_unknown_kind_rejected():
                     "spacing": 0,
                 },
                 "count": 1,
-                "markup": 0,
                 "operations": [{"kind": "unknown", "operator_id": 1}],
+            }
+        ],
+        "operations": [],
+    }
+    with pytest.raises(ValidationError):
+        ProductDto.model_validate(payload)
+
+
+def test_block_markup_field_rejected():
+    payload = {
+        "parts_markup": 0,
+        "blocks": [
+            {
+                "imposition": {
+                    "target": {"name": "t", "height": 10, "width": 10},
+                    "sheet_id": 1,
+                    "bleeds": 0,
+                    "spacing": 0,
+                },
+                "count": 1,
+                "markup": 5,
+                "operations": [],
             }
         ],
         "operations": [],
