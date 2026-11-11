@@ -3,6 +3,7 @@
 import pytest
 
 from backend.new_core.order.order import Order, OrderID
+from backend.new_core.values.percent import Percent
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.reference.reference import Reference
@@ -37,7 +38,7 @@ def test_save_stores_reference_when_order_exists():
     run, *_ = build_worked_run(with_print=False, with_laminate=False, with_cut=False)
     order = Order(
         id=OrderID(3),
-        product=Product(blocks=(run.block,), operations=()),
+        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -63,14 +64,14 @@ def test_reference_orders_loads_orders_in_reference_order():
     run, *_ = build_worked_run(with_print=False, with_laminate=False, with_cut=False)
     first = Order(
         id=OrderID(1),
-        product=Product(blocks=(run.block,), operations=()),
+        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
     )
     second = Order(
         id=OrderID(2),
-        product=Product(blocks=(run.block,), operations=()),
+        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
         count=2,
         description="",
         created_at=TEST_ORDER_CREATED_AT,

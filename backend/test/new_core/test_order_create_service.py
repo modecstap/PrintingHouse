@@ -66,6 +66,7 @@ def _create_service(
 def _product_from_run(run, *, extra_block=None) -> Product:
     blocks = (run.block,) if extra_block is None else (run.block, extra_block)
     return Product(
+        parts_markup=Percent(0),
         blocks=blocks,
         operations=(
             AdditionalWork(
@@ -139,7 +140,7 @@ def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
             replace(broken, printer_id=PrinterID(999)),
         ),
     )
-    product = Product(blocks=(bad_block,), operations=())
+    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
 
     with pytest.raises(KeyError):
         service.quote(product, count=4)
@@ -161,7 +162,7 @@ def test_quote_with_missing_sheet_raises_and_leaves_stores_empty():
         press_sheet=None,
     )
     bad_block = replace(run.block, imposition=bad_imposition)
-    product = Product(blocks=(bad_block,), operations=())
+    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
 
     with pytest.raises(KeyError):
         service.quote(product, count=4)
@@ -184,7 +185,7 @@ def test_quote_with_missing_film_raises_and_leaves_stores_empty():
             bad_laminate if op is laminate else op for op in run.block.operations
         ),
     )
-    product = Product(blocks=(bad_block,), operations=())
+    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
 
     with pytest.raises(KeyError):
         service.quote(product, count=4)

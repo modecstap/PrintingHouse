@@ -37,6 +37,7 @@ from backend.new_core.personal.laminator_operator_repository import (
 from backend.new_core.personal.press_operator_repository import PressOperatorRepository
 from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.print_run.print_run import PrintRun
+from backend.new_core.values.percent import Percent
 
 _MAX_ORDER_ID_ATTEMPTS = 3
 
@@ -62,6 +63,8 @@ def build_run_estimate(
     cutter_operators: CutterOperatorRepository,
     die_cut_operators: DieCutterOperatorRepository,
     films: FilmRepository,
+    *,
+    parts_markup: Percent = Percent(0),
 ) -> RunEstimate:
     """Turns run operations into one run estimate.
 
@@ -123,7 +126,7 @@ def build_run_estimate(
             raise TypeError(
                 f"Unsupported run operation type: {type(operation).__name__}",
             )
-    return RunEstimate.create(strategies, run=run)
+    return RunEstimate.create(strategies, run=run, parts_markup=parts_markup)
 
 
 class OrderService:
@@ -199,9 +202,11 @@ class OrderService:
         :return: the report from :meth:`Accountant.order_report`.
         """
         order = self._uow.orders.take(order_id)
+        parts_markup = order.product.parts_markup
         runs = self._uow.print_runs.take_all_for_order(order_id)
         estimates = tuple(
-            self._run_estimate(self._rehydrate_run(run)) for run in runs
+            self._run_estimate(self._rehydrate_run(run), parts_markup)
+            for run in runs
         )
         return Accountant().order_report(order, estimates)
 
@@ -218,7 +223,10 @@ class OrderService:
         :return: the report from :meth:`Accountant.order_report`.
         """
         order, runs = self._assemble(product, count)
-        estimates = tuple(self._run_estimate(run) for run in runs)
+        parts_markup = order.product.parts_markup
+        estimates = tuple(
+            self._run_estimate(run, parts_markup) for run in runs
+        )
         return Accountant().order_report(order, estimates)
 
     def save(self, product: Product, count: int, description: str = "") -> OrderID:
@@ -295,7 +303,7 @@ class OrderService:
 
         return self._uow.transaction(work)
 
-    def _run_estimate(self, run: PrintRun) -> RunEstimate:
+    def _run_estimate(self, run: PrintRun, parts_markup: Percent) -> RunEstimate:
         """Turns run operations into one run estimate.
 
         :param run:
@@ -315,6 +323,7 @@ class OrderService:
             self._cutter_operators,
             self._die_cut_operators,
             self._films,
+            parts_markup=parts_markup,
         )
 
     def _assemble(

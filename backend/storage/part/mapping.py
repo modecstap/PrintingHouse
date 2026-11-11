@@ -63,12 +63,11 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
     return Part(
         imposition=imposition,
         count=row.count,
-        markup=Percent(row.markup),
         operations=operations,
     )
 
 
-def persist_part(session: Session, part: Part) -> int:
+def persist_part(session: Session, part: Part, *, markup: int = 0) -> int:
     """Writes a ``Part`` and its operations; returns the new part row id.
 
     :param session:
@@ -81,7 +80,7 @@ def persist_part(session: Session, part: Part) -> int:
         raise RuntimeError("cannot persist part with unhydrated imposition")
     row = PartRow(
         count=part.count,
-        markup=part.markup.value,
+        markup=markup,
         target_name=imp.target.name,
         target_height=imp.target.height,
         target_width=imp.target.width,

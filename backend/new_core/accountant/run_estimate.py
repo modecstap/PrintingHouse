@@ -17,6 +17,7 @@ class RunEstimate:
 
     _strategies: tuple[PricingStrategy, ...]
     _run: PrintRun
+    _parts_markup: Percent = Percent(0)
 
     @classmethod
     def create(
@@ -24,6 +25,7 @@ class RunEstimate:
             strategies: Sequence[PricingStrategy],
             *,
             run: PrintRun | None = None,
+            parts_markup: Percent = Percent(0),
     ) -> RunEstimate:
         """Builds an estimate from strategies and optionally pins the run.
 
@@ -42,7 +44,11 @@ class RunEstimate:
         else:
             resolved = run
 
-        return cls(_strategies=tuple(strategies), _run=resolved)
+        return cls(
+            _strategies=tuple(strategies),
+            _run=resolved,
+            _parts_markup=parts_markup,
+        )
 
     def aggregated_operations(self) -> CostReport:
         report = CostReport.zero()
@@ -51,7 +57,7 @@ class RunEstimate:
         return report
 
     def block_markup(self) -> Percent:
-        return self._run.block.markup
+        return self._parts_markup
 
     def imposition_count(self) -> int:
         return self._run.imposition_count()

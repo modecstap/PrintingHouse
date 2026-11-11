@@ -31,8 +31,9 @@ def make_order(
     )
 
 
-def product_from_run(run: PrintRun) -> Product:
+def product_from_run(run: PrintRun, *, parts_markup: Percent = Percent(0)) -> Product:
     return Product(
+        parts_markup=parts_markup,
         blocks=(run.block,),
         operations=(
             AdditionalWork(

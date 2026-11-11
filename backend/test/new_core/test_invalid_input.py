@@ -67,7 +67,6 @@ def _block(count: int) -> Part:
     return Part(
         imposition=_fitting_imposition(),
         count=count,
-        markup=Percent(0),
         operations=(),
     )
 
@@ -106,7 +105,7 @@ def test_product_rejects_empty_blocks():
     """A product with no blocks is rejected at construction."""
     _rejects(
         "Product: нет блоков продукта",
-        lambda: Product(blocks=(), operations=()),
+        lambda: Product(parts_markup=Percent(0), blocks=(), operations=()),
     )
 
 
@@ -207,7 +206,11 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "order: количество меньше 0, количество=-1",
             lambda: Order(
                 id=OrderID(1),
-                product=Product(blocks=(_block(0),), operations=()),
+                product=Product(
+                    parts_markup=Percent(0),
+                    blocks=(_block(0),),
+                    operations=(),
+                ),
                 count=-1,
                 description="",
                 created_at=TEST_ORDER_CREATED_AT,

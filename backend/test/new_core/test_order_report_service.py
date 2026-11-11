@@ -73,6 +73,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
     order = Order(
         id=OrderID(1),
         product=Product(
+            parts_markup=Percent(0),
             blocks=(run.block,),
             operations=(
                 AdditionalWork(
@@ -113,7 +114,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
 
     report = service.order_report(order.id)
     accountant = Accountant()
-    estimate = service._run_estimate(run)
+    estimate = service._run_estimate(run, order.product.parts_markup)
     priced = accountant.order_cost_report(
         [estimate],
         order.product.operations,
@@ -149,7 +150,7 @@ def test_order_report_prices_die_cut_through_order_service():
     ctx.die_cut_operators[die_operator.id] = die_operator
     order = Order(
         id=OrderID(5),
-        product=Product(blocks=(run.block,), operations=()),
+        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -179,7 +180,7 @@ def test_order_report_prices_die_cut_through_order_service():
         sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
 
-    estimate = service._run_estimate(run)
+    estimate = service._run_estimate(run, order.product.parts_markup)
 
     assert estimate.aggregated_operations().work == Money(Decimal(8))
 
@@ -209,7 +210,7 @@ def test_order_report_reflects_catalog_sheet_replace_after_save():
         films=InMemoryFilmRepository(items=dict(ctx.films)),
         sheets=sheets,
     )
-    product = Product(blocks=(run.block,), operations=())
+    product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)
     sheet = sheets.take(run.block.imposition.sheet_id)
@@ -254,7 +255,7 @@ def test_order_report_reflects_catalog_film_replace_after_save():
         films=films,
         sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
-    product = Product(blocks=(run.block,), operations=())
+    product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)
     film = films.take(laminate.film_id)

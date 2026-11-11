@@ -86,7 +86,10 @@ class SqlOrderRepository:
             )
 
         for position, block in enumerate(order.product.blocks):
-            part_id = persist_part(self._session, block)
+            part_markup = (
+                order.product.parts_markup.value if position == 0 else 0
+            )
+            part_id = persist_part(self._session, block, markup=part_markup)
             self._session.add(
                 OrderBlockRow(
                     order_id=order.id.value,
@@ -144,7 +147,10 @@ class SqlOrderRepository:
             )
 
         for position, block in enumerate(order.product.blocks):
-            part_id = persist_part(self._session, block)
+            part_markup = (
+                order.product.parts_markup.value if position == 0 else 0
+            )
+            part_id = persist_part(self._session, block, markup=part_markup)
             self._session.add(
                 OrderBlockRow(
                     order_id=order.id.value,
@@ -185,6 +191,12 @@ class SqlOrderRepository:
             for block_row in block_rows
         )
 
+        parts_markup = Percent(0)
+        if block_rows:
+            first_part = self._session.get(PartRow, block_rows[0].part_id)
+            if first_part is not None:
+                parts_markup = Percent(first_part.markup)
+
         works_stmt = (
             select(OrderAdditionalWorkRow)
             .where(OrderAdditionalWorkRow.order_id == order_id.value)
@@ -203,7 +215,11 @@ class SqlOrderRepository:
 
         return Order(
             id=order_id,
-            product=Product(blocks=blocks, operations=operations),
+            product=Product(
+                parts_markup=parts_markup,
+                blocks=blocks,
+                operations=operations,
+            ),
             count=row.count,
             description=row.description,
             created_at=row.created_at,

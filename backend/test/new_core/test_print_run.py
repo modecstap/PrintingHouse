@@ -96,7 +96,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     with_print: bool = True,
     with_laminate: bool = True,
     with_cut: bool = True,
-    markup: Percent = Percent(0),
+    parts_markup: Percent = Percent(0),
     sheet_id: SheetID | None = None,
     film_id: FilmID | None = None,
 ) -> tuple[
@@ -114,8 +114,8 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
 
     The block sheet costs 999, the target sheet costs 9999, the order count
     is 4, and assembly costs 999. Those values stay out of the sheet report.
-    The block count is 3 and scales only block_cost_report. Part markup
-    defaults to 0. Two press sheets add a 30 percent volume markup.
+    The block count is 3 and scales only block_cost_report. Product
+    parts_markup defaults to 0. Two press sheets add a 30 percent volume markup.
     Paper thickness is 1 mm, so the 50 mm stack cuts both press sheets
     in one lift.
     """
@@ -202,12 +202,12 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
     block = Part(
         imposition=imposition,
         count=3,
-        markup=markup,
         operations=tuple(run_operations),
     )
     Order(
         id=OrderID(1),
         product=Product(
+            parts_markup=parts_markup,
             blocks=(block,),
             operations=(
                 AdditionalWork(
@@ -246,7 +246,12 @@ def _append_block_operation(run: PrintRun, operation) -> None:
     run.block = replace(run.block, operations=run.block.operations + (operation,))
 
 
-def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
+def _estimate(
+    run: PrintRun,
+    ctx: _RunPricingFixtures,
+    *,
+    parts_markup: Percent = Percent(0),
+) -> RunEstimate:
     strategies: list[PricingStrategy] = []
     for operation in run.block.operations:
         if isinstance(operation, Print):
@@ -287,7 +292,7 @@ def _estimate(run: PrintRun, ctx: _RunPricingFixtures) -> RunEstimate:
             raise TypeError(
                 f"Unsupported run operation type: {type(operation).__name__}",
             )
-    return RunEstimate.create(strategies, run=run)
+    return RunEstimate.create(strategies, run=run, parts_markup=parts_markup)
 
 
 def test_cost_report_prices_the_worked_run():
@@ -585,9 +590,11 @@ def test_sheet_cost_report_adds_block_markup_to_volume_markup():
 
     The markups are 7.3 and 21.9. The second does not scale the first.
     """
-    run, _, _, _, ctx = build_worked_run(markup=Percent(10))
+    run, _, _, _, ctx = build_worked_run(parts_markup=Percent(10))
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = Accountant.sheet_cost_report(
+        _estimate(run, ctx, parts_markup=Percent(10)),
+    )
 
     assert sheet.markup == Money(Decimal("29.2"))
     assert sheet.total() == Money(Decimal("102.2"))
@@ -627,6 +634,7 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
     order = Order(
         id=OrderID(1),
         product=Product(
+            parts_markup=Percent(0),
             blocks=(run.block,),
             operations=(
                 AdditionalWork(
