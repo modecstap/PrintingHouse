@@ -98,6 +98,27 @@ class SqlSheetRepository:
             raise KeyError(sheet_id)
         self._session.delete(row)
 
+    def distinct_paper_types(self) -> tuple[str, ...]:
+        """Returns unique paper type names across stored sheets.
+
+        :return: canonical type strings in ascending order.
+        """
+        stmt = (
+            select(SheetRow.paper_name)
+            .distinct()
+            .order_by(SheetRow.paper_name)
+        )
+        raw_names = self._session.execute(stmt).scalars().all()
+        seen: set[str] = set()
+        canonical: list[str] = []
+        for raw in raw_names:
+            value = PaperType(raw).value
+            if value in seen:
+                continue
+            seen.add(value)
+            canonical.append(value)
+        return tuple(sorted(canonical))
+
     @staticmethod
     def _sheet_from_row(sheet_id: SheetID, row: SheetRow) -> Sheet:
         return Sheet(

@@ -61,3 +61,10 @@ class SheetRepository(Protocol):
         :return: nothing.
         """
         ...
+
+    def distinct_paper_types(self) -> tuple[str, ...]:
+        """Returns unique paper type names across stored sheets.
+
+        :return: canonical type strings in ascending order.
+        """
+        ...

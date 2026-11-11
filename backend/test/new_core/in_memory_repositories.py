@@ -191,6 +191,10 @@ class InMemorySheetRepository:
     def delete(self, sheet_id: SheetID) -> None:
         del self.items[sheet_id]
 
+    def distinct_paper_types(self) -> tuple[str, ...]:
+        values = {sheet.paper.type.value for sheet in self.items.values()}
+        return tuple(sorted(values))
+
 
 @dataclass
 class InMemoryPrinterRepository:
