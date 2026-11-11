@@ -244,7 +244,6 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
     db_session.add(
         PartRow(
             count=1,
-            markup=0,
             target_name="target",
             target_height=100,
             target_width=100,
@@ -269,7 +268,6 @@ def test_delete_film_referenced_by_part_raises_integrity_error(db_session):
 
     part = PartRow(
         count=1,
-        markup=0,
         target_name="target",
         target_height=100,
         target_width=100,

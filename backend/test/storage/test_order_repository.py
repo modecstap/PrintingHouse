@@ -5,10 +5,27 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.new_core.order.order import OrderID
 from backend.new_core.order.repository import OrderIdOccupied, OrderNotFound
+from backend.new_core.values.percent import Percent
 from backend.storage.order.repository import SqlOrderRepository
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
+
+
+def test_save_take_round_trips_parts_markup_on_order(db_session):
+    """``parts_markup`` persists on the order row, not on parts."""
+    run, *_ , ctx = build_worked_run()
+    insert_catalogs_from_ctx(db_session, ctx)
+    repo = SqlOrderRepository(db_session)
+    product = product_from_run(run, parts_markup=Percent(17))
+    order = make_order(20, product, 3, description="наценка")
+
+    with db_session.begin():
+        repo.save(order)
+
+    loaded = repo.take(OrderID(20))
+    assert loaded.product.parts_markup == Percent(17)
+    assert loaded.product.blocks[0] == product.blocks[0]
 
 
 def test_save_then_take_round_trips_full_graph(db_session):

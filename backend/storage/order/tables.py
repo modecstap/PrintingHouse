@@ -16,6 +16,7 @@ class OrderRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     count: Mapped[int] = mapped_column(Integer)
+    parts_markup: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     description: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False

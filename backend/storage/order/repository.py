@@ -65,6 +65,7 @@ class SqlOrderRepository:
                 OrderRow(
                     id=order.id.value,
                     count=order.count,
+                    parts_markup=order.product.parts_markup.value,
                     description=order.description,
                     created_at=order.created_at,
                 ),
@@ -86,10 +87,7 @@ class SqlOrderRepository:
             )
 
         for position, block in enumerate(order.product.blocks):
-            part_markup = (
-                order.product.parts_markup.value if position == 0 else 0
-            )
-            part_id = persist_part(self._session, block, markup=part_markup)
+            part_id = persist_part(self._session, block)
             self._session.add(
                 OrderBlockRow(
                     order_id=order.id.value,
@@ -112,6 +110,7 @@ class SqlOrderRepository:
             raise OrderNotFound("replace", order.id)
 
         row.count = order.count
+        row.parts_markup = order.product.parts_markup.value
         row.description = order.description
 
         self._session.execute(
@@ -147,10 +146,7 @@ class SqlOrderRepository:
             )
 
         for position, block in enumerate(order.product.blocks):
-            part_markup = (
-                order.product.parts_markup.value if position == 0 else 0
-            )
-            part_id = persist_part(self._session, block, markup=part_markup)
+            part_id = persist_part(self._session, block)
             self._session.add(
                 OrderBlockRow(
                     order_id=order.id.value,
@@ -191,12 +187,6 @@ class SqlOrderRepository:
             for block_row in block_rows
         )
 
-        parts_markup = Percent(0)
-        if block_rows:
-            first_part = self._session.get(PartRow, block_rows[0].part_id)
-            if first_part is not None:
-                parts_markup = Percent(first_part.markup)
-
         works_stmt = (
             select(OrderAdditionalWorkRow)
             .where(OrderAdditionalWorkRow.order_id == order_id.value)
@@ -216,7 +206,7 @@ class SqlOrderRepository:
         return Order(
             id=order_id,
             product=Product(
-                parts_markup=parts_markup,
+                parts_markup=Percent(row.parts_markup),
                 blocks=blocks,
                 operations=operations,
             ),

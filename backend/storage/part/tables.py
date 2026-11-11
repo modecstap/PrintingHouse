@@ -11,7 +11,6 @@ class PartRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     count: Mapped[int] = mapped_column(Integer)
-    markup: Mapped[int] = mapped_column(Integer)
     target_name: Mapped[str] = mapped_column(Text)
     target_height: Mapped[int] = mapped_column(Integer)
     target_width: Mapped[int] = mapped_column(Integer)
