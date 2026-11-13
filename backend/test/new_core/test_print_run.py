@@ -6,12 +6,18 @@ from decimal import Decimal
 
 import pytest
 
-from backend.new_core.accountant.pricing.cut_pricing import CutPricing
-from backend.new_core.accountant.pricing.die_cut_pricing import DieCutPricing
-from backend.new_core.accountant.pricing.laminate_pricing import LaminatePricing
-from backend.new_core.accountant.pricing.print_pricing import PrintPricing
-from backend.new_core.accountant.pricing_strategy import PricingStrategy
+from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.accountant.run_estimate import RunEstimate
+from backend.test.new_core.in_memory_repositories import (
+    InMemoryCutterOperatorRepository,
+    InMemoryCutterRepository,
+    InMemoryDieCutterOperatorRepository,
+    InMemoryFilmRepository,
+    InMemoryLaminatorOperatorRepository,
+    InMemoryLaminatorRepository,
+    InMemoryPressOperatorRepository,
+    InMemoryPrinterRepository,
+)
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
@@ -79,6 +85,20 @@ class _RunPricingFixtures:
     cutters: dict[CutterID, Cutter] = field(default_factory=dict)
     sheets: dict[SheetID, Sheet] = field(default_factory=dict)
     films: dict[FilmID, Film] = field(default_factory=dict)
+
+
+def pricing_strategy_factory(ctx: _RunPricingFixtures) -> PricingStrategyFactory:
+    """In-memory catalogs for pricing strategy tests."""
+    return PricingStrategyFactory(
+        InMemoryPrinterRepository(items=dict(ctx.printers)),
+        InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
+        InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+        InMemoryLaminatorOperatorRepository(items=dict(ctx.laminator_operators)),
+        InMemoryCutterRepository(items=dict(ctx.cutters)),
+        InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
+        InMemoryDieCutterOperatorRepository(items=dict(ctx.die_cut_operators)),
+        InMemoryFilmRepository(items=dict(ctx.films)),
+    )
 
 
 def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
@@ -261,46 +281,10 @@ def _estimate(
     *,
     parts_markup: Percent = Percent(0),
 ) -> RunEstimate:
-    strategies: list[PricingStrategy] = []
-    for operation in run.block.operations:
-        if isinstance(operation, Print):
-            strategies.append(
-                PrintPricing(
-                    printer=ctx.printers[operation.printer_id],
-                    operator=ctx.press_operators[operation.operator_id],
-                    chroma=operation.chroma,
-                    print_run=run,
-                ),
-            )
-        elif isinstance(operation, Laminate):
-            strategies.append(
-                LaminatePricing(
-                    laminator=ctx.laminators[operation.laminator_id],
-                    operator=ctx.laminator_operators[operation.operator_id],
-                    lamination=operation.lamination,
-                    film=ctx.films[operation.film_id],
-                    print_run=run,
-                ),
-            )
-        elif isinstance(operation, Cut):
-            strategies.append(
-                CutPricing(
-                    cutter=ctx.cutters[operation.cutter_id],
-                    operator=ctx.cutter_operators[operation.operator_id],
-                    print_run=run,
-                ),
-            )
-        elif isinstance(operation, DieCut):
-            strategies.append(
-                DieCutPricing(
-                    operator=ctx.die_cut_operators[operation.operator_id],
-                    print_run=run,
-                ),
-            )
-        else:
-            raise TypeError(
-                f"Unsupported run operation type: {type(operation).__name__}",
-            )
+    strategies = [
+        pricing_strategy_factory(ctx).create(operation, run)
+        for operation in run.block.operations
+    ]
     return RunEstimate.create(strategies, run=run, parts_markup=parts_markup)
 
 

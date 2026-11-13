@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from backend.new_core.accountant.cost_report import CostReport
+from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.accountant.pricing_strategy import PricingStrategy
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.percent import Percent

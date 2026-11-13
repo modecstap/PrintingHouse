@@ -5,7 +5,7 @@ from decimal import Decimal
 
 import pytest
 
-from backend.new_core import AdditionalWork, InvalidInput, Percent
+from backend.new_core import AdditionalWork, InvalidInput, Percent, RunEstimate
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.equipment.printer import PrinterID
@@ -17,7 +17,6 @@ from backend.new_core.order.product import Product
 from backend.new_core.application_services.order import (
     OrderIdAllocationFailed,
     OrderService,
-    build_run_estimate,
 )
 from backend.new_core.print_run.print_run import PrintRunID
 from backend.new_core.values.money import Money
@@ -34,7 +33,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.new_core.test_print_run import build_worked_run, pricing_strategy_factory
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
@@ -496,21 +495,11 @@ def test_build_run_estimate_rejects_unknown_operation():
     )
 
     with pytest.raises(TypeError, match="Unsupported run operation"):
-        build_run_estimate(
-            broken,
-            InMemoryPrinterRepository(items=dict(ctx.printers)),
-            InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
-            InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-            InMemoryLaminatorOperatorRepository(
-                items=dict(ctx.laminator_operators),
-            ),
-            InMemoryCutterRepository(items=dict(ctx.cutters)),
-            InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
-            InMemoryDieCutterOperatorRepository(
-                items=dict(ctx.die_cut_operators),
-            ),
-            InMemoryFilmRepository(items=dict(ctx.films)),
-        )
+        strategies = [
+            pricing_strategy_factory(ctx).create(operation, run)
+            for operation in broken.block.operations
+        ]
+        return RunEstimate.create(strategies, run=run)
 
 
 def test_replace_keeps_created_at_and_updates_description():
