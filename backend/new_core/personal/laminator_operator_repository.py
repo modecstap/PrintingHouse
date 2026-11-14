@@ -55,6 +55,13 @@ class LaminatorOperatorRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> LaminatorOperatorID:
+        """Returns the next laminator operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        ...
+
     def save(self, operator: LaminatorOperator) -> None:
         """Stores the operator under its id.
 

@@ -54,6 +54,16 @@ def _truncate_all(session: Session) -> None:
     )
     session.execute(text(f"TRUNCATE {names} RESTART IDENTITY CASCADE"))
     session.execute(text("ALTER SEQUENCE order_id_seq RESTART WITH 0"))
+    for seq in (
+        "printer_id_seq",
+        "laminator_id_seq",
+        "cutter_id_seq",
+        "press_operator_id_seq",
+        "laminator_operator_id_seq",
+        "cutter_operator_id_seq",
+        "die_cutter_operator_id_seq",
+    ):
+        session.execute(text(f"ALTER SEQUENCE {seq} RESTART WITH 0"))
     session.commit()
 
 

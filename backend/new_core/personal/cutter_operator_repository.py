@@ -52,6 +52,13 @@ class CutterOperatorRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> CutterOperatorID:
+        """Returns the next cutter operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        ...
+
     def save(self, operator: CutterOperator) -> None:
         """Stores the operator under its id.
 

@@ -55,6 +55,13 @@ class DieCutterOperatorRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> DieCutterOperatorID:
+        """Returns the next die cutter operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        ...
+
     def save(self, operator: DieCutterOperator) -> None:
         """Stores the operator under its id.
 

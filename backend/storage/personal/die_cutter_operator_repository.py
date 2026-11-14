@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -56,6 +56,16 @@ class SqlDieCutterOperatorRepository:
             )
             for row in rows
         )
+
+    def generate_id(self) -> DieCutterOperatorID:
+        """Returns the next die cutter operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        value = self._session.execute(
+            text("SELECT nextval('die_cutter_operator_id_seq')"),
+        ).scalar_one()
+        return DieCutterOperatorID(int(value))
 
     def save(self, operator: DieCutterOperator) -> None:
         """Stores the operator under its id.

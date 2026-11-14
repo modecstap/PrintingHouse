@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -42,6 +42,16 @@ class SqlCutterRepository:
             Cutter(id=CutterID(row.id), name=row.name, max_stack=row.max_stack)
             for row in rows
         )
+
+    def generate_id(self) -> CutterID:
+        """Returns the next cutter id from the store sequence.
+
+        :return: a new cutter id. It may already be occupied.
+        """
+        value = self._session.execute(
+            text("SELECT nextval('cutter_id_seq')"),
+        ).scalar_one()
+        return CutterID(int(value))
 
     def save(self, cutter: Cutter) -> None:
         """Stores the cutter under its id.

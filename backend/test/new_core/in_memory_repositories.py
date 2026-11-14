@@ -208,6 +208,7 @@ class InMemorySheetRepository:
 @dataclass
 class InMemoryPrinterRepository:
     items: dict[PrinterID, Printer] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, printer_id: PrinterID) -> Printer:
         return self.items[printer_id]
@@ -217,6 +218,13 @@ class InMemoryPrinterRepository:
             self.items[printer_id]
             for printer_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> PrinterID:
+        while True:
+            printer_id = PrinterID(self._next_id)
+            self._next_id += 1
+            if printer_id not in self.items:
+                return printer_id
 
     def save(self, printer: Printer) -> None:
         if printer.id in self.items:
@@ -230,6 +238,7 @@ class InMemoryPrinterRepository:
 @dataclass
 class InMemoryPressOperatorRepository:
     items: dict[PressOperatorID, PressOperator] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, operator_id: PressOperatorID) -> PressOperator:
         return self.items[operator_id]
@@ -239,6 +248,13 @@ class InMemoryPressOperatorRepository:
             self.items[operator_id]
             for operator_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> PressOperatorID:
+        while True:
+            operator_id = PressOperatorID(self._next_id)
+            self._next_id += 1
+            if operator_id not in self.items:
+                return operator_id
 
     def save(self, operator: PressOperator) -> None:
         if operator.id in self.items:
@@ -252,6 +268,7 @@ class InMemoryPressOperatorRepository:
 @dataclass
 class InMemoryLaminatorRepository:
     items: dict[LaminatorID, Laminator] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, laminator_id: LaminatorID) -> Laminator:
         return self.items[laminator_id]
@@ -261,6 +278,13 @@ class InMemoryLaminatorRepository:
             self.items[laminator_id]
             for laminator_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> LaminatorID:
+        while True:
+            laminator_id = LaminatorID(self._next_id)
+            self._next_id += 1
+            if laminator_id not in self.items:
+                return laminator_id
 
     def save(self, laminator: Laminator) -> None:
         if laminator.id in self.items:
@@ -274,6 +298,7 @@ class InMemoryLaminatorRepository:
 @dataclass
 class InMemoryLaminatorOperatorRepository:
     items: dict[LaminatorOperatorID, LaminatorOperator] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, operator_id: LaminatorOperatorID) -> LaminatorOperator:
         return self.items[operator_id]
@@ -283,6 +308,13 @@ class InMemoryLaminatorOperatorRepository:
             self.items[operator_id]
             for operator_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> LaminatorOperatorID:
+        while True:
+            operator_id = LaminatorOperatorID(self._next_id)
+            self._next_id += 1
+            if operator_id not in self.items:
+                return operator_id
 
     def save(self, operator: LaminatorOperator) -> None:
         if operator.id in self.items:
@@ -296,6 +328,7 @@ class InMemoryLaminatorOperatorRepository:
 @dataclass
 class InMemoryCutterRepository:
     items: dict[CutterID, Cutter] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, cutter_id: CutterID) -> Cutter:
         return self.items[cutter_id]
@@ -305,6 +338,13 @@ class InMemoryCutterRepository:
             self.items[cutter_id]
             for cutter_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> CutterID:
+        while True:
+            cutter_id = CutterID(self._next_id)
+            self._next_id += 1
+            if cutter_id not in self.items:
+                return cutter_id
 
     def save(self, cutter: Cutter) -> None:
         if cutter.id in self.items:
@@ -318,6 +358,7 @@ class InMemoryCutterRepository:
 @dataclass
 class InMemoryCutterOperatorRepository:
     items: dict[CutterOperatorID, CutterOperator] = field(default_factory=dict)
+    _next_id: int = 0
 
     def take(self, operator_id: CutterOperatorID) -> CutterOperator:
         return self.items[operator_id]
@@ -327,6 +368,13 @@ class InMemoryCutterOperatorRepository:
             self.items[operator_id]
             for operator_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> CutterOperatorID:
+        while True:
+            operator_id = CutterOperatorID(self._next_id)
+            self._next_id += 1
+            if operator_id not in self.items:
+                return operator_id
 
     def save(self, operator: CutterOperator) -> None:
         if operator.id in self.items:
@@ -342,6 +390,7 @@ class InMemoryDieCutterOperatorRepository:
     items: dict[DieCutterOperatorID, DieCutterOperator] = field(
         default_factory=dict,
     )
+    _next_id: int = 0
 
     def take(self, operator_id: DieCutterOperatorID) -> DieCutterOperator:
         return self.items[operator_id]
@@ -351,6 +400,13 @@ class InMemoryDieCutterOperatorRepository:
             self.items[operator_id]
             for operator_id in sorted(self.items, key=lambda item: item.value)
         )
+
+    def generate_id(self) -> DieCutterOperatorID:
+        while True:
+            operator_id = DieCutterOperatorID(self._next_id)
+            self._next_id += 1
+            if operator_id not in self.items:
+                return operator_id
 
     def save(self, operator: DieCutterOperator) -> None:
         if operator.id in self.items:

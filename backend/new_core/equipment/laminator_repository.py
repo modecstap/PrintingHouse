@@ -52,6 +52,13 @@ class LaminatorRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> LaminatorID:
+        """Returns the next laminator id from the store sequence.
+
+        :return: a new laminator id. It may already be occupied.
+        """
+        ...
+
     def save(self, laminator: Laminator) -> None:
         """Stores the laminator under its id.
 

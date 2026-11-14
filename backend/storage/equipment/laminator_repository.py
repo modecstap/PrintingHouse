@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -51,6 +51,16 @@ class SqlLaminatorRepository:
             )
             for row in rows
         )
+
+    def generate_id(self) -> LaminatorID:
+        """Returns the next laminator id from the store sequence.
+
+        :return: a new laminator id. It may already be occupied.
+        """
+        value = self._session.execute(
+            text("SELECT nextval('laminator_id_seq')"),
+        ).scalar_one()
+        return LaminatorID(int(value))
 
     def save(self, laminator: Laminator) -> None:
         """Stores the laminator under its id.

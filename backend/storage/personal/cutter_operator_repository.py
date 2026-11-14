@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -51,6 +51,16 @@ class SqlCutterOperatorRepository:
             )
             for row in rows
         )
+
+    def generate_id(self) -> CutterOperatorID:
+        """Returns the next cutter operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        value = self._session.execute(
+            text("SELECT nextval('cutter_operator_id_seq')"),
+        ).scalar_one()
+        return CutterOperatorID(int(value))
 
     def save(self, operator: CutterOperator) -> None:
         """Stores the operator under its id.

@@ -52,6 +52,13 @@ class PressOperatorRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> PressOperatorID:
+        """Returns the next press operator id from the store sequence.
+
+        :return: a new operator id. It may already be occupied.
+        """
+        ...
+
     def save(self, operator: PressOperator) -> None:
         """Stores the operator under its id.
 

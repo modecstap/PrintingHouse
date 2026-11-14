@@ -52,6 +52,13 @@ class CutterRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> CutterID:
+        """Returns the next cutter id from the store sequence.
+
+        :return: a new cutter id. It may already be occupied.
+        """
+        ...
+
     def save(self, cutter: Cutter) -> None:
         """Stores the cutter under its id.
 

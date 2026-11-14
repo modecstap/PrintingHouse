@@ -52,6 +52,13 @@ class PrinterRepository(Protocol):
         """
         ...
 
+    def generate_id(self) -> PrinterID:
+        """Returns the next printer id from the store sequence.
+
+        :return: a new printer id. It may already be occupied.
+        """
+        ...
+
     def save(self, printer: Printer) -> None:
         """Stores the printer under its id.
 
