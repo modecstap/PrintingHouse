@@ -4,30 +4,45 @@ from __future__ import annotations
 
 from backend.new_core.equipment.cutter import Cutter, CutterID
 from backend.new_core.equipment.cutter_repository import CutterRepository
+from backend.new_core.equipment.factory import (
+    CutterFactory,
+    LaminatorFactory,
+    PrinterFactory,
+)
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.laminator_repository import LaminatorRepository
 from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.equipment.printer_repository import PrinterRepository
+from backend.new_core.values.money import Money
 
 
 class EquipmentCatalogService:
     """Loads and edits printers, laminators, and cutters."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         printers: PrinterRepository,
         laminators: LaminatorRepository,
         cutters: CutterRepository,
+        printer_factory: PrinterFactory,
+        laminator_factory: LaminatorFactory,
+        cutter_factory: CutterFactory,
     ) -> None:
         """Remembers the equipment stores.
 
         :param printers:
         :param laminators:
         :param cutters:
+        :param printer_factory:
+        :param laminator_factory:
+        :param cutter_factory:
         """
         self._printers = printers
         self._laminators = laminators
         self._cutters = cutters
+        self._printer_factory = printer_factory
+        self._laminator_factory = laminator_factory
+        self._cutter_factory = cutter_factory
 
     def printers(self) -> tuple[Printer, ...]:
         """Returns every stored printer.
@@ -55,6 +70,40 @@ class EquipmentCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._printers.save(printer)
+
+    def create_printer(
+        self,
+        name: str,
+        spacing: int,
+        startup: Money,
+        cyan: Money,
+        magenta: Money,
+        yellow: Money,
+        black: Money,
+    ) -> PrinterID:
+        """Inserts a new printer; the store assigns the id.
+
+        :param name:
+        :param spacing:
+        :param startup:
+        :param cyan:
+        :param magenta:
+        :param yellow:
+        :param black:
+
+        :return: the assigned printer id.
+        """
+        printer = self._printer_factory.create(
+            name,
+            spacing,
+            startup,
+            cyan,
+            magenta,
+            yellow,
+            black,
+        )
+        self._printers.save(printer)
+        return printer.id
 
     def replace_printer(self, printer: Printer) -> None:
         """Overwrites non-id fields of an existing printer.
@@ -105,6 +154,18 @@ class EquipmentCatalogService:
         """
         self._laminators.save(laminator)
 
+    def create_laminator(self, name: str, startup: Money) -> LaminatorID:
+        """Inserts a new laminator; the store assigns the id.
+
+        :param name:
+        :param startup:
+
+        :return: the assigned laminator id.
+        """
+        laminator = self._laminator_factory.create(name, startup)
+        self._laminators.save(laminator)
+        return laminator.id
+
     def replace_laminator(self, laminator: Laminator) -> None:
         """Overwrites non-id fields of an existing laminator.
 
@@ -153,6 +214,18 @@ class EquipmentCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._cutters.save(cutter)
+
+    def create_cutter(self, name: str, max_stack: int) -> CutterID:
+        """Inserts a new cutter; the store assigns the id.
+
+        :param name:
+        :param max_stack:
+
+        :return: the assigned cutter id.
+        """
+        cutter = self._cutter_factory.create(name, max_stack)
+        self._cutters.save(cutter)
+        return cutter.id
 
     def replace_cutter(self, cutter: Cutter) -> None:
         """Overwrites non-id fields of an existing cutter.

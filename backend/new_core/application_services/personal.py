@@ -11,6 +11,12 @@ from backend.new_core.personal.die_cutter_operator import (
 from backend.new_core.personal.die_cutter_operator_repository import (
     DieCutterOperatorRepository,
 )
+from backend.new_core.personal.factory import (
+    CutterOperatorFactory,
+    DieCutterOperatorFactory,
+    LaminatorOperatorFactory,
+    PressOperatorFactory,
+)
 from backend.new_core.personal.laminator_operator import (
     LaminatorOperator,
     LaminatorOperatorID,
@@ -20,17 +26,22 @@ from backend.new_core.personal.laminator_operator_repository import (
 )
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.new_core.personal.press_operator_repository import PressOperatorRepository
+from backend.new_core.values.money import Money
 
 
 class StaffCatalogService:
     """Loads and edits press, laminate, cut, and die-cut operators."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         press_operators: PressOperatorRepository,
         laminator_operators: LaminatorOperatorRepository,
         cutter_operators: CutterOperatorRepository,
         die_cut_operators: DieCutterOperatorRepository,
+        press_operator_factory: PressOperatorFactory,
+        laminator_operator_factory: LaminatorOperatorFactory,
+        cutter_operator_factory: CutterOperatorFactory,
+        die_cut_operator_factory: DieCutterOperatorFactory,
     ) -> None:
         """Remembers the operator stores.
 
@@ -38,11 +49,19 @@ class StaffCatalogService:
         :param laminator_operators:
         :param cutter_operators:
         :param die_cut_operators:
+        :param press_operator_factory:
+        :param laminator_operator_factory:
+        :param cutter_operator_factory:
+        :param die_cut_operator_factory:
         """
         self._press_operators = press_operators
         self._laminator_operators = laminator_operators
         self._cutter_operators = cutter_operators
         self._die_cut_operators = die_cut_operators
+        self._press_operator_factory = press_operator_factory
+        self._laminator_operator_factory = laminator_operator_factory
+        self._cutter_operator_factory = cutter_operator_factory
+        self._die_cut_operator_factory = die_cut_operator_factory
 
     def press_operators(self) -> tuple[PressOperator, ...]:
         """Returns every press operator.
@@ -70,6 +89,22 @@ class StaffCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._press_operators.save(operator)
+
+    def create_press_operator(
+        self,
+        name: str,
+        salary_by_operation: Money,
+    ) -> PressOperatorID:
+        """Inserts a new press operator; the store assigns the id.
+
+        :param name:
+        :param salary_by_operation:
+
+        :return: the assigned operator id.
+        """
+        operator = self._press_operator_factory.create(name, salary_by_operation)
+        self._press_operators.save(operator)
+        return operator.id
 
     def replace_press_operator(self, operator: PressOperator) -> None:
         """Overwrites non-id fields of an existing press operator.
@@ -123,6 +158,22 @@ class StaffCatalogService:
         """
         self._laminator_operators.save(operator)
 
+    def create_laminator_operator(
+        self,
+        name: str,
+        salary_by_operation: Money,
+    ) -> LaminatorOperatorID:
+        """Inserts a new laminator operator; the store assigns the id.
+
+        :param name:
+        :param salary_by_operation:
+
+        :return: the assigned operator id.
+        """
+        operator = self._laminator_operator_factory.create(name, salary_by_operation)
+        self._laminator_operators.save(operator)
+        return operator.id
+
     def replace_laminator_operator(self, operator: LaminatorOperator) -> None:
         """Overwrites non-id fields of an existing laminator operator.
 
@@ -175,6 +226,22 @@ class StaffCatalogService:
         """
         self._cutter_operators.save(operator)
 
+    def create_cutter_operator(
+        self,
+        name: str,
+        salary_by_operation: Money,
+    ) -> CutterOperatorID:
+        """Inserts a new cutter operator; the store assigns the id.
+
+        :param name:
+        :param salary_by_operation:
+
+        :return: the assigned operator id.
+        """
+        operator = self._cutter_operator_factory.create(name, salary_by_operation)
+        self._cutter_operators.save(operator)
+        return operator.id
+
     def replace_cutter_operator(self, operator: CutterOperator) -> None:
         """Overwrites non-id fields of an existing cutter operator.
 
@@ -226,6 +293,22 @@ class StaffCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._die_cut_operators.save(operator)
+
+    def create_die_cut_operator(
+        self,
+        name: str,
+        salary_by_operation: Money,
+    ) -> DieCutterOperatorID:
+        """Inserts a new die-cut operator; the store assigns the id.
+
+        :param name:
+        :param salary_by_operation:
+
+        :return: the assigned operator id.
+        """
+        operator = self._die_cut_operator_factory.create(name, salary_by_operation)
+        self._die_cut_operators.save(operator)
+        return operator.id
 
     def replace_die_cut_operator(self, operator: DieCutterOperator) -> None:
         """Overwrites non-id fields of an existing die-cut operator.
