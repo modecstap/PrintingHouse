@@ -23,7 +23,8 @@ function staffCatalog({ key, title, listPath }) {
     listPath,
     itemPath,
     parseList: toOperatorList,
-    clientId: true,
+    clientId: false,
+    putBodyIncludesId: true,
     canReplace: true,
     columns: [
       { header: "Номер", render: (row) => row.id },
@@ -34,21 +35,18 @@ function staffCatalog({ key, title, listPath }) {
       },
     ],
     fields: [
-      { name: "id", label: "Номер", ...INT },
       { name: "name", label: "Название" },
       { name: "salary_by_operation", label: "Зарплата", ...MONEY },
     ],
-    emptyForm: { id: "", name: "", salary_by_operation: "" },
+    emptyForm: { name: "", salary_by_operation: "" },
     formFromRow(row) {
       return {
-        id: String(row.id),
         name: row.name,
         salary_by_operation: row.salary_by_operation,
       };
     },
     toPayload(form) {
       return {
-        id: toJsonInt(form.id),
         name: form.name.trim(),
         salary_by_operation: form.salary_by_operation.trim(),
       };
@@ -64,7 +62,8 @@ const PRINTERS = {
     return `/api/equipment/printers/${id}`;
   },
   parseList: toPrinterList,
-  clientId: true,
+  clientId: false,
+  putBodyIncludesId: true,
   canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
@@ -77,7 +76,6 @@ const PRINTERS = {
     { header: "K", render: (row) => formatMoney(row.black) },
   ],
   fields: [
-    { name: "id", label: "Номер", ...INT },
     { name: "name", label: "Название" },
     { name: "spacing", label: "Поля", ...INT },
     { name: "startup", label: "Запуск", ...MONEY },
@@ -87,7 +85,6 @@ const PRINTERS = {
     { name: "black", label: "K", ...MONEY },
   ],
   emptyForm: {
-    id: "",
     name: "",
     spacing: "",
     startup: "",
@@ -98,7 +95,6 @@ const PRINTERS = {
   },
   formFromRow(row) {
     return {
-      id: String(row.id),
       name: row.name,
       spacing: String(row.spacing),
       startup: row.startup,
@@ -110,7 +106,6 @@ const PRINTERS = {
   },
   toPayload(form) {
     return {
-      id: toJsonInt(form.id),
       name: form.name.trim(),
       spacing: toJsonInt(form.spacing),
       startup: form.startup.trim(),
@@ -130,7 +125,8 @@ const LAMINATORS = {
     return `/api/equipment/laminators/${id}`;
   },
   parseList: toLaminatorList,
-  clientId: true,
+  clientId: false,
+  putBodyIncludesId: true,
   canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
@@ -138,21 +134,18 @@ const LAMINATORS = {
     { header: "Запуск", render: (row) => formatMoney(row.startup) },
   ],
   fields: [
-    { name: "id", label: "Номер", ...INT },
     { name: "name", label: "Название" },
     { name: "startup", label: "Запуск", ...MONEY },
   ],
-  emptyForm: { id: "", name: "", startup: "" },
+  emptyForm: { name: "", startup: "" },
   formFromRow(row) {
     return {
-      id: String(row.id),
       name: row.name,
       startup: row.startup,
     };
   },
   toPayload(form) {
     return {
-      id: toJsonInt(form.id),
       name: form.name.trim(),
       startup: form.startup.trim(),
     };
@@ -167,7 +160,8 @@ const CUTTERS = {
     return `/api/equipment/cutters/${id}`;
   },
   parseList: toCutterList,
-  clientId: true,
+  clientId: false,
+  putBodyIncludesId: true,
   canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
@@ -175,21 +169,18 @@ const CUTTERS = {
     { header: "Стопа", render: (row) => row.max_stack },
   ],
   fields: [
-    { name: "id", label: "Номер", ...INT },
     { name: "name", label: "Название" },
     { name: "max_stack", label: "Стопа", ...INT },
   ],
-  emptyForm: { id: "", name: "", max_stack: "" },
+  emptyForm: { name: "", max_stack: "" },
   formFromRow(row) {
     return {
-      id: String(row.id),
       name: row.name,
       max_stack: String(row.max_stack),
     };
   },
   toPayload(form) {
     return {
-      id: toJsonInt(form.id),
       name: form.name.trim(),
       max_stack: toJsonInt(form.max_stack),
     };
