@@ -28,13 +28,17 @@ from backend.new_core.personal.press_operator import PressOperator, PressOperato
 from backend.new_core.values.money import Money
 from backend.server.schemas import (
     CutterDto,
+    CutterWriteDto,
     FilmDto,
     FilmReadDto,
     FormatDto,
     LaminatorDto,
+    LaminatorWriteDto,
     OperatorDto,
+    OperatorWriteDto,
     PaperDto,
     PrinterDto,
+    PrinterWriteDto,
     SheetDto,
     SheetReadDto,
 )
@@ -70,6 +74,20 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
     )
 
 
+def printer_from_write_dto(
+    dto: PrinterWriteDto,
+) -> tuple[str, int, Money, Money, Money, Money, Money]:
+    return (
+        dto.name,
+        dto.spacing,
+        _money(dto.startup),
+        _money(dto.cyan),
+        _money(dto.magenta),
+        _money(dto.yellow),
+        _money(dto.black),
+    )
+
+
 def laminator_to_dto(laminator: Laminator) -> LaminatorDto:
     return LaminatorDto(
         id=laminator.id.value,
@@ -86,12 +104,20 @@ def laminator_from_dto(dto: LaminatorDto) -> Laminator:
     )
 
 
+def laminator_from_write_dto(dto: LaminatorWriteDto) -> tuple[str, Money]:
+    return dto.name, _money(dto.startup)
+
+
 def cutter_to_dto(cutter: Cutter) -> CutterDto:
     return CutterDto(id=cutter.id.value, name=cutter.name, max_stack=cutter.max_stack)
 
 
 def cutter_from_dto(dto: CutterDto) -> Cutter:
     return Cutter(id=CutterID(dto.id), name=dto.name, max_stack=dto.max_stack)
+
+
+def cutter_from_write_dto(dto: CutterWriteDto) -> tuple[str, int]:
+    return dto.name, dto.max_stack
 
 
 def operator_to_dto(operator: PressOperator | LaminatorOperator | CutterOperator | DieCutterOperator) -> OperatorDto:
@@ -108,6 +134,10 @@ def press_operator_from_dto(dto: OperatorDto) -> PressOperator:
         name=dto.name,
         salary_by_operation=_money(dto.salary_by_operation),
     )
+
+
+def operator_from_write_dto(dto: OperatorWriteDto) -> tuple[str, Money]:
+    return dto.name, _money(dto.salary_by_operation)
 
 
 def laminator_operator_from_dto(dto: OperatorDto) -> LaminatorOperator:
