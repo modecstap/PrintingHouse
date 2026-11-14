@@ -64,7 +64,11 @@ export default function CatalogPanel({ def, onCatalogsInvalidated }) {
   const handleSave = () => {
     setSaveState({ status: "loading" });
     setDeleteError(null);
-    const body = def.toPayload(form);
+    const payload = def.toPayload(form);
+    const body =
+      editingId != null && def.putBodyIncludesId
+        ? { id: editingId, ...payload }
+        : payload;
     const request =
       editingId != null
         ? replaceCatalog(def.itemPath(editingId), body)
