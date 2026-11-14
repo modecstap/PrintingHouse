@@ -63,6 +63,17 @@ class CutterOperatorRepository(Protocol):
         """
         ...
 
+    def replace(self, operator: CutterOperator) -> None:
+        """Overwrites non-id fields of an existing cutter operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, operator_id: CutterOperatorID) -> None:
         """Removes the operator with this id.
 

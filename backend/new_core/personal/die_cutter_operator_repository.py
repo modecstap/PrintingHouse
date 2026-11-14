@@ -66,6 +66,17 @@ class DieCutterOperatorRepository(Protocol):
         """
         ...
 
+    def replace(self, operator: DieCutterOperator) -> None:
+        """Overwrites non-id fields of an existing die-cut operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, operator_id: DieCutterOperatorID) -> None:
         """Removes the operator with this id.
 

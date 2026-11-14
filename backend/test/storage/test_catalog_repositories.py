@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
-from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
@@ -17,7 +17,7 @@ from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
-from backend.new_core.personal.press_operator import PressOperatorID
+from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
 from backend.storage.equipment.laminator_repository import SqlLaminatorRepository
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
@@ -122,6 +122,39 @@ def test_printer_spacing_round_trip(db_session):
     db_session.commit()
     assert repo.take(PrinterID(11)).spacing == 7
     assert repo.take_all() == (printer,)
+
+
+def test_printer_save_replace_take_round_trip(db_session):
+    """``save``, ``replace``, and ``take`` round-trip a printer."""
+    from backend.new_core.equipment.printer import Printer
+
+    repo = SqlPrinterRepository(db_session)
+    printer = Printer(
+        id=PrinterID(12),
+        name="№ 12",
+        spacing=3,
+        startup=Money(Decimal("1")),
+        cyan=Money(Decimal("2")),
+        magenta=Money(Decimal("3")),
+        yellow=Money(Decimal("4")),
+        black=Money(Decimal("5")),
+    )
+    repo.save(printer)
+    db_session.commit()
+
+    updated = Printer(
+        id=PrinterID(12),
+        name="renamed",
+        spacing=9,
+        startup=Money(Decimal("10")),
+        cyan=Money(Decimal("20")),
+        magenta=Money(Decimal("30")),
+        yellow=Money(Decimal("40")),
+        black=Money(Decimal("50")),
+    )
+    repo.replace(updated)
+    db_session.commit()
+    assert repo.take(PrinterID(12)) == updated
 
 
 def test_film_add_take_all_replace_take_round_trip(db_session):
@@ -340,6 +373,43 @@ def test_material_catalog_replace_missing_raises_key_error(
     entity,
 ):
     """``replace`` on a missing film or sheet raises ``KeyError``."""
+    repo = repo_factory(db_session)
+    with pytest.raises(KeyError):
+        repo.replace(entity)
+
+
+@pytest.mark.parametrize(
+    ("repo_factory", "entity"),
+    [
+        (
+            lambda session: SqlPrinterRepository(session),
+            Printer(
+                id=PrinterID(404),
+                name="x",
+                spacing=0,
+                startup=Money(Decimal("1")),
+                cyan=Money(Decimal("0")),
+                magenta=Money(Decimal("0")),
+                yellow=Money(Decimal("0")),
+                black=Money(Decimal("0")),
+            ),
+        ),
+        (
+            lambda session: SqlPressOperatorRepository(session),
+            PressOperator(
+                id=PressOperatorID(404),
+                name="x",
+                salary_by_operation=Money(Decimal("1")),
+            ),
+        ),
+    ],
+)
+def test_equipment_or_staff_catalog_replace_missing_raises_key_error(
+    db_session,
+    repo_factory,
+    entity,
+):
+    """``replace`` on a missing printer or press operator raises ``KeyError``."""
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
         repo.replace(entity)

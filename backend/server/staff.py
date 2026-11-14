@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from backend.new_core.application_services.personal import StaffCatalogService
@@ -12,10 +12,14 @@ from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.server.catalog_mapping import (
     cutter_operator_from_dto,
+    cutter_operator_replace_from_dto,
     die_cut_operator_from_dto,
+    die_cut_operator_replace_from_dto,
     laminator_operator_from_dto,
+    laminator_operator_replace_from_dto,
     operator_to_dto,
     press_operator_from_dto,
+    press_operator_replace_from_dto,
 )
 from backend.server.dependencies import (
     get_db_session,
@@ -25,6 +29,14 @@ from backend.server.dependencies import (
 from backend.server.schemas import OperatorDto
 
 router = APIRouter(prefix="/api/staff", tags=["staff"])
+
+
+def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
+    if body_id != path_id:
+        raise HTTPException(
+            status_code=400,
+            detail="id в теле запроса должен совпадать с id в пути",
+        )
 
 
 @router.get("/press-operators", response_model=list[OperatorDto])
@@ -55,6 +67,21 @@ def save_press_operator(
 ) -> Response:
     """Stores a new press operator."""
     service.save_press_operator(press_operator_from_dto(body))
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.put("/press-operators/{operator_id}", status_code=204, response_class=Response)
+def replace_press_operator(
+    operator_id: int,
+    body: OperatorDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing press operator."""
+    _require_body_id_matches_path(operator_id, body.id)
+    service.replace_press_operator(press_operator_replace_from_dto(operator_id, body))
     session.commit()
     return Response(status_code=204)
 
@@ -102,6 +129,27 @@ def save_laminator_operator(
 ) -> Response:
     """Stores a new laminator operator."""
     service.save_laminator_operator(laminator_operator_from_dto(body))
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.put(
+    "/laminator-operators/{operator_id}",
+    status_code=204,
+    response_class=Response,
+)
+def replace_laminator_operator(
+    operator_id: int,
+    body: OperatorDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing laminator operator."""
+    _require_body_id_matches_path(operator_id, body.id)
+    service.replace_laminator_operator(
+        laminator_operator_replace_from_dto(operator_id, body),
+    )
     session.commit()
     return Response(status_code=204)
 
@@ -155,6 +203,21 @@ def save_cutter_operator(
     return Response(status_code=204)
 
 
+@router.put("/cutter-operators/{operator_id}", status_code=204, response_class=Response)
+def replace_cutter_operator(
+    operator_id: int,
+    body: OperatorDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing cutter operator."""
+    _require_body_id_matches_path(operator_id, body.id)
+    service.replace_cutter_operator(cutter_operator_replace_from_dto(operator_id, body))
+    session.commit()
+    return Response(status_code=204)
+
+
 @router.delete("/cutter-operators/{operator_id}", status_code=204, response_class=Response)
 def delete_cutter_operator(
     operator_id: int,
@@ -198,6 +261,25 @@ def save_die_cut_operator(
 ) -> Response:
     """Stores a new die-cut operator."""
     service.save_die_cut_operator(die_cut_operator_from_dto(body))
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.put(
+    "/die-cut-operators/{operator_id}",
+    status_code=204,
+    response_class=Response,
+)
+def replace_die_cut_operator(
+    operator_id: int,
+    body: OperatorDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing die-cut operator."""
+    _require_body_id_matches_path(operator_id, body.id)
+    service.replace_die_cut_operator(die_cut_operator_replace_from_dto(operator_id, body))
     session.commit()
     return Response(status_code=204)
 

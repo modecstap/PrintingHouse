@@ -73,6 +73,22 @@ class SqlPressOperatorRepository:
         except IntegrityError as exc:
             raise PressOperatorIdOccupied("save", operator.id) from exc
 
+    def replace(self, operator: PressOperator) -> None:
+        """Overwrites non-id fields of an existing press operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(PressOperatorRow, operator.id.value)
+        if row is None:
+            raise KeyError(operator.id)
+        row.name = operator.name
+        row.salary_by_operation = operator.salary_by_operation.amount
+        self._session.flush()
+
     def delete(self, operator_id: PressOperatorID) -> None:
         """Removes the operator with this id.
 

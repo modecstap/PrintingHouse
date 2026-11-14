@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from decimal import Decimal
 
 from backend.new_core.format import Format
@@ -131,6 +132,47 @@ def die_cut_operator_from_dto(dto: OperatorDto) -> DieCutterOperator:
         name=dto.name,
         salary_by_operation=_money(dto.salary_by_operation),
     )
+
+
+def printer_replace_from_dto(printer_id: int, dto: PrinterDto) -> Printer:
+    parsed = printer_from_dto(dto)
+    return replace(parsed, id=PrinterID(printer_id))
+
+
+def laminator_replace_from_dto(laminator_id: int, dto: LaminatorDto) -> Laminator:
+    parsed = laminator_from_dto(dto)
+    return replace(parsed, id=LaminatorID(laminator_id))
+
+
+def cutter_replace_from_dto(cutter_id: int, dto: CutterDto) -> Cutter:
+    parsed = cutter_from_dto(dto)
+    return replace(parsed, id=CutterID(cutter_id))
+
+
+def press_operator_replace_from_dto(operator_id: int, dto: OperatorDto) -> PressOperator:
+    parsed = press_operator_from_dto(dto)
+    return replace(parsed, id=PressOperatorID(operator_id))
+
+
+def laminator_operator_replace_from_dto(
+    operator_id: int,
+    dto: OperatorDto,
+) -> LaminatorOperator:
+    parsed = laminator_operator_from_dto(dto)
+    return replace(parsed, id=LaminatorOperatorID(operator_id))
+
+
+def cutter_operator_replace_from_dto(operator_id: int, dto: OperatorDto) -> CutterOperator:
+    parsed = cutter_operator_from_dto(dto)
+    return replace(parsed, id=CutterOperatorID(operator_id))
+
+
+def die_cut_operator_replace_from_dto(
+    operator_id: int,
+    dto: OperatorDto,
+) -> DieCutterOperator:
+    parsed = die_cut_operator_from_dto(dto)
+    return replace(parsed, id=DieCutterOperatorID(operator_id))
 
 
 def film_to_read_dto(film: Film) -> FilmReadDto:

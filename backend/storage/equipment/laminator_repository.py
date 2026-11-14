@@ -73,6 +73,22 @@ class SqlLaminatorRepository:
         except IntegrityError as exc:
             raise LaminatorIdOccupied("save", laminator.id) from exc
 
+    def replace(self, laminator: Laminator) -> None:
+        """Overwrites non-id fields of an existing laminator.
+
+        :param laminator:
+
+        :raises KeyError: if there is no laminator with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(LaminatorRow, laminator.id.value)
+        if row is None:
+            raise KeyError(laminator.id)
+        row.name = laminator.name
+        row.startup = laminator.startup.amount
+        self._session.flush()
+
     def delete(self, laminator_id: LaminatorID) -> None:
         """Removes the laminator with this id.
 

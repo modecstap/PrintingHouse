@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from backend.new_core.application_services.equipment import EquipmentCatalogService
@@ -11,10 +11,13 @@ from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
 from backend.server.catalog_mapping import (
     cutter_from_dto,
+    cutter_replace_from_dto,
     cutter_to_dto,
     laminator_from_dto,
+    laminator_replace_from_dto,
     laminator_to_dto,
     printer_from_dto,
+    printer_replace_from_dto,
     printer_to_dto,
 )
 from backend.server.dependencies import (
@@ -25,6 +28,14 @@ from backend.server.dependencies import (
 from backend.server.schemas import CutterDto, LaminatorDto, PrinterDto
 
 router = APIRouter(prefix="/api/equipment", tags=["equipment"])
+
+
+def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
+    if body_id != path_id:
+        raise HTTPException(
+            status_code=400,
+            detail="id в теле запроса должен совпадать с id в пути",
+        )
 
 
 @router.get("/printers", response_model=list[PrinterDto])
@@ -55,6 +66,21 @@ def save_printer(
 ) -> Response:
     """Stores a new printer."""
     service.save_printer(printer_from_dto(body))
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.put("/printers/{printer_id}", status_code=204, response_class=Response)
+def replace_printer(
+    printer_id: int,
+    body: PrinterDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing printer."""
+    _require_body_id_matches_path(printer_id, body.id)
+    service.replace_printer(printer_replace_from_dto(printer_id, body))
     session.commit()
     return Response(status_code=204)
 
@@ -104,6 +130,21 @@ def save_laminator(
     return Response(status_code=204)
 
 
+@router.put("/laminators/{laminator_id}", status_code=204, response_class=Response)
+def replace_laminator(
+    laminator_id: int,
+    body: LaminatorDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing laminator."""
+    _require_body_id_matches_path(laminator_id, body.id)
+    service.replace_laminator(laminator_replace_from_dto(laminator_id, body))
+    session.commit()
+    return Response(status_code=204)
+
+
 @router.delete("/laminators/{laminator_id}", status_code=204, response_class=Response)
 def delete_laminator(
     laminator_id: int,
@@ -145,6 +186,21 @@ def save_cutter(
 ) -> Response:
     """Stores a new cutter."""
     service.save_cutter(cutter_from_dto(body))
+    session.commit()
+    return Response(status_code=204)
+
+
+@router.put("/cutters/{cutter_id}", status_code=204, response_class=Response)
+def replace_cutter(
+    cutter_id: int,
+    body: CutterDto,
+    _user: Annotated[str, Depends(require_user)],
+    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> Response:
+    """Replaces non-id fields of an existing cutter."""
+    _require_body_id_matches_path(cutter_id, body.id)
+    service.replace_cutter(cutter_replace_from_dto(cutter_id, body))
     session.commit()
     return Response(status_code=204)
 

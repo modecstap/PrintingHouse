@@ -73,6 +73,22 @@ class SqlCutterOperatorRepository:
         except IntegrityError as exc:
             raise CutterOperatorIdOccupied("save", operator.id) from exc
 
+    def replace(self, operator: CutterOperator) -> None:
+        """Overwrites non-id fields of an existing cutter operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(CutterOperatorRow, operator.id.value)
+        if row is None:
+            raise KeyError(operator.id)
+        row.name = operator.name
+        row.salary_by_operation = operator.salary_by_operation.amount
+        self._session.flush()
+
     def delete(self, operator_id: CutterOperatorID) -> None:
         """Removes the operator with this id.
 

@@ -56,6 +56,17 @@ class EquipmentCatalogService:
         """
         self._printers.save(printer)
 
+    def replace_printer(self, printer: Printer) -> None:
+        """Overwrites non-id fields of an existing printer.
+
+        :param printer:
+
+        :raises KeyError: if there is no printer with this id.
+
+        :return: nothing.
+        """
+        self._printers.replace(printer)
+
     def delete_printer(self, printer_id: PrinterID) -> None:
         """Removes a printer.
 
@@ -94,6 +105,17 @@ class EquipmentCatalogService:
         """
         self._laminators.save(laminator)
 
+    def replace_laminator(self, laminator: Laminator) -> None:
+        """Overwrites non-id fields of an existing laminator.
+
+        :param laminator:
+
+        :raises KeyError: if there is no laminator with this id.
+
+        :return: nothing.
+        """
+        self._laminators.replace(laminator)
+
     def delete_laminator(self, laminator_id: LaminatorID) -> None:
         """Removes a laminator.
 
@@ -131,6 +153,17 @@ class EquipmentCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._cutters.save(cutter)
+
+    def replace_cutter(self, cutter: Cutter) -> None:
+        """Overwrites non-id fields of an existing cutter.
+
+        :param cutter:
+
+        :raises KeyError: if there is no cutter with this id.
+
+        :return: nothing.
+        """
+        self._cutters.replace(cutter)
 
     def delete_cutter(self, cutter_id: CutterID) -> None:
         """Removes a cutter.

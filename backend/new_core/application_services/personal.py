@@ -71,6 +71,17 @@ class StaffCatalogService:
         """
         self._press_operators.save(operator)
 
+    def replace_press_operator(self, operator: PressOperator) -> None:
+        """Overwrites non-id fields of an existing press operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        self._press_operators.replace(operator)
+
     def delete_press_operator(self, operator_id: PressOperatorID) -> None:
         """Removes a press operator.
 
@@ -111,6 +122,17 @@ class StaffCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._laminator_operators.save(operator)
+
+    def replace_laminator_operator(self, operator: LaminatorOperator) -> None:
+        """Overwrites non-id fields of an existing laminator operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        self._laminator_operators.replace(operator)
 
     def delete_laminator_operator(
         self,
@@ -153,6 +175,17 @@ class StaffCatalogService:
         """
         self._cutter_operators.save(operator)
 
+    def replace_cutter_operator(self, operator: CutterOperator) -> None:
+        """Overwrites non-id fields of an existing cutter operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        self._cutter_operators.replace(operator)
+
     def delete_cutter_operator(self, operator_id: CutterOperatorID) -> None:
         """Removes a cutter operator.
 
@@ -193,6 +226,17 @@ class StaffCatalogService:
         :return: nothing. Existing rows are not overwritten.
         """
         self._die_cut_operators.save(operator)
+
+    def replace_die_cut_operator(self, operator: DieCutterOperator) -> None:
+        """Overwrites non-id fields of an existing die-cut operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        self._die_cut_operators.replace(operator)
 
     def delete_die_cut_operator(
         self,

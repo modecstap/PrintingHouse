@@ -63,6 +63,17 @@ class PressOperatorRepository(Protocol):
         """
         ...
 
+    def replace(self, operator: PressOperator) -> None:
+        """Overwrites non-id fields of an existing press operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, operator_id: PressOperatorID) -> None:
         """Removes the operator with this id.
 

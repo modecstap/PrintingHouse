@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from fastapi.testclient import TestClient
 
@@ -19,7 +20,9 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 @dataclass
 class _FakeEquipmentService:
     printers_rows: tuple[Printer, ...] = ()
+    missing_printer_ids: set[int] = field(default_factory=set)
     calls: list[str] = field(default_factory=list)
+    last_replace_printer: Printer | None = None
 
     def printers(self) -> tuple[Printer, ...]:
         self.calls.append("list")
@@ -31,6 +34,12 @@ class _FakeEquipmentService:
 
     def save_printer(self, printer: Printer) -> None:
         self.calls.append(f"save:{printer.id.value}")
+
+    def replace_printer(self, printer: Printer) -> None:
+        if printer.id.value in self.missing_printer_ids:
+            raise KeyError(printer.id)
+        self.calls.append(f"replace:{printer.id.value}")
+        self.last_replace_printer = printer
 
     def delete_printer(self, printer_id: PrinterID) -> None:
         self.calls.append(f"delete:{printer_id.value}")
@@ -99,3 +108,68 @@ def test_save_printer_204():
     )
     assert response.status_code == 204
     assert fake.calls == ["save:1"]
+
+
+_PRINTER_JSON = {
+    "id": 5,
+    "name": "Тест",
+    "spacing": 0,
+    "startup": "0",
+    "cyan": "0",
+    "magenta": "0",
+    "yellow": "0",
+    "black": "0",
+}
+
+
+def test_replace_printer_204():
+    fake = _FakeEquipmentService()
+    client, headers = _client_with_fake(fake)
+    response = client.put(
+        "/api/equipment/printers/5",
+        headers=headers,
+        json=_PRINTER_JSON,
+    )
+    assert response.status_code == 204
+    assert fake.calls == ["replace:5"]
+    assert fake.last_replace_printer == Printer(
+        id=PrinterID(5),
+        name="Тест",
+        spacing=0,
+        startup=Money(Decimal("0")),
+        cyan=Money(Decimal("0")),
+        magenta=Money(Decimal("0")),
+        yellow=Money(Decimal("0")),
+        black=Money(Decimal("0")),
+    )
+
+
+def test_replace_printer_400_when_body_id_differs():
+    fake = _FakeEquipmentService()
+    client, headers = _client_with_fake(fake)
+    body = dict(_PRINTER_JSON, id=6)
+    response = client.put(
+        "/api/equipment/printers/5",
+        headers=headers,
+        json=body,
+    )
+    assert response.status_code == 400
+    assert fake.calls == []
+
+
+def test_replace_printer_404_when_missing():
+    fake = _FakeEquipmentService(missing_printer_ids={9})
+    client, headers = _client_with_fake(fake)
+    body = dict(_PRINTER_JSON, id=9)
+    response = client.put(
+        "/api/equipment/printers/9",
+        headers=headers,
+        json=body,
+    )
+    assert response.status_code == 404
+
+
+def test_replace_printer_requires_token():
+    fake = _FakeEquipmentService()
+    client, _ = _client_with_fake(fake)
+    assert client.put("/api/equipment/printers/5", json=_PRINTER_JSON).status_code == 401

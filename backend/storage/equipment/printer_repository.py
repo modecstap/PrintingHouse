@@ -69,6 +69,27 @@ class SqlPrinterRepository:
         except IntegrityError as exc:
             raise PrinterIdOccupied("save", printer.id) from exc
 
+    def replace(self, printer: Printer) -> None:
+        """Overwrites non-id fields of an existing printer.
+
+        :param printer:
+
+        :raises KeyError: if there is no printer with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(PrinterRow, printer.id.value)
+        if row is None:
+            raise KeyError(printer.id)
+        row.name = printer.name
+        row.spacing = printer.spacing
+        row.startup = printer.startup.amount
+        row.cyan = printer.cyan.amount
+        row.magenta = printer.magenta.amount
+        row.yellow = printer.yellow.amount
+        row.black = printer.black.amount
+        self._session.flush()
+
     def delete(self, printer_id: PrinterID) -> None:
         """Removes the printer with this id.
 

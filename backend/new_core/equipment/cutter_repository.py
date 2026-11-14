@@ -63,6 +63,17 @@ class CutterRepository(Protocol):
         """
         ...
 
+    def replace(self, cutter: Cutter) -> None:
+        """Overwrites non-id fields of an existing cutter.
+
+        :param cutter:
+
+        :raises KeyError: if there is no cutter with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, cutter_id: CutterID) -> None:
         """Removes the cutter with this id.
 

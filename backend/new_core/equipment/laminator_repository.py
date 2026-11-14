@@ -63,6 +63,17 @@ class LaminatorRepository(Protocol):
         """
         ...
 
+    def replace(self, laminator: Laminator) -> None:
+        """Overwrites non-id fields of an existing laminator.
+
+        :param laminator:
+
+        :raises KeyError: if there is no laminator with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, laminator_id: LaminatorID) -> None:
         """Removes the laminator with this id.
 

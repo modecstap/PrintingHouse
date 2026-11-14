@@ -64,6 +64,22 @@ class SqlCutterRepository:
         except IntegrityError as exc:
             raise CutterIdOccupied("save", cutter.id) from exc
 
+    def replace(self, cutter: Cutter) -> None:
+        """Overwrites non-id fields of an existing cutter.
+
+        :param cutter:
+
+        :raises KeyError: if there is no cutter with this id.
+
+        :return: nothing.
+        """
+        row = self._session.get(CutterRow, cutter.id.value)
+        if row is None:
+            raise KeyError(cutter.id)
+        row.name = cutter.name
+        row.max_stack = cutter.max_stack
+        self._session.flush()
+
     def delete(self, cutter_id: CutterID) -> None:
         """Removes the cutter with this id.
 

@@ -63,6 +63,17 @@ class PrinterRepository(Protocol):
         """
         ...
 
+    def replace(self, printer: Printer) -> None:
+        """Overwrites non-id fields of an existing printer.
+
+        :param printer:
+
+        :raises KeyError: if there is no printer with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, printer_id: PrinterID) -> None:
         """Removes the printer with this id.
 

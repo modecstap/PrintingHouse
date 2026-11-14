@@ -66,6 +66,17 @@ class LaminatorOperatorRepository(Protocol):
         """
         ...
 
+    def replace(self, operator: LaminatorOperator) -> None:
+        """Overwrites non-id fields of an existing laminator operator.
+
+        :param operator:
+
+        :raises KeyError: if there is no operator with this id.
+
+        :return: nothing.
+        """
+        ...
+
     def delete(self, operator_id: LaminatorOperatorID) -> None:
         """Removes the operator with this id.
 
