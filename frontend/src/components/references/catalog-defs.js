@@ -24,7 +24,7 @@ function staffCatalog({ key, title, listPath }) {
     itemPath,
     parseList: toOperatorList,
     clientId: true,
-    canReplace: false,
+    canReplace: true,
     columns: [
       { header: "Номер", render: (row) => row.id },
       { header: "Название", render: (row) => row.name },
@@ -39,7 +39,13 @@ function staffCatalog({ key, title, listPath }) {
       { name: "salary_by_operation", label: "Зарплата", ...MONEY },
     ],
     emptyForm: { id: "", name: "", salary_by_operation: "" },
-    formFromRow: undefined,
+    formFromRow(row) {
+      return {
+        id: String(row.id),
+        name: row.name,
+        salary_by_operation: row.salary_by_operation,
+      };
+    },
     toPayload(form) {
       return {
         id: toJsonInt(form.id),
@@ -59,7 +65,7 @@ const PRINTERS = {
   },
   parseList: toPrinterList,
   clientId: true,
-  canReplace: false,
+  canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
     { header: "Название", render: (row) => row.name },
@@ -90,7 +96,18 @@ const PRINTERS = {
     yellow: "",
     black: "",
   },
-  formFromRow: undefined,
+  formFromRow(row) {
+    return {
+      id: String(row.id),
+      name: row.name,
+      spacing: String(row.spacing),
+      startup: row.startup,
+      cyan: row.cyan,
+      magenta: row.magenta,
+      yellow: row.yellow,
+      black: row.black,
+    };
+  },
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
@@ -114,7 +131,7 @@ const LAMINATORS = {
   },
   parseList: toLaminatorList,
   clientId: true,
-  canReplace: false,
+  canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
     { header: "Название", render: (row) => row.name },
@@ -126,7 +143,13 @@ const LAMINATORS = {
     { name: "startup", label: "Запуск", ...MONEY },
   ],
   emptyForm: { id: "", name: "", startup: "" },
-  formFromRow: undefined,
+  formFromRow(row) {
+    return {
+      id: String(row.id),
+      name: row.name,
+      startup: row.startup,
+    };
+  },
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
@@ -145,7 +168,7 @@ const CUTTERS = {
   },
   parseList: toCutterList,
   clientId: true,
-  canReplace: false,
+  canReplace: true,
   columns: [
     { header: "Номер", render: (row) => row.id },
     { header: "Название", render: (row) => row.name },
@@ -157,7 +180,13 @@ const CUTTERS = {
     { name: "max_stack", label: "Стопа", ...INT },
   ],
   emptyForm: { id: "", name: "", max_stack: "" },
-  formFromRow: undefined,
+  formFromRow(row) {
+    return {
+      id: String(row.id),
+      name: row.name,
+      max_stack: String(row.max_stack),
+    };
+  },
   toPayload(form) {
     return {
       id: toJsonInt(form.id),
