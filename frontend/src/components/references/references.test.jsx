@@ -221,7 +221,7 @@ describe("References", () => {
       if (url === "/api/equipment/printers" && options?.method === "POST") {
         postCount += 1;
         if (postCount === 1) {
-          return empty204Response();
+          return jsonResponse({ id: 7 });
         }
         return jsonResponse({ detail: "printer exists" }, 409);
       }
@@ -254,7 +254,6 @@ describe("References", () => {
 
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
-    await userEvent.type(within(region).getByLabelText("Номер:"), "7");
     await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
     await userEvent.type(within(region).getByLabelText("Поля:"), "3");
     await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
@@ -272,7 +271,6 @@ describe("References", () => {
       );
       expect(postCall).toBeDefined();
       expect(JSON.parse(postCall[1].body)).toEqual({
-        id: 7,
         name: "Тест",
         spacing: 3,
         startup: "100",
@@ -288,8 +286,13 @@ describe("References", () => {
       expect(within(region).getByText(formatMoney("100"))).toBeInTheDocument();
     });
 
-    await userEvent.clear(within(region).getByLabelText("Номер:"));
-    await userEvent.type(within(region).getByLabelText("Номер:"), "7");
+    await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
+    await userEvent.type(within(region).getByLabelText("Поля:"), "3");
+    await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
+    await userEvent.type(within(region).getByLabelText("C:"), "1.5");
+    await userEvent.type(within(region).getByLabelText("M:"), "2");
+    await userEvent.type(within(region).getByLabelText("Y:"), "3");
+    await userEvent.type(within(region).getByLabelText("K:"), "4");
     await userEvent.click(
       within(region).getByRole("button", { name: "Сохранить" })
     );
@@ -299,7 +302,6 @@ describe("References", () => {
         "printer exists"
       );
     });
-    expect(within(region).getByLabelText("Номер:")).toHaveValue(7);
   });
 
   it("should create a sheet, replace a film, and cancel edit without PUT", async () => {
