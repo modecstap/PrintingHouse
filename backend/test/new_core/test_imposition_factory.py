@@ -23,7 +23,6 @@ def test_create_keeps_passed_spacing_and_press_sheet():
 
     built = factory.create(
         target=imp.target,
-        sheet_id=imp.sheet_id,
         press_sheet=imp.press_sheet,
         bleeds=imp.bleeds,
         spacing=17,
@@ -33,7 +32,6 @@ def test_create_keeps_passed_spacing_and_press_sheet():
     assert built.press_sheet is imp.press_sheet
     assert built.count() == Imposition(
         target=imp.target,
-        sheet_id=imp.sheet_id,
         press_sheet=imp.press_sheet,
         bleeds=imp.bleeds,
         spacing=17,
@@ -54,11 +52,11 @@ def test_create_for_printer_takes_spacing_from_catalog():
 
     built = factory.create_for_printer(
         target=imp.target,
-        sheet_id=imp.sheet_id,
+        sheet_id=imp.press_sheet.id,
         bleeds=imp.bleeds,
         printer_id=PrinterID(printer_id.value),
     )
 
     assert built.spacing == 9
-    assert built.press_sheet == ctx.sheets[imp.sheet_id]
-    assert built.sheet_id == imp.sheet_id
+    assert built.press_sheet == ctx.sheets[imp.press_sheet.id]
+    assert built.press_sheet.id == imp.press_sheet.id

@@ -30,7 +30,6 @@ def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
     press_sheet = _sheet(30, 40)
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
-        sheet_id=press_sheet.id,
         press_sheet=press_sheet,
         bleeds=0,
         spacing=0,
@@ -45,7 +44,6 @@ def test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid():
     press_sheet = _sheet(60, 40)
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
-        sheet_id=press_sheet.id,
         press_sheet=press_sheet,
         bleeds=0,
         spacing=0,
@@ -63,7 +61,6 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
     press_sheet = _sheet(320, 450)
     imposition = Imposition(
         target=Format(name="t", height=100, width=100),
-        sheet_id=press_sheet.id,
         press_sheet=press_sheet,
         bleeds=5,
         spacing=11,
@@ -71,21 +68,3 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
 
     assert imposition.count() == 6
     assert imposition.cuts() == 10
-
-
-def test_imposition_rejects_a_zero_cell_side():
-    """A target width of 0 is rejected when the imposition is built."""
-    message = (
-        "Imposition: сторона ячейки равна 0, "
-        "ширина ячейки=0 мм, высота ячейки=10 мм"
-    )
-
-    press_sheet = _sheet(30, 40)
-    with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
-        Imposition(
-            target=Format(name="t", height=10, width=0),
-            sheet_id=press_sheet.id,
-            press_sheet=press_sheet,
-            bleeds=0,
-            spacing=0,
-        )

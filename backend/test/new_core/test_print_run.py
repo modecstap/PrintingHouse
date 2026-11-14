@@ -8,6 +8,10 @@ import pytest
 
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.accountant.run_estimate import RunEstimate
+from backend.new_core.application_services.order import OrderService
+from backend.new_core.order.factory import OrderFactory
+from backend.new_core.print_run.factory import PrintRunFactory
+from backend.test.new_core.in_memory_repositories import InMemoryUnitOfWork
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
     InMemoryCutterRepository,
@@ -98,6 +102,38 @@ def pricing_strategy_factory(ctx: _RunPricingFixtures) -> PricingStrategyFactory
         InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
         InMemoryDieCutterOperatorRepository(items=dict(ctx.die_cut_operators)),
         InMemoryFilmRepository(items=dict(ctx.films)),
+    )
+
+
+def order_service(
+    uow: InMemoryUnitOfWork,
+    ctx: _RunPricingFixtures,
+    *,
+    films: InMemoryFilmRepository | None = None,
+) -> OrderService:
+    """OrderService wired like production with in-memory catalogs."""
+    if films is None:
+        pricing_factory = pricing_strategy_factory(ctx)
+    else:
+        pricing_factory = PricingStrategyFactory(
+            InMemoryPrinterRepository(items=dict(ctx.printers)),
+            InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
+            InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+            InMemoryLaminatorOperatorRepository(
+                items=dict(ctx.laminator_operators),
+            ),
+            InMemoryCutterRepository(items=dict(ctx.cutters)),
+            InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
+            InMemoryDieCutterOperatorRepository(
+                items=dict(ctx.die_cut_operators),
+            ),
+            films,
+        )
+    return OrderService(
+        uow=uow,
+        order_factory=OrderFactory(uow.orders),
+        print_run_factory=PrintRunFactory(uow.print_runs),
+        pricing_factory=pricing_factory,
     )
 
 
@@ -197,7 +233,6 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
             height=target_height,
             width=target_width,
         ),
-        sheet_id=resolved_sheet_id,
         press_sheet=press_sheet,
         bleeds=0,
         spacing=0,

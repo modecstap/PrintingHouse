@@ -51,7 +51,7 @@ class ImpositionDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     target: FormatDto
-    sheet_id: int
+    press_sheet: SheetReadDto
     bleeds: int
     spacing: int
 

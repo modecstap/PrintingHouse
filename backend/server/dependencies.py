@@ -10,12 +10,16 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from backend.auth import AuthConfig, CredentialsError, username_from_token
+from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.application_services.equipment import EquipmentCatalogService
+from backend.new_core.order.factory import OrderFactory
+from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.application_services.materials import MaterialCatalogService
 from backend.new_core.application_services.order import OrderService
 from backend.new_core.application_services.personal import StaffCatalogService
 from backend.new_core.application_services.reference import ReferenceOrderService
 from backend.storage.database import Database
+from backend.new_core.materials.sheet_repository import SheetRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
@@ -77,15 +81,18 @@ def get_order_service(
     uow = SqlOrderUnitOfWork(session)
     return OrderService(
         uow,
-        SqlPrinterRepository(session),
-        SqlPressOperatorRepository(session),
-        SqlLaminatorRepository(session),
-        SqlLaminatorOperatorRepository(session),
-        SqlCutterRepository(session),
-        SqlCutterOperatorRepository(session),
-        SqlDieCutterOperatorRepository(session),
-        SqlFilmRepository(session),
-        SqlSheetRepository(session),
+        OrderFactory(uow.orders),
+        PrintRunFactory(uow.print_runs),
+        PricingStrategyFactory(
+            SqlPrinterRepository(session),
+            SqlPressOperatorRepository(session),
+            SqlLaminatorRepository(session),
+            SqlLaminatorOperatorRepository(session),
+            SqlCutterRepository(session),
+            SqlCutterOperatorRepository(session),
+            SqlDieCutterOperatorRepository(session),
+            SqlFilmRepository(session),
+        ),
     )
 
 

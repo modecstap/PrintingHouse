@@ -20,7 +20,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.new_core.test_print_run import _RunPricingFixtures, build_worked_run, order_service
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
@@ -40,18 +40,8 @@ def _order(order_id: int) -> Order:
 
 
 def _list_service(orders: InMemoryOrderRepository) -> OrderService:
-    return OrderService(
-        uow=InMemoryUnitOfWork(orders=orders),
-        printers=InMemoryPrinterRepository(),
-        press_operators=InMemoryPressOperatorRepository(),
-        laminators=InMemoryLaminatorRepository(),
-        laminator_operators=InMemoryLaminatorOperatorRepository(),
-        cutters=InMemoryCutterRepository(),
-        cutter_operators=InMemoryCutterOperatorRepository(),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(),
-        films=InMemoryFilmRepository(),
-        sheets=InMemorySheetRepository(),
-    )
+    uow = InMemoryUnitOfWork(orders=orders)
+    return order_service(uow, _RunPricingFixtures())
 
 
 def test_should_list_orders_with_the_larger_id_first_when_a_limit_is_set():

@@ -32,31 +32,12 @@ from backend.test.new_core.in_memory_repositories import (
     InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.new_core.test_print_run import build_worked_run, order_service
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _service_from_fixtures(run, ctx) -> OrderService:
-    return OrderService(
-        uow=InMemoryUnitOfWork(),
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
-    )
+    return order_service(InMemoryUnitOfWork(), ctx)
 
 
 def test_order_report_scales_the_product_by_tax_and_the_order_count():
@@ -91,25 +72,9 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
 
     orders = InMemoryOrderRepository(orders={order.id: order})
     print_runs = InMemoryPrintRunRepository(by_order={order.id: (run,)})
-    service = OrderService(
-        uow=InMemoryUnitOfWork(orders=orders, print_runs=print_runs),
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
+    service = order_service(
+        InMemoryUnitOfWork(orders=orders, print_runs=print_runs),
+        ctx,
     )
 
     report = service.order_report(order.id)
@@ -160,61 +125,23 @@ def test_order_report_prices_die_cut_through_order_service():
         orders=InMemoryOrderRepository(orders={order.id: order}),
         print_runs=InMemoryPrintRunRepository(by_order={order.id: (run,)}),
     )
-    service = OrderService(
-        uow=uow,
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
-    )
+    service = order_service(uow, ctx)
 
     estimate = service._run_estimate(run, order.product.parts_markup)
 
     assert estimate.aggregated_operations().work == Money(Decimal(8))
 
 
-def test_order_report_reflects_catalog_sheet_replace_after_save():
-    """After PUT on the sheet catalog, report uses the new paper price."""
+def test_order_report_keeps_stored_sheet_price_after_catalog_replace():
+    """Report prices paper from the stored run, not live catalog sheet rows."""
     run, _, _, _, ctx = build_worked_run(with_laminate=False)
     sheets = InMemorySheetRepository(items=dict(ctx.sheets))
     uow = InMemoryUnitOfWork()
-    service = OrderService(
-        uow=uow,
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=sheets,
-    )
+    service = order_service(uow, ctx)
     product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)
-    sheet = sheets.take(run.block.imposition.sheet_id)
+    sheet = sheets.take(run.block.imposition.press_sheet.id)
     sheets.replace(
         replace(
             sheet,
@@ -225,7 +152,7 @@ def test_order_report_reflects_catalog_sheet_replace_after_save():
         ),
     )
     after = service.order_report(order_id)
-    assert after.order_price.amount > before.order_price.amount
+    assert after.order_price.amount == before.order_price.amount
 
 
 def test_order_report_reflects_catalog_film_replace_after_save():
@@ -236,26 +163,7 @@ def test_order_report_reflects_catalog_film_replace_after_save():
     )
     films = InMemoryFilmRepository(items=dict(ctx.films))
     uow = InMemoryUnitOfWork()
-    service = OrderService(
-        uow=uow,
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=films,
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
-    )
+    service = order_service(uow, ctx, films=films)
     product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)

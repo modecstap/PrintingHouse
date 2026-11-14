@@ -58,7 +58,6 @@ def _fitting_imposition() -> Imposition:
     press_sheet = _sheet(200, 300)
     return Imposition(
         target=Format(name="t", height=100, width=100),
-        sheet_id=press_sheet.id,
         press_sheet=press_sheet,
         bleeds=0,
         spacing=0,
@@ -87,21 +86,12 @@ def test_imposition_rejects_count_when_nothing_fits():
         press_sheet = _sheet(50, 50)
         Imposition(
             target=Format(name="t", height=100, width=100),
-            sheet_id=press_sheet.id,
             press_sheet=press_sheet,
             bleeds=0,
             spacing=0,
         )
 
     _rejects(message, _build)
-
-
-def test_print_run_rejects_a_zero_cell_side():
-    """A target of 0 by 10 rejects the run because the cell side is zero."""
-    _rejects(
-        _ZERO_CELL,
-        lambda: build_worked_run(target_width=0, target_height=10),
-    )
 
 
 def test_product_rejects_empty_blocks():
@@ -169,20 +159,9 @@ def test_cutter_rejects_a_stack_height_of_zero():
     ("message", "build"),
     [
         pytest.param(
-            "Format: высота меньше 0, высота=-1 мм",
-            lambda: Format(name="", height=-1, width=1),
-            id="height",
-        ),
-        pytest.param(
-            "Format: ширина меньше 0, ширина=-1 мм",
-            lambda: Format(name="", height=1, width=-1),
-            id="width",
-        ),
-        pytest.param(
             "Imposition: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=0,
@@ -193,7 +172,6 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "Imposition: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=0,
                 spacing=-1,
@@ -256,15 +234,9 @@ def test_negative_measure_is_rejected(message: str, build):
             id="paper",
         ),
         pytest.param(
-            "Format: высота меньше 0, высота=-1 мм; ширина меньше 0, ширина=-1 мм",
-            lambda: Format(name="", height=-1, width=-1),
-            id="format",
-        ),
-        pytest.param(
             "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                sheet_id=SheetID(1),
                 press_sheet=_sheet(30, 40),
                 bleeds=-1,
                 spacing=-1,

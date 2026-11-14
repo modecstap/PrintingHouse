@@ -24,13 +24,13 @@ class Format:
         :return: nothing. A side of zero stays.
         """
         reasons: list[str] = []
-        if self.height < 0:
+        if self.height <= 0:
             reasons.append(
-                f"высота меньше 0, высота={self.height} мм",
+                f"высота должна быть положительной, высота={self.height} мм",
             )
-        if self.width < 0:
+        if self.width <= 0:
             reasons.append(
-                f"ширина меньше 0, ширина={self.width} мм",
+                f"ширина должна быть положительной, ширина={self.width} мм",
             )
         if reasons:
             raise InvalidInput(

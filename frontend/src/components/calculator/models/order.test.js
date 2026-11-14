@@ -22,7 +22,16 @@ const sampleWriteJson = {
         count: 2,
         imposition: {
           target: { name: "", width: 90, height: 50 },
-          sheet_id: 1,
+          press_sheet: {
+            id: 1,
+            paper: {
+              name: "Мелованная",
+              density: 150,
+              thickness: "1",
+              price_per_kilo: "80.50",
+            },
+            format: { name: "SRA3", width: 320, height: 450 },
+          },
           bleeds: 2,
           spacing: 0,
         },
@@ -222,7 +231,16 @@ describe("toOrderWrite", () => {
             count: 0,
             imposition: {
               target: { name: "", width: 0, height: 0 },
-              sheet_id: "",
+              press_sheet: {
+                id: "",
+                paper: {
+                  name: "",
+                  density: "",
+                  thickness: "",
+                  price_per_kilo: "0",
+                },
+                format: { name: "", width: 0, height: 0 },
+              },
               bleeds: 0,
               spacing: 0,
             },

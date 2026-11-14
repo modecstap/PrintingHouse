@@ -132,7 +132,11 @@ const SAMPLE_PRODUCT = {
       count: 2,
       imposition: {
         target: { name: "Визитка", width: 90, height: 50 },
-        sheet_id: null,
+        press_sheet: {
+          id: 1,
+          paper: { name: "A", density: 150, thickness: "1", price_per_kilo: "80" },
+          format: { name: "SRA3", width: 320, height: 450 },
+        },
         bleeds: 2,
         spacing: 5,
       },

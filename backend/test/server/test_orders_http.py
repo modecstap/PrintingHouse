@@ -105,7 +105,7 @@ def _product_payload() -> dict:
     from backend.server.mapping import product_to_dto
 
     return {
-        "product": product_to_dto(product).model_dump(),
+        "product": product_to_dto(product).model_dump(mode="json"),
         "count": 2,
     }
 

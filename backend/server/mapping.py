@@ -7,7 +7,6 @@ from decimal import Decimal
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.format import Format
 from backend.new_core.materials.film import FilmID
-from backend.new_core.materials.sheet import SheetID
 from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
@@ -30,6 +29,7 @@ from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
+from backend.server.catalog_mapping import sheet_from_read_dto, sheet_to_read_dto
 from backend.server.schemas import (
     AdditionalWorkDto,
     CutOpDto,
@@ -62,8 +62,7 @@ def _format_from_dto(dto: FormatDto) -> Format:
 def _imposition_from_dto(dto: ImpositionDto) -> Imposition:
     return Imposition(
         target=_format_from_dto(dto.target),
-        sheet_id=SheetID(dto.sheet_id),
-        press_sheet=None,
+        press_sheet=sheet_from_read_dto(dto.press_sheet),
         bleeds=dto.bleeds,
         spacing=dto.spacing,
     )
@@ -132,7 +131,7 @@ def _format_to_dto(fmt: Format) -> FormatDto:
 def _imposition_to_dto(imposition: Imposition) -> ImpositionDto:
     return ImpositionDto(
         target=_format_to_dto(imposition.target),
-        sheet_id=imposition.sheet_id.value,
+        press_sheet=sheet_to_read_dto(imposition.press_sheet),
         bleeds=imposition.bleeds,
         spacing=imposition.spacing,
     )

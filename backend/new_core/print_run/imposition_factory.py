@@ -23,15 +23,13 @@ class ImpositionFactory:
         self,
         *,
         target: Format,
-        sheet_id: SheetID,
-        press_sheet: Sheet | None,
+        press_sheet: Sheet,
         bleeds: int,
         spacing: int,
     ) -> Imposition:
         """Builds an imposition from the passed fields.
 
         :param target:
-        :param sheet_id:
         :param press_sheet:
         :param bleeds:
         :param spacing:
@@ -42,7 +40,6 @@ class ImpositionFactory:
         """
         return Imposition(
             target=target,
-            sheet_id=sheet_id,
             press_sheet=press_sheet,
             bleeds=bleeds,
             spacing=spacing,
@@ -73,7 +70,6 @@ class ImpositionFactory:
         spacing = self._printers.take(printer_id).spacing
         return Imposition(
             target=target,
-            sheet_id=sheet_id,
             press_sheet=sheet,
             bleeds=bleeds,
             spacing=spacing,

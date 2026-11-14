@@ -1,5 +1,7 @@
 """Behavior of order quote and save use cases."""
 
+# pylint: disable=protected-access
+
 from dataclasses import dataclass, field, replace
 from decimal import Decimal
 
@@ -8,17 +10,20 @@ import pytest
 from backend.new_core import AdditionalWork, InvalidInput, Percent, RunEstimate
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
+from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.part import Part
 from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.sheet import SheetID
+from backend.new_core.order.factory import OrderFactory
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.application_services.order import (
     OrderIdAllocationFailed,
     OrderService,
 )
-from backend.new_core.print_run.print_run import PrintRunID
+from backend.new_core.print_run.factory import PrintRunFactory
+from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.new_core.values.money import Money
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
@@ -30,53 +35,28 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryOrderRepository,
     InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
-    InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import build_worked_run, pricing_strategy_factory
+from backend.test.new_core.test_print_run import (
+    build_worked_run,
+    order_service,
+    pricing_strategy_factory,
+)
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
-def _create_service(
-    uow: InMemoryUnitOfWork,
-    run,
-    ctx,
-) -> OrderService:
-    return OrderService(
-        uow=uow,
-        printers=InMemoryPrinterRepository(items=dict(ctx.printers)),
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
-        ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
-    )
+def _create_service(uow: InMemoryUnitOfWork, ctx) -> OrderService:
+    return order_service(uow, ctx)
 
 
-def _set_printer_spacing(ctx, spacing: int) -> PrinterID:
-    printer_id = next(iter(ctx.printers))
-    ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=spacing)
-    return printer_id
-
-
-def _block_with_client_spacing(block: Part, spacing: int) -> Part:
+def _block_with_spacing(block: Part, spacing: int, ctx) -> Part:
+    sheet = ctx.sheets[block.imposition.press_sheet.id]
     imposition = replace(
         block.imposition,
         spacing=spacing,
-        press_sheet=None,
+        press_sheet=sheet,
     )
-    return replace(block, imposition=imposition)
+    return replace(block, imposition=imposition, need_spacing=False)
 
 
 def _product_from_run(
@@ -100,16 +80,16 @@ def _product_from_run(
     )
 
 
-def test_quote_and_save_hydrate_spacing_from_first_print_printer():
-    """Client imposition spacing is replaced by the catalog printer on assemble."""
+def test_save_persists_imposition_spacing_from_product():
+    """Save stores imposition spacing from the product block."""
     run, _, _, _, ctx = build_worked_run()
-    _set_printer_spacing(ctx, 5)
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
-    block = _block_with_client_spacing(run.block, 99)
+    service = _create_service(uow, ctx)
+    block = _block_with_spacing(run.block, 5, ctx)
     product = Product(parts_markup=Percent(0), blocks=(block,), operations=())
 
-    _, runs = service._assemble(product, count=1)
+    order = OrderFactory(uow.orders).create(product, count=1)
+    runs = service._made_run_for_order(order)
     assert runs[0].block.imposition.spacing == 5
 
     order_id = service.save(product, count=1)
@@ -117,32 +97,8 @@ def test_quote_and_save_hydrate_spacing_from_first_print_printer():
     assert stored_runs[0].block.imposition.spacing == 5
 
 
-def test_quote_ignores_client_imposition_spacing_for_layout():
-    """Two client spacing values yield the same imposition counts when printer matches."""
-    run, _, _, _, ctx = build_worked_run()
-    _set_printer_spacing(ctx, 5)
-    uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
-
-    product_low = Product(
-        parts_markup=Percent(0),
-        blocks=(_block_with_client_spacing(run.block, 0),),
-        operations=(),
-    )
-    product_high = Product(
-        parts_markup=Percent(0),
-        blocks=(_block_with_client_spacing(run.block, 99),),
-        operations=(),
-    )
-
-    assert service.quote(product_low, count=4).impositions == service.quote(
-        product_high,
-        count=4,
-    ).impositions
-
-
-def test_rehydrate_run_keeps_stored_spacing_when_catalog_printer_changes():
-    """order_report path does not overwrite spacing from the updated printer catalog."""
+def test_order_report_keeps_stored_spacing_when_catalog_printer_changes():
+    """order_report does not overwrite spacing from the updated printer catalog."""
     run, printing, _, _, ctx = build_worked_run()
     printer_id = printing.printer_id
     ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=5)
@@ -150,49 +106,50 @@ def test_rehydrate_run_keeps_stored_spacing_when_catalog_printer_changes():
     uow = InMemoryUnitOfWork()
     service = OrderService(
         uow=uow,
-        printers=printers,
-        press_operators=InMemoryPressOperatorRepository(
-            items=dict(ctx.press_operators),
+        order_factory=OrderFactory(uow.orders),
+        print_run_factory=PrintRunFactory(uow.print_runs),
+        pricing_factory=PricingStrategyFactory(
+            printers,
+            InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
+            InMemoryLaminatorRepository(items=dict(ctx.laminators)),
+            InMemoryLaminatorOperatorRepository(
+                items=dict(ctx.laminator_operators),
+            ),
+            InMemoryCutterRepository(items=dict(ctx.cutters)),
+            InMemoryCutterOperatorRepository(
+                items=dict(ctx.cutter_operators),
+            ),
+            InMemoryDieCutterOperatorRepository(
+                items=dict(ctx.die_cut_operators),
+            ),
+            InMemoryFilmRepository(items=dict(ctx.films)),
         ),
-        laminators=InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        laminator_operators=InMemoryLaminatorOperatorRepository(
-            items=dict(ctx.laminator_operators),
-        ),
-        cutters=InMemoryCutterRepository(items=dict(ctx.cutters)),
-        cutter_operators=InMemoryCutterOperatorRepository(
-            items=dict(ctx.cutter_operators),
-        ),
-        die_cut_operators=InMemoryDieCutterOperatorRepository(
-            items=dict(ctx.die_cut_operators),
-        ),
-        films=InMemoryFilmRepository(items=dict(ctx.films)),
-        sheets=InMemorySheetRepository(items=dict(ctx.sheets)),
     )
     product = Product(
         parts_markup=Percent(0),
-        blocks=(_block_with_client_spacing(run.block, 0),),
+        blocks=(_block_with_spacing(run.block, 5, ctx),),
         operations=(),
     )
     order_id = service.save(product, count=1)
+    before = service.order_report(order_id)
     printers.items[printer_id] = replace(printers.items[printer_id], spacing=99)
 
     stored = uow.print_runs.take_all_for_order(order_id)[0]
     assert stored.block.imposition.spacing == 5
-    assert service._rehydrate_run(stored).block.imposition.spacing == 5
+    assert service.order_report(order_id).impositions == before.impositions
 
 
-def test_replace_reapplies_printer_spacing_on_client_product():
-    """Replace runs the client product through hydrate and uses printer spacing."""
+def test_replace_stores_imposition_spacing_from_product():
+    """Replace keeps imposition spacing from the new product."""
     run, _, _, _, ctx = build_worked_run()
-    _set_printer_spacing(ctx, 5)
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     order_id = service.save(product, count=1)
     updated = Product(
         parts_markup=Percent(0),
-        blocks=(_block_with_client_spacing(run.block, 99),),
+        blocks=(_block_with_spacing(run.block, 5, ctx),),
         operations=(),
     )
     service.replace(order_id, updated, count=2)
@@ -205,7 +162,7 @@ def test_quote_returns_report_and_does_not_write_stores():
     """Quote prices the product and leaves order and print-run maps empty."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     report = service.quote(product, count=4)
@@ -240,7 +197,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
         repo.cutter_operators.update(other.cutter_operators)
         repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run, extra_block=run2.block)
 
     report = service.quote(product, count=1)
@@ -252,19 +209,17 @@ def test_quote_applies_product_parts_markup_to_each_block():
     """One ``parts_markup`` prices every print run like a single-block product."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     markup = Percent(10)
     accountant = Accountant()
 
     def sheet_markups(blocks: tuple) -> tuple:
         product = Product(parts_markup=markup, blocks=blocks, operations=())
-        order, runs = service._assemble(product, count=4)
+        order = OrderFactory(uow.orders).create(product, count=4)
+        runs = service._made_run_for_order(order)
         return tuple(
             accountant.sheet_cost_report(
-                service._run_estimate(
-                    service._rehydrate_run(r),
-                    order.product.parts_markup,
-                ),
+                service._run_estimate(r, order.product.parts_markup),
             ).markup
             for r in runs
         )
@@ -276,11 +231,10 @@ def test_quote_applies_product_parts_markup_to_each_block():
 
 def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
     """A missing printer id raises KeyError and does not write stores."""
-    run, printing, _, _, ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     broken = run.block.operations[0]
-    from dataclasses import replace
 
     bad_block = replace(
         run.block,
@@ -297,34 +251,11 @@ def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
     assert not uow.print_runs.by_order
 
 
-def test_quote_with_missing_sheet_raises_and_leaves_stores_empty():
-    """A missing sheet id raises KeyError and does not write stores."""
-    run, _, _, _, ctx = build_worked_run()
-    uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
-    from dataclasses import replace
-
-    bad_imposition = replace(
-        run.block.imposition,
-        sheet_id=SheetID(999),
-        press_sheet=None,
-    )
-    bad_block = replace(run.block, imposition=bad_imposition)
-    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
-
-    with pytest.raises(KeyError):
-        service.quote(product, count=4)
-
-    assert not uow.orders.orders
-    assert not uow.print_runs.by_order
-
-
 def test_quote_with_missing_film_raises_and_leaves_stores_empty():
     """A missing film id raises KeyError and does not write stores."""
     run, _, laminate, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
-    from dataclasses import replace
+    service = _create_service(uow, ctx)
 
     bad_laminate = replace(laminate, film_id=FilmID(999))
     bad_block = replace(
@@ -346,7 +277,7 @@ def test_save_persists_order_and_runs():
     """Save returns an order id and stores the order with all runs."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     order_id = service.save(product, count=4, description="буклет")
@@ -373,7 +304,7 @@ def test_save_maps_each_block_to_one_run_in_order():
         repo.cutter_operators.update(other.cutter_operators)
         repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run, extra_block=run2.block)
     order_count = 2
 
@@ -381,8 +312,8 @@ def test_save_maps_each_block_to_one_run_in_order():
     runs = uow.print_runs.take_all_for_order(order_id)
 
     assert len(runs) == 2
-    assert runs[0].block.imposition.sheet_id == product.blocks[0].imposition.sheet_id
-    assert runs[1].block.imposition.sheet_id == product.blocks[1].imposition.sheet_id
+    assert runs[0].block.imposition.press_sheet.id == product.blocks[0].imposition.press_sheet.id
+    assert runs[1].block.imposition.press_sheet.id == product.blocks[1].imposition.press_sheet.id
     assert runs[0].required_count == order_count * product.blocks[0].count
     assert runs[1].required_count == order_count * product.blocks[1].count
 
@@ -391,7 +322,7 @@ def test_two_orders_may_share_the_same_print_run_id_value():
     """Print run ids are scoped per order; two orders can both use PrintRunID(0)."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     first_id = service.save(product, count=4)
@@ -431,7 +362,7 @@ def test_save_retries_on_occupied_order_id():
         preset=[1, 2],
     )
     uow = InMemoryUnitOfWork(orders=orders)
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
 
     order_id = service.save(_product_from_run(run), count=4)
 
@@ -465,7 +396,7 @@ def test_save_raises_after_three_occupied_ids():
         fixed_id=1,
     )
     uow = InMemoryUnitOfWork(orders=orders)
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
 
     with pytest.raises(OrderIdAllocationFailed) as exc_info:
         service.save(_product_from_run(run), count=4)
@@ -480,12 +411,8 @@ def test_build_run_estimate_rejects_unknown_operation():
     """An unsupported operation type raises TypeError from build_run_estimate."""
     run, _, _, _, ctx = build_worked_run()
 
-    class _UnknownOperation:
+    class _UnknownOperation:  # pylint: disable=too-few-public-methods
         pass
-
-    from dataclasses import replace
-
-    from backend.new_core.print_run.print_run import PrintRun
 
     broken = PrintRun(
         id=run.id,
@@ -506,7 +433,7 @@ def test_replace_keeps_created_at_and_updates_description():
     """Replace updates description and count but keeps the original created_at."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     order_id = service.save(product, count=4, description="старое")
@@ -524,7 +451,7 @@ def test_save_does_not_retry_on_invalid_input():
     """InvalidInput during assemble does not retry and leaves stores empty."""
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
-    service = _create_service(uow, run, ctx)
+    service = _create_service(uow, ctx)
     product = _product_from_run(run)
 
     with pytest.raises(InvalidInput):

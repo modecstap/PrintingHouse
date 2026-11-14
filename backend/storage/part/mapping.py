@@ -54,7 +54,6 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
     sheet = SqlSheetRepository(session).take(sheet_id)
     imposition = Imposition(
         target=Format(row.target_name, row.target_height, row.target_width),
-        sheet_id=sheet_id,
         press_sheet=sheet,
         bleeds=row.bleeds,
         spacing=row.spacing,
@@ -77,14 +76,12 @@ def persist_part(session: Session, part: Part) -> int:
     :return: the generated ``parts.id``.
     """
     imp = part.imposition
-    if imp.press_sheet is None:
-        raise RuntimeError("cannot persist part with unhydrated imposition")
     row = PartRow(
         count=part.count,
         target_name=imp.target.name,
         target_height=imp.target.height,
         target_width=imp.target.width,
-        sheet_id=imp.sheet_id.value,
+        sheet_id=imp.press_sheet.id.value,
         bleeds=imp.bleeds,
         spacing=imp.spacing,
     )

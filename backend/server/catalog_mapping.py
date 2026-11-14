@@ -190,3 +190,11 @@ def sheet_from_write_dto(dto: SheetDto) -> tuple[Paper, Format]:
 def sheet_replace_from_dto(sheet_id: int, dto: SheetDto) -> Sheet:
     paper, format = sheet_from_write_dto(dto)
     return Sheet(id=SheetID(sheet_id), paper=paper, format=format)
+
+
+def sheet_from_read_dto(dto: SheetReadDto) -> Sheet:
+    """Builds a domain sheet from a read DTO (id + paper + format)."""
+    paper, format = sheet_from_write_dto(
+        SheetDto(paper=dto.paper, format=dto.format),
+    )
+    return Sheet(id=SheetID(dto.id), paper=paper, format=format)

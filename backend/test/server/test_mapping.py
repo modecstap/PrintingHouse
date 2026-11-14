@@ -37,12 +37,18 @@ def _product_with_die_cut() -> Product:
     )
 
 
-def test_product_dto_uses_catalog_ids_only():
+def _sample_imposition() -> dict:
+    product = product_from_run(build_worked_run()[0])
+    return product_to_dto(product).model_dump()["blocks"][0]["imposition"]
+
+
+def test_product_dto_embeds_press_sheet():
     product = _product_with_die_cut()
     dumped = product_to_dto(product).model_dump()
     imp = dumped["blocks"][0]["imposition"]
-    assert "sheet_id" in imp
-    assert "press_sheet" not in imp
+    assert "press_sheet" in imp
+    assert "id" in imp["press_sheet"]
+    assert "sheet_id" not in imp
     laminate_ops = [
         op for op in dumped["blocks"][0]["operations"] if op["kind"] == "laminate"
     ]
@@ -51,34 +57,24 @@ def test_product_dto_uses_catalog_ids_only():
     assert "film" not in laminate_ops[0]
 
 
-def test_product_from_dto_restores_ids_unhydrated_sheet():
+def test_product_from_dto_round_trips_press_sheet():
     product = _product_with_die_cut()
     restored = product_from_dto(product_to_dto(product))
     original = product.blocks[0]
     block = restored.blocks[0]
-    assert block.imposition.sheet_id == original.imposition.sheet_id
-    assert block.imposition.press_sheet is None
+    assert block.imposition.press_sheet == original.imposition.press_sheet
     orig_laminate = next(op for op in original.operations if isinstance(op, Laminate))
     rest_laminate = next(op for op in block.operations if isinstance(op, Laminate))
     assert rest_laminate.film_id == orig_laminate.film_id
 
 
-def test_extra_nested_press_sheet_ignored():
+def test_imposition_extra_fields_ignored():
     product = product_from_run(build_worked_run()[0])
     dumped = product_to_dto(product).model_dump()
-    dumped["blocks"][0]["imposition"]["press_sheet"] = {
-        "paper": {
-            "density": 100,
-            "thickness": 1,
-            "name": "ignored",
-            "price_per_kilo": "1",
-        },
-        "format": {"name": "f", "height": 1, "width": 1},
-    }
+    dumped["blocks"][0]["imposition"]["ignored_field"] = 1
     dto = ProductDto.model_validate(dumped)
     block = product_from_dto(dto).blocks[0]
-    assert block.imposition.press_sheet is None
-    assert block.imposition.sheet_id.value == dumped["blocks"][0]["imposition"]["sheet_id"]
+    assert block.imposition.press_sheet == product.blocks[0].imposition.press_sheet
 
 
 def test_unknown_kind_rejected():
@@ -86,12 +82,7 @@ def test_unknown_kind_rejected():
         "parts_markup": 0,
         "blocks": [
             {
-                "imposition": {
-                    "target": {"name": "t", "height": 10, "width": 10},
-                    "sheet_id": 1,
-                    "bleeds": 0,
-                    "spacing": 0,
-                },
+                "imposition": _sample_imposition(),
                 "count": 1,
                 "operations": [{"kind": "unknown", "operator_id": 1}],
             }
@@ -107,12 +98,7 @@ def test_block_markup_field_rejected():
         "parts_markup": 0,
         "blocks": [
             {
-                "imposition": {
-                    "target": {"name": "t", "height": 10, "width": 10},
-                    "sheet_id": 1,
-                    "bleeds": 0,
-                    "spacing": 0,
-                },
+                "imposition": _sample_imposition(),
                 "count": 1,
                 "markup": 5,
                 "operations": [],

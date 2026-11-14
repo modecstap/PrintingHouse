@@ -2,35 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.accountant.run_estimate import RunEstimate
-from backend.new_core.equipment.cutter_repository import CutterRepository
-from backend.new_core.materials.film_repository import FilmRepository
-from backend.new_core.materials.sheet_repository import SheetRepository
-from backend.new_core.part import Part
-from backend.new_core.equipment.laminator_repository import LaminatorRepository
-from backend.new_core.equipment.printer_repository import PrinterRepository
-from backend.new_core.operations.laminate.laminate import Laminate
-from backend.new_core.operations.print.print import Print
 from backend.new_core.order.factory import OrderFactory
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderIdOccupied
 from backend.new_core.application_services.unit_of_work import OrderUnitOfWork
-from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
-from backend.new_core.personal.die_cutter_operator_repository import (
-    DieCutterOperatorRepository,
-)
-from backend.new_core.personal.laminator_operator_repository import (
-    LaminatorOperatorRepository,
-)
-from backend.new_core.personal.press_operator_repository import PressOperatorRepository
 from backend.new_core.print_run.factory import PrintRunFactory
-from backend.new_core.print_run.imposition_factory import ImpositionFactory
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.percent import Percent
 
@@ -51,48 +32,23 @@ class OrderIdAllocationFailed(Exception):
 class OrderService:
     """Quotes, saves, lists, and builds price reports for orders."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         uow: OrderUnitOfWork,
-        printers: PrinterRepository,
-        press_operators: PressOperatorRepository,
-        laminators: LaminatorRepository,
-        laminator_operators: LaminatorOperatorRepository,
-        cutters: CutterRepository,
-        cutter_operators: CutterOperatorRepository,
-        die_cut_operators: DieCutterOperatorRepository,
-        films: FilmRepository,
-        sheets: SheetRepository,
+        order_factory: OrderFactory,
+        print_run_factory: PrintRunFactory,
+        pricing_factory: PricingStrategyFactory,
     ) -> None:
-        """Remembers the unit of work and catalogs.
-
+        """
         :param uow:
-        :param printers:
-        :param press_operators:
-        :param laminators:
-        :param laminator_operators:
-        :param cutters:
-        :param cutter_operators:
-        :param die_cut_operators:
-        :param films:
-        :param sheets:
+        :param order_factory:
+        :param print_run_factory:
+        :param pricing_factory:
         """
         self._uow = uow
-        self._films = films
-        self._sheets = sheets
-        self._order_factory = OrderFactory(uow.orders)
-        self._print_run_factory = PrintRunFactory(uow.print_runs)
-        self._imposition_factory = ImpositionFactory(sheets, printers)
-        self._pricing_factory = PricingStrategyFactory(
-            printers,
-            press_operators,
-            laminators,
-            laminator_operators,
-            cutters,
-            cutter_operators,
-            die_cut_operators,
-            films,
-        )
+        self._order_factory = order_factory
+        self._print_run_factory = print_run_factory
+        self._pricing_factory = pricing_factory
 
     def get_orders(self, limit: int) -> tuple[Order, ...]:
         """Returns the latest orders by id.
@@ -120,7 +76,7 @@ class OrderService:
         :param order_id:
 
         :raises OrderNotFound: if the order does not exist.
-        :raises KeyError: if a catalog sheet or film id is missing.
+        :raises KeyError: if a catalog id from a run operation is missing.
 
         :return: the report from :meth:`Accountant.order_report`.
         """
@@ -128,7 +84,7 @@ class OrderService:
         parts_markup = order.product.parts_markup
         runs = self._uow.print_runs.take_all_for_order(order_id)
         estimates = tuple(
-            self._run_estimate(self._rehydrate_run(run), parts_markup)
+            self._run_estimate(run, parts_markup)
             for run in runs
         )
         return Accountant().order_report(order, estimates)
@@ -145,7 +101,8 @@ class OrderService:
 
         :return: the report from :meth:`Accountant.order_report`.
         """
-        order, runs = self._assemble(product, count)
+        order = self._order_factory.create(product, count)
+        runs = self._made_run_for_order(order)
         parts_markup = order.product.parts_markup
         estimates = tuple(
             self._run_estimate(run, parts_markup) for run in runs
@@ -168,7 +125,9 @@ class OrderService:
         for _ in range(_MAX_ORDER_ID_ATTEMPTS):
             try:
                 def work() -> OrderID:
-                    order, runs = self._assemble(product, count, description)
+                    order = self._order_factory.create(product, count,
+                                                       description)
+                    runs = self._made_run_for_order(order)
                     self._uow.orders.save(order)
                     self._uow.print_runs.save_all_for_order(order.id, runs)
                     return order.id
@@ -204,22 +163,14 @@ class OrderService:
 
         def work() -> OrderID:
             existing = self._uow.orders.take(order_id)
-            hydrated = self._hydrate_product(product)
             order = Order(
                 id=order_id,
-                product=hydrated,
+                product=product,
                 count=count,
                 description=description,
                 created_at=existing.created_at,
             )
-            runs = tuple(
-                self._print_run_factory.create(
-                    for_order=order_id,
-                    block=block,
-                    required_count=count * block.count,
-                )
-                for block in hydrated.blocks
-            )
+            runs = self._made_run_for_order(order)
             self._uow.orders.replace(order)
             self._uow.print_runs.save_all_for_order(order_id, runs)
             return order_id
@@ -242,109 +193,16 @@ class OrderService:
         ]
         return RunEstimate.create(strategies, run=run, parts_markup=parts_markup)
 
-    def _assemble(
+    def _made_run_for_order(
         self,
-        product: Product,
-        count: int,
-        description: str = "",
-    ) -> tuple[Order, tuple[PrintRun, ...]]:
-        hydrated = self._hydrate_product(product)
-        order = self._order_factory.create(hydrated, count, description)
+        order: Order,
+    ) -> tuple[PrintRun, ...]:
         runs = tuple(
             self._print_run_factory.create(
                 for_order=order.id,
                 block=block,
                 required_count=order.count * block.count,
             )
-            for block in hydrated.blocks
+            for block in order.product.blocks
         )
-        return order, runs
-
-    def _hydrate_product(self, product: Product) -> Product:
-        """Loads catalog rows and applies printer spacing on client products.
-
-        :param product:
-
-        :raises KeyError: if a referenced sheet, film, or printer id is missing.
-
-        :return: a product whose blocks use catalog ``press_sheet``, printer
-        ``spacing`` on the first print operation, and known laminate film ids.
-        """
-        return replace(
-            product,
-            blocks=tuple(
-                self._hydrate_part(block) for block in product.blocks
-            ),
-        )
-
-    @staticmethod
-    def _first_print(block: Part) -> Print | None:
-        """Returns the first print operation in block order, if any."""
-        for operation in block.operations:
-            if isinstance(operation, Print):
-                return operation
-        return None
-
-    def _hydrate_part(self, block: Part) -> Part:
-        """Hydrates imposition and validates laminate film ids for one block.
-
-        When ``need_spacing`` is true, ``imposition.spacing`` is taken from the
-        printer of the first :class:`Print` operation; otherwise spacing stays on
-        the block imposition (stored runs on rehydrate).
-
-        :param block:
-
-        :raises KeyError: if a referenced sheet, film, or printer id is missing.
-
-        :return: the block with catalog ``press_sheet`` and final spacing.
-        """
-        imposition = block.imposition
-        if block.need_spacing:
-            print_op = self._first_print(block)
-            if print_op is not None:
-                hydrated_imposition = self._imposition_factory.create_for_printer(
-                    target=imposition.target,
-                    sheet_id=imposition.sheet_id,
-                    bleeds=imposition.bleeds,
-                    printer_id=print_op.printer_id,
-                )
-            else:
-                hydrated_imposition = self._imposition_factory.create(
-                    target=imposition.target,
-                    sheet_id=imposition.sheet_id,
-                    press_sheet=self._sheets.take(imposition.sheet_id),
-                    bleeds=imposition.bleeds,
-                    spacing=imposition.spacing,
-                )
-        else:
-            hydrated_imposition = self._imposition_factory.create(
-                target=imposition.target,
-                sheet_id=imposition.sheet_id,
-                press_sheet=self._sheets.take(imposition.sheet_id),
-                bleeds=imposition.bleeds,
-                spacing=imposition.spacing,
-            )
-        for operation in block.operations:
-            if isinstance(operation, Laminate):
-                self._films.take(operation.film_id)
-        return replace(
-            block,
-            imposition=hydrated_imposition,
-            need_spacing=False,
-        )
-
-    def _rehydrate_run(self, run: PrintRun) -> PrintRun:
-        """Rebuilds a stored run with catalog sheet and film rows.
-
-        :param run:
-
-        :raises KeyError: if a referenced sheet or film id is missing.
-
-        :return: a run whose block matches the catalog at report time.
-        """
-        return PrintRun(
-            id=run.id,
-            for_order=run.for_order,
-            block=self._hydrate_part(run.block),
-            required_count=run.required_count,
-        )
+        return runs

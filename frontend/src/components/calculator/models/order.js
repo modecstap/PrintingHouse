@@ -133,6 +133,23 @@ export function emptyCalculatorForm() {
   };
 }
 
+function mapPressSheetToWrite(block) {
+  return {
+    id: coerceIdField(block.paperSheetId),
+    paper: {
+      name: String(block.paper?.name ?? ""),
+      density: coerceIntegerField(block.paper?.density),
+      thickness: coerceMoneyField(block.paper?.thickness),
+      price_per_kilo: coerceMoneyField(block.paper?.price_per_kilo),
+    },
+    format: {
+      name: String(block.sheetFormat?.name ?? ""),
+      width: coerceIntegerField(block.sheetFormat?.width),
+      height: coerceIntegerField(block.sheetFormat?.height),
+    },
+  };
+}
+
 function mapOperationToWrite(operation) {
   if (operation.kind === "print") {
     return {
@@ -176,7 +193,7 @@ function mapBlockToWrite(block) {
         width: coerceIntegerField(block.target.width),
         height: coerceIntegerField(block.target.height),
       },
-      sheet_id: coerceIdField(block.paperSheetId),
+      press_sheet: mapPressSheetToWrite(block),
       bleeds: coerceIntegerField(block.bleeds),
       spacing: 0,
     },
@@ -405,6 +422,7 @@ export function applyCatalogDefaultsToForm(form, catalogs) {
 
 function mapBlockFromDto(block) {
   const { imposition } = block;
+  const pressSheet = imposition.press_sheet;
   return {
     clientKey: newClientKey(),
     count: numberToFormString(block.count),
@@ -414,16 +432,18 @@ function mapBlockFromDto(block) {
       height: numberToFormString(imposition.target.height),
     },
     paperSheetId:
-      imposition.sheet_id != null
-        ? numberToFormString(imposition.sheet_id)
-        : "",
-    paper: {
-      name: "",
-      density: "",
-      thickness: "",
-      price_per_kilo: "0",
-    },
-    sheetFormat: { name: "", width: "0", height: "0" },
+      pressSheet?.id != null ? numberToFormString(pressSheet.id) : "",
+    paper: pressSheet?.paper
+      ? paperFromSheet(pressSheet)
+      : {
+          name: "",
+          density: "",
+          thickness: "",
+          price_per_kilo: "0",
+        },
+    sheetFormat: pressSheet
+      ? sheetFormatFromSheet(pressSheet)
+      : { name: "", width: "0", height: "0" },
     bleeds: numberToFormString(imposition.bleeds),
     operations: block.operations.map(mapOperationFromDto),
   };
