@@ -238,3 +238,36 @@ class OperatorDto(BaseModel):
     id: int
     name: str
     salary_by_operation: str
+
+
+class PrinterWriteDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    spacing: int
+    startup: str
+    cyan: str
+    magenta: str
+    yellow: str
+    black: str
+
+
+class LaminatorWriteDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    startup: str
+
+
+class CutterWriteDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    max_stack: int
+
+
+class OperatorWriteDto(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    salary_by_operation: str
