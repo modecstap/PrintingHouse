@@ -22,15 +22,18 @@ class Money:
         :raises InvalidPriceException: if the type is not Decimal
         or the amount is below zero.
 
-        :return: an object whose amount field equals the passed Decimal.
-        Addition accepts another Money. Multiplication and division accept Decimal
-        or int. Each operation returns a new Money.
+        :return: an object whose amount is the passed Decimal rounded to cents
+        (half up). Addition accepts another Money. Multiplication and division
+        accept Decimal or int. Each operation returns a new Money.
         """
         if type(amount) is not Decimal or amount < 0:
             raise InvalidPriceException(
                 f"создание цены: сумма {amount!r} должна быть неотрицательным Decimal"
             )
-        self.amount = amount
+        self.amount = amount.quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP
+        )
 
     @classmethod
     def zero(cls) -> "Money":
@@ -58,6 +61,3 @@ class Money:
             return NotImplemented
         return Money(self.amount / decimal_divisor)
 
-    def quantize(self) -> "Money":
-        rounded = self.amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        return Money(rounded)

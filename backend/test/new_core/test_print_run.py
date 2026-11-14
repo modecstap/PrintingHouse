@@ -353,10 +353,10 @@ def test_cost_report_prices_the_worked_run():
         per_item.material + per_item.startup + per_item.work + per_item.markup
         == per_item.total()
     )
-    assert report.material == Money(Decimal(13) / Decimal(6) * 3)
-    assert report.startup == Money(Decimal(16) / Decimal(6) * 3)
-    assert report.work == Money(Decimal(44) / Decimal(6) * 3)
-    assert report.markup == Money(Decimal("21.9") / Decimal(6) * 3)
+    assert report.material == per_item.material * 3
+    assert report.startup == per_item.startup * 3
+    assert report.work == per_item.work * 3
+    assert report.markup == per_item.markup * 3
     assert report.total() == (
         report.material + report.startup + report.work + report.markup
     )
@@ -474,11 +474,11 @@ def test_list_report_divides_by_the_imposition_count():
     assert per_item.work == Money(Decimal(5) / Decimal(6))
     assert per_item.markup == Money(Decimal("7.5") / Decimal(6))
     assert per_item.total() == Money(Decimal("32.5") / Decimal(6))
-    assert report.material == Money(Decimal(10) / Decimal(6) * 3)
-    assert report.startup == Money(Decimal(10) / Decimal(6) * 3)
-    assert report.work == Money(Decimal(5) / Decimal(6) * 3)
-    assert report.markup == Money(Decimal("7.5") / Decimal(6) * 3)
-    assert report.total() == Money(Decimal("32.5") / Decimal(6) * 3)
+    assert report.material == per_item.material * 3
+    assert report.startup == per_item.startup * 3
+    assert report.work == per_item.work * 3
+    assert report.markup == per_item.markup * 3
+    assert report.total() == per_item.total() * 3
 
 
 def test_cost_report_is_zero_without_operations():

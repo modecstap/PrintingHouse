@@ -45,4 +45,4 @@ def test_mul_accepts_float_factor():
 
 
 def test_quantize_rounds_half_up_to_cents():
-    assert Money(Decimal("1.005")).quantize().amount == Decimal("1.01")
+    assert Money(Decimal("1.005")).amount == Decimal("1.01")
