@@ -12,7 +12,18 @@ from sqlalchemy.orm import Session
 from backend.auth import AuthConfig, CredentialsError, username_from_token
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.application_services.equipment import EquipmentCatalogService
+from backend.new_core.equipment.factory import (
+    CutterFactory,
+    LaminatorFactory,
+    PrinterFactory,
+)
 from backend.new_core.order.factory import OrderFactory
+from backend.new_core.personal.factory import (
+    CutterOperatorFactory,
+    DieCutterOperatorFactory,
+    LaminatorOperatorFactory,
+    PressOperatorFactory,
+)
 from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.application_services.materials import MaterialCatalogService
 from backend.new_core.application_services.order import OrderService
@@ -110,10 +121,16 @@ def get_equipment_catalog_service(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> EquipmentCatalogService:
     """Builds :class:`EquipmentCatalogService` for this request."""
+    printers = SqlPrinterRepository(session)
+    laminators = SqlLaminatorRepository(session)
+    cutters = SqlCutterRepository(session)
     return EquipmentCatalogService(
-        SqlPrinterRepository(session),
-        SqlLaminatorRepository(session),
-        SqlCutterRepository(session),
+        printers,
+        laminators,
+        cutters,
+        PrinterFactory(printers),
+        LaminatorFactory(laminators),
+        CutterFactory(cutters),
     )
 
 
@@ -131,11 +148,19 @@ def get_staff_catalog_service(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> StaffCatalogService:
     """Builds :class:`StaffCatalogService` for this request."""
+    press_operators = SqlPressOperatorRepository(session)
+    laminator_operators = SqlLaminatorOperatorRepository(session)
+    cutter_operators = SqlCutterOperatorRepository(session)
+    die_cut_operators = SqlDieCutterOperatorRepository(session)
     return StaffCatalogService(
-        SqlPressOperatorRepository(session),
-        SqlLaminatorOperatorRepository(session),
-        SqlCutterOperatorRepository(session),
-        SqlDieCutterOperatorRepository(session),
+        press_operators,
+        laminator_operators,
+        cutter_operators,
+        die_cut_operators,
+        PressOperatorFactory(press_operators),
+        LaminatorOperatorFactory(laminator_operators),
+        CutterOperatorFactory(cutter_operators),
+        DieCutterOperatorFactory(die_cut_operators),
     )
 
 
