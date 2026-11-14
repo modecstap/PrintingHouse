@@ -10,13 +10,13 @@ from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
 from backend.server.catalog_mapping import (
-    cutter_from_dto,
+    cutter_from_write_dto,
     cutter_replace_from_dto,
     cutter_to_dto,
-    laminator_from_dto,
+    laminator_from_write_dto,
     laminator_replace_from_dto,
     laminator_to_dto,
-    printer_from_dto,
+    printer_from_write_dto,
     printer_replace_from_dto,
     printer_to_dto,
 )
@@ -25,7 +25,15 @@ from backend.server.dependencies import (
     get_equipment_catalog_service,
     require_user,
 )
-from backend.server.schemas import CutterDto, LaminatorDto, PrinterDto
+from backend.server.schemas import (
+    CreatedIdDto,
+    CutterDto,
+    CutterWriteDto,
+    LaminatorDto,
+    LaminatorWriteDto,
+    PrinterDto,
+    PrinterWriteDto,
+)
 
 router = APIRouter(prefix="/api/equipment", tags=["equipment"])
 
@@ -57,17 +65,34 @@ def get_printer(
     return printer_to_dto(service.printer(PrinterID(printer_id)))
 
 
-@router.post("/printers", status_code=204, response_class=Response)
-def save_printer(
-    body: PrinterDto,
+@router.post("/printers", response_model=CreatedIdDto)
+def create_printer(
+    body: PrinterWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new printer."""
-    service.save_printer(printer_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new printer and returns its assigned id."""
+    (
+        name,
+        spacing,
+        startup,
+        cyan,
+        magenta,
+        yellow,
+        black,
+    ) = printer_from_write_dto(body)
+    new_id = service.create_printer(
+        name,
+        spacing,
+        startup,
+        cyan,
+        magenta,
+        yellow,
+        black,
+    )
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put("/printers/{printer_id}", status_code=204, response_class=Response)
@@ -117,17 +142,18 @@ def get_laminator(
     return laminator_to_dto(service.laminator(LaminatorID(laminator_id)))
 
 
-@router.post("/laminators", status_code=204, response_class=Response)
-def save_laminator(
-    body: LaminatorDto,
+@router.post("/laminators", response_model=CreatedIdDto)
+def create_laminator(
+    body: LaminatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new laminator."""
-    service.save_laminator(laminator_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new laminator and returns its assigned id."""
+    name, startup = laminator_from_write_dto(body)
+    new_id = service.create_laminator(name, startup)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put("/laminators/{laminator_id}", status_code=204, response_class=Response)
@@ -177,17 +203,18 @@ def get_cutter(
     return cutter_to_dto(service.cutter(CutterID(cutter_id)))
 
 
-@router.post("/cutters", status_code=204, response_class=Response)
-def save_cutter(
-    body: CutterDto,
+@router.post("/cutters", response_model=CreatedIdDto)
+def create_cutter(
+    body: CutterWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new cutter."""
-    service.save_cutter(cutter_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new cutter and returns its assigned id."""
+    name, max_stack = cutter_from_write_dto(body)
+    new_id = service.create_cutter(name, max_stack)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put("/cutters/{cutter_id}", status_code=204, response_class=Response)

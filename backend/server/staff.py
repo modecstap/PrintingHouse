@@ -11,14 +11,11 @@ from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.server.catalog_mapping import (
-    cutter_operator_from_dto,
     cutter_operator_replace_from_dto,
-    die_cut_operator_from_dto,
     die_cut_operator_replace_from_dto,
-    laminator_operator_from_dto,
     laminator_operator_replace_from_dto,
+    operator_from_write_dto,
     operator_to_dto,
-    press_operator_from_dto,
     press_operator_replace_from_dto,
 )
 from backend.server.dependencies import (
@@ -26,7 +23,7 @@ from backend.server.dependencies import (
     get_staff_catalog_service,
     require_user,
 )
-from backend.server.schemas import OperatorDto
+from backend.server.schemas import CreatedIdDto, OperatorDto, OperatorWriteDto
 
 router = APIRouter(prefix="/api/staff", tags=["staff"])
 
@@ -58,17 +55,18 @@ def get_press_operator(
     return operator_to_dto(service.press_operator(PressOperatorID(operator_id)))
 
 
-@router.post("/press-operators", status_code=204, response_class=Response)
-def save_press_operator(
-    body: OperatorDto,
+@router.post("/press-operators", response_model=CreatedIdDto)
+def create_press_operator(
+    body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new press operator."""
-    service.save_press_operator(press_operator_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new press operator and returns its assigned id."""
+    name, salary = operator_from_write_dto(body)
+    new_id = service.create_press_operator(name, salary)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put("/press-operators/{operator_id}", status_code=204, response_class=Response)
@@ -120,17 +118,18 @@ def get_laminator_operator(
     )
 
 
-@router.post("/laminator-operators", status_code=204, response_class=Response)
-def save_laminator_operator(
-    body: OperatorDto,
+@router.post("/laminator-operators", response_model=CreatedIdDto)
+def create_laminator_operator(
+    body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new laminator operator."""
-    service.save_laminator_operator(laminator_operator_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new laminator operator and returns its assigned id."""
+    name, salary = operator_from_write_dto(body)
+    new_id = service.create_laminator_operator(name, salary)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put(
@@ -190,17 +189,18 @@ def get_cutter_operator(
     return operator_to_dto(service.cutter_operator(CutterOperatorID(operator_id)))
 
 
-@router.post("/cutter-operators", status_code=204, response_class=Response)
-def save_cutter_operator(
-    body: OperatorDto,
+@router.post("/cutter-operators", response_model=CreatedIdDto)
+def create_cutter_operator(
+    body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new cutter operator."""
-    service.save_cutter_operator(cutter_operator_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new cutter operator and returns its assigned id."""
+    name, salary = operator_from_write_dto(body)
+    new_id = service.create_cutter_operator(name, salary)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put("/cutter-operators/{operator_id}", status_code=204, response_class=Response)
@@ -252,17 +252,18 @@ def get_die_cut_operator(
     )
 
 
-@router.post("/die-cut-operators", status_code=204, response_class=Response)
-def save_die_cut_operator(
-    body: OperatorDto,
+@router.post("/die-cut-operators", response_model=CreatedIdDto)
+def create_die_cut_operator(
+    body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
     session: Annotated[Session, Depends(get_db_session)],
-) -> Response:
-    """Stores a new die-cut operator."""
-    service.save_die_cut_operator(die_cut_operator_from_dto(body))
+) -> CreatedIdDto:
+    """Inserts a new die-cut operator and returns its assigned id."""
+    name, salary = operator_from_write_dto(body)
+    new_id = service.create_die_cut_operator(name, salary)
     session.commit()
-    return Response(status_code=204)
+    return CreatedIdDto(id=new_id.value)
 
 
 @router.put(
