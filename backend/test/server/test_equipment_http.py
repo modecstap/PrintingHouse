@@ -35,6 +35,19 @@ class _FakeEquipmentService:
     def save_printer(self, printer: Printer) -> None:
         self.calls.append(f"save:{printer.id.value}")
 
+    def create_printer(
+        self,
+        name: str,
+        spacing: int,
+        startup: Money,
+        cyan: Money,
+        magenta: Money,
+        yellow: Money,
+        black: Money,
+    ) -> PrinterID:
+        self.calls.append("create_printer")
+        return PrinterID(7)
+
     def replace_printer(self, printer: Printer) -> None:
         if printer.id.value in self.missing_printer_ids:
             raise KeyError(printer.id)
@@ -89,25 +102,28 @@ def test_equipment_routes_require_token():
     assert client.get("/api/equipment/printers").status_code == 401
 
 
-def test_save_printer_204():
+_PRINTER_WRITE_JSON = {
+    "name": "Тест",
+    "spacing": 0,
+    "startup": "0",
+    "cyan": "0",
+    "magenta": "0",
+    "yellow": "0",
+    "black": "0",
+}
+
+
+def test_create_printer_returns_id():
     fake = _FakeEquipmentService()
     client, headers = _client_with_fake(fake)
     response = client.post(
         "/api/equipment/printers",
         headers=headers,
-        json={
-            "id": 1,
-            "name": "Тест",
-            "spacing": 0,
-            "startup": "0",
-            "cyan": "0",
-            "magenta": "0",
-            "yellow": "0",
-            "black": "0",
-        },
+        json=_PRINTER_WRITE_JSON,
     )
-    assert response.status_code == 204
-    assert fake.calls == ["save:1"]
+    assert response.status_code == 200
+    assert response.json() == {"id": 7}
+    assert fake.calls == ["create_printer"]
 
 
 _PRINTER_JSON = {

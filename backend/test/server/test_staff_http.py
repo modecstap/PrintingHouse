@@ -32,6 +32,14 @@ class _FakeStaffCatalogService:
     def save_press_operator(self, operator: PressOperator) -> None:
         pass
 
+    def create_press_operator(
+        self,
+        name: str,
+        salary_by_operation: Money,
+    ) -> PressOperatorID:
+        self.calls.append("create_press_operator")
+        return PressOperatorID(3)
+
     def replace_press_operator(self, operator: PressOperator) -> None:
         if operator.id.value in self.missing_press_operator_ids:
             raise KeyError(operator.id)
@@ -97,10 +105,26 @@ def _client_with_fake(
 _OPERATOR_JSON = {"id": 5, "name": "Оператор", "salary_by_operation": "100.50"}
 
 
+_OPERATOR_WRITE_JSON = {"name": "Оператор", "salary_by_operation": "100.50"}
+
+
 def test_staff_routes_require_token():
     fake = _FakeStaffCatalogService()
     client, _ = _client_with_fake(fake)
     assert client.get("/api/staff/press-operators").status_code == 401
+
+
+def test_create_press_operator_returns_id():
+    fake = _FakeStaffCatalogService()
+    client, headers = _client_with_fake(fake)
+    response = client.post(
+        "/api/staff/press-operators",
+        headers=headers,
+        json=_OPERATOR_WRITE_JSON,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"id": 3}
+    assert fake.calls == ["create_press_operator"]
 
 
 def test_replace_press_operator_204():
