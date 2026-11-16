@@ -3,10 +3,10 @@
 from sqlalchemy import ForeignKey, Identity, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 
-class PartRow(Base):
+class PartRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "parts"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -19,7 +19,7 @@ class PartRow(Base):
     spacing: Mapped[int] = mapped_column(Integer)
 
 
-class PartOperationRow(Base):
+class PartOperationRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "part_operations"
     __table_args__ = (UniqueConstraint("part_id", "position"),)
 
@@ -31,7 +31,7 @@ class PartOperationRow(Base):
     kind: Mapped[str] = mapped_column(String(16))
 
 
-class PartPrintRow(Base):
+class PartPrintRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "part_prints"
 
     operation_id: Mapped[int] = mapped_column(
@@ -43,7 +43,7 @@ class PartPrintRow(Base):
     chroma: Mapped[str] = mapped_column(Text)
 
 
-class PartLaminateRow(Base):
+class PartLaminateRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "part_laminates"
 
     operation_id: Mapped[int] = mapped_column(
@@ -56,7 +56,7 @@ class PartLaminateRow(Base):
     film_id: Mapped[int] = mapped_column(ForeignKey("films.id"))
 
 
-class PartCutRow(Base):
+class PartCutRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "part_cuts"
 
     operation_id: Mapped[int] = mapped_column(
@@ -67,7 +67,7 @@ class PartCutRow(Base):
     operator_id: Mapped[int] = mapped_column(ForeignKey("cutter_operators.id"))
 
 
-class PartDieCutRow(Base):
+class PartDieCutRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "part_die_cuts"
 
     operation_id: Mapped[int] = mapped_column(

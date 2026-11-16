@@ -3,10 +3,10 @@
 from sqlalchemy import ForeignKey, Identity, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 
-class OrderReferenceRow(Base):
+class OrderReferenceRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "order_references"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)

@@ -5,12 +5,12 @@ from decimal import Decimal
 from sqlalchemy import Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 _MONEY = Numeric(18, 4)
 
 
-class PressOperatorRow(Base):
+class PressOperatorRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "press_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -18,7 +18,7 @@ class PressOperatorRow(Base):
     salary_by_operation: Mapped[Decimal] = mapped_column(_MONEY)
 
 
-class LaminatorOperatorRow(Base):
+class LaminatorOperatorRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "laminator_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -26,7 +26,7 @@ class LaminatorOperatorRow(Base):
     salary_by_operation: Mapped[Decimal] = mapped_column(_MONEY)
 
 
-class CutterOperatorRow(Base):
+class CutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "cutter_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -34,7 +34,7 @@ class CutterOperatorRow(Base):
     salary_by_operation: Mapped[Decimal] = mapped_column(_MONEY)
 
 
-class DieCutterOperatorRow(Base):
+class DieCutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "die_cutter_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

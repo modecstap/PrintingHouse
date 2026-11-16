@@ -6,12 +6,12 @@ from decimal import Decimal
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 _MONEY = Numeric(18, 4)
 
 
-class OrderRow(Base):
+class OrderRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -23,7 +23,7 @@ class OrderRow(Base):
     )
 
 
-class OrderBlockRow(Base):
+class OrderBlockRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "order_blocks"
 
     order_id: Mapped[int] = mapped_column(
@@ -34,7 +34,7 @@ class OrderBlockRow(Base):
     part_id: Mapped[int] = mapped_column(ForeignKey("parts.id"), unique=True)
 
 
-class OrderAdditionalWorkRow(Base):
+class OrderAdditionalWorkRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "order_additional_works"
 
     order_id: Mapped[int] = mapped_column(

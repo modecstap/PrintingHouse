@@ -5,13 +5,13 @@ from decimal import Decimal
 from sqlalchemy import Identity, Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 _MONEY = Numeric(18, 4)
 _THICKNESS_MM = Numeric(6, 2)
 
 
-class FilmRow(Base):
+class FilmRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "films"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -20,7 +20,7 @@ class FilmRow(Base):
     density: Mapped[int] = mapped_column(Integer)
 
 
-class SheetRow(Base):
+class SheetRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "sheets"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)

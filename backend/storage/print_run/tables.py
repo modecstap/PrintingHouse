@@ -3,10 +3,10 @@
 from sqlalchemy import ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 
-class PrintRunRow(Base):
+class PrintRunRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "print_runs"
     __table_args__ = (UniqueConstraint("order_id", "position"),)
 
@@ -20,7 +20,7 @@ class PrintRunRow(Base):
     required_count: Mapped[int] = mapped_column(Integer)
 
 
-class PrintRunIdCounterRow(Base):
+class PrintRunIdCounterRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "print_run_id_counters"
 
     order_id: Mapped[int] = mapped_column(Integer, primary_key=True)

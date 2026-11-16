@@ -5,12 +5,12 @@ from decimal import Decimal
 from sqlalchemy import Integer, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from backend.storage.schema import Base
+from backend.storage.base import Base
 
 _MONEY = Numeric(18, 4)
 
 
-class PrinterRow(Base):
+class PrinterRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "printers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -23,7 +23,7 @@ class PrinterRow(Base):
     black: Mapped[Decimal] = mapped_column(_MONEY)
 
 
-class LaminatorRow(Base):
+class LaminatorRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "laminators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -31,7 +31,7 @@ class LaminatorRow(Base):
     startup: Mapped[Decimal] = mapped_column(_MONEY)
 
 
-class CutterRow(Base):
+class CutterRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "cutters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
