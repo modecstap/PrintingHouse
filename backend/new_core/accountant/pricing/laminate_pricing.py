@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from backend.new_core import Laminator, LaminatorOperator, Film
+from backend.new_core.equipment.laminator import Laminator
+from backend.new_core.materials.film import Film
+from backend.new_core.personal.laminator_operator import LaminatorOperator
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.print_run.print_run import PrintRun

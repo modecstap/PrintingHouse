@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from backend.new_core import PrintRun
+from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.accountant.cost_report import CostReport
 
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from backend.new_core import Printer, PressOperator
+from backend.new_core.equipment.printer import Printer
+from backend.new_core.personal.press_operator import PressOperator
 from backend.new_core.accountant.cost_report import CostReport
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.print_run.print_run import PrintRun

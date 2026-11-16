@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from backend.new_core import DieCutterOperator
 from backend.new_core.accountant.cost_report import CostReport
-from backend.new_core.operations.die_cut.die_cut import DieCut
+from backend.new_core.personal.die_cutter_operator import DieCutterOperator
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 

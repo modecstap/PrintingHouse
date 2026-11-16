@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import ROUND_CEILING, Decimal
 
-from backend.new_core import Cutter, CutterOperator
 from backend.new_core.accountant.cost_report import CostReport
-from backend.new_core.operations.cut.cut import Cut
+from backend.new_core.equipment.cutter import Cutter
+from backend.new_core.personal.cutter_operator import CutterOperator
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 
