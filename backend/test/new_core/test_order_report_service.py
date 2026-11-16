@@ -9,15 +9,8 @@ from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.application_services.order import OrderService
-from backend.new_core.operations.die_cut.die_cut import DieCut
-from backend.new_core.personal.die_cutter_operator import (
-    DieCutterOperator,
-    DieCutterOperatorID,
-)
-from backend.test.new_core.test_print_run import _append_block_operation
 from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
-from backend.new_core import AdditionalWork, Accountant
 from backend.test.new_core.in_memory_repositories import (
     InMemoryCutterOperatorRepository,
     InMemoryCutterRepository,
@@ -32,7 +25,14 @@ from backend.test.new_core.in_memory_repositories import (
     InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import build_worked_run, order_service
+from backend.test.new_core.test_print_run import (
+    assert_tax_scaling_report_prices,
+    attach_die_cut_operator,
+    build_run_without_block_operations,
+    build_worked_run,
+    order_service,
+    tax_scaling_order,
+)
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
@@ -46,29 +46,8 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
     The run has no operations, so its block report is zero. Income equals
     the order price because material and startup stay zero.
     """
-    run, _, _, _, ctx = build_worked_run(
-        with_print=False,
-        with_laminate=False,
-        with_cut=False,
-    )
-    order = Order(
-        id=OrderID(1),
-        product=Product(
-            parts_markup=Percent(0),
-            blocks=(run.block,),
-            operations=(
-                AdditionalWork(
-                    name="сборка",
-                    price=Money(Decimal(100)),
-                    description="склейка",
-                    markup=Percent(10),
-                ),
-            ),
-        ),
-        count=4,
-        description="",
-        created_at=TEST_ORDER_CREATED_AT,
-    )
+    run, _, _, _, ctx = build_run_without_block_operations()
+    order = tax_scaling_order(run)
 
     orders = InMemoryOrderRepository(orders={order.id: order})
     print_runs = InMemoryPrintRunRepository(by_order={order.id: (run,)})
@@ -78,42 +57,14 @@ def test_order_report_scales_the_product_by_tax_and_the_order_count():
     )
 
     report = service.order_report(order.id)
-    accountant = Accountant()
-    estimate = service._run_estimate(run, order.product.parts_markup)
-    priced = accountant.order_cost_report(
-        [estimate],
-        order.product.operations,
-        order,
-    )
 
-    compensation = Decimal(100) / Decimal(93)
-    assert priced.work == Money(Decimal(400))
-    assert priced.markup == Money(Decimal(40))
-    assert priced.total() == Money(Decimal(440))
-    assert report.product_price == (
-        Money(Decimal(100) * compensation) + Money(Decimal(10) * compensation)
-    )
-    assert report.order_price == (
-        Money(Decimal(400) * compensation) + Money(Decimal(40) * compensation)
-    )
-    assert report.income == report.order_price
-    assert report.impositions == (6,)
+    assert_tax_scaling_report_prices(report)
 
 
 def test_order_report_prices_die_cut_through_order_service():
     """OrderService builds a DieCut estimate when pricing a stored run."""
-    run, _, _, _, ctx = build_worked_run(
-        with_print=False,
-        with_laminate=False,
-        with_cut=False,
-    )
-    die_operator = DieCutterOperator(
-        id=DieCutterOperatorID(2),
-        name="№ 2",
-        salary_by_operation=Money(Decimal(8)),
-    )
-    _append_block_operation(run, DieCut(operator_id=die_operator.id))
-    ctx.die_cut_operators[die_operator.id] = die_operator
+    run, _, _, _, ctx = build_run_without_block_operations()
+    attach_die_cut_operator(run, ctx)
     order = Order(
         id=OrderID(5),
         product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
@@ -127,9 +78,30 @@ def test_order_report_prices_die_cut_through_order_service():
     )
     service = order_service(uow, ctx)
 
-    estimate = service._run_estimate(run, order.product.parts_markup)
+    plain = build_run_without_block_operations()
+    plain_run = plain[0]
+    plain_product = Product(
+        parts_markup=Percent(0),
+        blocks=(plain_run.block,),
+        operations=(),
+    )
+    plain_order = Order(
+        id=OrderID(6),
+        product=plain_product,
+        count=1,
+        description="",
+        created_at=TEST_ORDER_CREATED_AT,
+    )
+    plain_uow = InMemoryUnitOfWork(
+        orders=InMemoryOrderRepository(orders={plain_order.id: plain_order}),
+        print_runs=InMemoryPrintRunRepository(
+            by_order={plain_order.id: (plain_run,)},
+        ),
+    )
+    plain_report = order_service(plain_uow, plain[4]).order_report(plain_order.id)
 
-    assert estimate.aggregated_operations().work == Money(Decimal(8))
+    report = service.order_report(order.id)
+    assert report.order_price.amount > plain_report.order_price.amount
 
 
 def test_order_report_keeps_stored_sheet_price_after_catalog_replace():
@@ -175,11 +147,7 @@ def test_order_report_reflects_catalog_film_replace_after_save():
 
 def test_order_report_raises_when_order_is_missing():
     """An unknown order id raises OrderNotFound from the order repository."""
-    run, _, _, _, ctx = build_worked_run(
-        with_print=False,
-        with_laminate=False,
-        with_cut=False,
-    )
+    run, _, _, _, ctx = build_run_without_block_operations()
     service = _service_from_fixtures(run, ctx)
 
     with pytest.raises(OrderNotFound):

@@ -42,7 +42,11 @@ def test_create_requires_strategies_or_explicit_run():
 
 
 def test_create_accepts_empty_strategies_with_explicit_run():
-    run, *_ = build_worked_run(with_print=False, with_laminate=False, with_cut=False)
+    run, _, _, _, _ = build_worked_run(
+        with_print=False,
+        with_laminate=False,
+        with_cut=False,
+    )
 
     estimate = RunEstimate.create((), run=run)
 

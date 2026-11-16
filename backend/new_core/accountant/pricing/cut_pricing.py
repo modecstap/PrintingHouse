@@ -21,7 +21,7 @@ class CutPricing:
     print_run: PrintRun
 
     def report(self) -> CostReport:
-        stack = self._sheets_in_stack()
+        stack = self.sheets_in_stack()
         lifts = (
             Decimal(self.print_run.imposition_count()) / Decimal(stack)
         ).to_integral_value(rounding=ROUND_CEILING)
@@ -38,7 +38,7 @@ class CutPricing:
             markup=Money.zero(),
         )
 
-    def _sheets_in_stack(self) -> int:
+    def sheets_in_stack(self) -> int:
         sheets = (
             Decimal(self.cutter.max_stack)
             / self.print_run.block.imposition.thickness()

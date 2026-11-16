@@ -17,7 +17,7 @@ from backend.test.new_core.test_print_run import build_worked_run
 
 def test_create_keeps_passed_spacing_and_press_sheet():
     """Direct Imposition build keeps spacing and press_sheet."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     imp = run.block.imposition
 
     built = Imposition(

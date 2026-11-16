@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.equipment.printer_repository import PrinterIdOccupied
 from backend.new_core.values.money import Money
+from backend.storage.equipment.printer_row import new_printer_row
 from backend.storage.equipment.tables import PrinterRow
 
 
@@ -63,18 +64,7 @@ class SqlPrinterRepository:
         :return: nothing. Existing rows are not overwritten.
         """
         try:
-            self._session.add(
-                PrinterRow(
-                    id=printer.id.value,
-                    name=printer.name,
-                    spacing=printer.spacing,
-                    startup=printer.prices.startup.amount,
-                    cyan=printer.prices.cyan.amount,
-                    magenta=printer.prices.magenta.amount,
-                    yellow=printer.prices.yellow.amount,
-                    black=printer.prices.black.amount,
-                ),
-            )
+            self._session.add(new_printer_row(printer))
             self._session.flush()
         except IntegrityError as exc:
             raise PrinterIdOccupied("save", printer.id) from exc

@@ -12,7 +12,12 @@ from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 
 
-def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
+def imposition_test_sheet(
+    width: int,
+    height: int,
+    *,
+    sheet_id: SheetID | None = None,
+) -> Sheet:
     return Sheet(
         id=sheet_id or SheetID(1),
         paper=Paper(
@@ -27,7 +32,7 @@ def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet
 
 def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
     """A 10 by 20 target on a 30 by 40 press sheet fits 6 and needs 10 cuts."""
-    press_sheet = _sheet(30, 40)
+    press_sheet = imposition_test_sheet(30, 40)
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
         press_sheet=press_sheet,
@@ -41,7 +46,7 @@ def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
 
 def test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid():
     """A 10 by 20 target on a 60 by 40 press sheet fits 12 and needs 14 cuts."""
-    press_sheet = _sheet(60, 40)
+    press_sheet = imposition_test_sheet(60, 40)
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
         press_sheet=press_sheet,
@@ -58,7 +63,7 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
 
     It fits 6 and needs 10 cuts.
     """
-    press_sheet = _sheet(320, 450)
+    press_sheet = imposition_test_sheet(320, 450)
     imposition = Imposition(
         target=Format(name="t", height=100, width=100),
         press_sheet=press_sheet,

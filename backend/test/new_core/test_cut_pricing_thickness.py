@@ -17,4 +17,4 @@ def test_cut_pricing_sheets_in_stack_with_fractional_thickness():
         operator=ctx.cutter_operators[cut.operator_id],
         print_run=run,
     )
-    assert pricing._sheets_in_stack() == 334
+    assert pricing.sheets_in_stack() == 334

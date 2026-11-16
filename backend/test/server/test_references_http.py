@@ -61,7 +61,7 @@ def test_references_without_token_401():
 
 
 def test_list_and_orders_happy_path():
-    run, *_ = build_worked_run()
+    run, _, _, _, _ = build_worked_run()
     product = product_from_run(run)
     order = make_order(1, OrderContent(product=product, count=1))
     ref = Reference(name="r1", description="d", order_id=order.id)

@@ -16,10 +16,10 @@ from backend.new_core.personal.cutter_operator import CutterOperator
 from backend.new_core.personal.die_cutter_operator import DieCutterOperator
 from backend.new_core.personal.laminator_operator import LaminatorOperator
 from backend.new_core.personal.press_operator import PressOperator
+from backend.storage.equipment.printer_row import new_printer_row
 from backend.storage.equipment.tables import (
     CutterRow,
     LaminatorRow,
-    PrinterRow,
 )
 from backend.storage.materials.tables import FilmRow, SheetRow
 from backend.storage.personal.tables import (
@@ -43,18 +43,7 @@ def _insert_catalog_map(
 
 
 def insert_printer(session: Session, printer: Printer) -> None:
-    session.add(
-        PrinterRow(
-            id=printer.id.value,
-            name=printer.name,
-            spacing=printer.spacing,
-            startup=printer.prices.startup.amount,
-            cyan=printer.prices.cyan.amount,
-            magenta=printer.prices.magenta.amount,
-            yellow=printer.prices.yellow.amount,
-            black=printer.prices.black.amount,
-        ),
-    )
+    session.add(new_printer_row(printer))
 
 
 def insert_laminator(session: Session, laminator: Laminator) -> None:

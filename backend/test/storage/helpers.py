@@ -6,7 +6,8 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from backend.new_core import AdditionalWork, Order, Product
+from backend.new_core import AdditionalWork, Order, Part, Product
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.order.order import OrderContent, OrderID
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
@@ -30,18 +31,72 @@ def make_order(
     )
 
 
-def product_from_run(run: PrintRun, *, parts_markup: Percent = Percent(0)) -> Product:
+def assembly_additional_work(
+    *,
+    price: Decimal = Decimal(999),
+    markup: Percent = Percent(0),
+) -> AdditionalWork:
+    return AdditionalWork(
+        name="сборка",
+        price=Money(price),
+        description="склейка",
+        markup=markup,
+    )
+
+
+def zero_printer_prices() -> PrinterPrices:
+    zero = Money(Decimal(0))
+    return PrinterPrices(
+        startup=zero,
+        cyan=zero,
+        magenta=zero,
+        yellow=zero,
+        black=zero,
+    )
+
+
+def sequential_printer_prices() -> PrinterPrices:
+    return PrinterPrices(
+        startup=Money(Decimal("1")),
+        cyan=Money(Decimal("2")),
+        magenta=Money(Decimal("3")),
+        yellow=Money(Decimal("4")),
+        black=Money(Decimal("5")),
+    )
+
+
+def sample_printer(
+    printer_id: int,
+    name: str,
+    spacing: int,
+    *,
+    prices: PrinterPrices | None = None,
+) -> Printer:
+    return Printer(
+        id=PrinterID(printer_id),
+        name=name,
+        spacing=spacing,
+        prices=prices or sequential_printer_prices(),
+    )
+
+
+def product_from_run(
+    run: PrintRun,
+    *,
+    extra_block: Part | None = None,
+    parts_markup: Percent = Percent(0),
+    strip_spacing: bool = True,
+) -> Product:
+    block = (
+        replace(run.block, need_spacing=False)
+        if strip_spacing
+        else run.block
+    )
+    blocks = (block,) if extra_block is None else (block, extra_block)
     return Product(
         parts_markup=parts_markup,
-        blocks=(replace(run.block, need_spacing=False),),
-        operations=(
-            AdditionalWork(
-                name="сборка",
-                price=Money(Decimal(999)),
-                description="склейка",
-                markup=Percent(0),
-            ),
-        ),
+        blocks=blocks,
+        operations=(assembly_additional_work(),),
     )
 
 

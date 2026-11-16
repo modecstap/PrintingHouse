@@ -100,7 +100,7 @@ def _client_with_fake(fake: _FakeOrderService) -> tuple[TestClient, dict[str, st
 
 
 def _product_payload() -> dict:
-    run, *_ = build_worked_run()
+    run, _, _, _, _ = build_worked_run()
     product = product_from_run(run)
     from backend.server.mapping import product_to_dto
 
@@ -152,7 +152,7 @@ def test_get_order_404():
 
 
 def test_list_limit_query():
-    run, *_ = build_worked_run()
+    run, _, _, _, _ = build_worked_run()
     order = make_order(1, OrderContent(product=product_from_run(run), count=1))
     fake = _FakeOrderService(orders=(order,))
     client, headers = _client_with_fake(fake)

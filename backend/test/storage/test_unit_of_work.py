@@ -18,7 +18,7 @@ def _run_for_order(run: PrintRun, order_id: OrderID) -> PrintRun:
 
 def test_transaction_rolls_back_orders_and_print_runs(db_session):
     """Any exception empties both stores."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
     order = make_order(4, OrderContent(product=product_from_run(run), count=2))
@@ -39,7 +39,7 @@ def test_transaction_rolls_back_orders_and_print_runs(db_session):
 
 def test_transaction_commits_orders_and_print_runs(db_session):
     """Successful work persists both repositories."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
     order = make_order(8, OrderContent(product=product_from_run(run), count=2))
@@ -57,7 +57,7 @@ def test_transaction_commits_orders_and_print_runs(db_session):
 
 def test_rollback_does_not_rewind_order_id_sequence(db_session):
     """``order_id_seq`` keeps advancing after a rolled-back save attempt."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     uow = SqlOrderUnitOfWork(db_session)
     order = make_order(0, OrderContent(product=product_from_run(run), count=1))

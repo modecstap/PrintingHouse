@@ -33,29 +33,15 @@ from backend.new_core import (
     Product,
     Sheet,
 )
-from backend.test.new_core.test_print_run import build_worked_run
-
+from backend.test.new_core.test_imposition import imposition_test_sheet
 _ZERO_CELL = (
     "Imposition: сторона ячейки равна 0, "
     "ширина ячейки=0 мм, высота ячейки=10 мм"
 )
 
 
-def _sheet(width: int, height: int, *, sheet_id: SheetID | None = None) -> Sheet:
-    return Sheet(
-        id=sheet_id or SheetID(1),
-        paper=Paper(
-            density=PaperDensity(60),
-            thickness=Decimal(1),
-            type=PaperType("sheet"),
-            price_per_kilo=Money(Decimal(0)),
-        ),
-        format=Format(name="sheet", height=height, width=width),
-    )
-
-
 def _fitting_imposition() -> Imposition:
-    press_sheet = _sheet(200, 300)
+    press_sheet = imposition_test_sheet(200, 300)
     return Imposition(
         target=Format(name="t", height=100, width=100),
         press_sheet=press_sheet,
@@ -83,7 +69,7 @@ def test_imposition_rejects_count_when_nothing_fits():
     message = "Imposition: на печатный лист влезает 0 целевых листов"
 
     def _build() -> None:
-        press_sheet = _sheet(50, 50)
+        press_sheet = imposition_test_sheet(50, 50)
         Imposition(
             target=Format(name="t", height=100, width=100),
             press_sheet=press_sheet,
@@ -162,7 +148,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "Imposition: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                press_sheet=_sheet(30, 40),
+                press_sheet=imposition_test_sheet(30, 40),
                 bleeds=-1,
                 spacing=0,
             ),
@@ -172,7 +158,7 @@ def test_cutter_rejects_a_stack_height_of_zero():
             "Imposition: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                press_sheet=_sheet(30, 40),
+                press_sheet=imposition_test_sheet(30, 40),
                 bleeds=0,
                 spacing=-1,
             ),
@@ -237,7 +223,7 @@ def test_negative_measure_is_rejected(message: str, build):
             "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
-                press_sheet=_sheet(30, 40),
+                press_sheet=imposition_test_sheet(30, 40),
                 bleeds=-1,
                 spacing=-1,
             ),

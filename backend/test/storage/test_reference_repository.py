@@ -12,7 +12,7 @@ from backend.new_core import Order
 
 def test_save_appends_references_in_insertion_order(db_session):
     """``take_all`` returns rows in store order without rewriting earlier ones."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     orders = SqlOrderRepository(db_session)
     refs = SqlReferenceRepository(db_session)

@@ -42,7 +42,7 @@ from backend.test.new_core.test_print_run import (
     order_service,
     pricing_strategy_factory,
 )
-from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
 def _create_service(uow: InMemoryUnitOfWork, ctx) -> OrderService:
@@ -57,27 +57,6 @@ def _block_with_spacing(block: Part, spacing: int, ctx) -> Part:
         press_sheet=sheet,
     )
     return replace(block, imposition=imposition, need_spacing=False)
-
-
-def _product_from_run(
-    run,
-    *,
-    extra_block=None,
-    parts_markup: Percent = Percent(0),
-) -> Product:
-    blocks = (run.block,) if extra_block is None else (run.block, extra_block)
-    return Product(
-        parts_markup=parts_markup,
-        blocks=blocks,
-        operations=(
-            AdditionalWork(
-                name="сборка",
-                price=Money(Decimal(999)),
-                description="склейка",
-                markup=Percent(0),
-            ),
-        ),
-    )
 
 
 def test_save_persists_imposition_spacing_from_product():
@@ -108,22 +87,7 @@ def test_order_report_keeps_stored_spacing_when_catalog_printer_changes():
         uow=uow,
         order_factory=OrderFactory(uow.orders),
         print_run_factory=PrintRunFactory(uow.print_runs),
-        pricing_factory=PricingStrategyFactory(
-            printers,
-            InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
-            InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-            InMemoryLaminatorOperatorRepository(
-                items=dict(ctx.laminator_operators),
-            ),
-            InMemoryCutterRepository(items=dict(ctx.cutters)),
-            InMemoryCutterOperatorRepository(
-                items=dict(ctx.cutter_operators),
-            ),
-            InMemoryDieCutterOperatorRepository(
-                items=dict(ctx.die_cut_operators),
-            ),
-            InMemoryFilmRepository(items=dict(ctx.films)),
-        ),
+        pricing_factory=pricing_strategy_factory(ctx, printers=printers),
     )
     product = Product(
         parts_markup=Percent(0),
@@ -144,7 +108,7 @@ def test_replace_stores_imposition_spacing_from_product():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     order_id = service.save(product, count=1)
     updated = Product(
@@ -163,7 +127,7 @@ def test_quote_returns_report_and_does_not_write_stores():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     report = service.quote(product, count=4)
 
@@ -198,7 +162,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
         repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run, extra_block=run2.block)
+    product = product_from_run(run, extra_block=run2.block, strip_spacing=False)
 
     report = service.quote(product, count=1)
 
@@ -278,7 +242,7 @@ def test_save_persists_order_and_runs():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     order_id = service.save(product, count=4, description="буклет")
 
@@ -305,7 +269,7 @@ def test_save_maps_each_block_to_one_run_in_order():
         repo.sheets.update(other.sheets)
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run, extra_block=run2.block)
+    product = product_from_run(run, extra_block=run2.block, strip_spacing=False)
     order_count = 2
 
     order_id = service.save(product, count=order_count)
@@ -323,7 +287,7 @@ def test_two_orders_may_share_the_same_print_run_id_value():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     first_id = service.save(product, count=4)
     second_id = service.save(product, count=4)
@@ -352,7 +316,7 @@ def test_save_retries_on_occupied_order_id():
     run, _, _, _, ctx = build_worked_run()
     existing = Order(
         id=OrderID(1),
-        product=_product_from_run(run),
+        product=product_from_run(run, strip_spacing=False),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -364,7 +328,7 @@ def test_save_retries_on_occupied_order_id():
     uow = InMemoryUnitOfWork(orders=orders)
     service = _create_service(uow, ctx)
 
-    order_id = service.save(_product_from_run(run), count=4)
+    order_id = service.save(product_from_run(run, strip_spacing=False), count=4)
 
     assert order_id == OrderID(2)
     assert OrderID(1) in uow.orders.orders
@@ -386,7 +350,7 @@ def test_save_raises_after_three_occupied_ids():
     run, _, _, _, ctx = build_worked_run()
     seed = Order(
         id=OrderID(1),
-        product=_product_from_run(run),
+        product=product_from_run(run, strip_spacing=False),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -399,7 +363,7 @@ def test_save_raises_after_three_occupied_ids():
     service = _create_service(uow, ctx)
 
     with pytest.raises(OrderIdAllocationFailed) as exc_info:
-        service.save(_product_from_run(run), count=4)
+        service.save(product_from_run(run, strip_spacing=False), count=4)
 
     assert exc_info.value.last_occupied == OrderID(1)
     assert len(uow.orders.orders) == 1
@@ -434,7 +398,7 @@ def test_replace_keeps_created_at_and_updates_description():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     order_id = service.save(product, count=4, description="старое")
     created_at = uow.orders.take(order_id).created_at
@@ -455,7 +419,7 @@ def test_save_does_not_retry_on_invalid_input():
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
-    product = _product_from_run(run)
+    product = product_from_run(run, strip_spacing=False)
 
     with pytest.raises(InvalidInput):
         service.save(product, count=0)

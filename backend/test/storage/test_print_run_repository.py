@@ -18,7 +18,7 @@ def _repo(db_session) -> SqlPrintRunRepository:
 
 def test_save_all_then_take_all_preserves_order(db_session):
     """Tuple order and block graph survive a round trip."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
     repo = _repo(db_session)
@@ -34,7 +34,7 @@ def test_save_all_then_take_all_preserves_order(db_session):
 
 def test_second_save_all_replaces_runs(db_session):
     """Second write replaces prior runs for the order."""
-    run, *_ , ctx = build_worked_run(required_count=10)
+    run, _, _, _, ctx = build_worked_run(required_count=10)
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
     repo = _repo(db_session)
@@ -42,7 +42,7 @@ def test_second_save_all_replaces_runs(db_session):
     with db_session.begin():
         repo.save_all_for_order(OrderID(1), (run,))
 
-    run2, *_ , _ = build_worked_run(required_count=20)
+    run2, _, _, _, _ = build_worked_run(required_count=20)
     with db_session.begin():
         repo.save_all_for_order(OrderID(1), (run2,))
 
@@ -52,7 +52,7 @@ def test_second_save_all_replaces_runs(db_session):
 
 def test_mismatched_for_order_raises_before_persisting(db_session):
     """Bad ``for_order`` raises ``ValueError`` and leaves zero print-run rows."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
     repo = _repo(db_session)

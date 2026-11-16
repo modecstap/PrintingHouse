@@ -35,7 +35,11 @@ def test_references_returns_stored_rows_in_order():
 
 
 def test_save_stores_reference_when_order_exists():
-    run, *_ = build_worked_run(with_print=False, with_laminate=False, with_cut=False)
+    run, _, _, _, _ = build_worked_run(
+        with_print=False,
+        with_laminate=False,
+        with_cut=False,
+    )
     order = Order(
         id=OrderID(3),
         product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
@@ -61,7 +65,11 @@ def test_save_raises_when_order_is_missing():
 
 
 def test_reference_orders_loads_orders_in_reference_order():
-    run, *_ = build_worked_run(with_print=False, with_laminate=False, with_cut=False)
+    run, _, _, _, _ = build_worked_run(
+        with_print=False,
+        with_laminate=False,
+        with_cut=False,
+    )
     first = Order(
         id=OrderID(1),
         product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),

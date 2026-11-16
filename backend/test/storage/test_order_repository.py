@@ -14,7 +14,7 @@ from backend.test.storage.helpers import make_order, product_from_run
 
 def test_save_take_round_trips_parts_markup_on_order(db_session):
     """``parts_markup`` persists on the order row, not on parts."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     product = product_from_run(run, parts_markup=Percent(17))
@@ -30,7 +30,7 @@ def test_save_take_round_trips_parts_markup_on_order(db_session):
 
 def test_save_then_take_round_trips_full_graph(db_session):
     """Insert-only save reloads nested parts, operations, and additional works."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     order = make_order(5, OrderContent(product=product_from_run(run), count=4, description="полный граф"))
@@ -44,7 +44,7 @@ def test_save_then_take_round_trips_full_graph(db_session):
 
 def test_save_print_only_graph_round_trips(db_session):
     """A print-only block still round-trips."""
-    run, *_ , ctx = build_worked_run(with_laminate=False, with_cut=False)
+    run, _, _, _, ctx = build_worked_run(with_laminate=False, with_cut=False)
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     order = make_order(2, OrderContent(product=product_from_run(run), count=1))
@@ -57,7 +57,7 @@ def test_save_print_only_graph_round_trips(db_session):
 
 def test_second_save_same_id_raises_order_id_occupied(db_session):
     """Duplicate id becomes ``OrderIdOccupied`` with Russian text."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     order = make_order(7, OrderContent(product=product_from_run(run), count=1))
@@ -82,7 +82,7 @@ def test_generate_id_starts_at_zero_and_advances(db_session):
     repo = SqlOrderRepository(db_session)
     assert repo.generate_id() == OrderID(0)
 
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     with db_session.begin():
         repo.save(make_order(0, OrderContent(product=product_from_run(run), count=1)))
@@ -92,7 +92,7 @@ def test_generate_id_starts_at_zero_and_advances(db_session):
 
 def test_save_with_unknown_printer_raises_integrity_error(db_session):
     """Catalog FK violations stay ``IntegrityError``."""
-    run, *_ , _ctx = build_worked_run()
+    run, _, _, _, _ctx = build_worked_run()
     repo = SqlOrderRepository(db_session)
     order = make_order(3, OrderContent(product=product_from_run(run), count=1))
 
@@ -103,7 +103,7 @@ def test_save_with_unknown_printer_raises_integrity_error(db_session):
 
 def test_replace_updates_count_and_product(db_session):
     """Replace keeps order id and overwrites count and blocks."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     order = make_order(6, OrderContent(product=product_from_run(run), count=2))
@@ -130,7 +130,7 @@ def test_replace_updates_count_and_product(db_session):
 
 def test_replace_updates_description_and_count_keeps_created_at(db_session):
     """Replace changes description and count but not created_at."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     order = make_order(12, OrderContent(product=product_from_run(run), count=2, description="до"))
@@ -160,7 +160,7 @@ def test_replace_updates_description_and_count_keeps_created_at(db_session):
 def test_replace_missing_raises_order_not_found(db_session):
     """Missing id on replace uses ``replace: заказа нет``."""
     repo = SqlOrderRepository(db_session)
-    run, *_ , _ctx = build_worked_run()
+    run, _, _, _, _ctx = build_worked_run()
     order = make_order(11, OrderContent(product=product_from_run(run), count=1))
     with pytest.raises(OrderNotFound, match="replace: заказа нет, id=11"):
         with db_session.begin():
@@ -169,7 +169,7 @@ def test_replace_missing_raises_order_not_found(db_session):
 
 def test_take_latest_orders_by_descending_id(db_session):
     """``take_latest`` returns the highest ids first."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     with db_session.begin():

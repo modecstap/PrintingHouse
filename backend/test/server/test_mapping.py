@@ -25,7 +25,7 @@ from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
 def _product_with_die_cut() -> Product:
-    run, *_ = build_worked_run(with_cut=False)
+    run, _, _, _, _ = build_worked_run(with_cut=False)
     block: Part = replace(
         run.block,
         operations=run.block.operations + (DieCut(operator_id=DieCutterOperatorID(2)),),

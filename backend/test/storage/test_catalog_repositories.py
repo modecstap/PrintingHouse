@@ -33,11 +33,12 @@ from backend.storage.personal.press_operator_repository import SqlPressOperatorR
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.new_core.values.money import Money
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
+from backend.test.storage.helpers import sample_printer, zero_printer_prices
 
 
 def test_catalog_take_round_trips_domain_objects(db_session):
     """Each catalog ``take`` reloads the inserted domain entity."""
-    run, *_ , ctx = build_worked_run()
+    run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     db_session.commit()
 
@@ -76,18 +77,7 @@ def test_printer_save_list_delete_round_trip(db_session):
     from backend.new_core.values.money import Money
 
     repo = SqlPrinterRepository(db_session)
-    printer = Printer(
-        id=PrinterID(10),
-        name="№ 10",
-        spacing=0,
-        prices=PrinterPrices(
-            startup=Money(Decimal("1")),
-            cyan=Money(Decimal("2")),
-            magenta=Money(Decimal("3")),
-            yellow=Money(Decimal("4")),
-            black=Money(Decimal("5")),
-        ),
-    )
+    printer = sample_printer(10, "№ 10", 0)
     repo.save(printer)
     db_session.commit()
     assert repo.take_all() == (printer,)
@@ -110,18 +100,7 @@ def test_printer_spacing_round_trip(db_session):
     from backend.new_core.values.money import Money
 
     repo = SqlPrinterRepository(db_session)
-    printer = Printer(
-        id=PrinterID(11),
-        name="№ 11",
-        spacing=7,
-        prices=PrinterPrices(
-            startup=Money(Decimal(0)),
-            cyan=Money(Decimal(0)),
-            magenta=Money(Decimal(0)),
-            yellow=Money(Decimal(0)),
-            black=Money(Decimal(0)),
-        ),
-    )
+    printer = sample_printer(11, "№ 11", 7, prices=zero_printer_prices())
     repo.save(printer)
     db_session.commit()
     assert repo.take(PrinterID(11)).spacing == 7
@@ -133,18 +112,7 @@ def test_printer_save_replace_take_round_trip(db_session):
     from backend.new_core.equipment.printer import Printer
 
     repo = SqlPrinterRepository(db_session)
-    printer = Printer(
-        id=PrinterID(12),
-        name="№ 12",
-        spacing=3,
-        prices=PrinterPrices(
-            startup=Money(Decimal("1")),
-            cyan=Money(Decimal("2")),
-            magenta=Money(Decimal("3")),
-            yellow=Money(Decimal("4")),
-            black=Money(Decimal("5")),
-        ),
-    )
+    printer = sample_printer(12, "№ 12", 3)
     repo.save(printer)
     db_session.commit()
 
@@ -346,11 +314,10 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
 
 
 @pytest.mark.parametrize(
-    ("repo_factory", "missing_id", "entity"),
+    ("repo_factory", "entity"),
     [
         (
             lambda session: SqlFilmRepository(session),
-            FilmID(404),
             Film(
                 id=FilmID(404),
                 name="x",
@@ -360,7 +327,6 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
         ),
         (
             lambda session: SqlSheetRepository(session),
-            SheetID(404),
             Sheet(
                 id=SheetID(404),
                 paper=Paper(
@@ -377,7 +343,6 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
 def test_material_catalog_replace_missing_raises_key_error(
     db_session,
     repo_factory,
-    missing_id,
     entity,
 ):
     """``replace`` on a missing film or sheet raises ``KeyError``."""

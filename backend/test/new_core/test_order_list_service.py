@@ -25,7 +25,7 @@ from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
 def _order(order_id: int) -> Order:
-    run, *_ = build_worked_run(
+    run, _, _, _, _ = build_worked_run(
         with_print=False,
         with_laminate=False,
         with_cut=False,
