@@ -1,4 +1,4 @@
-"""Staff catalog routes with a fake :class:`StaffCatalogService`."""
+"""Staff catalog routes with a fake :class:`PressOperatorCatalog`."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 
 
 @dataclass
-class _FakeStaffCatalogService:
+class _FakePressOperatorCatalog:
     missing_press_operator_ids: set[int] = field(default_factory=set)
     calls: list[str] = field(default_factory=list)
     last_replace_press_operator: PressOperator | None = None
@@ -49,52 +49,16 @@ class _FakeStaffCatalogService:
     def delete_press_operator(self, operator_id: PressOperatorID) -> None:
         pass
 
-    def laminator_operators(self) -> tuple:
-        return ()
-
-    def laminator_operator(self, operator_id):
-        raise KeyError(operator_id)
-
-    def save_laminator_operator(self, operator) -> None:
-        pass
-
-    def delete_laminator_operator(self, operator_id) -> None:
-        pass
-
-    def cutter_operators(self) -> tuple:
-        return ()
-
-    def cutter_operator(self, operator_id):
-        raise KeyError(operator_id)
-
-    def save_cutter_operator(self, operator) -> None:
-        pass
-
-    def delete_cutter_operator(self, operator_id) -> None:
-        pass
-
-    def die_cut_operators(self) -> tuple:
-        return ()
-
-    def die_cut_operator(self, operator_id):
-        raise KeyError(operator_id)
-
-    def save_die_cut_operator(self, operator) -> None:
-        pass
-
-    def delete_die_cut_operator(self, operator_id) -> None:
-        pass
-
 
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 
 def _client_with_fake(
-    fake: _FakeStaffCatalogService,
+    fake: _FakePressOperatorCatalog,
 ) -> tuple[TestClient, dict[str, str]]:
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
-    app.dependency_overrides[dependencies.get_staff_catalog_service] = lambda: fake
+    app.dependency_overrides[dependencies.get_press_operator_catalog] = lambda: fake
     app.dependency_overrides[dependencies.get_user_store] = lambda: store
     app.dependency_overrides[dependencies.get_auth_config] = lambda: _AUTH
     token = create_access_token("tester", _AUTH)
@@ -109,13 +73,13 @@ _OPERATOR_WRITE_JSON = {"name": "Оператор", "salary_by_operation": "100.
 
 
 def test_staff_routes_require_token():
-    fake = _FakeStaffCatalogService()
+    fake = _FakePressOperatorCatalog()
     client, _ = _client_with_fake(fake)
     assert client.get("/api/staff/press-operators").status_code == 401
 
 
 def test_create_press_operator_returns_id():
-    fake = _FakeStaffCatalogService()
+    fake = _FakePressOperatorCatalog()
     client, headers = _client_with_fake(fake)
     response = client.post(
         "/api/staff/press-operators",
@@ -128,7 +92,7 @@ def test_create_press_operator_returns_id():
 
 
 def test_replace_press_operator_204():
-    fake = _FakeStaffCatalogService()
+    fake = _FakePressOperatorCatalog()
     client, headers = _client_with_fake(fake)
     response = client.put(
         "/api/staff/press-operators/5",
@@ -145,7 +109,7 @@ def test_replace_press_operator_204():
 
 
 def test_replace_press_operator_404_when_missing():
-    fake = _FakeStaffCatalogService(missing_press_operator_ids={9})
+    fake = _FakePressOperatorCatalog(missing_press_operator_ids={9})
     client, headers = _client_with_fake(fake)
     body = dict(_OPERATOR_JSON, id=9)
     response = client.put(

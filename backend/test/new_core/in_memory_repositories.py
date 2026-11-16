@@ -181,10 +181,14 @@ class InMemorySheetRepository:
             for sheet_id in sorted(self.items, key=lambda item: item.value)
         )
 
-    def add(self, paper: Paper, format: Format) -> SheetID:
+    def add(self, paper: Paper, sheet_format: Format) -> SheetID:
         sheet_id = SheetID(self._next_id)
         self._next_id += 1
-        self.items[sheet_id] = Sheet(id=sheet_id, paper=paper, format=format)
+        self.items[sheet_id] = Sheet(
+            id=sheet_id,
+            paper=paper,
+            format=sheet_format,
+        )
         return sheet_id
 
     def replace(self, sheet: Sheet) -> None:

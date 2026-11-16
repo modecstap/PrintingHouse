@@ -5,7 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from backend.new_core.application_services.equipment import EquipmentCatalogService
+from backend.new_core.application_services.equipment.cutters import CutterCatalog
+from backend.new_core.application_services.equipment.laminators import LaminatorCatalog
+from backend.new_core.application_services.equipment.printers import PrinterCatalog
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
@@ -21,8 +23,10 @@ from backend.server.catalog_mapping import (
     printer_to_dto,
 )
 from backend.server.dependencies import (
+    get_cutter_catalog,
     get_db_session,
-    get_equipment_catalog_service,
+    get_laminator_catalog,
+    get_printer_catalog,
     require_user,
 )
 from backend.server.schemas import (
@@ -49,7 +53,7 @@ def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
 @router.get("/printers", response_model=list[PrinterDto])
 def list_printers(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
 ) -> list[PrinterDto]:
     """Returns every stored printer."""
     return [printer_to_dto(row) for row in service.printers()]
@@ -59,7 +63,7 @@ def list_printers(
 def get_printer(
     printer_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
 ) -> PrinterDto:
     """Returns one printer by id."""
     return printer_to_dto(service.printer(PrinterID(printer_id)))
@@ -69,7 +73,7 @@ def get_printer(
 def create_printer(
     body: PrinterWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new printer and returns its assigned id."""
@@ -84,7 +88,7 @@ def replace_printer(
     printer_id: int,
     body: PrinterDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing printer."""
@@ -98,7 +102,7 @@ def replace_printer(
 def delete_printer(
     printer_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a printer."""
@@ -110,7 +114,7 @@ def delete_printer(
 @router.get("/laminators", response_model=list[LaminatorDto])
 def list_laminators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
 ) -> list[LaminatorDto]:
     """Returns every stored laminator."""
     return [laminator_to_dto(row) for row in service.laminators()]
@@ -120,7 +124,7 @@ def list_laminators(
 def get_laminator(
     laminator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
 ) -> LaminatorDto:
     """Returns one laminator by id."""
     return laminator_to_dto(service.laminator(LaminatorID(laminator_id)))
@@ -130,7 +134,7 @@ def get_laminator(
 def create_laminator(
     body: LaminatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new laminator and returns its assigned id."""
@@ -145,7 +149,7 @@ def replace_laminator(
     laminator_id: int,
     body: LaminatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing laminator."""
@@ -159,7 +163,7 @@ def replace_laminator(
 def delete_laminator(
     laminator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a laminator."""
@@ -171,7 +175,7 @@ def delete_laminator(
 @router.get("/cutters", response_model=list[CutterDto])
 def list_cutters(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
 ) -> list[CutterDto]:
     """Returns every stored cutter."""
     return [cutter_to_dto(row) for row in service.cutters()]
@@ -181,7 +185,7 @@ def list_cutters(
 def get_cutter(
     cutter_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
 ) -> CutterDto:
     """Returns one cutter by id."""
     return cutter_to_dto(service.cutter(CutterID(cutter_id)))
@@ -191,7 +195,7 @@ def get_cutter(
 def create_cutter(
     body: CutterWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new cutter and returns its assigned id."""
@@ -206,7 +210,7 @@ def replace_cutter(
     cutter_id: int,
     body: CutterDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing cutter."""
@@ -220,7 +224,7 @@ def replace_cutter(
 def delete_cutter(
     cutter_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[EquipmentCatalogService, Depends(get_equipment_catalog_service)],
+    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a cutter."""

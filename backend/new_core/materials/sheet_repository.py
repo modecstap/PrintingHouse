@@ -30,11 +30,11 @@ class SheetRepository(Protocol):
         """
         ...
 
-    def add(self, paper: Paper, format: Format) -> SheetID:
+    def add(self, paper: Paper, sheet_format: Format) -> SheetID:
         """Inserts a new sheet; the store assigns the id.
 
         :param paper:
-        :param format:
+        :param sheet_format:
 
         :return: the assigned sheet id.
         """

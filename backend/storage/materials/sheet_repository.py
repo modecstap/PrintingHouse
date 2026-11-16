@@ -43,11 +43,11 @@ class SqlSheetRepository:
         rows = self._session.execute(stmt).scalars().all()
         return tuple(self._sheet_from_row(SheetID(row.id), row) for row in rows)
 
-    def add(self, paper: Paper, format: Format) -> SheetID:
+    def add(self, paper: Paper, sheet_format: Format) -> SheetID:
         """Inserts a new sheet; the database assigns the id.
 
         :param paper:
-        :param format:
+        :param sheet_format:
 
         :return: the assigned sheet id.
         """
@@ -56,9 +56,9 @@ class SqlSheetRepository:
             paper_thickness=paper.thickness,
             paper_name=paper.type.value,
             paper_price_per_kilo=paper.price_per_kilo.amount,
-            format_name=format.name,
-            format_height=format.height,
-            format_width=format.width,
+            format_name=sheet_format.name,
+            format_height=sheet_format.height,
+            format_width=sheet_format.width,
         )
         self._session.add(row)
         self._session.flush()

@@ -11,7 +11,25 @@ from sqlalchemy.orm import Session
 
 from backend.auth import AuthConfig, CredentialsError, username_from_token
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
-from backend.new_core.application_services.equipment import EquipmentCatalogService
+from backend.new_core.application_services.equipment.cutters import CutterCatalog
+from backend.new_core.application_services.equipment.laminators import (
+    LaminatorCatalog,
+)
+from backend.new_core.application_services.equipment.printers import PrinterCatalog
+from backend.new_core.application_services.materials.films import FilmCatalog
+from backend.new_core.application_services.materials.sheets import SheetCatalog
+from backend.new_core.application_services.personal.cutter_operators import (
+    CutterOperatorCatalog,
+)
+from backend.new_core.application_services.personal.die_cut_operators import (
+    DieCutterOperatorCatalog,
+)
+from backend.new_core.application_services.personal.laminator_operators import (
+    LaminatorOperatorCatalog,
+)
+from backend.new_core.application_services.personal.press_operators import (
+    PressOperatorCatalog,
+)
 from backend.new_core.equipment.factory import (
     CutterFactory,
     LaminatorFactory,
@@ -25,12 +43,9 @@ from backend.new_core.personal.factory import (
     PressOperatorFactory,
 )
 from backend.new_core.print_run.factory import PrintRunFactory
-from backend.new_core.application_services.materials import MaterialCatalogService
 from backend.new_core.application_services.order import OrderService
-from backend.new_core.application_services.personal import StaffCatalogService
 from backend.new_core.application_services.reference import ReferenceOrderService
 from backend.storage.database import Database
-from backend.new_core.materials.sheet_repository import SheetRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
@@ -117,49 +132,84 @@ def get_reference_service(
     )
 
 
-def get_equipment_catalog_service(
+def get_printer_catalog(
     session: Annotated[Session, Depends(get_db_session)],
-) -> EquipmentCatalogService:
-    """Builds :class:`EquipmentCatalogService` for this request."""
+) -> PrinterCatalog:
+    """Builds :class:`PrinterCatalog` for this request."""
     printers = SqlPrinterRepository(session)
+    return PrinterCatalog(printers, PrinterFactory(printers))
+
+
+def get_laminator_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> LaminatorCatalog:
+    """Builds :class:`LaminatorCatalog` for this request."""
     laminators = SqlLaminatorRepository(session)
+    return LaminatorCatalog(laminators, LaminatorFactory(laminators))
+
+
+def get_cutter_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> CutterCatalog:
+    """Builds :class:`CutterCatalog` for this request."""
     cutters = SqlCutterRepository(session)
-    return EquipmentCatalogService(
-        printers,
-        laminators,
-        cutters,
-        PrinterFactory(printers),
-        LaminatorFactory(laminators),
-        CutterFactory(cutters),
-    )
+    return CutterCatalog(cutters, CutterFactory(cutters))
 
 
-def get_material_catalog_service(
+def get_film_catalog(
     session: Annotated[Session, Depends(get_db_session)],
-) -> MaterialCatalogService:
-    """Builds :class:`MaterialCatalogService` for this request."""
-    return MaterialCatalogService(
-        SqlFilmRepository(session),
-        SqlSheetRepository(session),
-    )
+) -> FilmCatalog:
+    """Builds :class:`FilmCatalog` for this request."""
+    return FilmCatalog(SqlFilmRepository(session))
 
 
-def get_staff_catalog_service(
+def get_sheet_catalog(
     session: Annotated[Session, Depends(get_db_session)],
-) -> StaffCatalogService:
-    """Builds :class:`StaffCatalogService` for this request."""
+) -> SheetCatalog:
+    """Builds :class:`SheetCatalog` for this request."""
+    return SheetCatalog(SqlSheetRepository(session))
+
+
+def get_press_operator_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> PressOperatorCatalog:
+    """Builds :class:`PressOperatorCatalog` for this request."""
     press_operators = SqlPressOperatorRepository(session)
-    laminator_operators = SqlLaminatorOperatorRepository(session)
-    cutter_operators = SqlCutterOperatorRepository(session)
-    die_cut_operators = SqlDieCutterOperatorRepository(session)
-    return StaffCatalogService(
+    return PressOperatorCatalog(
         press_operators,
-        laminator_operators,
-        cutter_operators,
-        die_cut_operators,
         PressOperatorFactory(press_operators),
+    )
+
+
+def get_laminator_operator_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> LaminatorOperatorCatalog:
+    """Builds :class:`LaminatorOperatorCatalog` for this request."""
+    laminator_operators = SqlLaminatorOperatorRepository(session)
+    return LaminatorOperatorCatalog(
+        laminator_operators,
         LaminatorOperatorFactory(laminator_operators),
+    )
+
+
+def get_cutter_operator_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> CutterOperatorCatalog:
+    """Builds :class:`CutterOperatorCatalog` for this request."""
+    cutter_operators = SqlCutterOperatorRepository(session)
+    return CutterOperatorCatalog(
+        cutter_operators,
         CutterOperatorFactory(cutter_operators),
+    )
+
+
+def get_die_cut_operator_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> DieCutterOperatorCatalog:
+    """Builds :class:`DieCutterOperatorCatalog` for this request."""
+    die_cut_operators = SqlDieCutterOperatorRepository(session)
+    return DieCutterOperatorCatalog(
+        die_cut_operators,
         DieCutterOperatorFactory(die_cut_operators),
     )
 

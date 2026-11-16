@@ -1,4 +1,4 @@
-"""Equipment catalog routes with a fake :class:`EquipmentCatalogService`."""
+"""Equipment catalog routes with a fake :class:`PrinterCatalog`."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 
 
 @dataclass
-class _FakeEquipmentService:
+class _FakePrinterCatalog:
     printers_rows: tuple[Printer, ...] = ()
     missing_printer_ids: set[int] = field(default_factory=set)
     calls: list[str] = field(default_factory=list)
@@ -53,38 +53,14 @@ class _FakeEquipmentService:
     def delete_printer(self, printer_id: PrinterID) -> None:
         self.calls.append(f"delete:{printer_id.value}")
 
-    def laminators(self) -> tuple:
-        return ()
-
-    def laminator(self, laminator_id):
-        raise KeyError(laminator_id)
-
-    def save_laminator(self, laminator) -> None:
-        pass
-
-    def delete_laminator(self, laminator_id) -> None:
-        pass
-
-    def cutters(self) -> tuple:
-        return ()
-
-    def cutter(self, cutter_id):
-        raise KeyError(cutter_id)
-
-    def save_cutter(self, cutter) -> None:
-        pass
-
-    def delete_cutter(self, cutter_id) -> None:
-        pass
-
 
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 
-def _client_with_fake(fake: _FakeEquipmentService) -> tuple[TestClient, dict[str, str]]:
+def _client_with_fake(fake: _FakePrinterCatalog) -> tuple[TestClient, dict[str, str]]:
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
-    app.dependency_overrides[dependencies.get_equipment_catalog_service] = lambda: fake
+    app.dependency_overrides[dependencies.get_printer_catalog] = lambda: fake
     app.dependency_overrides[dependencies.get_user_store] = lambda: store
     app.dependency_overrides[dependencies.get_auth_config] = lambda: _AUTH
     token = create_access_token("tester", _AUTH)
@@ -93,7 +69,7 @@ def _client_with_fake(fake: _FakeEquipmentService) -> tuple[TestClient, dict[str
 
 
 def test_equipment_routes_require_token():
-    fake = _FakeEquipmentService()
+    fake = _FakePrinterCatalog()
     client, _ = _client_with_fake(fake)
     assert client.get("/api/equipment/printers").status_code == 401
 
@@ -110,7 +86,7 @@ _PRINTER_WRITE_JSON = {
 
 
 def test_create_printer_returns_id():
-    fake = _FakeEquipmentService()
+    fake = _FakePrinterCatalog()
     client, headers = _client_with_fake(fake)
     response = client.post(
         "/api/equipment/printers",
@@ -135,7 +111,7 @@ _PRINTER_JSON = {
 
 
 def test_replace_printer_204():
-    fake = _FakeEquipmentService()
+    fake = _FakePrinterCatalog()
     client, headers = _client_with_fake(fake)
     response = client.put(
         "/api/equipment/printers/5",
@@ -159,7 +135,7 @@ def test_replace_printer_204():
 
 
 def test_replace_printer_400_when_body_id_differs():
-    fake = _FakeEquipmentService()
+    fake = _FakePrinterCatalog()
     client, headers = _client_with_fake(fake)
     body = dict(_PRINTER_JSON, id=6)
     response = client.put(
@@ -172,7 +148,7 @@ def test_replace_printer_400_when_body_id_differs():
 
 
 def test_replace_printer_404_when_missing():
-    fake = _FakeEquipmentService(missing_printer_ids={9})
+    fake = _FakePrinterCatalog(missing_printer_ids={9})
     client, headers = _client_with_fake(fake)
     body = dict(_PRINTER_JSON, id=9)
     response = client.put(
@@ -184,6 +160,6 @@ def test_replace_printer_404_when_missing():
 
 
 def test_replace_printer_requires_token():
-    fake = _FakeEquipmentService()
+    fake = _FakePrinterCatalog()
     client, _ = _client_with_fake(fake)
     assert client.put("/api/equipment/printers/5", json=_PRINTER_JSON).status_code == 401

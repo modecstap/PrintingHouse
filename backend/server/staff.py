@@ -5,7 +5,18 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from backend.new_core.application_services.personal import StaffCatalogService
+from backend.new_core.application_services.personal.cutter_operators import (
+    CutterOperatorCatalog,
+)
+from backend.new_core.application_services.personal.die_cut_operators import (
+    DieCutterOperatorCatalog,
+)
+from backend.new_core.application_services.personal.laminator_operators import (
+    LaminatorOperatorCatalog,
+)
+from backend.new_core.application_services.personal.press_operators import (
+    PressOperatorCatalog,
+)
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
@@ -19,8 +30,11 @@ from backend.server.catalog_mapping import (
     press_operator_replace_from_dto,
 )
 from backend.server.dependencies import (
+    get_cutter_operator_catalog,
     get_db_session,
-    get_staff_catalog_service,
+    get_die_cut_operator_catalog,
+    get_laminator_operator_catalog,
+    get_press_operator_catalog,
     require_user,
 )
 from backend.server.schemas import CreatedIdDto, OperatorDto, OperatorWriteDto
@@ -39,7 +53,7 @@ def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
 @router.get("/press-operators", response_model=list[OperatorDto])
 def list_press_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
 ) -> list[OperatorDto]:
     """Returns every press operator."""
     return [operator_to_dto(row) for row in service.press_operators()]
@@ -49,7 +63,7 @@ def list_press_operators(
 def get_press_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
 ) -> OperatorDto:
     """Returns one press operator by id."""
     return operator_to_dto(service.press_operator(PressOperatorID(operator_id)))
@@ -59,7 +73,7 @@ def get_press_operator(
 def create_press_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new press operator and returns its assigned id."""
@@ -74,7 +88,7 @@ def replace_press_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing press operator."""
@@ -88,7 +102,7 @@ def replace_press_operator(
 def delete_press_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a press operator."""
@@ -100,7 +114,10 @@ def delete_press_operator(
 @router.get("/laminator-operators", response_model=list[OperatorDto])
 def list_laminator_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
 ) -> list[OperatorDto]:
     """Returns every laminator operator."""
     return [operator_to_dto(row) for row in service.laminator_operators()]
@@ -110,7 +127,10 @@ def list_laminator_operators(
 def get_laminator_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
 ) -> OperatorDto:
     """Returns one laminator operator by id."""
     return operator_to_dto(
@@ -122,7 +142,10 @@ def get_laminator_operator(
 def create_laminator_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new laminator operator and returns its assigned id."""
@@ -141,7 +164,10 @@ def replace_laminator_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing laminator operator."""
@@ -161,7 +187,10 @@ def replace_laminator_operator(
 def delete_laminator_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a laminator operator."""
@@ -173,7 +202,7 @@ def delete_laminator_operator(
 @router.get("/cutter-operators", response_model=list[OperatorDto])
 def list_cutter_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
 ) -> list[OperatorDto]:
     """Returns every cutter operator."""
     return [operator_to_dto(row) for row in service.cutter_operators()]
@@ -183,7 +212,7 @@ def list_cutter_operators(
 def get_cutter_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
 ) -> OperatorDto:
     """Returns one cutter operator by id."""
     return operator_to_dto(service.cutter_operator(CutterOperatorID(operator_id)))
@@ -193,7 +222,7 @@ def get_cutter_operator(
 def create_cutter_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new cutter operator and returns its assigned id."""
@@ -208,7 +237,7 @@ def replace_cutter_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing cutter operator."""
@@ -222,7 +251,7 @@ def replace_cutter_operator(
 def delete_cutter_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a cutter operator."""
@@ -234,7 +263,10 @@ def delete_cutter_operator(
 @router.get("/die-cut-operators", response_model=list[OperatorDto])
 def list_die_cut_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
 ) -> list[OperatorDto]:
     """Returns every die-cut operator."""
     return [operator_to_dto(row) for row in service.die_cut_operators()]
@@ -244,7 +276,10 @@ def list_die_cut_operators(
 def get_die_cut_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
 ) -> OperatorDto:
     """Returns one die-cut operator by id."""
     return operator_to_dto(
@@ -256,7 +291,10 @@ def get_die_cut_operator(
 def create_die_cut_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new die-cut operator and returns its assigned id."""
@@ -275,7 +313,10 @@ def replace_die_cut_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing die-cut operator."""
@@ -293,7 +334,10 @@ def replace_die_cut_operator(
 def delete_die_cut_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[StaffCatalogService, Depends(get_staff_catalog_service)],
+    service: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a die-cut operator."""

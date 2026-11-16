@@ -5,7 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
-from backend.new_core.application_services.materials import MaterialCatalogService
+from backend.new_core.application_services.materials.films import FilmCatalog
+from backend.new_core.application_services.materials.sheets import SheetCatalog
 from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.sheet import SheetID
 from backend.server.catalog_mapping import (
@@ -18,7 +19,8 @@ from backend.server.catalog_mapping import (
 )
 from backend.server.dependencies import (
     get_db_session,
-    get_material_catalog_service,
+    get_film_catalog,
+    get_sheet_catalog,
     require_user,
 )
 from backend.server.schemas import CreatedIdDto, FilmDto, FilmReadDto, SheetDto, SheetReadDto
@@ -29,7 +31,7 @@ router = APIRouter(prefix="/api/materials", tags=["materials"])
 @router.get("/films", response_model=list[FilmReadDto])
 def list_films(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> list[FilmReadDto]:
     """Returns every stored film."""
     return [film_to_read_dto(row) for row in service.films()]
@@ -39,7 +41,7 @@ def list_films(
 def get_film(
     film_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> FilmReadDto:
     """Returns one film by id."""
     return film_to_read_dto(service.film(FilmID(film_id)))
@@ -49,7 +51,7 @@ def get_film(
 def create_film(
     body: FilmDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new film and returns its assigned id."""
@@ -64,7 +66,7 @@ def replace_film(
     film_id: int,
     body: FilmDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing film."""
@@ -77,7 +79,7 @@ def replace_film(
 def delete_film(
     film_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a film."""
@@ -89,7 +91,7 @@ def delete_film(
 @router.get("/paper-types", response_model=list[str])
 def list_paper_types(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[str]:
     """Returns unique paper type names across stored sheets."""
     return list(service.paper_types())
@@ -98,7 +100,7 @@ def list_paper_types(
 @router.get("/paper-densities", response_model=list[int])
 def list_paper_densities(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[int]:
     """Returns unique paper densities across stored sheets."""
     return list(service.paper_densities())
@@ -107,7 +109,7 @@ def list_paper_densities(
 @router.get("/film-densities", response_model=list[int])
 def list_film_densities(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> list[int]:
     """Returns unique film densities across stored films."""
     return list(service.film_densities())
@@ -116,7 +118,7 @@ def list_film_densities(
 @router.get("/sheets", response_model=list[SheetReadDto])
 def list_sheets(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[SheetReadDto]:
     """Returns every stored sheet."""
     return [sheet_to_read_dto(row) for row in service.sheets()]
@@ -126,7 +128,7 @@ def list_sheets(
 def get_sheet(
     sheet_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> SheetReadDto:
     """Returns one sheet by id."""
     return sheet_to_read_dto(service.sheet(SheetID(sheet_id)))
@@ -136,12 +138,12 @@ def get_sheet(
 def create_sheet(
     body: SheetDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new sheet and returns its assigned id."""
-    paper, format = sheet_from_write_dto(body)
-    new_id = service.create_sheet(paper, format)
+    paper, sheet_format = sheet_from_write_dto(body)
+    new_id = service.create_sheet(paper, sheet_format)
     session.commit()
     return CreatedIdDto(id=new_id.value)
 
@@ -151,7 +153,7 @@ def replace_sheet(
     sheet_id: int,
     body: SheetDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing sheet."""
@@ -164,7 +166,7 @@ def replace_sheet(
 def delete_sheet(
     sheet_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[MaterialCatalogService, Depends(get_material_catalog_service)],
+    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a sheet."""
