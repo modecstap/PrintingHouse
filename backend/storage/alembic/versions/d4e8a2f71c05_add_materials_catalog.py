@@ -54,7 +54,12 @@ def upgrade() -> None:
     op.drop_column("parts", "press_format_name")
     op.drop_column("parts", "press_format_height")
     op.drop_column("parts", "press_format_width")
-    op.add_column("part_laminates", sa.Column("film_id", sa.Integer(), nullable=False))
+    op.add_column(
+        "part_laminates",
+        sa.Column(
+            "film_id",
+            sa.Integer(),
+            nullable=False))
     op.create_foreign_key(
         "part_laminates_film_id_fkey",
         "part_laminates",
@@ -80,7 +85,10 @@ def downgrade() -> None:
         "part_laminates",
         sa.Column("film_name", sa.Text(), nullable=False),
     )
-    op.drop_constraint("part_laminates_film_id_fkey", "part_laminates", type_="foreignkey")
+    op.drop_constraint(
+        "part_laminates_film_id_fkey",
+        "part_laminates",
+        type_="foreignkey")
     op.drop_column("part_laminates", "film_id")
     op.add_column(
         "parts",

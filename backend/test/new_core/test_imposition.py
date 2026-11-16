@@ -1,13 +1,10 @@
 """An imposition counts targets on a press sheet and the cuts between them."""
 
-import re
 from decimal import Decimal
-
-import pytest
 
 from backend.new_core.values.money import Money
 from backend.new_core.materials.sheet import SheetID
-from backend.new_core import Format, Imposition, InvalidInput, Paper, Sheet
+from backend.new_core import Format, Imposition, Paper, Sheet
 from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 

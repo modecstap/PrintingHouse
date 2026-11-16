@@ -21,8 +21,10 @@ def test_rejects_negative_decimal():
 def test_eq_and_add_return_not_implemented_for_other_types():
     money = Money(Decimal(1))
 
-    assert money.__eq__(42) is NotImplemented  # pylint: disable=unnecessary-dunder-call
-    assert money.__add__(42) is NotImplemented  # pylint: disable=unnecessary-dunder-call
+    assert money.__eq__(
+        42) is NotImplemented  # pylint: disable=unnecessary-dunder-call
+    assert money.__add__(
+        42) is NotImplemented  # pylint: disable=unnecessary-dunder-call
 
 
 def test_mul_and_div_accept_int_and_decimal():
@@ -37,8 +39,10 @@ def test_mul_and_div_return_not_implemented_for_bad_factor():
     money = Money(Decimal(1))
 
     # operator would raise TypeError and hide NotImplemented
-    assert money.__mul__(object()) is NotImplemented  # pylint: disable=unnecessary-dunder-call
-    assert money.__truediv__(object()) is NotImplemented  # pylint: disable=unnecessary-dunder-call
+    assert money.__mul__(
+        object()) is NotImplemented  # pylint: disable=unnecessary-dunder-call
+    assert money.__truediv__(
+        object()) is NotImplemented  # pylint: disable=unnecessary-dunder-call
 
 
 def test_mul_accepts_float_factor():

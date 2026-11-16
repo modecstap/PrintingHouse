@@ -13,7 +13,11 @@ class OrderFactory:
     def __init__(self, orders: OrderRepository) -> None:
         self._orders = orders
 
-    def create(self, product: Product, count: int, description: str = "") -> Order:
+    def create(
+            self,
+            product: Product,
+            count: int,
+            description: str = "") -> Order:
         """Builds an order with a generated id.
 
         :param product:

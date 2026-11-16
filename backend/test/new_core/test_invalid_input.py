@@ -31,7 +31,6 @@ from backend.new_core import (
     Percent,
     PrintRun,
     Product,
-    Sheet,
 )
 from backend.test.new_core.test_imposition import imposition_test_sheet
 _ZERO_CELL = (
@@ -65,7 +64,10 @@ def _rejects(message: str, call) -> None:
 
 
 def test_imposition_rejects_count_when_nothing_fits():
-    """A 100 by 100 target on a 50 by 50 press sheet is rejected at construction."""
+    """A 100 by 100 target on a 50 by 50 press sheet
+
+    is rejected at construction.
+    """
     message = "Imposition: на печатный лист влезает 0 целевых листов"
 
     def _build() -> None:
@@ -220,7 +222,10 @@ def test_negative_measure_is_rejected(message: str, build):
             id="paper",
         ),
         pytest.param(
-            "Imposition: вылеты меньше 0, вылеты=-1 мм; поля меньше 0, поля=-1 мм",
+            (
+                "Imposition: вылеты меньше 0, вылеты=-1 мм; "
+                "поля меньше 0, поля=-1 мм"
+            ),
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
                 press_sheet=imposition_test_sheet(30, 40),
@@ -257,7 +262,11 @@ def test_every_invalid_field_is_reported(message: str, build):
         pytest.param("printer id", lambda: PrinterID(-1), id="printer id"),
         pytest.param("film id", lambda: FilmID(-1), id="film id"),
         pytest.param("sheet id", lambda: SheetID(-1), id="sheet id"),
-        pytest.param("laminator id", lambda: LaminatorID(-1), id="laminator id"),
+        pytest.param(
+            "laminator id",
+            lambda: LaminatorID(-1),
+            id="laminator id",
+        ),
         pytest.param(
             "press operator id",
             lambda: PressOperatorID(-1),

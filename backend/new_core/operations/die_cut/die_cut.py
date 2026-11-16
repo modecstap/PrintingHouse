@@ -10,7 +10,8 @@ from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 @dataclass(frozen=True, slots=True)
 class DieCut:
     """
-    Value Object. One die cut of a press target, priced from the operator salary.
+    Value Object. One die cut of a press target,
+    priced from the operator salary.
     """
 
     operator_id: DieCutterOperatorID

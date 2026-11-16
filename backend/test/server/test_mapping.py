@@ -49,9 +49,8 @@ def test_product_dto_embeds_press_sheet():
     assert "press_sheet" in imp
     assert "id" in imp["press_sheet"]
     assert "sheet_id" not in imp
-    laminate_ops = [
-        op for op in dumped["blocks"][0]["operations"] if op["kind"] == "laminate"
-    ]
+    laminate_ops = [op for op in dumped["blocks"][0]
+                    ["operations"] if op["kind"] == "laminate"]
     assert laminate_ops
     assert "film_id" in laminate_ops[0]
     assert "film" not in laminate_ops[0]
@@ -63,8 +62,12 @@ def test_product_from_dto_round_trips_press_sheet():
     original = product.blocks[0]
     block = restored.blocks[0]
     assert block.imposition.press_sheet == original.imposition.press_sheet
-    orig_laminate = next(op for op in original.operations if isinstance(op, Laminate))
-    rest_laminate = next(op for op in block.operations if isinstance(op, Laminate))
+    orig_laminate = next(
+        op for op in original.operations if isinstance(
+            op, Laminate))
+    rest_laminate = next(
+        op for op in block.operations if isinstance(
+            op, Laminate))
     assert rest_laminate.film_id == orig_laminate.film_id
 
 

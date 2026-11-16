@@ -29,7 +29,10 @@ from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
-from backend.server.catalog_mapping import sheet_from_read_dto, sheet_to_read_dto
+from backend.server.catalog_mapping import (
+    sheet_from_read_dto,
+    sheet_to_read_dto,
+)
 from backend.server.schemas import (
     AdditionalWorkDto,
     CutOpDto,
@@ -118,10 +121,10 @@ def product_from_dto(dto: ProductDto) -> Product:
     :return: ``Product`` instance.
     """
     return Product(
-        parts_markup=Percent(dto.parts_markup),
-        blocks=tuple(_part_from_dto(block) for block in dto.blocks),
-        operations=tuple(_additional_work_from_dto(op) for op in dto.operations),
-    )
+        parts_markup=Percent(
+            dto.parts_markup), blocks=tuple(
+            _part_from_dto(block) for block in dto.blocks), operations=tuple(
+                _additional_work_from_dto(op) for op in dto.operations), )
 
 
 def _format_to_dto(fmt: Format) -> FormatDto:
@@ -193,10 +196,9 @@ def product_to_dto(product: Product) -> ProductDto:
     :return: DTO tree.
     """
     return ProductDto(
-        parts_markup=product.parts_markup.value,
-        blocks=tuple(_part_to_dto(block) for block in product.blocks),
-        operations=tuple(_additional_work_to_dto(op) for op in product.operations),
-    )
+        parts_markup=product.parts_markup.value, blocks=tuple(
+            _part_to_dto(block) for block in product.blocks), operations=tuple(
+            _additional_work_to_dto(op) for op in product.operations), )
 
 
 def order_to_dto(order: Order) -> OrderDto:

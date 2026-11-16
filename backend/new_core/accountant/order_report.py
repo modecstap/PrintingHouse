@@ -8,7 +8,8 @@ from backend.new_core.values.money import Money
 @dataclass(frozen=True, slots=True)
 class OrderReport:
     """
-    Value Object. The priced product, the priced order, the income, and the imposition counts.
+    Value Object. The priced product, the priced order, the income,
+    and the imposition counts.
     """
 
     product_price: Money

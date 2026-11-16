@@ -109,7 +109,8 @@ class OrderService:
         )
         return Accountant().order_report(order, estimates)
 
-    def save(self, product: Product, count: int, description: str = "") -> OrderID:
+    def save(self, product: Product, count: int,
+             description: str = "") -> OrderID:
         """Persists the order and one print run per block.
 
         :param product:
@@ -173,7 +174,10 @@ class OrderService:
 
         return self._uow.transaction(work)
 
-    def _run_estimate(self, run: PrintRun, parts_markup: Percent) -> RunEstimate:
+    def _run_estimate(
+            self,
+            run: PrintRun,
+            parts_markup: Percent) -> RunEstimate:
         """Turns run operations into one run estimate.
 
         :param run:
@@ -187,7 +191,8 @@ class OrderService:
             self._pricing_factory.create(operation, run)
             for operation in run.block.operations
         ]
-        return RunEstimate.create(strategies, run=run, parts_markup=parts_markup)
+        return RunEstimate.create(
+            strategies, run=run, parts_markup=parts_markup)
 
     def _made_run_for_order(
         self,

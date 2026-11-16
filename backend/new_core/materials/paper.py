@@ -31,14 +31,14 @@ class Paper:
         because Money rejects it first.
         """
         reasons: list[str] = []
-        if type(self.thickness) is not Decimal:
+        if not isinstance(self.thickness, Decimal):
             reasons.append(
-                f"толщина бумаги должна быть Decimal, толщина={self.thickness!r}",
-            )
+                f"толщина бумаги должна быть Decimal, толщина={
+                    self.thickness!r}", )
         elif self.thickness <= 0:
             reasons.append(
-                f"толщина бумаги меньше или равна 0, толщина={self.thickness} мм",
-            )
+                f"толщина бумаги меньше или равна 0, толщина={
+                    self.thickness} мм", )
         elif self.thickness != self.thickness.quantize(Decimal("0.01")):
             reasons.append(
                 f"толщина бумаги имеет более 2 знаков после запятой, "

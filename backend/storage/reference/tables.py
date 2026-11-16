@@ -13,4 +13,3 @@ class OrderReferenceRow(Base):  # pylint: disable=too-few-public-methods
     name: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
     order_id: Mapped[int] = mapped_column(ForeignKey("orders.id"))
-

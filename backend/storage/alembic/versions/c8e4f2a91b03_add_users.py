@@ -19,9 +19,20 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         "users",
-        sa.Column("id", sa.Integer(), sa.Identity(always=False), nullable=False),
-        sa.Column("username", sa.Text(), nullable=False),
-        sa.Column("password_hash", sa.Text(), nullable=False),
+        sa.Column(
+            "id",
+            sa.Integer(),
+            sa.Identity(
+                always=False),
+            nullable=False),
+        sa.Column(
+            "username",
+            sa.Text(),
+            nullable=False),
+        sa.Column(
+            "password_hash",
+            sa.Text(),
+            nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("username"),
     )

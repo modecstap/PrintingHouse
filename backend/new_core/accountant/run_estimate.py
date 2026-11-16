@@ -13,7 +13,7 @@ from backend.new_core.values.percent import Percent
 
 @dataclass(frozen=True, slots=True)
 class RunEstimate:
-    """Pricing strategies for one print run, with a single validated press run."""
+    """Pricing strategies for one print run, with one validated press run."""
 
     _strategies: tuple[PricingStrategy, ...]
     _run: PrintRun
@@ -40,7 +40,8 @@ class RunEstimate:
                 if strategy.run().id != resolved.id:
                     raise ValueError("All estimates must be for the same run.")
         elif run is None:
-            raise ValueError("Run estimate needs strategies or an explicit run.")
+            raise ValueError(
+                "Run estimate needs strategies or an explicit run.")
         else:
             resolved = run
 

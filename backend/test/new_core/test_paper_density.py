@@ -17,7 +17,10 @@ def _rejects(message: str, call) -> None:
 def test_paper_density_rejects_non_positive(value: int) -> None:
     """Non-positive density is rejected with grammage units in the message."""
     _rejects(
-        f"PaperDensity: плотность бумаги меньше или равна 0, плотность={value} г/м²",
+        (
+            f"PaperDensity: плотность бумаги меньше или равна 0, "
+            f"плотность={value} г/м²"
+        ),
         lambda: PaperDensity(value),
     )
 

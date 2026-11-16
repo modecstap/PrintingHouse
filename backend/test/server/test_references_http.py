@@ -43,7 +43,8 @@ class _FakeReferenceService:
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 
-def _client_with_fake(fake: _FakeReferenceService) -> tuple[TestClient, dict[str, str]]:
+def _client_with_fake(
+        fake: _FakeReferenceService) -> tuple[TestClient, dict[str, str]]:
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_reference_service] = lambda: fake

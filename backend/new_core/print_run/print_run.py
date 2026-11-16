@@ -68,7 +68,8 @@ class PrintRun:
         if self.required_count < 0:
             raise InvalidInput(
                 "print_run",
-                f"необходимое количество меньше 0, количество={self.required_count}",
+                f"необходимое количество меньше 0, количество={
+                    self.required_count}",
             )
 
         if self.imposition_count() <= 0:
@@ -96,8 +97,8 @@ class PrintRun:
         to an integer.
         """
         sheets = (
-                Decimal(self.required_count)
-                * _WASTE_ALLOWANCE.factor()
-                / Decimal(self.block.imposition.count())
+            Decimal(self.required_count)
+            * _WASTE_ALLOWANCE.factor()
+            / Decimal(self.block.imposition.count())
         ).to_integral_value(rounding=ROUND_CEILING)
         return int(sheets)

@@ -2,7 +2,6 @@
 
 import pytest
 
-from backend.new_core import Order
 from backend.new_core.order.order import OrderContent, OrderID
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.order.repository import OrderNotFound
@@ -34,7 +33,7 @@ def test_transaction_rolls_back_orders_and_print_runs(db_session):
 
     with pytest.raises(OrderNotFound):
         uow.orders.take(order.id)
-    assert uow.print_runs.take_all_for_order(order.id) == ()
+    assert not uow.print_runs.take_all_for_order(order.id)
 
 
 def test_transaction_commits_orders_and_print_runs(db_session):

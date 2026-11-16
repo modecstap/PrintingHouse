@@ -5,9 +5,15 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from backend.new_core.application_services.equipment.cutters import CutterCatalog
-from backend.new_core.application_services.equipment.laminators import LaminatorCatalog
-from backend.new_core.application_services.equipment.printers import PrinterCatalog
+from backend.new_core.application_services.equipment.cutters import (
+    CutterCatalog,
+)
+from backend.new_core.application_services.equipment.laminators import (
+    LaminatorCatalog,
+)
+from backend.new_core.application_services.equipment.printers import (
+    PrinterCatalog,
+)
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
@@ -104,7 +110,8 @@ def replace_printer(
     return Response(status_code=204)
 
 
-@router.delete("/printers/{printer_id}", status_code=204, response_class=Response)
+@router.delete("/printers/{printer_id}",
+               status_code=204, response_class=Response)
 def delete_printer(
     printer_id: int,
     _user: Annotated[str, Depends(require_user)],
@@ -150,7 +157,8 @@ def create_laminator(
     return CreatedIdDto(id=new_id.value)
 
 
-@router.put("/laminators/{laminator_id}", status_code=204, response_class=Response)
+@router.put("/laminators/{laminator_id}",
+            status_code=204, response_class=Response)
 def replace_laminator(
     laminator_id: int,
     body: LaminatorDto,
@@ -168,7 +176,8 @@ def replace_laminator(
     return Response(status_code=204)
 
 
-@router.delete("/laminators/{laminator_id}", status_code=204, response_class=Response)
+@router.delete("/laminators/{laminator_id}",
+               status_code=204, response_class=Response)
 def delete_laminator(
     laminator_id: int,
     _user: Annotated[str, Depends(require_user)],

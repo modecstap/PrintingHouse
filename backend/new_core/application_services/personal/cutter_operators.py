@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
-from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
-from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
+from backend.new_core.personal.cutter_operator import (
+    CutterOperator,
+    CutterOperatorID,
+)
+from backend.new_core.personal.cutter_operator_repository import (
+    CutterOperatorRepository,
+)
 from backend.new_core.personal.factory import CutterOperatorFactory
 from backend.new_core.values.money import Money
 
@@ -63,7 +68,8 @@ class CutterOperatorCatalog:
 
         :return: the assigned operator id.
         """
-        operator = self._cutter_operator_factory.create(name, salary_by_operation)
+        operator = self._cutter_operator_factory.create(
+            name, salary_by_operation)
         self._cutter_operators.save(operator)
         return operator.id
 

@@ -8,7 +8,9 @@ from backend.new_core.equipment.printer import PrinterID
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
 from backend.test.storage.catalog_insert import insert_printer
 from backend.test.storage.helpers import sample_printer
-from backend.test.new_core.in_memory_repositories import InMemoryPrinterRepository
+from backend.test.new_core.in_memory_repositories import (
+    InMemoryPrinterRepository,
+)
 from backend.test.new_core.test_print_run import build_worked_run
 
 
@@ -36,7 +38,10 @@ def test_generate_id_follows_max_existing_id(db_session):
 
 
 def test_in_memory_generate_id_skips_prefilled_keys():
-    """Pre-filled catalog rows do not get duplicated ids from ``generate_id``."""
+    """Pre-filled catalog rows do not get duplicated ids
+
+    from ``generate_id``.
+    """
     _run, _, _, _, ctx = build_worked_run()
     repo = InMemoryPrinterRepository(items=dict(ctx.printers))
     assert repo.generate_id() == PrinterID(0)

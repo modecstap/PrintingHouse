@@ -18,7 +18,8 @@ def create_access_token(username: str, config: AuthConfig) -> str:
 
     :return: encoded JWT string.
     """
-    expire = datetime.now(UTC) + timedelta(minutes=config.access_token_expire_minutes)
+    expire = datetime.now(
+        UTC) + timedelta(minutes=config.access_token_expire_minutes)
     payload = {"sub": username, "exp": expire}
     return jwt.encode(payload, config.secret_key, algorithm=config.algorithm)
 

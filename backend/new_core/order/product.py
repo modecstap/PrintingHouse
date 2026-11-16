@@ -11,7 +11,8 @@ from backend.new_core.values.percent import Percent
 @dataclass(frozen=True, slots=True)
 class Product:
     """
-    Value Object. The parts and the additional work priced together as one product.
+    Value Object. The parts and the additional work priced together
+    as one product.
     """
 
     parts_markup: Percent

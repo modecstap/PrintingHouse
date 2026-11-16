@@ -11,4 +11,4 @@ def test_new_core_modules_do_not_import_storage():
         text = path.read_text(encoding="utf-8")
         if "backend.storage" in text or "from storage" in text:
             offenders.append(str(path.relative_to(root.parent)))
-    assert offenders == []
+    assert not offenders

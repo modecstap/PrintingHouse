@@ -10,7 +10,8 @@ from backend.new_core.print_run.imposition import Imposition
 @dataclass(frozen=True, slots=True)
 class Part:
     """
-    Value Object. One printed part: layout, copy count, and finishing operations.
+    Value Object. One printed part: layout, copy count,
+    and finishing operations.
     """
 
     imposition: Imposition

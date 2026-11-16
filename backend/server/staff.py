@@ -57,7 +57,10 @@ def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
 @router.get("/press-operators", response_model=list[OperatorDto])
 def list_press_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
+    service: Annotated[
+        PressOperatorCatalog,
+        Depends(get_press_operator_catalog),
+    ],
 ) -> list[OperatorDto]:
     """Returns every press operator."""
     return [operator_to_dto(row) for row in service.press_operators()]
@@ -67,7 +70,10 @@ def list_press_operators(
 def get_press_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
+    service: Annotated[
+        PressOperatorCatalog,
+        Depends(get_press_operator_catalog),
+    ],
 ) -> OperatorDto:
     """Returns one press operator by id."""
     return operator_to_dto(service.press_operator(PressOperatorID(operator_id)))
@@ -77,7 +83,10 @@ def get_press_operator(
 def create_press_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
+    service: Annotated[
+        PressOperatorCatalog,
+        Depends(get_press_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new press operator and returns its assigned id."""
@@ -87,7 +96,8 @@ def create_press_operator(
     return CreatedIdDto(id=new_id.value)
 
 
-@router.put("/press-operators/{operator_id}", status_code=204, response_class=Response)
+@router.put("/press-operators/{operator_id}",
+            status_code=204, response_class=Response)
 def replace_press_operator(
     operator_id: int,
     body: OperatorDto,
@@ -100,16 +110,22 @@ def replace_press_operator(
     """Replaces non-id fields of an existing press operator."""
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
-    service.replace_press_operator(press_operator_replace_from_dto(operator_id, body))
+    service.replace_press_operator(
+        press_operator_replace_from_dto(
+            operator_id, body))
     session.commit()
     return Response(status_code=204)
 
 
-@router.delete("/press-operators/{operator_id}", status_code=204, response_class=Response)
+@router.delete("/press-operators/{operator_id}",
+               status_code=204, response_class=Response)
 def delete_press_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
+    service: Annotated[
+        PressOperatorCatalog,
+        Depends(get_press_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a press operator."""
@@ -209,7 +225,10 @@ def delete_laminator_operator(
 @router.get("/cutter-operators", response_model=list[OperatorDto])
 def list_cutter_operators(
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
+    service: Annotated[
+        CutterOperatorCatalog,
+        Depends(get_cutter_operator_catalog),
+    ],
 ) -> list[OperatorDto]:
     """Returns every cutter operator."""
     return [operator_to_dto(row) for row in service.cutter_operators()]
@@ -219,17 +238,25 @@ def list_cutter_operators(
 def get_cutter_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
+    service: Annotated[
+        CutterOperatorCatalog,
+        Depends(get_cutter_operator_catalog),
+    ],
 ) -> OperatorDto:
     """Returns one cutter operator by id."""
-    return operator_to_dto(service.cutter_operator(CutterOperatorID(operator_id)))
+    return operator_to_dto(
+        service.cutter_operator(
+            CutterOperatorID(operator_id)))
 
 
 @router.post("/cutter-operators", response_model=CreatedIdDto)
 def create_cutter_operator(
     body: OperatorWriteDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
+    service: Annotated[
+        CutterOperatorCatalog,
+        Depends(get_cutter_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new cutter operator and returns its assigned id."""
@@ -239,7 +266,8 @@ def create_cutter_operator(
     return CreatedIdDto(id=new_id.value)
 
 
-@router.put("/cutter-operators/{operator_id}", status_code=204, response_class=Response)
+@router.put("/cutter-operators/{operator_id}",
+            status_code=204, response_class=Response)
 def replace_cutter_operator(
     operator_id: int,
     body: OperatorDto,
@@ -252,16 +280,22 @@ def replace_cutter_operator(
     """Replaces non-id fields of an existing cutter operator."""
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
-    service.replace_cutter_operator(cutter_operator_replace_from_dto(operator_id, body))
+    service.replace_cutter_operator(
+        cutter_operator_replace_from_dto(
+            operator_id, body))
     session.commit()
     return Response(status_code=204)
 
 
-@router.delete("/cutter-operators/{operator_id}", status_code=204, response_class=Response)
+@router.delete("/cutter-operators/{operator_id}",
+               status_code=204, response_class=Response)
 def delete_cutter_operator(
     operator_id: int,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
+    service: Annotated[
+        CutterOperatorCatalog,
+        Depends(get_cutter_operator_catalog),
+    ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Removes a cutter operator."""
@@ -331,7 +365,9 @@ def replace_die_cut_operator(
     """Replaces non-id fields of an existing die-cut operator."""
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
-    service.replace_die_cut_operator(die_cut_operator_replace_from_dto(operator_id, body))
+    service.replace_die_cut_operator(
+        die_cut_operator_replace_from_dto(
+            operator_id, body))
     session.commit()
     return Response(status_code=204)
 

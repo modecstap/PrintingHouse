@@ -8,7 +8,7 @@ from backend.new_core.values.money import Money
 
 @dataclass(frozen=True, slots=True)
 class LaminatorID:
-    """Value Object. Stable identifier of a laminator in the equipment catalog."""
+    """Value Object. Stable identifier of a laminator in the catalog."""
 
     value: int
 

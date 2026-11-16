@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,7 +17,6 @@ from backend.new_core.operations.print.print import Print
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.part import Part
 from backend.new_core.print_run.imposition import Imposition
-from backend.new_core.values.percent import Percent
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import PrinterID
@@ -100,7 +97,8 @@ def persist_part(session: Session, part: Part) -> int:
     return row.id
 
 
-def _load_operations(session: Session, part_id: int) -> tuple[RunOperation, ...]:
+def _load_operations(
+        session: Session, part_id: int) -> tuple[RunOperation, ...]:
     stmt = (
         select(PartOperationRow)
         .where(PartOperationRow.part_id == part_id)

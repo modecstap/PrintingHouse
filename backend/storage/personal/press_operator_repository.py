@@ -5,10 +5,18 @@ from __future__ import annotations
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
-from backend.new_core.personal.press_operator_repository import PressOperatorIdOccupied
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
+from backend.new_core.personal.press_operator_repository import (
+    PressOperatorIdOccupied,
+)
 from backend.new_core.values.money import Money
-from backend.storage.personal.operator_row import replace_operator_row, save_operator_row
+from backend.storage.personal.operator_row import (
+    replace_operator_row,
+    save_operator_row,
+)
 from backend.storage.personal.tables import PressOperatorRow
 
 

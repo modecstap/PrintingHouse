@@ -18,7 +18,12 @@ def test_save_take_round_trips_parts_markup_on_order(db_session):
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     product = product_from_run(run, parts_markup=Percent(17))
-    order = make_order(20, OrderContent(product=product, count=3, description="наценка"))
+    order = make_order(
+        20,
+        OrderContent(
+            product=product,
+            count=3,
+            description="наценка"))
 
     with db_session.begin():
         repo.save(order)
@@ -29,11 +34,19 @@ def test_save_take_round_trips_parts_markup_on_order(db_session):
 
 
 def test_save_then_take_round_trips_full_graph(db_session):
-    """Insert-only save reloads nested parts, operations, and additional works."""
+    """Insert-only save reloads nested parts, operations,
+
+    and additional works.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
-    order = make_order(5, OrderContent(product=product_from_run(run), count=4, description="полный граф"))
+    order = make_order(
+        5,
+        OrderContent(
+            product=product_from_run(run),
+            count=4,
+            description="полный граф"))
 
     with db_session.begin():
         repo.save(order)
@@ -85,7 +98,12 @@ def test_generate_id_starts_at_zero_and_advances(db_session):
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     with db_session.begin():
-        repo.save(make_order(0, OrderContent(product=product_from_run(run), count=1)))
+        repo.save(
+            make_order(
+                0,
+                OrderContent(
+                    product=product_from_run(run),
+                    count=1)))
 
     assert repo.generate_id() == OrderID(1)
 
@@ -133,7 +151,12 @@ def test_replace_updates_description_and_count_keeps_created_at(db_session):
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
-    order = make_order(12, OrderContent(product=product_from_run(run), count=2, description="до"))
+    order = make_order(
+        12,
+        OrderContent(
+            product=product_from_run(run),
+            count=2,
+            description="до"))
 
     with db_session.begin():
         repo.save(order)
@@ -173,8 +196,18 @@ def test_take_latest_orders_by_descending_id(db_session):
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
     with db_session.begin():
-        repo.save(make_order(1, OrderContent(product=product_from_run(run), count=1)))
-        repo.save(make_order(10, OrderContent(product=product_from_run(run), count=2)))
+        repo.save(
+            make_order(
+                1,
+                OrderContent(
+                    product=product_from_run(run),
+                    count=1)))
+        repo.save(
+            make_order(
+                10,
+                OrderContent(
+                    product=product_from_run(run),
+                    count=2)))
 
     latest = repo.take_latest(2)
     assert [order.id.value for order in latest] == [10, 1]

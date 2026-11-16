@@ -88,7 +88,8 @@ class _FakeOrderService:
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 
-def _client_with_fake(fake: _FakeOrderService) -> tuple[TestClient, dict[str, str]]:
+def _client_with_fake(
+        fake: _FakeOrderService) -> tuple[TestClient, dict[str, str]]:
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_order_service] = lambda: fake
@@ -120,17 +121,27 @@ def test_orders_missing_token_401():
 def test_quote_200_and_save_not_called():
     fake = _FakeOrderService()
     client, headers = _client_with_fake(fake)
-    response = client.post("/api/orders/quote", headers=headers, json=_product_payload())
+    response = client.post(
+        "/api/orders/quote",
+        headers=headers,
+        json=_product_payload())
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"product_price", "order_price", "income", "impositions"}
+    assert set(body) == {
+        "product_price",
+        "order_price",
+        "income",
+        "impositions"}
     assert "save:" not in " ".join(fake.calls)
 
 
 def test_save_returns_id():
     fake = _FakeOrderService(save_id=OrderID(42))
     client, headers = _client_with_fake(fake)
-    response = client.post("/api/orders", headers=headers, json=_product_payload())
+    response = client.post(
+        "/api/orders",
+        headers=headers,
+        json=_product_payload())
     assert response.status_code == 200
     assert response.json() == {"id": 42}
 
@@ -174,14 +185,20 @@ def test_bad_product_422():
 def test_save_409_on_allocation_failure():
     fake = _FakeOrderService(save_error=OrderIdAllocationFailed(OrderID(3)))
     client, headers = _client_with_fake(fake)
-    response = client.post("/api/orders", headers=headers, json=_product_payload())
+    response = client.post(
+        "/api/orders",
+        headers=headers,
+        json=_product_payload())
     assert response.status_code == 409
 
 
 def test_quote_404_on_key_error():
     fake = _FakeOrderService(quote_error=KeyError("missing printer"))
     client, headers = _client_with_fake(fake)
-    response = client.post("/api/orders/quote", headers=headers, json=_product_payload())
+    response = client.post(
+        "/api/orders/quote",
+        headers=headers,
+        json=_product_payload())
     assert response.status_code == 404
 
 
@@ -201,5 +218,8 @@ def test_replace_404_when_missing():
         replace_error=OrderNotFound("replace", OrderID(8)),
     )
     client, headers = _client_with_fake(fake)
-    response = client.put("/api/orders/8", headers=headers, json=_product_payload())
+    response = client.put(
+        "/api/orders/8",
+        headers=headers,
+        json=_product_payload())
     assert response.status_code == 404

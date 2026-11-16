@@ -8,7 +8,10 @@ from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.storage.print_run.repository import SqlPrintRunRepository
 from backend.storage.print_run.tables import PrintRunRow
 from backend.test.new_core.test_print_run import build_worked_run
-from backend.test.storage.catalog_insert import insert_catalogs_from_ctx, insert_minimal_order_row
+from backend.test.storage.catalog_insert import (
+    insert_catalogs_from_ctx,
+    insert_minimal_order_row,
+)
 from backend.test.storage.helpers import assert_print_run_equal
 
 
@@ -51,7 +54,10 @@ def test_second_save_all_replaces_runs(db_session):
 
 
 def test_mismatched_for_order_raises_before_persisting(db_session):
-    """Bad ``for_order`` raises ``ValueError`` and leaves zero print-run rows."""
+    """Bad ``for_order`` raises ``ValueError``
+
+    and leaves zero print-run rows.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
@@ -67,7 +73,8 @@ def test_mismatched_for_order_raises_before_persisting(db_session):
         with db_session.begin():
             repo.save_all_for_order(OrderID(1), (bad,))
 
-    count = db_session.execute(select(func.count()).select_from(PrintRunRow)).scalar_one()
+    count = db_session.execute(
+        select(func.count()).select_from(PrintRunRow)).scalar_one()
     assert count == 0
 
 

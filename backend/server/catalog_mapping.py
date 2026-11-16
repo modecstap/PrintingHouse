@@ -9,7 +9,10 @@ from backend.new_core.format import Format
 from backend.new_core.equipment.cutter import Cutter, CutterID
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
-from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
+from backend.new_core.personal.cutter_operator import (
+    CutterOperator,
+    CutterOperatorID,
+)
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
     DieCutterOperatorID,
@@ -24,7 +27,10 @@ from backend.new_core.materials.paper import Paper
 from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 from backend.new_core.materials.sheet import Sheet, SheetID
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
 from backend.new_core.values.money import Money
 from backend.server.schemas import (
     CutterDto,
@@ -113,7 +119,10 @@ def laminator_from_write_dto(dto: LaminatorWriteDto) -> tuple[str, Money]:
 
 
 def cutter_to_dto(cutter: Cutter) -> CutterDto:
-    return CutterDto(id=cutter.id.value, name=cutter.name, max_stack=cutter.max_stack)
+    return CutterDto(
+        id=cutter.id.value,
+        name=cutter.name,
+        max_stack=cutter.max_stack)
 
 
 def cutter_from_dto(dto: CutterDto) -> Cutter:
@@ -124,7 +133,8 @@ def cutter_from_write_dto(dto: CutterWriteDto) -> tuple[str, int]:
     return dto.name, dto.max_stack
 
 
-def operator_to_dto(operator: PressOperator | LaminatorOperator | CutterOperator | DieCutterOperator) -> OperatorDto:
+def operator_to_dto(operator: PressOperator | LaminatorOperator |
+                    CutterOperator | DieCutterOperator) -> OperatorDto:
     return OperatorDto(
         id=operator.id.value,
         name=operator.name,
@@ -173,7 +183,9 @@ def printer_replace_from_dto(printer_id: int, dto: PrinterDto) -> Printer:
     return replace(parsed, id=PrinterID(printer_id))
 
 
-def laminator_replace_from_dto(laminator_id: int, dto: LaminatorDto) -> Laminator:
+def laminator_replace_from_dto(
+        laminator_id: int,
+        dto: LaminatorDto) -> Laminator:
     parsed = laminator_from_dto(dto)
     return replace(parsed, id=LaminatorID(laminator_id))
 
@@ -183,7 +195,9 @@ def cutter_replace_from_dto(cutter_id: int, dto: CutterDto) -> Cutter:
     return replace(parsed, id=CutterID(cutter_id))
 
 
-def press_operator_replace_from_dto(operator_id: int, dto: OperatorDto) -> PressOperator:
+def press_operator_replace_from_dto(
+        operator_id: int,
+        dto: OperatorDto) -> PressOperator:
     parsed = press_operator_from_dto(dto)
     return replace(parsed, id=PressOperatorID(operator_id))
 
@@ -196,7 +210,9 @@ def laminator_operator_replace_from_dto(
     return replace(parsed, id=LaminatorOperatorID(operator_id))
 
 
-def cutter_operator_replace_from_dto(operator_id: int, dto: OperatorDto) -> CutterOperator:
+def cutter_operator_replace_from_dto(
+        operator_id: int,
+        dto: OperatorDto) -> CutterOperator:
     parsed = cutter_operator_from_dto(dto)
     return replace(parsed, id=CutterOperatorID(operator_id))
 

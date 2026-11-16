@@ -20,7 +20,8 @@ class SqlUserRepository(UserStore):
 
         :return: row count in ``users``.
         """
-        return self._session.scalar(select(func.count()).select_from(UserRow)) or 0
+        return self._session.scalar(
+            select(func.count()).select_from(UserRow)) or 0
 
     def get_by_username(self, username: str) -> StoredUser | None:
         """Loads one user by username.
@@ -34,7 +35,9 @@ class SqlUserRepository(UserStore):
         ).scalar_one_or_none()
         if row is None:
             return None
-        return StoredUser(username=row.username, password_hash=row.password_hash)
+        return StoredUser(
+            username=row.username,
+            password_hash=row.password_hash)
 
     def add(self, username: str, password_hash: str) -> None:
         """Inserts a user row.
@@ -44,4 +47,7 @@ class SqlUserRepository(UserStore):
 
         :return: nothing.
         """
-        self._session.add(UserRow(username=username, password_hash=password_hash))
+        self._session.add(
+            UserRow(
+                username=username,
+                password_hash=password_hash))

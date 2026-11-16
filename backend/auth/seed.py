@@ -26,6 +26,7 @@ def seed_admin_if_empty(
         return
     if not username or not password:
         raise AdminSeedConfigError(
-            "ADMIN_USERNAME and ADMIN_PASSWORD are required when users table is empty",
+            "ADMIN_USERNAME and ADMIN_PASSWORD are required "
+            "when users table is empty",
         )
     store.add(username, hash_password(password))

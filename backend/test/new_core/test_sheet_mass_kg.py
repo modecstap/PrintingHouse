@@ -8,7 +8,10 @@ from backend.new_core.values.money import Money
 
 
 def test_sheet_mass_kg_uses_paper_density_value() -> None:
-    """Mass matches width times height over area factor times density over 1000."""
+    """Mass matches width times height over area factor
+
+    times density over 1000.
+    """
     sheet = Sheet(
         id=SheetID(1),
         paper=Paper(

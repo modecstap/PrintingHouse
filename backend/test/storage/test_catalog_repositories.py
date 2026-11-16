@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
+from backend.new_core.equipment.printer_repository import PrinterIdOccupied
 from backend.new_core.format import Format
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
@@ -17,19 +18,32 @@ from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
-from backend.storage.equipment.laminator_repository import SqlLaminatorRepository
+from backend.storage.equipment.laminator_repository import (
+    SqlLaminatorRepository,
+)
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.materials.tables import FilmRow, SheetRow
-from backend.storage.part.tables import PartLaminateRow, PartOperationRow, PartRow
-from backend.storage.personal.cutter_operator_repository import SqlCutterOperatorRepository
+from backend.storage.part.tables import (
+    PartLaminateRow,
+    PartOperationRow,
+    PartRow,
+)
+from backend.storage.personal.cutter_operator_repository import (
+    SqlCutterOperatorRepository,
+)
 from backend.storage.personal.laminator_operator_repository import (
     SqlLaminatorOperatorRepository,
 )
-from backend.storage.personal.press_operator_repository import SqlPressOperatorRepository
+from backend.storage.personal.press_operator_repository import (
+    SqlPressOperatorRepository,
+)
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.new_core.values.money import Money
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
@@ -51,15 +65,17 @@ def test_catalog_take_round_trips_domain_objects(db_session):
     assert SqlCutterRepository(db_session).take(CutterID(1)) == next(
         iter(ctx.cutters.values()),
     )
-    assert SqlPressOperatorRepository(db_session).take(PressOperatorID(1)) == next(
-        iter(ctx.press_operators.values()),
-    )
+    assert SqlPressOperatorRepository(db_session).take(
+        PressOperatorID(1)) == next(
+        iter(
+            ctx.press_operators.values()), )
     assert SqlLaminatorOperatorRepository(db_session).take(
         LaminatorOperatorID(1),
     ) == next(iter(ctx.laminator_operators.values()))
-    assert SqlCutterOperatorRepository(db_session).take(CutterOperatorID(1)) == next(
-        iter(ctx.cutter_operators.values()),
-    )
+    assert SqlCutterOperatorRepository(db_session).take(
+        CutterOperatorID(1)) == next(
+        iter(
+            ctx.cutter_operators.values()), )
 
 
 def test_catalog_take_missing_raises_key_error(db_session):
@@ -70,12 +86,6 @@ def test_catalog_take_missing_raises_key_error(db_session):
 
 def test_printer_save_list_delete_round_trip(db_session):
     """``save``, ``take_all``, and ``delete`` change the printer catalog."""
-    from decimal import Decimal
-
-    from backend.new_core.equipment.printer import Printer
-    from backend.new_core.equipment.printer_repository import PrinterIdOccupied
-    from backend.new_core.values.money import Money
-
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(10, "№ 10", 0)
     repo.save(printer)
@@ -94,11 +104,6 @@ def test_printer_save_list_delete_round_trip(db_session):
 
 def test_printer_spacing_round_trip(db_session):
     """``spacing`` survives save and load."""
-    from decimal import Decimal
-
-    from backend.new_core.equipment.printer import Printer
-    from backend.new_core.values.money import Money
-
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(11, "№ 11", 7, prices=zero_printer_prices())
     repo.save(printer)
@@ -109,8 +114,6 @@ def test_printer_spacing_round_trip(db_session):
 
 def test_printer_save_replace_take_round_trip(db_session):
     """``save``, ``replace``, and ``take`` round-trip a printer."""
-    from backend.new_core.equipment.printer import Printer
-
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(12, "№ 12", 3)
     repo.save(printer)
@@ -201,7 +204,12 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     assert loaded.paper.thickness == Decimal("0.15")
 
     whole_id = repo.add(
-        Paper(PaperDensity(100), Decimal(1), PaperType("целая"), Money(Decimal("5"))),
+        Paper(
+            PaperDensity(100),
+            Decimal(1),
+            PaperType("целая"),
+            Money(
+                Decimal("5"))),
         fmt,
     )
     db_session.commit()
@@ -210,7 +218,8 @@ def test_sheet_round_trip_fractional_thickness(db_session):
 
 
 def test_sheet_distinct_paper_types_dedup_and_sort(db_session):
-    """``distinct_paper_types`` deduplicates canonical values and sorts ascending."""
+    """``distinct_paper_types`` deduplicates canonical values and sorts
+    ascending."""
     repo = SqlSheetRepository(db_session)
     paper = Paper(
         density=PaperDensity(100),
@@ -302,11 +311,12 @@ def test_film_distinct_film_densities_dedup_and_sort(db_session):
 @pytest.mark.parametrize(
     ("repo_factory", "missing_id"),
     [
-        (lambda session: SqlFilmRepository(session), FilmID(404)),
-        (lambda session: SqlSheetRepository(session), SheetID(404)),
+        (SqlFilmRepository, FilmID(404)),
+        (SqlSheetRepository, SheetID(404)),
     ],
 )
-def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory, missing_id):
+def test_material_catalog_take_missing_raises_key_error(
+        db_session, repo_factory, missing_id):
     """Unknown film or sheet ids raise ``KeyError``."""
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
@@ -317,7 +327,7 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
     ("repo_factory", "entity"),
     [
         (
-            lambda session: SqlFilmRepository(session),
+            SqlFilmRepository,
             Film(
                 id=FilmID(404),
                 name="x",
@@ -326,7 +336,7 @@ def test_material_catalog_take_missing_raises_key_error(db_session, repo_factory
             ),
         ),
         (
-            lambda session: SqlSheetRepository(session),
+            SqlSheetRepository,
             Sheet(
                 id=SheetID(404),
                 paper=Paper(
@@ -355,7 +365,7 @@ def test_material_catalog_replace_missing_raises_key_error(
     ("repo_factory", "entity"),
     [
         (
-            lambda session: SqlPrinterRepository(session),
+            SqlPrinterRepository,
             Printer(
                 id=PrinterID(404),
                 name="x",
@@ -370,7 +380,7 @@ def test_material_catalog_replace_missing_raises_key_error(
             ),
         ),
         (
-            lambda session: SqlPressOperatorRepository(session),
+            SqlPressOperatorRepository,
             PressOperator(
                 id=PressOperatorID(404),
                 name="x",
@@ -384,7 +394,10 @@ def test_equipment_or_staff_catalog_replace_missing_raises_key_error(
     repo_factory,
     entity,
 ):
-    """``replace`` on a missing printer or press operator raises ``KeyError``."""
+    """``replace`` on a missing printer or press operator
+
+    raises ``KeyError``.
+    """
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
         repo.replace(entity)
@@ -393,8 +406,8 @@ def test_equipment_or_staff_catalog_replace_missing_raises_key_error(
 @pytest.mark.parametrize(
     ("repo_factory", "missing_id"),
     [
-        (lambda session: SqlFilmRepository(session), FilmID(404)),
-        (lambda session: SqlSheetRepository(session), SheetID(404)),
+        (SqlFilmRepository, FilmID(404)),
+        (SqlSheetRepository, SheetID(404)),
     ],
 )
 def test_material_catalog_delete_missing_raises_key_error(
@@ -412,9 +425,10 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
     """A sheet still referenced by ``parts.sheet_id`` cannot be removed."""
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
-        Paper(PaperDensity(100), Decimal(1), PaperType("press"), Money(Decimal("1"))),
-        Format("press", 300, 200),
-    )
+        Paper(
+            PaperDensity(100), Decimal(1), PaperType("press"), Money(
+                Decimal("1"))), Format(
+            "press", 300, 200), )
     db_session.flush()
     db_session.add(
         PartRow(
@@ -435,8 +449,12 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
 
 
 def test_delete_film_referenced_by_part_raises_integrity_error(db_session):
-    """A film still referenced by ``part_laminates.film_id`` cannot be removed."""
-    _, _, _, _, ctx = build_worked_run(with_laminate=True, with_cut=False, with_print=False)
+    """A film still referenced by ``part_laminates.film_id``
+
+    cannot be removed.
+    """
+    _, _, _, _, ctx = build_worked_run(
+        with_laminate=True, with_cut=False, with_print=False)
     insert_catalogs_from_ctx(db_session, ctx)
     film_id = next(iter(ctx.films.keys()))
     sheet_id = next(iter(ctx.sheets.keys()))

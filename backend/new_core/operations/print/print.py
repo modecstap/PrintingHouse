@@ -8,10 +8,12 @@ from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.personal.press_operator import PressOperatorID
 
+
 @dataclass(frozen=True, slots=True)
 class Print:
     """
-    Value Object. One print of a press target: the specification, the printer, and the operator.
+    Value Object. One print of a press target: the specification,
+    the printer, and the operator.
     """
 
     printer_id: PrinterID

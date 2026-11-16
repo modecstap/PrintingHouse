@@ -42,5 +42,6 @@ class DBConfig:
         else:
             auth = self.user
         return (
-            f"postgresql+{driver}://{auth}@{self.host}:{self.port}/{self.db_name}"
+            f"postgresql+{driver}://{auth}@"
+            f"{self.host}:{self.port}/{self.db_name}"
         )

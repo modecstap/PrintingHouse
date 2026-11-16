@@ -17,7 +17,10 @@ def _rejects(message: str, call) -> None:
 def test_film_density_rejects_non_positive(value: int) -> None:
     """Non-positive density is rejected with micron units in the message."""
     _rejects(
-        f"FilmDensity: плотность плёнки меньше или равна 0, плотность={value} мкм",
+        (
+            f"FilmDensity: плотность плёнки меньше или равна 0, "
+            f"плотность={value} мкм"
+        ),
         lambda: FilmDensity(value),
     )
 

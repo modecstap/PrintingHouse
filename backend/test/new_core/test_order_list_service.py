@@ -8,19 +8,14 @@ from backend.new_core.order.product import Product
 from backend.new_core.values.percent import Percent
 from backend.new_core.application_services.order import OrderService
 from backend.test.new_core.in_memory_repositories import (
-    InMemoryCutterOperatorRepository,
-    InMemoryCutterRepository,
-    InMemoryDieCutterOperatorRepository,
-    InMemoryFilmRepository,
-    InMemoryLaminatorOperatorRepository,
-    InMemoryLaminatorRepository,
     InMemoryOrderRepository,
-    InMemoryPressOperatorRepository,
-    InMemoryPrinterRepository,
-    InMemorySheetRepository,
     InMemoryUnitOfWork,
 )
-from backend.test.new_core.test_print_run import _RunPricingFixtures, build_worked_run, order_service
+from backend.test.new_core.test_print_run import (
+    _RunPricingFixtures,
+    build_worked_run,
+    order_service,
+)
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
@@ -32,7 +27,12 @@ def _order(order_id: int) -> Order:
     )
     return Order(
         id=OrderID(order_id),
-        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
+        product=Product(
+            parts_markup=Percent(0),
+            blocks=(
+                run.block,
+            ),
+            operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,

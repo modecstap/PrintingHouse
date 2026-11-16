@@ -10,7 +10,8 @@ from backend.new_core.values.percent import Percent
 @dataclass(frozen=True, slots=True)
 class CostReport:
     """
-    Value Object. A price split into material, startup, work, and the markup added on top.
+    Value Object. A price split into material, startup, work,
+    and the markup added on top.
     """
 
     material: Money

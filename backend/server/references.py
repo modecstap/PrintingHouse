@@ -5,9 +5,19 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
-from backend.new_core.application_services.reference import ReferenceOrderService
-from backend.server.dependencies import get_db_session, get_reference_service, require_user
-from backend.server.mapping import order_to_dto, reference_from_dto, reference_to_dto
+from backend.new_core.application_services.reference import (
+    ReferenceOrderService,
+)
+from backend.server.dependencies import (
+    get_db_session,
+    get_reference_service,
+    require_user,
+)
+from backend.server.mapping import (
+    order_to_dto,
+    reference_from_dto,
+    reference_to_dto,
+)
 from backend.server.schemas import OrderDto, ReferenceDto
 
 router = APIRouter(prefix="/api/references", tags=["references"])

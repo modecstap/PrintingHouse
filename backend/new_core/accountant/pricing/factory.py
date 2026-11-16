@@ -15,14 +15,18 @@ from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.operations.print.print import Print
-from backend.new_core.personal.cutter_operator_repository import CutterOperatorRepository
+from backend.new_core.personal.cutter_operator_repository import (
+    CutterOperatorRepository,
+)
 from backend.new_core.personal.die_cutter_operator_repository import (
     DieCutterOperatorRepository,
 )
 from backend.new_core.personal.laminator_operator_repository import (
     LaminatorOperatorRepository,
 )
-from backend.new_core.personal.press_operator_repository import PressOperatorRepository
+from backend.new_core.personal.press_operator_repository import (
+    PressOperatorRepository,
+)
 from backend.new_core.print_run.print_run import PrintRun
 
 
@@ -68,7 +72,10 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
             f"Unsupported run operation type: {type(operation).__name__}",
         )
 
-    def _print_pricing(self, operation: Print, print_run: PrintRun) -> PrintPricing:
+    def _print_pricing(
+            self,
+            operation: Print,
+            print_run: PrintRun) -> PrintPricing:
         return PrintPricing(
             printer=self._printers.take(operation.printer_id),
             operator=self._press_operators.take(operation.operator_id),

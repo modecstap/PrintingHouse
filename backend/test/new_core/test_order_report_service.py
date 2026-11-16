@@ -12,15 +12,8 @@ from backend.new_core.application_services.order import OrderService
 from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
 from backend.test.new_core.in_memory_repositories import (
-    InMemoryCutterOperatorRepository,
-    InMemoryCutterRepository,
-    InMemoryDieCutterOperatorRepository,
     InMemoryFilmRepository,
-    InMemoryLaminatorOperatorRepository,
-    InMemoryLaminatorRepository,
     InMemoryOrderRepository,
-    InMemoryPressOperatorRepository,
-    InMemoryPrinterRepository,
     InMemoryPrintRunRepository,
     InMemorySheetRepository,
     InMemoryUnitOfWork,
@@ -41,7 +34,9 @@ def _service_from_fixtures(run, ctx) -> OrderService:
 
 
 def test_order_report_scales_the_product_by_tax_and_the_order_count():
-    """Work of 100 with 10 percent markup is 110, then times 100/93, then times 4.
+    """Work of 100 with 10 percent markup is 110.
+
+    Then times 100/93, then times 4.
 
     The run has no operations, so its block report is zero. Income equals
     the order price because material and startup stay zero.
@@ -67,7 +62,12 @@ def test_order_report_prices_die_cut_through_order_service():
     attach_die_cut_operator(run, ctx)
     order = Order(
         id=OrderID(5),
-        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
+        product=Product(
+            parts_markup=Percent(0),
+            blocks=(
+                run.block,
+            ),
+            operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -98,7 +98,10 @@ def test_order_report_prices_die_cut_through_order_service():
             by_order={plain_order.id: (plain_run,)},
         ),
     )
-    plain_report = order_service(plain_uow, plain[4]).order_report(plain_order.id)
+    plain_report = order_service(
+        plain_uow,
+        plain[4]).order_report(
+        plain_order.id)
 
     report = service.order_report(order.id)
     assert report.order_price.amount > plain_report.order_price.amount
@@ -110,7 +113,9 @@ def test_order_report_keeps_stored_sheet_price_after_catalog_replace():
     sheets = InMemorySheetRepository(items=dict(ctx.sheets))
     uow = InMemoryUnitOfWork()
     service = order_service(uow, ctx)
-    product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
+    product = Product(
+        parts_markup=Percent(0), blocks=(
+            run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)
     sheet = sheets.take(run.block.imposition.press_sheet.id)
@@ -136,7 +141,9 @@ def test_order_report_reflects_catalog_film_replace_after_save():
     films = InMemoryFilmRepository(items=dict(ctx.films))
     uow = InMemoryUnitOfWork()
     service = order_service(uow, ctx, films=films)
-    product = Product(parts_markup=Percent(0), blocks=(run.block,), operations=())
+    product = Product(
+        parts_markup=Percent(0), blocks=(
+            run.block,), operations=())
     order_id = service.save(product, count=1)
     before = service.order_report(order_id)
     film = films.take(laminate.film_id)

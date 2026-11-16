@@ -71,7 +71,8 @@ class DieCutterOperatorCatalog:
 
         :return: the assigned operator id.
         """
-        operator = self._die_cut_operator_factory.create(name, salary_by_operation)
+        operator = self._die_cut_operator_factory.create(
+            name, salary_by_operation)
         self._die_cut_operators.save(operator)
         return operator.id
 

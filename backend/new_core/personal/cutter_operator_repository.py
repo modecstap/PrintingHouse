@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import Literal, Protocol
 
 from backend.new_core.catalog.errors import CatalogIdOccupied
-from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
+from backend.new_core.personal.cutter_operator import (
+    CutterOperator,
+    CutterOperatorID,
+)
 
 CutterOperatorStoreOperation = Literal["save"]
 

@@ -3,14 +3,12 @@
 # pylint: disable=protected-access
 
 from dataclasses import dataclass, field, replace
-from decimal import Decimal
 
 import pytest
 
-from backend.new_core import AdditionalWork, InvalidInput, Percent, RunEstimate
+from backend.new_core import InvalidInput, Percent, RunEstimate
 from backend.new_core.accountant.accountant import Accountant
 from backend.new_core.accountant.order_report import OrderReport
-from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.part import Part
 from backend.new_core.materials.film import FilmID
@@ -24,16 +22,8 @@ from backend.new_core.application_services.order import (
 )
 from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.print_run.print_run import PrintRun, PrintRunID
-from backend.new_core.values.money import Money
 from backend.test.new_core.in_memory_repositories import (
-    InMemoryCutterOperatorRepository,
-    InMemoryCutterRepository,
-    InMemoryDieCutterOperatorRepository,
-    InMemoryFilmRepository,
-    InMemoryLaminatorOperatorRepository,
-    InMemoryLaminatorRepository,
     InMemoryOrderRepository,
-    InMemoryPressOperatorRepository,
     InMemoryPrinterRepository,
     InMemoryUnitOfWork,
 )
@@ -77,7 +67,10 @@ def test_save_persists_imposition_spacing_from_product():
 
 
 def test_order_report_keeps_stored_spacing_when_catalog_printer_changes():
-    """order_report does not overwrite spacing from the updated printer catalog."""
+    """order_report does not overwrite spacing
+
+    from the updated printer catalog.
+    """
     run, printing, _, _, ctx = build_worked_run()
     printer_id = printing.printer_id
     ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=5)
@@ -170,7 +163,10 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
 
 
 def test_quote_applies_product_parts_markup_to_each_block():
-    """One ``parts_markup`` prices every print run like a single-block product."""
+    """One ``parts_markup`` prices every print run
+
+    like a single-block product.
+    """
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
@@ -206,7 +202,9 @@ def test_quote_with_missing_printer_raises_and_leaves_stores_empty():
             replace(broken, printer_id=PrinterID(999)),
         ),
     )
-    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
+    product = Product(
+        parts_markup=Percent(0), blocks=(
+            bad_block,), operations=())
 
     with pytest.raises(KeyError):
         service.quote(product, count=4)
@@ -225,10 +223,13 @@ def test_quote_with_missing_film_raises_and_leaves_stores_empty():
     bad_block = replace(
         run.block,
         operations=tuple(
-            bad_laminate if op is laminate else op for op in run.block.operations
+            bad_laminate if op is laminate else op
+            for op in run.block.operations
         ),
     )
-    product = Product(parts_markup=Percent(0), blocks=(bad_block,), operations=())
+    product = Product(
+        parts_markup=Percent(0), blocks=(
+            bad_block,), operations=())
 
     with pytest.raises(KeyError):
         service.quote(product, count=4)
@@ -256,7 +257,8 @@ def test_save_persists_order_and_runs():
 
 
 def test_save_maps_each_block_to_one_run_in_order():
-    """Each block becomes one run with required_count order.count times block.count."""
+    """Each block becomes one run with required_count order.count times
+    block.count."""
     run, _, _, _, ctx = build_worked_run()
     run2, _, _, _, ctx2 = build_worked_run(required_count=5)
     for repo, other in ((ctx, ctx2), (ctx2, ctx)):
@@ -276,14 +278,19 @@ def test_save_maps_each_block_to_one_run_in_order():
     runs = uow.print_runs.take_all_for_order(order_id)
 
     assert len(runs) == 2
-    assert runs[0].block.imposition.press_sheet.id == product.blocks[0].imposition.press_sheet.id
-    assert runs[1].block.imposition.press_sheet.id == product.blocks[1].imposition.press_sheet.id
+    press_a = product.blocks[0].imposition.press_sheet.id
+    press_b = product.blocks[1].imposition.press_sheet.id
+    assert runs[0].block.imposition.press_sheet.id == press_a
+    assert runs[1].block.imposition.press_sheet.id == press_b
     assert runs[0].required_count == order_count * product.blocks[0].count
     assert runs[1].required_count == order_count * product.blocks[1].count
 
 
 def test_two_orders_may_share_the_same_print_run_id_value():
-    """Print run ids are scoped per order; two orders can both use PrintRunID(0)."""
+    """Print run ids are scoped per order.
+
+    Two orders can both use PrintRunID(0).
+    """
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
@@ -312,7 +319,10 @@ class _SeededOrderRepository(InMemoryOrderRepository):
 
 
 def test_save_retries_on_occupied_order_id():
-    """Save retries with a new id when the first allocated id is already stored."""
+    """Save retries with a new id
+
+    when the first allocated id is already stored.
+    """
     run, _, _, _, ctx = build_worked_run()
     existing = Order(
         id=OrderID(1),
@@ -346,7 +356,8 @@ class _AlwaysOccupiedOrderRepository(InMemoryOrderRepository):
 
 
 def test_save_raises_after_three_occupied_ids():
-    """Three occupied ids yield OrderIdAllocationFailed and empty maps except the seed."""
+    """Three occupied ids yield OrderIdAllocationFailed and empty maps except
+    the seed."""
     run, _, _, _, ctx = build_worked_run()
     seed = Order(
         id=OrderID(1),
@@ -372,7 +383,10 @@ def test_save_raises_after_three_occupied_ids():
 
 
 def test_build_run_estimate_rejects_unknown_operation():
-    """An unsupported operation type raises TypeError from build_run_estimate."""
+    """An unsupported operation type raises TypeError
+
+    from build_run_estimate.
+    """
     run, _, _, _, ctx = build_worked_run()
 
     class _UnknownOperation:  # pylint: disable=too-few-public-methods
@@ -394,7 +408,10 @@ def test_build_run_estimate_rejects_unknown_operation():
 
 
 def test_replace_keeps_created_at_and_updates_description():
-    """Replace updates description and count but keeps the original created_at."""
+    """Replace updates description and count
+
+    but keeps the original created_at.
+    """
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)

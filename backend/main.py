@@ -2,7 +2,12 @@ import asyncio
 import os
 import sys
 
-from backend.auth import AdminSeedConfigError, AuthConfig, MissingJwtSecret, seed_admin_if_empty
+from backend.auth import (
+    AdminSeedConfigError,
+    AuthConfig,
+    MissingJwtSecret,
+    seed_admin_if_empty,
+)
 from backend.server.app import serve
 from backend.server.server_config import ServerConfig
 from backend.storage.database import Database

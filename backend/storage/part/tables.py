@@ -1,6 +1,13 @@
 """Parts and polymorphic operation subtype rows."""
 
-from sqlalchemy import ForeignKey, Identity, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.base import Base
@@ -51,7 +58,8 @@ class PartLaminateRow(Base):  # pylint: disable=too-few-public-methods
         primary_key=True,
     )
     laminator_id: Mapped[int] = mapped_column(ForeignKey("laminators.id"))
-    operator_id: Mapped[int] = mapped_column(ForeignKey("laminator_operators.id"))
+    operator_id: Mapped[int] = mapped_column(
+        ForeignKey("laminator_operators.id"))
     lamination: Mapped[str] = mapped_column(Text)
     film_id: Mapped[int] = mapped_column(ForeignKey("films.id"))
 
@@ -74,5 +82,5 @@ class PartDieCutRow(Base):  # pylint: disable=too-few-public-methods
         ForeignKey("part_operations.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    operator_id: Mapped[int] = mapped_column(ForeignKey("die_cutter_operators.id"))
-
+    operator_id: Mapped[int] = mapped_column(
+        ForeignKey("die_cutter_operators.id"))

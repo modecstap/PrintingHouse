@@ -7,7 +7,8 @@ from decimal import Decimal
 @dataclass(frozen=True, slots=True)
 class Percent:
     """
-    Value Object. A whole-number percent of a price, and the factors derived from it.
+    Value Object. A whole-number percent of a price,
+    and the factors derived from it.
     """
 
     value: int

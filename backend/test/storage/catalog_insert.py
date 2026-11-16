@@ -16,6 +16,7 @@ from backend.new_core.personal.cutter_operator import CutterOperator
 from backend.new_core.personal.die_cutter_operator import DieCutterOperator
 from backend.new_core.personal.laminator_operator import LaminatorOperator
 from backend.new_core.personal.press_operator import PressOperator
+from backend.storage.order.tables import OrderRow
 from backend.storage.equipment.printer_row import new_printer_row
 from backend.storage.equipment.tables import (
     CutterRow,
@@ -29,6 +30,7 @@ from backend.storage.personal.tables import (
     PressOperatorRow,
 )
 from backend.test.new_core.test_print_run import _RunPricingFixtures
+from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 _CatalogEntity = TypeVar("_CatalogEntity")
 
@@ -58,7 +60,10 @@ def insert_laminator(session: Session, laminator: Laminator) -> None:
 
 def insert_cutter(session: Session, cutter: Cutter) -> None:
     session.add(
-        CutterRow(id=cutter.id.value, name=cutter.name, max_stack=cutter.max_stack),
+        CutterRow(
+            id=cutter.id.value,
+            name=cutter.name,
+            max_stack=cutter.max_stack),
     )
 
 
@@ -134,15 +139,26 @@ def insert_sheet(session: Session, sheet: Sheet) -> None:
     )
 
 
-def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None:
-    """Inserts every catalog entity referenced by ``build_worked_run`` fixtures."""
+def insert_catalogs_from_ctx(
+        session: Session,
+        ctx: _RunPricingFixtures) -> None:
+    """Inserts every catalog entity referenced
+
+    by ``build_worked_run`` fixtures.
+    """
     _insert_catalog_map(session, ctx.printers, insert_printer)
     _insert_catalog_map(session, ctx.press_operators, insert_press_operator)
     _insert_catalog_map(session, ctx.laminators, insert_laminator)
-    _insert_catalog_map(session, ctx.laminator_operators, insert_laminator_operator)
+    _insert_catalog_map(
+        session,
+        ctx.laminator_operators,
+        insert_laminator_operator)
     _insert_catalog_map(session, ctx.cutters, insert_cutter)
     _insert_catalog_map(session, ctx.cutter_operators, insert_cutter_operator)
-    _insert_catalog_map(session, ctx.die_cut_operators, insert_die_cutter_operator)
+    _insert_catalog_map(
+        session,
+        ctx.die_cut_operators,
+        insert_die_cutter_operator)
     _insert_catalog_map(session, ctx.films, insert_film)
     _insert_catalog_map(session, ctx.sheets, insert_sheet)
     session.flush()
@@ -151,9 +167,6 @@ def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None
 
 def insert_minimal_order_row(session: Session, order_id: int) -> None:
     """Placeholder order row so print-run FK tests can insert runs."""
-    from backend.storage.order.tables import OrderRow
-    from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
-
     session.add(
         OrderRow(
             id=order_id,

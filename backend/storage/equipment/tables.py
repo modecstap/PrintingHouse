@@ -37,4 +37,3 @@ class CutterRow(Base):  # pylint: disable=too-few-public-methods
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(Text)
     max_stack: Mapped[int] = mapped_column(Integer)
-

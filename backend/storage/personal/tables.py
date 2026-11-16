@@ -40,4 +40,3 @@ class DieCutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(Text)
     salary_by_operation: Mapped[Decimal] = mapped_column(_MONEY)
-

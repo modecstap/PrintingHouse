@@ -25,4 +25,3 @@ class PrintRunIdCounterRow(Base):  # pylint: disable=too-few-public-methods
 
     order_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     next_value: Mapped[int] = mapped_column(Integer)
-

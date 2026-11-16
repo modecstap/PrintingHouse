@@ -8,7 +8,10 @@ from pydantic import ValidationError
 from backend.new_core import Format, Paper, PaperDensity, PaperType, Sheet
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.values.money import Money
-from backend.server.catalog_mapping import sheet_from_write_dto, sheet_to_read_dto
+from backend.server.catalog_mapping import (
+    sheet_from_write_dto,
+    sheet_to_read_dto,
+)
 from backend.server.schemas import PaperDto, SheetDto
 
 

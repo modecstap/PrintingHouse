@@ -1,17 +1,19 @@
 """Reference repository append semantics."""
 
-from backend.new_core.order.order import OrderContent, OrderID
+from backend.new_core.order.order import OrderContent
 from backend.new_core.reference.reference import Reference
 from backend.storage.order.repository import SqlOrderRepository
 from backend.storage.reference.repository import SqlReferenceRepository
 from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
-from backend.new_core import Order
 
 
 def test_save_appends_references_in_insertion_order(db_session):
-    """``take_all`` returns rows in store order without rewriting earlier ones."""
+    """``take_all`` returns rows in store order
+
+    without rewriting earlier ones.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     orders = SqlOrderRepository(db_session)

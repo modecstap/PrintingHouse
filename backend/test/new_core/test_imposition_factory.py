@@ -39,7 +39,7 @@ def test_create_keeps_passed_spacing_and_press_sheet():
 
 def test_create_for_printer_takes_spacing_from_catalog():
     """create_for_printer hydrates the sheet and uses printer spacing."""
-    run, printing, _ , _ , ctx = build_worked_run()
+    run, printing, _, _, ctx = build_worked_run()
     printer_id = printing.printer_id
     printer = ctx.printers[printer_id]
     ctx.printers[printer_id] = replace(printer, spacing=9)

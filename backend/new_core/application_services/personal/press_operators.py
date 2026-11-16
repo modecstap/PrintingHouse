@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 from backend.new_core.personal.factory import PressOperatorFactory
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
-from backend.new_core.personal.press_operator_repository import PressOperatorRepository
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
+from backend.new_core.personal.press_operator_repository import (
+    PressOperatorRepository,
+)
 from backend.new_core.values.money import Money
 
 
@@ -63,7 +68,8 @@ class PressOperatorCatalog:
 
         :return: the assigned operator id.
         """
-        operator = self._press_operator_factory.create(name, salary_by_operation)
+        operator = self._press_operator_factory.create(
+            name, salary_by_operation)
         self._press_operators.save(operator)
         return operator.id
 

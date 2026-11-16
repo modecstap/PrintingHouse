@@ -48,7 +48,8 @@ def _add_http_logging_middleware(app: FastAPI) -> None:
         status = response.status_code
         path = request.url.path
         message = (
-            f"{request.method} {path} status={status} duration_ms={duration_ms:.1f}"
+            f"{request.method} {path} status={status} "
+            f"duration_ms={duration_ms:.1f}"
         )
         if 200 <= status < 300:
             _logger.info(message)
@@ -66,7 +67,9 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     @app.exception_handler(OrderNotFound)
-    async def order_not_found(_request: Request, exc: OrderNotFound) -> JSONResponse:
+    async def order_not_found(
+            _request: Request,
+            exc: OrderNotFound) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": str(exc)})
 
     @app.exception_handler(KeyError)

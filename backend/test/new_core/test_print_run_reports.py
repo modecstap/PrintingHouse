@@ -18,7 +18,6 @@ from backend.new_core.values.percent import Percent
 from backend.new_core import (
     Accountant,
     InvalidInput,
-    Laminate,
     Print,
     PrintRun,
 )
@@ -33,6 +32,8 @@ from backend.test.new_core.test_print_run import (
     build_worked_run,
     tax_scaling_order,
 )
+
+
 def test_factories_append_in_call_order():
     """Operations append print, laminate, cut, then die cut, in call order.
 
@@ -64,7 +65,8 @@ def test_constructor_print_stays_out_of_the_run():
     Each target field is that amount divided by 6, and the target total
     is the sum of the four target parts.
     """
-    run, printing, _, _, ctx = build_worked_run(with_laminate=False, with_cut=False)
+    run, printing, _, _, ctx = build_worked_run(
+        with_laminate=False, with_cut=False)
     Print(
         printer_id=printing.printer_id,
         operator_id=printing.operator_id,
@@ -86,13 +88,15 @@ def test_constructor_print_stays_out_of_the_run():
     assert per_item.work == Money(Decimal(5) / Decimal(6))
     assert per_item.markup == Money(Decimal("7.8") / Decimal(6))
     assert (
-        per_item.total()
-        == per_item.material + per_item.startup + per_item.work + per_item.markup
-    )
+        per_item.total() == per_item.material +
+        per_item.startup +
+        per_item.work +
+        per_item.markup)
 
 
 def test_sheet_cost_report_adds_block_markup_to_volume_markup():
-    """A 10 percent block markup and a 30 percent volume markup both use the base 73.
+    """A 10 percent block markup and a 30 percent volume markup both use the
+    base 73.
 
     The markups are 7.3 and 21.9. The second does not scale the first.
     """
@@ -122,7 +126,9 @@ def test_sheet_cost_report_uses_the_15_percent_volume_band():
 
 
 def test_order_report_scales_the_product_by_tax_and_the_order_count():
-    """Work of 100 with 10 percent markup is 110, then times 100/93, then times 4.
+    """Work of 100 with 10 percent markup is 110.
+
+    Then times 100/93, then times 4.
 
     The run has no operations, so its block report is zero. Income equals
     the order price because material and startup stay zero.
@@ -151,14 +157,18 @@ def test_print_run_has_no_cost_report():
 
 
 def test_print_run_rejects_a_required_count_of_zero():
-    """A required count of 0 is rejected because the run prints no press sheets."""
+    """A required count of 0 is rejected
+
+    because the run prints no press sheets.
+    """
     message = "print_run: печатных листов 0, необходимое количество=0"
 
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         build_worked_run(required_count=0)
 
 
-def _die_cut_only_run(required_count: int) -> tuple[PrintRun, _RunPricingFixtures]:
+def _die_cut_only_run(
+        required_count: int) -> tuple[PrintRun, _RunPricingFixtures]:
     run, _, _, _, ctx = build_run_without_block_operations(
         required_count=required_count,
     )

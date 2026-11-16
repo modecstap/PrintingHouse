@@ -21,11 +21,11 @@ def test_empty_stores_return_protocol_sentinels(db_session):
     with pytest.raises(OrderNotFound, match="take: заказа нет, id=1"):
         orders.take(OrderID(1))
 
-    assert orders.take_latest(5) == ()
-    assert orders.take_latest(0) == ()
-    assert orders.take_latest(-1) == ()
-    assert runs.take_all_for_order(OrderID(1)) == ()
-    assert refs.take_all() == ()
+    assert not orders.take_latest(5)
+    assert not orders.take_latest(0)
+    assert not orders.take_latest(-1)
+    assert not runs.take_all_for_order(OrderID(1))
+    assert not refs.take_all()
 
     with pytest.raises(KeyError):
         printers.take(PrinterID(1))

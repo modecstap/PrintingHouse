@@ -158,7 +158,9 @@ def test_get_film_404_when_service_raises_key_error():
         missing_film_ids={9},
     )
     client, headers = _client_with_fakes(film_fake=fake)
-    assert client.get("/api/materials/films/9", headers=headers).status_code == 404
+    assert client.get(
+        "/api/materials/films/9",
+        headers=headers).status_code == 404
 
 
 def test_delete_film_204():

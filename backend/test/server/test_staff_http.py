@@ -10,7 +10,10 @@ from fastapi.testclient import TestClient
 from backend.auth.config import AuthConfig
 from backend.auth.passwords import hash_password
 from backend.auth.tokens import create_access_token
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
 from backend.new_core.values.money import Money
 from backend.server import dependencies
 from backend.server.app import create_app

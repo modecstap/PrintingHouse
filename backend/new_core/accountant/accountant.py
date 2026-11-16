@@ -33,7 +33,8 @@ class Accountant:
     def sheet_cost_report(estimate: RunEstimate) -> CostReport:
         """Returns the operation cost of one press target.
 
-        Product parts markup and the volume markup are added after the operations.
+        Product parts markup and the volume markup are added after
+        the operations.
         Each one is a percent of material, startup, and work. The second
         does not scale the first.
 

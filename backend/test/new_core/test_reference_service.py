@@ -7,7 +7,9 @@ from backend.new_core.values.percent import Percent
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.reference.reference import Reference
-from backend.new_core.application_services.reference import ReferenceOrderService
+from backend.new_core.application_services.reference import (
+    ReferenceOrderService,
+)
 from backend.test.new_core.in_memory_repositories import (
     InMemoryOrderRepository,
     InMemoryReferenceRepository,
@@ -42,7 +44,12 @@ def test_save_stores_reference_when_order_exists():
     )
     order = Order(
         id=OrderID(3),
-        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
+        product=Product(
+            parts_markup=Percent(0),
+            blocks=(
+                run.block,
+            ),
+            operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
@@ -72,19 +79,30 @@ def test_reference_orders_loads_orders_in_reference_order():
     )
     first = Order(
         id=OrderID(1),
-        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
+        product=Product(
+            parts_markup=Percent(0),
+            blocks=(
+                run.block,
+            ),
+            operations=()),
         count=1,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
     )
     second = Order(
         id=OrderID(2),
-        product=Product(parts_markup=Percent(0), blocks=(run.block,), operations=()),
+        product=Product(
+            parts_markup=Percent(0),
+            blocks=(
+                run.block,
+            ),
+            operations=()),
         count=2,
         description="",
         created_at=TEST_ORDER_CREATED_AT,
     )
-    orders = InMemoryOrderRepository(orders={first.id: first, second.id: second})
+    orders = InMemoryOrderRepository(
+        orders={first.id: first, second.id: second})
     refs = InMemoryReferenceRepository()
     refs.save(Reference(name="b", description="", order_id=second.id))
     refs.save(Reference(name="a", description="", order_id=first.id))

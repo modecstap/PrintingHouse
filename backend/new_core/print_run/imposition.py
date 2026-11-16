@@ -3,13 +3,14 @@ from decimal import Decimal
 
 from backend.new_core.errors import InvalidInput
 from backend.new_core.format import Format
-from backend.new_core.materials.sheet import Sheet, SheetID
+from backend.new_core.materials.sheet import Sheet
 
 
 @dataclass(frozen=True, slots=True)
 class Imposition:
     """
-    Value Object. How target sheets sit on a press sheet, including bleeds and spacing.
+    Value Object. How target sheets sit on a press sheet,
+    including bleeds and spacing.
     """
 
     target: Format
@@ -74,7 +75,6 @@ class Imposition:
     def _axis_counts(self) -> tuple[int, int]:
         cell_width = self.target.width + 2 * self.bleeds
         cell_height = self.target.height + 2 * self.bleeds
-
 
         usable_width = self.press_sheet.format.width - 2 * self.spacing
         usable_height = self.press_sheet.format.height - 2 * self.spacing

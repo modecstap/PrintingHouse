@@ -6,7 +6,11 @@ import jwt
 from fastapi.testclient import TestClient
 
 from backend.server.app import create_app
-from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase, auth_config
+from backend.test.server.conftest import (
+    InMemoryUserStore,
+    _DummyDatabase,
+    auth_config,
+)
 
 
 def test_docs_reachable_without_auth(auth_config):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import psycopg
@@ -36,8 +37,6 @@ def _recreate_ph_database() -> None:
 
 
 def _upgrade_head() -> None:
-    import os
-
     cfg = Config(str(ALEMBIC_INI))
     cfg.set_main_option("sqlalchemy.url", PH_CONFIG.get_db_url("psycopg"))
     previous_cwd = os.getcwd()
@@ -69,14 +68,19 @@ def _truncate_all(session: Session) -> None:
 
 @pytest.fixture(scope="session")
 def ph_database() -> Database:
-    """Drops ``PH``, migrates to head, yields a ``Database`` for that catalog."""
+    """Drops ``PH``, migrates to head.
+
+    Yields a ``Database`` for that catalog.
+    """
     _recreate_ph_database()
     _upgrade_head()
     return Database(PH_CONFIG)
 
 
 @pytest.fixture
-def db_session(ph_database: Database) -> Session:
+def db_session(  # pylint: disable=redefined-outer-name
+    ph_database: Database,
+) -> Session:
     """Clean application tables before each test."""
     session = ph_database.session_factory()
     try:

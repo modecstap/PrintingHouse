@@ -57,7 +57,8 @@ class _FakePrinterCatalog:
 _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 
-def _client_with_fake(fake: _FakePrinterCatalog) -> tuple[TestClient, dict[str, str]]:
+def _client_with_fake(
+        fake: _FakePrinterCatalog) -> tuple[TestClient, dict[str, str]]:
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_printer_catalog] = lambda: fake
@@ -162,4 +163,6 @@ def test_replace_printer_404_when_missing():
 def test_replace_printer_requires_token():
     fake = _FakePrinterCatalog()
     client, _ = _client_with_fake(fake)
-    assert client.put("/api/equipment/printers/5", json=_PRINTER_JSON).status_code == 401
+    assert client.put(
+        "/api/equipment/printers/5",
+        json=_PRINTER_JSON).status_code == 401

@@ -20,8 +20,13 @@ from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.values.money import Money
 from backend.new_core.order.order import Order, OrderID
 from backend.new_core.order.repository import OrderIdOccupied, OrderNotFound
-from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
-from backend.new_core.personal.cutter_operator_repository import CutterOperatorIdOccupied
+from backend.new_core.personal.cutter_operator import (
+    CutterOperator,
+    CutterOperatorID,
+)
+from backend.new_core.personal.cutter_operator_repository import (
+    CutterOperatorIdOccupied,
+)
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
     DieCutterOperatorID,
@@ -36,8 +41,13 @@ from backend.new_core.personal.laminator_operator import (
 from backend.new_core.personal.laminator_operator_repository import (
     LaminatorOperatorIdOccupied,
 )
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
-from backend.new_core.personal.press_operator_repository import PressOperatorIdOccupied
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
+from backend.new_core.personal.press_operator_repository import (
+    PressOperatorIdOccupied,
+)
 from backend.new_core.print_run.print_run import (
     PrintRun,
     PrintRunID,
@@ -79,7 +89,10 @@ class InMemoryOrderRepository:
     def take_latest(self, limit: int) -> tuple[Order, ...]:
         if limit <= 0:
             return ()
-        ids = sorted(self.orders, key=lambda order_id: order_id.value, reverse=True)
+        ids = sorted(
+            self.orders,
+            key=lambda order_id: order_id.value,
+            reverse=True)
         return tuple(self.orders[order_id] for order_id in ids[:limit])
 
 
@@ -111,14 +124,15 @@ class InMemoryPrintRunRepository:
 class InMemoryUnitOfWork:
     """Snapshot rollback for in-memory order and print-run stores."""
 
-    orders: InMemoryOrderRepository = field(default_factory=InMemoryOrderRepository)
+    orders: InMemoryOrderRepository = field(
+        default_factory=InMemoryOrderRepository)
     print_runs: InMemoryPrintRunRepository = field(
         default_factory=InMemoryPrintRunRepository,
     )
 
     def transaction(self, work: Callable[[], T]) -> T:
         orders_snapshot = dict(self.orders.orders)
-        runs_snapshot = {k: v for k, v in self.print_runs.by_order.items()}
+        runs_snapshot = dict(self.print_runs.by_order)
         try:
             return work()
         except Exception:
@@ -300,7 +314,8 @@ class InMemoryLaminatorRepository:
 
 @dataclass
 class InMemoryLaminatorOperatorRepository:
-    items: dict[LaminatorOperatorID, LaminatorOperator] = field(default_factory=dict)
+    items: dict[LaminatorOperatorID, LaminatorOperator] = field(
+        default_factory=dict)
     _next_id: int = 0
 
     def take(self, operator_id: LaminatorOperatorID) -> LaminatorOperator:

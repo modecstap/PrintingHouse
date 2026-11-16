@@ -25,7 +25,8 @@ def upgrade() -> None:
         "orders",
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=True),
     )
-    op.execute(sa.text("UPDATE orders SET created_at = (NOW() AT TIME ZONE 'UTC')"))
+    op.execute(
+        sa.text("UPDATE orders SET created_at = (NOW() AT TIME ZONE 'UTC')"))
     op.alter_column("orders", "created_at", nullable=False)
 
 

@@ -71,7 +71,8 @@ class LaminatorOperatorCatalog:
 
         :return: the assigned operator id.
         """
-        operator = self._laminator_operator_factory.create(name, salary_by_operation)
+        operator = self._laminator_operator_factory.create(
+            name, salary_by_operation)
         self._laminator_operators.save(operator)
         return operator.id
 

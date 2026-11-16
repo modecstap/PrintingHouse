@@ -58,7 +58,9 @@ def test_cost_report_prices_the_worked_run():
 
 
 def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
-    """ZERO_ZERO keeps paper and printer startup, and drops ink and press salary.
+    """ZERO_ZERO keeps paper and printer startup.
+
+    It drops ink and press salary.
 
     The press sheet is 9, 16, 39, and 19.2. The total is 83.2.
     """
@@ -74,7 +76,9 @@ def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
 
 
 def test_cost_report_omits_lamination_when_it_is_not_passed():
-    """Print and cut, without calling the laminate factory, price the press sheet.
+    """Print and cut, without calling the laminate factory.
+
+    They price the press sheet.
 
     The press sheet is 10, 11, 40, and 18.3.
     """
@@ -91,7 +95,8 @@ def test_cost_report_omits_lamination_when_it_is_not_passed():
 
 def test_cost_report_adds_paper_and_ink_for_a_second_print():
     """Two FOUR_ZERO prints price the press sheet at 20, 22, 10, and 15.6."""
-    run, printing, _, _, ctx = build_worked_run(with_laminate=False, with_cut=False)
+    run, printing, _, _, ctx = build_worked_run(
+        with_laminate=False, with_cut=False)
     second = Print(
         printer_id=printing.printer_id,
         operator_id=printing.operator_id,
@@ -125,7 +130,10 @@ def test_press_sheet_material_equals_the_chroma_shares(
     chroma: Chroma,
     material: int,
 ):
-    """One print with free paper, startup, and salary prices only the ink shares."""
+    """One print with free paper, startup, and salary.
+
+    It prices only the ink shares.
+    """
     run, _, _, _, ctx = build_run_with_free_chroma_pricing(chroma=chroma)
 
     sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
@@ -134,7 +142,9 @@ def test_press_sheet_material_equals_the_chroma_shares(
 
 
 def test_list_report_divides_by_the_imposition_count():
-    """One press sheet is divided by the 6 targets on it, then times 3 block sheets.
+    """One press sheet is divided by the 6 targets on it.
+
+    Then times 3 block sheets.
 
     The press sheet is 10, 10, 5, and 7.5. The sheet total is 32.5.
     """
@@ -170,7 +180,10 @@ def test_list_report_divides_by_the_imposition_count():
 
 
 def test_cost_report_is_zero_without_operations():
-    """No operations price every money field at zero and still produce 12 sheets."""
+    """No operations price every money field at zero
+
+    and still produce 12 sheets.
+    """
     run, _, _, _, ctx = build_run_without_block_operations()
 
     assert not run.block.operations
@@ -198,7 +211,10 @@ def test_cost_report_is_zero_for_lamination_with_no_sides():
 
 
 def test_cost_report_prices_two_film_sides_once_for_salary():
-    """Two film sides price material at 6, startup at 5, and salary once at 4."""
+    """Two film sides price material at 6, startup at 5,
+
+    and salary once at 4.
+    """
     run, _, _, _, ctx = build_worked_run(
         lamination=Lamination.ONE_ONE,
         with_print=False,
@@ -215,7 +231,10 @@ def test_cost_report_prices_two_film_sides_once_for_salary():
 
 
 def test_cost_report_adds_the_die_cutter_salary_once():
-    """A die cut adds only the salary 8, and the target work is 8 divided by 6."""
+    """A die cut adds only the salary 8.
+
+    The target work is 8 divided by 6.
+    """
     run, _, _, _, ctx = build_run_without_block_operations()
     attach_die_cut_operator(run, ctx)
 

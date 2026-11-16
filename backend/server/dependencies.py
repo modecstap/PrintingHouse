@@ -11,11 +11,15 @@ from sqlalchemy.orm import Session
 
 from backend.auth import AuthConfig, CredentialsError, username_from_token
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
-from backend.new_core.application_services.equipment.cutters import CutterCatalog
+from backend.new_core.application_services.equipment.cutters import (
+    CutterCatalog,
+)
 from backend.new_core.application_services.equipment.laminators import (
     LaminatorCatalog,
 )
-from backend.new_core.application_services.equipment.printers import PrinterCatalog
+from backend.new_core.application_services.equipment.printers import (
+    PrinterCatalog,
+)
 from backend.new_core.application_services.materials.films import FilmCatalog
 from backend.new_core.application_services.materials.sheets import SheetCatalog
 from backend.new_core.application_services.personal.cutter_operators import (
@@ -44,23 +48,31 @@ from backend.new_core.personal.factory import (
 )
 from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.application_services.order import OrderService
-from backend.new_core.application_services.reference import ReferenceOrderService
+from backend.new_core.application_services.reference import (
+    ReferenceOrderService,
+)
 from backend.storage.database import Database
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
-from backend.storage.equipment.laminator_repository import SqlLaminatorRepository
+from backend.storage.equipment.laminator_repository import (
+    SqlLaminatorRepository,
+)
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
 from backend.storage.order.repository import SqlOrderRepository
 from backend.storage.order.unit_of_work import SqlOrderUnitOfWork
-from backend.storage.personal.cutter_operator_repository import SqlCutterOperatorRepository
+from backend.storage.personal.cutter_operator_repository import (
+    SqlCutterOperatorRepository,
+)
 from backend.storage.personal.die_cutter_operator_repository import (
     SqlDieCutterOperatorRepository,
 )
 from backend.storage.personal.laminator_operator_repository import (
     SqlLaminatorOperatorRepository,
 )
-from backend.storage.personal.press_operator_repository import SqlPressOperatorRepository
+from backend.storage.personal.press_operator_repository import (
+    SqlPressOperatorRepository,
+)
 from backend.storage.reference.repository import SqlReferenceRepository
 from backend.storage.user.repository import SqlUserRepository
 
@@ -79,7 +91,7 @@ def get_auth_config(request: Request) -> AuthConfig:
 
 def get_db_session(
     database: Annotated[Database, Depends(get_database)],
-) -> Generator[Session, None, None]:
+) -> Generator[Session]:
     """Opens one SQLAlchemy session per request.
 
     :param database:

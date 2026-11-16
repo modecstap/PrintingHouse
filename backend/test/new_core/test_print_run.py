@@ -26,7 +26,10 @@ from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.order.order import Order, OrderID
-from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
+from backend.new_core.personal.cutter_operator import (
+    CutterOperator,
+    CutterOperatorID,
+)
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
     DieCutterOperatorID,
@@ -35,7 +38,10 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperator,
     LaminatorOperatorID,
 )
-from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
+from backend.new_core.personal.press_operator import (
+    PressOperator,
+    PressOperatorID,
+)
 from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.lamination import Lamination
@@ -107,13 +113,15 @@ def pricing_strategy_factory(
     films: InMemoryFilmRepository | None = None,
 ) -> PricingStrategyFactory:
     """In-memory catalogs for pricing strategy tests."""
-    printer_repo = printers or InMemoryPrinterRepository(items=dict(ctx.printers))
+    printer_repo = printers or InMemoryPrinterRepository(
+        items=dict(ctx.printers))
     film_repo = films or InMemoryFilmRepository(items=dict(ctx.films))
     return PricingStrategyFactory(
         printer_repo,
         InMemoryPressOperatorRepository(items=dict(ctx.press_operators)),
         InMemoryLaminatorRepository(items=dict(ctx.laminators)),
-        InMemoryLaminatorOperatorRepository(items=dict(ctx.laminator_operators)),
+        InMemoryLaminatorOperatorRepository(
+            items=dict(ctx.laminator_operators)),
         InMemoryCutterRepository(items=dict(ctx.cutters)),
         InMemoryCutterOperatorRepository(items=dict(ctx.cutter_operators)),
         InMemoryDieCutterOperatorRepository(items=dict(ctx.die_cut_operators)),
@@ -285,7 +293,9 @@ def build_worked_run(  # pylint: disable=too-many-arguments
     Cut | None,
     _RunPricingFixtures,
 ]:
-    """Assembles one run and the operations the flags allow. It does not price them.
+    """Assembles one run and the operations the flags allow.
+
+    It does not price them.
 
     with_print, with_laminate, and with_cut default to True. A False flag
     skips that factory and returns None in its place. Chroma and lamination
@@ -369,7 +379,13 @@ def build_worked_run(  # pylint: disable=too-many-arguments
 
 def build_run_without_block_operations(
     **kwargs,
-) -> tuple[PrintRun, Print | None, Laminate | None, Cut | None, _RunPricingFixtures]:
+) -> tuple[
+    PrintRun,
+    Print | None,
+    Laminate | None,
+    Cut | None,
+    _RunPricingFixtures,
+]:
     """Worked run whose block has no print, laminate, or cut operations."""
     return build_worked_run(
         with_print=False,
@@ -392,12 +408,18 @@ def assert_tax_scaling_report_prices(report) -> None:
     assert report.impositions == (6,)
 
 
-def build_run_with_free_chroma_pricing(
-    *,
-    chroma: Chroma | None = None,
-    required_count: int | None = None,
-) -> tuple[PrintRun, Print | None, Laminate | None, Cut | None, _RunPricingFixtures]:
-    """Worked run with zero paper, startup, and press salary; optional chroma."""
+def build_run_with_free_chroma_pricing(*,
+                                       chroma: Chroma | None = None,
+                                       required_count: int | None = None,
+                                       ) -> tuple[PrintRun,
+                                                  Print | None,
+                                                  Laminate | None,
+                                                  Cut | None,
+                                                  _RunPricingFixtures]:
+    """Worked run with zero paper, startup, and press salary.
+
+    Chroma is optional.
+    """
     kwargs: dict = {
         "press_price": 0,
         "printer_startup": 0,
@@ -451,7 +473,8 @@ def attach_die_cut_operator(
 
 
 def _append_block_operation(run: PrintRun, operation) -> None:
-    run.block = replace(run.block, operations=run.block.operations + (operation,))
+    run.block = replace(
+        run.block, operations=run.block.operations + (operation,))
 
 
 def _estimate(
