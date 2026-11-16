@@ -7,6 +7,11 @@ from backend.new_core.errors import InvalidInput
 from backend.test.storage.helpers import zero_printer_prices
 
 
+__all__ = [
+    "test_printer_rejects_blank_name",
+    "test_printer_rejects_negative_spacing",
+]
+
 def test_printer_rejects_blank_name():
     """Whitespace-only name raises InvalidInput."""
     with pytest.raises(InvalidInput, match="printer: название не задано"):

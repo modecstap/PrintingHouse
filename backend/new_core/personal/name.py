@@ -3,6 +3,8 @@
 from backend.new_core.errors import InvalidInput
 
 
+__all__ = ["stripped_required_name"]
+
 def stripped_required_name(name: str, subject: str) -> str:
     """Returns the stripped name or rejects an empty result.
 

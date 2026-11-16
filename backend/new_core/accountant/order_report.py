@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from backend.new_core.values.money import Money
 
 
+__all__ = ["OrderReport"]
+
 @dataclass(frozen=True, slots=True)
 class OrderReport:
     """

@@ -9,6 +9,8 @@ from backend.new_core.materials.paper import Paper
 from backend.new_core.materials.sheet import Sheet, SheetID
 
 
+__all__ = ["SheetRepository"]
+
 class SheetRepository(Protocol):
     """Loads and stores sheets by id."""
 

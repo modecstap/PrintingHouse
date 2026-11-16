@@ -10,6 +10,11 @@ from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperatorID,
 )
 
+__all__ = [
+    "DieCutterOperatorIdOccupied",
+    "DieCutterOperatorRepository",
+]
+
 DieCutterOperatorStoreOperation = Literal["save"]
 
 

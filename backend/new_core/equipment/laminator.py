@@ -6,6 +6,11 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "LaminatorID",
+    "Laminator",
+]
+
 @dataclass(frozen=True, slots=True)
 class LaminatorID:
     """Value Object. Stable identifier of a laminator in the catalog."""

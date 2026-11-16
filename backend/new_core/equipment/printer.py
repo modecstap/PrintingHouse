@@ -6,6 +6,12 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "PrinterID",
+    "PrinterPrices",
+    "Printer",
+]
+
 @dataclass(frozen=True, slots=True)
 class PrinterID:
     """Value Object. Stable identifier of a printer in the equipment catalog."""

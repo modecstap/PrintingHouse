@@ -15,6 +15,11 @@ from backend.new_core.print_run.factory import PrintRunFactory
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.percent import Percent
 
+__all__ = [
+    "OrderIdAllocationFailed",
+    "OrderService",
+]
+
 _MAX_ORDER_ID_ATTEMPTS = 3
 
 

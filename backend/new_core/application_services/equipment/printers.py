@@ -7,6 +7,8 @@ from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.equipment.printer_repository import PrinterRepository
 
 
+__all__ = ["PrinterCatalog"]
+
 class PrinterCatalog:
     """Loads and edits printers."""
 

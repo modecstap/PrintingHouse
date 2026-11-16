@@ -7,6 +7,8 @@ from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderRepository
 
 
+__all__ = ["OrderFactory"]
+
 class OrderFactory:
     """Allocates order ids and builds orders."""
 

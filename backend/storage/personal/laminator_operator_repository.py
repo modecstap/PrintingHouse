@@ -20,6 +20,8 @@ from backend.storage.personal.operator_row import (
 from backend.storage.personal.tables import LaminatorOperatorRow
 
 
+__all__ = ["SqlLaminatorOperatorRepository"]
+
 class SqlLaminatorOperatorRepository:
     """Loads and stores laminator operators in PostgreSQL."""
 

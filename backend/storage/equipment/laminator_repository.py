@@ -12,6 +12,8 @@ from backend.new_core.values.money import Money
 from backend.storage.equipment.tables import LaminatorRow
 
 
+__all__ = ["SqlLaminatorRepository"]
+
 class SqlLaminatorRepository:
     """Loads and stores laminators in PostgreSQL."""
 

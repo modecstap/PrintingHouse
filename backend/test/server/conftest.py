@@ -12,6 +12,15 @@ from backend.auth.users import StoredUser
 from backend.server.app import create_app
 
 
+__all__ = [
+    "InMemoryUserStore",
+    "auth_config",
+    "user_store",
+    "api_client",
+    "bearer_token",
+    "auth_headers",
+]
+
 class _DummySession:
     def close(self) -> None:
         return None

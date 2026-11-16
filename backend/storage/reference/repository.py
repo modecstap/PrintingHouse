@@ -10,6 +10,8 @@ from backend.new_core.reference.reference import Reference
 from backend.storage.reference.tables import OrderReferenceRow
 
 
+__all__ = ["SqlReferenceRepository"]
+
 class SqlReferenceRepository:
     """Persists named order references in PostgreSQL."""
 

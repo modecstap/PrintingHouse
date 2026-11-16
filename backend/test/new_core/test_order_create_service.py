@@ -35,6 +35,25 @@ from backend.test.new_core.test_print_run import (
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
+__all__ = [
+    "test_save_persists_imposition_spacing_from_product",
+    "test_order_report_keeps_stored_spacing_when_catalog_printer_changes",
+    "test_replace_stores_imposition_spacing_from_product",
+    "test_quote_returns_report_and_does_not_write_stores",
+    "test_quote_with_two_blocks_reports_two_imposition_counts",
+    "test_quote_applies_product_parts_markup_to_each_block",
+    "test_quote_with_missing_printer_raises_and_leaves_stores_empty",
+    "test_quote_with_missing_film_raises_and_leaves_stores_empty",
+    "test_save_persists_order_and_runs",
+    "test_save_maps_each_block_to_one_run_in_order",
+    "test_two_orders_may_share_the_same_print_run_id_value",
+    "test_save_retries_on_occupied_order_id",
+    "test_save_raises_after_three_occupied_ids",
+    "test_build_run_estimate_rejects_unknown_operation",
+    "test_replace_keeps_created_at_and_updates_description",
+    "test_save_does_not_retry_on_invalid_input",
+]
+
 def _create_service(uow: InMemoryUnitOfWork, ctx) -> OrderService:
     return order_service(uow, ctx)
 

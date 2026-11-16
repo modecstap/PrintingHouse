@@ -9,6 +9,12 @@ from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.test.new_core.test_print_run import build_worked_run
 
 
+__all__ = [
+    "test_create_rejects_strategies_for_different_runs",
+    "test_create_requires_strategies_or_explicit_run",
+    "test_create_accepts_empty_strategies_with_explicit_run",
+]
+
 def test_create_rejects_strategies_for_different_runs():
     run_a, printing, _, _, ctx = build_worked_run()
     run_b = PrintRun(

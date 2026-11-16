@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import Protocol
 
 
+__all__ = [
+    "StoredUser",
+    "UserStore",
+]
+
 @dataclass(frozen=True, slots=True)
 class StoredUser:
     """Username and password hash loaded from persistence."""

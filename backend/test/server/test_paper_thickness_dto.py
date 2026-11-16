@@ -15,6 +15,12 @@ from backend.server.catalog_mapping import (
 from backend.server.schemas import PaperDto, SheetDto
 
 
+__all__ = [
+    "test_paper_dto_accepts_fractional_thickness",
+    "test_paper_dto_rejects_invalid_thickness",
+    "test_sheet_dto_round_trip_fractional_thickness",
+]
+
 def test_paper_dto_accepts_fractional_thickness():
     dto = PaperDto.model_validate(
         {

@@ -8,6 +8,11 @@ from typing import TypeVar
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+__all__ = [
+    "save_operator_row",
+    "replace_operator_row",
+]
+
 IdT = TypeVar("IdT")
 
 

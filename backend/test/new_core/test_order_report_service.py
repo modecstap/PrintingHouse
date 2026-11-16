@@ -29,6 +29,14 @@ from backend.test.new_core.test_print_run import (
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
+__all__ = [
+    "test_order_report_scales_the_product_by_tax_and_the_order_count",
+    "test_order_report_prices_die_cut_through_order_service",
+    "test_order_report_keeps_stored_sheet_price_after_catalog_replace",
+    "test_order_report_reflects_catalog_film_replace_after_save",
+    "test_order_report_raises_when_order_is_missing",
+]
+
 def _service_from_fixtures(run, ctx) -> OrderService:
     return order_service(InMemoryUnitOfWork(), ctx)
 

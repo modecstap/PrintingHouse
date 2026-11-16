@@ -1,6 +1,8 @@
 from enum import Enum
 
 
+__all__ = ["Lamination"]
+
 class Lamination(Enum):
     DONT = 1
     ONE_ZERO = 2

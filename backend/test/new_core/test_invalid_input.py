@@ -33,6 +33,19 @@ from backend.new_core import (
     Product,
 )
 from backend.test.new_core.test_imposition import imposition_test_sheet
+__all__ = [
+    "test_imposition_rejects_count_when_nothing_fits",
+    "test_product_rejects_empty_blocks",
+    "test_paper_rejects_a_density_of_zero",
+    "test_paper_accepts_fractional_thickness",
+    "test_paper_rejects_thickness_with_more_than_two_decimal_places",
+    "test_paper_rejects_a_thickness_of_zero",
+    "test_cutter_rejects_a_stack_height_of_zero",
+    "test_negative_measure_is_rejected",
+    "test_every_invalid_field_is_reported",
+    "test_negative_id_is_rejected",
+]
+
 _ZERO_CELL = (
     "Imposition: сторона ячейки равна 0, "
     "ширина ячейки=0 мм, высота ячейки=10 мм"

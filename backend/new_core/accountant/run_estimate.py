@@ -11,6 +11,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.percent import Percent
 
 
+__all__ = ["RunEstimate"]
+
 @dataclass(frozen=True, slots=True)
 class RunEstimate:
     """Pricing strategies for one print run, with one validated press run."""

@@ -11,6 +11,12 @@ from backend.new_core.equipment.printer_repository import PrinterRepository
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "PrinterFactory",
+    "LaminatorFactory",
+    "CutterFactory",
+]
+
 class PrinterFactory:
     """Allocates printer ids and builds printers."""
 

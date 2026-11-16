@@ -43,6 +43,29 @@ from backend.server.dependencies import (
 )
 from backend.server.schemas import CreatedIdDto, OperatorDto, OperatorWriteDto
 
+__all__ = [
+    "list_press_operators",
+    "get_press_operator",
+    "create_press_operator",
+    "replace_press_operator",
+    "delete_press_operator",
+    "list_laminator_operators",
+    "get_laminator_operator",
+    "create_laminator_operator",
+    "replace_laminator_operator",
+    "delete_laminator_operator",
+    "list_cutter_operators",
+    "get_cutter_operator",
+    "create_cutter_operator",
+    "replace_cutter_operator",
+    "delete_cutter_operator",
+    "list_die_cut_operators",
+    "get_die_cut_operator",
+    "create_die_cut_operator",
+    "replace_die_cut_operator",
+    "delete_die_cut_operator",
+]
+
 router = APIRouter(prefix="/api/staff", tags=["staff"])
 
 

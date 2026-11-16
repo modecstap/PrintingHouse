@@ -11,6 +11,8 @@ from backend.new_core.values.money import Money
 from backend.storage.materials.tables import FilmRow
 
 
+__all__ = ["SqlFilmRepository"]
+
 class SqlFilmRepository:
     """Loads and stores films in PostgreSQL."""
 

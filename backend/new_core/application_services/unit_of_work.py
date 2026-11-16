@@ -8,6 +8,11 @@ from typing import Protocol, TypeVar
 from backend.new_core.order.repository import OrderRepository
 from backend.new_core.print_run.repository import PrintRunRepository
 
+__all__ = [
+    "T",
+    "OrderUnitOfWork",
+]
+
 T = TypeVar("T")
 
 

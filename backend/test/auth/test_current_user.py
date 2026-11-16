@@ -3,6 +3,8 @@ from backend.auth.current_user import username_from_token
 from backend.auth.tokens import create_access_token
 
 
+__all__ = ["test_username_from_token_matches_sub"]
+
 def test_username_from_token_matches_sub():
     cfg = AuthConfig("k", "HS256", 10)
     token = create_access_token("bob", cfg)

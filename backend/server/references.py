@@ -20,6 +20,12 @@ from backend.server.mapping import (
 )
 from backend.server.schemas import OrderDto, ReferenceDto
 
+__all__ = [
+    "list_references",
+    "list_reference_orders",
+    "save_reference",
+]
+
 router = APIRouter(prefix="/api/references", tags=["references"])
 
 

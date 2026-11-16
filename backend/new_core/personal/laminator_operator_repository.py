@@ -10,6 +10,11 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperatorID,
 )
 
+__all__ = [
+    "LaminatorOperatorIdOccupied",
+    "LaminatorOperatorRepository",
+]
+
 LaminatorOperatorStoreOperation = Literal["save"]
 
 

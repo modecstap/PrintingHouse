@@ -9,6 +9,8 @@ from backend.new_core.equipment.printer import PrinterID
 from backend.new_core.personal.press_operator import PressOperatorID
 
 
+__all__ = ["Print"]
+
 @dataclass(frozen=True, slots=True)
 class Print:
     """

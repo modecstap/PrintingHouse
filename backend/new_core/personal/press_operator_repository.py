@@ -10,6 +10,11 @@ from backend.new_core.personal.press_operator import (
     PressOperatorID,
 )
 
+__all__ = [
+    "PressOperatorIdOccupied",
+    "PressOperatorRepository",
+]
+
 PressOperatorStoreOperation = Literal["save"]
 
 

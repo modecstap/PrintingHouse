@@ -20,6 +20,13 @@ from backend.server.app import create_app
 from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 
 
+__all__ = [
+    "test_staff_routes_require_token",
+    "test_create_press_operator_returns_id",
+    "test_replace_press_operator_204",
+    "test_replace_press_operator_404_when_missing",
+]
+
 @dataclass
 class _FakePressOperatorCatalog:
     missing_press_operator_ids: set[int] = field(default_factory=set)

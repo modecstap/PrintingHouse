@@ -30,6 +30,8 @@ from backend.new_core.personal.press_operator_repository import (
 from backend.new_core.print_run.print_run import PrintRun
 
 
+__all__ = ["PricingStrategyFactory"]
+
 class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
     """Resolves catalog rows and builds one pricing strategy per operation."""
 

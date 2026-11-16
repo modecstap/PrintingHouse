@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from backend.new_core.errors import InvalidInput
 
 
+__all__ = ["Format"]
+
 @dataclass(frozen=True, slots=True)
 class Format:
     """

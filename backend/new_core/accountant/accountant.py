@@ -13,6 +13,11 @@ from backend.new_core.order.additional_work import AdditionalWork
 from backend.new_core.order.order import Order
 
 
+__all__ = [
+    "TAX_COMPENSATION_FACTOR",
+    "Accountant",
+]
+
 TAX_COMPENSATION_FACTOR = Percent(93)
 
 

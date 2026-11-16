@@ -6,6 +6,13 @@ from sqlalchemy.exc import IntegrityError
 from backend.storage.user.repository import SqlUserRepository
 
 
+__all__ = [
+    "test_empty_user_count_is_zero",
+    "test_add_then_get_by_username",
+    "test_duplicate_username_raises_integrity_error",
+    "test_count_after_insert_is_one",
+]
+
 def test_empty_user_count_is_zero(db_session):
     assert SqlUserRepository(db_session).count() == 0
 

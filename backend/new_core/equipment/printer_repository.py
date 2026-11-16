@@ -7,6 +7,11 @@ from typing import Literal, Protocol
 from backend.new_core.catalog.errors import CatalogIdOccupied
 from backend.new_core.equipment.printer import Printer, PrinterID
 
+__all__ = [
+    "PrinterIdOccupied",
+    "PrinterRepository",
+]
+
 PrinterStoreOperation = Literal["save"]
 
 

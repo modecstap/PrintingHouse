@@ -4,6 +4,12 @@ from backend.auth.errors import AdminSeedConfigError
 from backend.auth.seed import seed_admin_if_empty
 
 
+__all__ = [
+    "test_seed_inserts_once",
+    "test_seed_noop_when_rows_exist",
+    "test_seed_raises_when_empty_and_env_missing",
+]
+
 class _MemStore:
     def __init__(self) -> None:
         self.rows: list[tuple[str, str]] = []

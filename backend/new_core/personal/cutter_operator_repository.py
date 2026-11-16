@@ -10,6 +10,11 @@ from backend.new_core.personal.cutter_operator import (
     CutterOperatorID,
 )
 
+__all__ = [
+    "CutterOperatorIdOccupied",
+    "CutterOperatorRepository",
+]
+
 CutterOperatorStoreOperation = Literal["save"]
 
 

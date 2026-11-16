@@ -19,6 +19,13 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+__all__ = [
+    "test_references_without_token_401",
+    "test_list_and_orders_happy_path",
+    "test_save_204_without_body",
+    "test_save_404_when_order_missing",
+]
+
 @dataclass
 class _FakeReferenceService:
     references_rows: tuple[Reference, ...] = ()

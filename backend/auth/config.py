@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from backend.auth.errors import MissingJwtSecret
 
 
+__all__ = ["AuthConfig"]
+
 @dataclass(frozen=True, slots=True)
 class AuthConfig:
     """Signing key, algorithm, and access-token lifetime."""

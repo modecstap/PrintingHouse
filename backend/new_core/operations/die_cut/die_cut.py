@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 
 
+__all__ = ["DieCut"]
+
 @dataclass(frozen=True, slots=True)
 class DieCut:
     """

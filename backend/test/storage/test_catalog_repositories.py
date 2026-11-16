@@ -50,9 +50,29 @@ from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import sample_printer, zero_printer_prices
 
 
+__all__ = [
+    "test_catalog_take_round_trips_domain_objects",
+    "test_catalog_take_missing_raises_key_error",
+    "test_printer_save_list_delete_round_trip",
+    "test_printer_spacing_round_trip",
+    "test_printer_save_replace_take_round_trip",
+    "test_film_add_take_all_replace_take_round_trip",
+    "test_sheet_add_take_all_replace_take_round_trip",
+    "test_sheet_round_trip_fractional_thickness",
+    "test_sheet_distinct_paper_types_dedup_and_sort",
+    "test_sheet_distinct_paper_densities_dedup_and_sort",
+    "test_film_distinct_film_densities_dedup_and_sort",
+    "test_material_catalog_take_missing_raises_key_error",
+    "test_material_catalog_replace_missing_raises_key_error",
+    "test_equipment_or_staff_catalog_replace_missing_raises_key_error",
+    "test_material_catalog_delete_missing_raises_key_error",
+    "test_delete_sheet_referenced_by_part_raises_integrity_error",
+    "test_delete_film_referenced_by_part_raises_integrity_error",
+]
+
 def test_catalog_take_round_trips_domain_objects(db_session):
     """Each catalog ``take`` reloads the inserted domain entity."""
-    run, _, _, _, ctx = build_worked_run()
+    _, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     db_session.commit()
 

@@ -7,6 +7,11 @@ from backend.new_core.personal.name import stripped_required_name
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "LaminatorOperatorID",
+    "LaminatorOperator",
+]
+
 @dataclass(frozen=True, slots=True)
 class LaminatorOperatorID:
     """Value Object. Stable identifier of a laminator operator."""

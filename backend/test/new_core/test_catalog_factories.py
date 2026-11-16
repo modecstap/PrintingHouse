@@ -13,6 +13,11 @@ from backend.test.new_core.in_memory_repositories import (
 )
 
 
+__all__ = [
+    "test_printer_factory_assigns_sequential_ids",
+    "test_press_operator_factory_assigns_id_from_repo",
+]
+
 def test_printer_factory_assigns_sequential_ids() -> None:
     repo = InMemoryPrinterRepository()
     factory = PrinterFactory(repo)

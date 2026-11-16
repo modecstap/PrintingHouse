@@ -7,6 +7,8 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.print_run.imposition import Imposition
 
 
+__all__ = ["Part"]
+
 @dataclass(frozen=True, slots=True)
 class Part:
     """

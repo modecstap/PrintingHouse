@@ -20,6 +20,8 @@ from backend.storage.personal.operator_row import (
 from backend.storage.personal.tables import CutterOperatorRow
 
 
+__all__ = ["SqlCutterOperatorRepository"]
+
 class SqlCutterOperatorRepository:
     """Loads and stores cutter operators in PostgreSQL."""
 

@@ -18,6 +18,13 @@ from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
+__all__ = [
+    "test_references_returns_stored_rows_in_order",
+    "test_save_stores_reference_when_order_exists",
+    "test_save_raises_when_order_is_missing",
+    "test_reference_orders_loads_orders_in_reference_order",
+]
+
 def _service(
     orders: InMemoryOrderRepository | None = None,
     references: InMemoryReferenceRepository | None = None,

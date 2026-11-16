@@ -13,6 +13,8 @@ from backend.new_core.personal.press_operator_repository import (
 from backend.new_core.values.money import Money
 
 
+__all__ = ["PressOperatorCatalog"]
+
 class PressOperatorCatalog:
     """Loads and edits press operators."""
 

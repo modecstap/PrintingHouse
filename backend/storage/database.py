@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from backend.storage.db_config import DBConfig
 
 
+__all__ = ["Database"]
+
 class Database:
     """Holds a sync engine and session factory for one ``DBConfig``."""
 

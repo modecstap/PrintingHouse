@@ -12,6 +12,20 @@ from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+__all__ = [
+    "test_save_take_round_trips_parts_markup_on_order",
+    "test_save_then_take_round_trips_full_graph",
+    "test_save_print_only_graph_round_trips",
+    "test_second_save_same_id_raises_order_id_occupied",
+    "test_take_missing_raises_order_not_found",
+    "test_generate_id_starts_at_zero_and_advances",
+    "test_save_with_unknown_printer_raises_integrity_error",
+    "test_replace_updates_count_and_product",
+    "test_replace_updates_description_and_count_keeps_created_at",
+    "test_replace_missing_raises_order_not_found",
+    "test_take_latest_orders_by_descending_id",
+]
+
 def test_save_take_round_trips_parts_markup_on_order(db_session):
     """``parts_markup`` persists on the order row, not on parts."""
     run, _, _, _, ctx = build_worked_run()

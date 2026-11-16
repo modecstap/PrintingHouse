@@ -32,6 +32,20 @@ from backend.storage.personal.tables import (
 from backend.test.new_core.test_print_run import _RunPricingFixtures
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
+__all__ = [
+    "insert_printer",
+    "insert_laminator",
+    "insert_cutter",
+    "insert_press_operator",
+    "insert_laminator_operator",
+    "insert_cutter_operator",
+    "insert_die_cutter_operator",
+    "insert_film",
+    "insert_sheet",
+    "insert_catalogs_from_ctx",
+    "insert_minimal_order_row",
+]
+
 _CatalogEntity = TypeVar("_CatalogEntity")
 
 

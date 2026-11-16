@@ -12,6 +12,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 
 
+__all__ = ["CutPricing"]
+
 @dataclass(frozen=True, slots=True)
 class CutPricing:
     """Prices cutter salary from stack lifts and imposition cuts."""

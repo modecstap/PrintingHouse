@@ -4,6 +4,11 @@ from backend.auth.config import AuthConfig
 from backend.auth.errors import MissingJwtSecret
 
 
+__all__ = [
+    "test_from_env_without_secret_raises",
+    "test_from_env_defaults_algorithm_and_expire",
+]
+
 def test_from_env_without_secret_raises(monkeypatch):
     monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
     with pytest.raises(MissingJwtSecret):

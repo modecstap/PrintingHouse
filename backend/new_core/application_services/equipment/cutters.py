@@ -7,6 +7,8 @@ from backend.new_core.equipment.cutter_repository import CutterRepository
 from backend.new_core.equipment.factory import CutterFactory
 
 
+__all__ = ["CutterCatalog"]
+
 class CutterCatalog:
     """Loads and edits cutters."""
 

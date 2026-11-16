@@ -9,6 +9,8 @@ from backend.auth.users import StoredUser, UserStore
 from backend.storage.user.tables import UserRow
 
 
+__all__ = ["SqlUserRepository"]
+
 class SqlUserRepository(UserStore):
     """Stores username and password hash only."""
 

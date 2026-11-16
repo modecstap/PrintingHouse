@@ -6,6 +6,8 @@ import os
 from dataclasses import dataclass
 
 
+__all__ = ["DBConfig"]
+
 @dataclass(frozen=True, slots=True)
 class DBConfig:
     """Host, credentials, and database name for SQLAlchemy URLs."""

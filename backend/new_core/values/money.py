@@ -3,6 +3,8 @@ from decimal import ROUND_HALF_UP, Decimal
 from backend.new_core.errors import InvalidPriceException
 
 
+__all__ = ["Money"]
+
 def _decimal_factor(factor: object) -> Decimal | None:
     # bool is a subclass of int; isinstance(True, int) would accept bool.
     if type(factor) in (int, float):  # pylint: disable=unidiomatic-typecheck

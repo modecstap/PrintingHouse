@@ -7,6 +7,8 @@ from backend.auth.passwords import hash_password
 from backend.auth.users import UserStore
 
 
+__all__ = ["seed_admin_if_empty"]
+
 def seed_admin_if_empty(
     store: UserStore,
     username: str | None,

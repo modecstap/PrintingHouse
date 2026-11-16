@@ -10,6 +10,11 @@ from backend.new_core.materials.sheet_repository import SheetRepository
 from backend.new_core.print_run.imposition import Imposition
 
 
+__all__ = [
+    "CatalogImposition",
+    "ImpositionFactory",
+]
+
 @dataclass(frozen=True)
 class CatalogImposition:  # pylint: disable=too-few-public-methods
     """Target layout, sheet, bleeds, and printer for catalog spacing."""

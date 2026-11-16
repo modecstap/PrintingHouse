@@ -7,6 +7,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.base import Base
 
+__all__ = [
+    "FilmRow",
+    "SheetRow",
+]
+
 _MONEY = Numeric(18, 4)
 _THICKNESS_MM = Numeric(6, 2)
 

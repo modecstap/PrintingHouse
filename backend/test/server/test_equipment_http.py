@@ -17,6 +17,15 @@ from backend.server.app import create_app
 from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 
 
+__all__ = [
+    "test_equipment_routes_require_token",
+    "test_create_printer_returns_id",
+    "test_replace_printer_204",
+    "test_replace_printer_400_when_body_id_differs",
+    "test_replace_printer_404_when_missing",
+    "test_replace_printer_requires_token",
+]
+
 @dataclass
 class _FakePrinterCatalog:
     printers_rows: tuple[Printer, ...] = ()

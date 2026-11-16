@@ -11,6 +11,8 @@ from backend.new_core.equipment.cutter_repository import CutterIdOccupied
 from backend.storage.equipment.tables import CutterRow
 
 
+__all__ = ["SqlCutterRepository"]
+
 class SqlCutterRepository:
     """Loads and stores cutters in PostgreSQL."""
 

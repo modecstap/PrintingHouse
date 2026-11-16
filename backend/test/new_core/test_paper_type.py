@@ -8,6 +8,11 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.materials.paper_type import PaperType
 
 
+__all__ = [
+    "test_paper_type_rejects_blank",
+    "test_paper_type_strips_surrounding_whitespace",
+]
+
 def _rejects(message: str, call) -> None:
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()

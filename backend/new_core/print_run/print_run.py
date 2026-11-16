@@ -11,6 +11,12 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.order.order import OrderID
 
 
+__all__ = [
+    "PrintRunID",
+    "require_runs_belong_to_order",
+    "PrintRun",
+]
+
 @dataclass(frozen=True, slots=True)
 class PrintRunID:
     """Value Object. Stable identifier of one press run."""

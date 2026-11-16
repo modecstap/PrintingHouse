@@ -13,6 +13,8 @@ from backend.new_core.personal.factory import CutterOperatorFactory
 from backend.new_core.values.money import Money
 
 
+__all__ = ["CutterOperatorCatalog"]
+
 class CutterOperatorCatalog:
     """Loads and edits cutter operators."""
 

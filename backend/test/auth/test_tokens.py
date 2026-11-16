@@ -8,6 +8,11 @@ from backend.auth.errors import CredentialsError
 from backend.auth.tokens import create_access_token, decode_access_token
 
 
+__all__ = [
+    "test_token_round_trip_sub",
+    "test_expired_token_is_credentials_error",
+]
+
 def test_token_round_trip_sub():
     cfg = AuthConfig("key", "HS256", 60)
     token = create_access_token("alice", cfg)

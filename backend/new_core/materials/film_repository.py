@@ -8,6 +8,8 @@ from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.values.money import Money
 
 
+__all__ = ["FilmRepository"]
+
 class FilmRepository(Protocol):
     """Loads and stores films by id."""
 

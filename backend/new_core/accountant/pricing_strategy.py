@@ -6,6 +6,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.accountant.cost_report import CostReport
 
 
+__all__ = ["PricingStrategy"]
+
 class PricingStrategy(Protocol):
     """Estimates the cost of one run operation."""
 

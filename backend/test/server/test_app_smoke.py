@@ -13,6 +13,11 @@ from backend.test.server.conftest import (
 )
 
 
+__all__ = [
+    "test_docs_reachable_without_auth",
+    "test_expired_jwt_on_protected_route_401",
+]
+
 def test_docs_reachable_without_auth(auth_config):
     client = TestClient(create_app(auth_config, _DummyDatabase()))
     assert client.get("/docs").status_code == 200

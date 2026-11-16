@@ -15,6 +15,12 @@ from backend.storage.db_config import DBConfig
 from backend.storage.user.repository import SqlUserRepository
 
 
+__all__ = [
+    "main",
+    "wait_for_database",
+    "start_server",
+]
+
 async def main() -> None:
     try:
         await wait_for_database()

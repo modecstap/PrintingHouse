@@ -13,6 +13,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 
 
+__all__ = ["LaminatePricing"]
+
 @dataclass(frozen=True, slots=True)
 class LaminatePricing:
     """Prices film, laminator startup, and operator salary."""

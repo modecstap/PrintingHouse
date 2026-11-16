@@ -8,6 +8,8 @@ from backend.new_core.materials.sheet import Sheet, SheetID
 from backend.new_core.materials.sheet_repository import SheetRepository
 
 
+__all__ = ["SheetCatalog"]
+
 class SheetCatalog:
     """Loads and edits sheets."""
 

@@ -21,6 +21,8 @@ from backend.storage.part.mapping import part_row_to_part, persist_part
 from backend.storage.part.tables import PartRow
 
 
+__all__ = ["SqlOrderRepository"]
+
 class SqlOrderRepository:
     """Persists customer orders in PostgreSQL."""
 

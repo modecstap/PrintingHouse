@@ -8,6 +8,16 @@ from backend.new_core.errors import InvalidPriceException
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "test_rejects_non_decimal_amount",
+    "test_rejects_negative_decimal",
+    "test_eq_and_add_return_not_implemented_for_other_types",
+    "test_mul_and_div_accept_int_and_decimal",
+    "test_mul_and_div_return_not_implemented_for_bad_factor",
+    "test_mul_accepts_float_factor",
+    "test_quantize_rounds_half_up_to_cents",
+]
+
 def test_rejects_non_decimal_amount():
     with pytest.raises(InvalidPriceException, match="неотрицательным Decimal"):
         Money(1)  # type: ignore[arg-type]

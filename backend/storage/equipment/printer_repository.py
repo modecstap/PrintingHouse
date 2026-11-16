@@ -13,6 +13,8 @@ from backend.storage.equipment.printer_row import new_printer_row
 from backend.storage.equipment.tables import PrinterRow
 
 
+__all__ = ["SqlPrinterRepository"]
+
 class SqlPrinterRepository:
     """Loads and stores printers in PostgreSQL."""
 

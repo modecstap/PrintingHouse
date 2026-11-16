@@ -15,9 +15,14 @@ from backend.test.new_core.in_memory_repositories import (
 from backend.test.new_core.test_print_run import build_worked_run
 
 
+__all__ = [
+    "test_create_keeps_passed_spacing_and_press_sheet",
+    "test_create_for_printer_takes_spacing_from_catalog",
+]
+
 def test_create_keeps_passed_spacing_and_press_sheet():
     """Direct Imposition build keeps spacing and press_sheet."""
-    run, _, _, _, ctx = build_worked_run()
+    run, _, _, _, _ = build_worked_run()
     imp = run.block.imposition
 
     built = Imposition(

@@ -10,6 +10,8 @@ from backend.server.dependencies import get_auth_config, get_user_store
 from backend.server.schemas import LoginRequest, TokenResponse
 from backend.storage.user.repository import SqlUserRepository
 
+__all__ = ["issue_token"]
+
 router = APIRouter()
 
 

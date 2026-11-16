@@ -16,6 +16,15 @@ from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
 from backend.storage.schema import Base
 
+__all__ = [
+    "BACKEND_ROOT",
+    "ALEMBIC_INI",
+    "PH_CONFIG",
+    "MAINTENANCE_URL",
+    "ph_database",
+    "db_session",
+]
+
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 ALEMBIC_INI = BACKEND_ROOT / "storage" / "alembic.ini"
 

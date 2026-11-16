@@ -8,6 +8,8 @@ from backend.new_core.equipment.laminator_repository import LaminatorRepository
 from backend.new_core.values.money import Money
 
 
+__all__ = ["LaminatorCatalog"]
+
 class LaminatorCatalog:
     """Loads and edits laminators."""
 

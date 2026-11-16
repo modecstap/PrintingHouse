@@ -19,6 +19,13 @@ from backend.test.new_core.test_print_run import (
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT
 
 
+__all__ = [
+    "test_should_list_orders_with_the_larger_id_first_when_a_limit_is_set",
+    "test_should_return_an_empty_list_when_there_are_no_orders",
+    "test_get_order_returns_the_stored_order",
+    "test_get_order_raises_when_the_id_is_missing",
+]
+
 def _order(order_id: int) -> Order:
     run, _, _, _, _ = build_worked_run(
         with_print=False,

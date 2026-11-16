@@ -9,6 +9,8 @@ from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+__all__ = ["test_save_appends_references_in_insertion_order"]
+
 def test_save_appends_references_in_insertion_order(db_session):
     """``take_all`` returns rows in store order
 

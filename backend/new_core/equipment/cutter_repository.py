@@ -7,6 +7,11 @@ from typing import Literal, Protocol
 from backend.new_core.catalog.errors import CatalogIdOccupied
 from backend.new_core.equipment.cutter import Cutter, CutterID
 
+__all__ = [
+    "CutterIdOccupied",
+    "CutterRepository",
+]
+
 CutterStoreOperation = Literal["save"]
 
 

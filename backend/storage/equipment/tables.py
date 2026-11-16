@@ -7,6 +7,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.base import Base
 
+__all__ = [
+    "PrinterRow",
+    "LaminatorRow",
+    "CutterRow",
+]
+
 _MONEY = Numeric(18, 4)
 
 

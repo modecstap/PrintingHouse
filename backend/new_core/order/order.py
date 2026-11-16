@@ -5,6 +5,12 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.order.product import Product
 
 
+__all__ = [
+    "OrderID",
+    "OrderContent",
+    "Order",
+]
+
 @dataclass(frozen=True, slots=True)
 class OrderID:
     """Value Object. Stable identifier of a customer order."""

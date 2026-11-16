@@ -10,6 +10,11 @@ from backend.auth.config import AuthConfig
 from backend.auth.errors import CredentialsError
 
 
+__all__ = [
+    "create_access_token",
+    "decode_access_token",
+]
+
 def create_access_token(username: str, config: AuthConfig) -> str:
     """Issues a signed access token for ``username``.
 

@@ -6,6 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.storage.base import Base
 
 
+__all__ = ["UserRow"]
+
 class UserRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "users"
 

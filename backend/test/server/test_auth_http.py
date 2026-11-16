@@ -1,3 +1,9 @@
+__all__ = [
+    "test_login_returns_bearer_token",
+    "test_wrong_password_401_without_www_authenticate",
+    "test_protected_route_without_token_401",
+]
+
 def test_login_returns_bearer_token(api_client):
     response = api_client.post(
         "/auth/token",

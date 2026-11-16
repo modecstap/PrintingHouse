@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from backend.new_core.errors import InvalidInput
 
 
+__all__ = ["PaperDensity"]
+
 @dataclass(frozen=True, slots=True)
 class PaperDensity:
     """

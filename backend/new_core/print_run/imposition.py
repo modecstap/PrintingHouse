@@ -6,6 +6,8 @@ from backend.new_core.format import Format
 from backend.new_core.materials.sheet import Sheet
 
 
+__all__ = ["Imposition"]
+
 @dataclass(frozen=True, slots=True)
 class Imposition:
     """

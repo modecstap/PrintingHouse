@@ -20,6 +20,8 @@ from backend.storage.personal.operator_row import (
 from backend.storage.personal.tables import DieCutterOperatorRow
 
 
+__all__ = ["SqlDieCutterOperatorRepository"]
+
 class SqlDieCutterOperatorRepository:
     """Loads and stores die cutter operators in PostgreSQL."""
 

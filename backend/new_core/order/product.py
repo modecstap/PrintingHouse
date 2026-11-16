@@ -8,6 +8,8 @@ from backend.new_core.part import Part
 from backend.new_core.values.percent import Percent
 
 
+__all__ = ["Product"]
+
 @dataclass(frozen=True, slots=True)
 class Product:
     """

@@ -20,6 +20,8 @@ from backend.storage.personal.operator_row import (
 from backend.storage.personal.tables import PressOperatorRow
 
 
+__all__ = ["SqlPressOperatorRepository"]
+
 class SqlPressOperatorRepository:
     """Loads and stores press operators in PostgreSQL."""
 

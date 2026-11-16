@@ -11,6 +11,8 @@ from backend.storage.print_run.repository import SqlPrintRunRepository
 from backend.storage.reference.repository import SqlReferenceRepository
 
 
+__all__ = ["test_empty_stores_return_protocol_sentinels"]
+
 def test_empty_stores_return_protocol_sentinels(db_session):
     """Missing rows yield ``OrderNotFound``, ``KeyError``, or empty tuples."""
     orders = SqlOrderRepository(db_session)

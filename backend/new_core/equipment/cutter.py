@@ -5,6 +5,11 @@ from dataclasses import dataclass
 from backend.new_core.errors import InvalidInput
 
 
+__all__ = [
+    "CutterID",
+    "Cutter",
+]
+
 @dataclass(frozen=True, slots=True)
 class CutterID:
     """Value Object. Stable identifier of a cutter in the equipment catalog."""

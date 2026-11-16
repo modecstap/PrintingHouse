@@ -10,6 +10,8 @@ from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 
 
+__all__ = ["Laminate"]
+
 @dataclass(frozen=True, slots=True)
 class Laminate:
     """

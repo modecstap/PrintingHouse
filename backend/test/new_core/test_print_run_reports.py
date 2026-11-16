@@ -34,6 +34,17 @@ from backend.test.new_core.test_print_run import (
 )
 
 
+__all__ = [
+    "test_factories_append_in_call_order",
+    "test_constructor_print_stays_out_of_the_run",
+    "test_sheet_cost_report_adds_block_markup_to_volume_markup",
+    "test_sheet_cost_report_uses_the_15_percent_volume_band",
+    "test_order_report_scales_the_product_by_tax_and_the_order_count",
+    "test_print_run_has_no_cost_report",
+    "test_print_run_rejects_a_required_count_of_zero",
+    "test_sheet_cost_report_uses_volume_markup_tiers",
+]
+
 def test_factories_append_in_call_order():
     """Operations append print, laminate, cut, then die cut, in call order.
 

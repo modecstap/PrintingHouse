@@ -24,6 +24,17 @@ from backend.test.new_core.test_print_run import build_worked_run
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
+__all__ = [
+    "test_product_dto_embeds_press_sheet",
+    "test_product_from_dto_round_trips_press_sheet",
+    "test_imposition_extra_fields_ignored",
+    "test_unknown_kind_rejected",
+    "test_block_markup_field_rejected",
+    "test_dump_uses_enum_names_not_values",
+    "test_order_id_dumps_as_int",
+    "test_reference_round_trip",
+]
+
 def _product_with_die_cut() -> Product:
     run, _, _, _, _ = build_worked_run(with_cut=False)
     block: Part = replace(

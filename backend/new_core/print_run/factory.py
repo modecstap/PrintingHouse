@@ -6,6 +6,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.print_run.repository import PrintRunRepository
 
 
+__all__ = ["PrintRunFactory"]
+
 class PrintRunFactory:
     """Allocates print run ids and builds runs."""
 

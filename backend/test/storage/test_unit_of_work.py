@@ -11,6 +11,12 @@ from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+__all__ = [
+    "test_transaction_rolls_back_orders_and_print_runs",
+    "test_transaction_commits_orders_and_print_runs",
+    "test_rollback_does_not_rewind_order_id_sequence",
+]
+
 def _run_for_order(run: PrintRun, order_id: OrderID) -> PrintRun:
     return PrintRun(run.id, order_id, run.block, run.required_count)
 

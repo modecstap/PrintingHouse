@@ -11,6 +11,11 @@ from backend.auth.tokens import create_access_token
 from backend.auth.users import UserStore
 
 
+__all__ = [
+    "PasswordLogin",
+    "login",
+]
+
 @dataclass(frozen=True)
 class PasswordLogin:  # pylint: disable=too-few-public-methods
     """Username and password for authentication."""

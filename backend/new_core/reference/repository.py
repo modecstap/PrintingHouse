@@ -7,6 +7,8 @@ from typing import Protocol
 from backend.new_core.reference.reference import Reference
 
 
+__all__ = ["ReferenceRepository"]
+
 class ReferenceRepository(Protocol):
     """Loads and stores named reference rows."""
 

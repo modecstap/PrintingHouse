@@ -14,6 +14,13 @@ from backend.test.new_core.in_memory_repositories import (
 from backend.test.new_core.test_print_run import build_worked_run
 
 
+__all__ = [
+    "test_generate_id_starts_at_zero_and_advances",
+    "test_generate_id_follows_max_existing_id",
+    "test_in_memory_generate_id_skips_prefilled_keys",
+    "test_in_memory_generate_id_advances_monotonically",
+]
+
 def test_generate_id_starts_at_zero_and_advances(db_session):
     """Sequence first value is zero and moves independently of saves."""
     repo = SqlPrinterRepository(db_session)

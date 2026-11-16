@@ -12,6 +12,8 @@ from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 
 
+__all__ = ["PrintPricing"]
+
 @dataclass(frozen=True, slots=True)
 class PrintPricing:
     """Prices one print from paper, ink, salary, and printer startup."""

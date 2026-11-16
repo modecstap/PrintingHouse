@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 
+__all__ = ["Percent"]
+
 @dataclass(frozen=True, slots=True)
 class Percent:
     """

@@ -7,6 +7,11 @@ from backend.new_core.personal.name import stripped_required_name
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "PressOperatorID",
+    "PressOperator",
+]
+
 @dataclass(frozen=True, slots=True)
 class PressOperatorID:
     """Value Object. Stable identifier of a press operator."""

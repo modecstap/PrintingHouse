@@ -7,6 +7,11 @@ from alembic import context
 from backend.storage.db_config import DBConfig
 from backend.storage.schema import Base
 
+__all__ = [
+    "run_migrations_offline",
+    "run_migrations_online",
+]
+
 config = context.config
 
 if config.config_file_name is not None:

@@ -15,6 +15,13 @@ from backend.test.storage.catalog_insert import (
 from backend.test.storage.helpers import assert_print_run_equal
 
 
+__all__ = [
+    "test_save_all_then_take_all_preserves_order",
+    "test_second_save_all_replaces_runs",
+    "test_mismatched_for_order_raises_before_persisting",
+    "test_generate_id_starts_at_zero",
+]
+
 def _repo(db_session) -> SqlPrintRunRepository:
     return SqlPrintRunRepository(db_session)
 

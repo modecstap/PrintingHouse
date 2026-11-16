@@ -7,6 +7,8 @@ from backend.new_core.materials.sheet import SheetID
 from backend.new_core.values.money import Money
 
 
+__all__ = ["test_sheet_mass_kg_uses_paper_density_value"]
+
 def test_sheet_mass_kg_uses_paper_density_value() -> None:
     """Mass matches width times height over area factor
 

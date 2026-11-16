@@ -8,6 +8,8 @@ from backend.new_core.order.order import OrderID
 from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 
 
+__all__ = ["PrintRunRepository"]
+
 class PrintRunRepository(Protocol):
     """Loads and stores print runs for an order."""
 

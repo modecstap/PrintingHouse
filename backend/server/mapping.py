@@ -50,6 +50,15 @@ from backend.server.schemas import (
 )
 
 
+__all__ = [
+    "product_from_dto",
+    "product_to_dto",
+    "order_to_dto",
+    "report_to_dto",
+    "reference_from_dto",
+    "reference_to_dto",
+]
+
 def _money_from_str(value: str) -> Money:
     return Money(Decimal(value))
 

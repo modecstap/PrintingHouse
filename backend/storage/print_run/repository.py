@@ -16,6 +16,8 @@ from backend.storage.part.tables import PartRow
 from backend.storage.print_run.tables import PrintRunRow
 
 
+__all__ = ["SqlPrintRunRepository"]
+
 class SqlPrintRunRepository:
     """Persists print runs per order in PostgreSQL."""
 

@@ -3,6 +3,8 @@
 from pathlib import Path
 
 
+__all__ = ["test_new_core_modules_do_not_import_storage"]
+
 def test_new_core_modules_do_not_import_storage():
     """Domain package stays free of persistence imports."""
     root = Path(__file__).resolve().parents[2] / "new_core"

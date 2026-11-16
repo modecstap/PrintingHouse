@@ -7,6 +7,11 @@ from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.values.money import Money
 
 
+__all__ = [
+    "FilmID",
+    "Film",
+]
+
 @dataclass(frozen=True, slots=True)
 class FilmID:
     """Value Object. Stable identifier of a film in the materials catalog."""

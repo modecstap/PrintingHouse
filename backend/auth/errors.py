@@ -1,6 +1,13 @@
 """Auth configuration and credential errors."""
 
 
+__all__ = [
+    "MissingJwtSecret",
+    "AdminSeedConfigError",
+    "InvalidCredentials",
+    "CredentialsError",
+]
+
 class MissingJwtSecret(Exception):
     """Reports that ``JWT_SECRET_KEY`` is missing or empty."""
 

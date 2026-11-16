@@ -8,6 +8,8 @@ from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.personal.cutter_operator import CutterOperatorID
 
 
+__all__ = ["Cut"]
+
 @dataclass(frozen=True, slots=True)
 class Cut:
     """

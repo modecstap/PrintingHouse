@@ -13,6 +13,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.storage.base import Base
 
 
+__all__ = [
+    "PartRow",
+    "PartOperationRow",
+    "PartPrintRow",
+    "PartLaminateRow",
+    "PartCutRow",
+    "PartDieCutRow",
+]
+
 class PartRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "parts"
 

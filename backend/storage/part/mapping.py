@@ -35,6 +35,11 @@ from backend.storage.part.tables import (
 )
 
 
+__all__ = [
+    "part_row_to_part",
+    "persist_part",
+]
+
 def part_row_to_part(session: Session, part_id: int) -> Part:
     """Loads a ``Part`` graph for the stored part id.
 

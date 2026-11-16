@@ -6,6 +6,8 @@ from backend.new_core.accountant.pricing.cut_pricing import CutPricing
 from backend.test.new_core.test_print_run import build_worked_run
 
 
+__all__ = ["test_cut_pricing_sheets_in_stack_with_fractional_thickness"]
+
 def test_cut_pricing_sheets_in_stack_with_fractional_thickness():
     """Stack sheet count uses Decimal thickness (ceil(50 / 0.15) == 334)."""
     run, _, _, cut, ctx = build_worked_run(

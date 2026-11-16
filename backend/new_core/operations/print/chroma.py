@@ -1,6 +1,8 @@
 from enum import Enum
 
 
+__all__ = ["Chroma"]
+
 class Chroma(Enum):
     ZERO_ZERO = 0
     ONE_ZERO = 1

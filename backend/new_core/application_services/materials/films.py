@@ -7,6 +7,8 @@ from backend.new_core.materials.film_repository import FilmRepository
 from backend.new_core.values.money import Money
 
 
+__all__ = ["FilmCatalog"]
+
 class FilmCatalog:
     """Loads and edits films."""
 

@@ -9,6 +9,8 @@ from backend.new_core.values.money import Money
 from backend.new_core.errors import InvalidInput
 
 
+__all__ = ["Paper"]
+
 @dataclass(frozen=True, slots=True)
 class Paper:
     """

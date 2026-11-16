@@ -14,6 +14,8 @@ from backend.new_core.values.money import Money
 from backend.storage.materials.tables import SheetRow
 
 
+__all__ = ["SqlSheetRepository"]
+
 class SqlSheetRepository:
     """Loads and stores sheets in PostgreSQL."""
 

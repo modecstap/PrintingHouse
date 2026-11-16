@@ -27,6 +27,11 @@ from backend.server.server_config import ServerConfig
 from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
 
+__all__ = [
+    "create_app",
+    "serve",
+]
+
 _logger = logging.getLogger("backend.http")
 
 

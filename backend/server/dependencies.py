@@ -76,6 +76,34 @@ from backend.storage.personal.press_operator_repository import (
 from backend.storage.reference.repository import SqlReferenceRepository
 from backend.storage.user.repository import SqlUserRepository
 
+__all__ = [
+    "get_database",
+    "get_auth_config",
+    "get_db_session",
+    "get_user_store",
+    "get_order_service",
+    "get_reference_service",
+    "get_printer_catalog",
+    "get_laminator_catalog",
+    "get_cutter_catalog",
+    "get_film_catalog",
+    "get_sheet_catalog",
+    "get_press_operator_catalog",
+    "get_laminator_operator_catalog",
+    "get_cutter_operator_catalog",
+    "get_die_cut_operator_catalog",
+    "get_printer_catalog_and_session",
+    "get_laminator_catalog_and_session",
+    "get_cutter_catalog_and_session",
+    "get_film_catalog_and_session",
+    "get_sheet_catalog_and_session",
+    "get_press_operator_catalog_and_session",
+    "get_laminator_operator_catalog_and_session",
+    "get_cutter_operator_catalog_and_session",
+    "get_die_cut_operator_catalog_and_session",
+    "require_user",
+]
+
 _bearer = HTTPBearer(auto_error=False)
 
 

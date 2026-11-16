@@ -6,6 +6,11 @@ from backend.auth.login import PasswordLogin, login
 from backend.auth.passwords import hash_password
 
 
+__all__ = [
+    "test_login_ok",
+    "test_login_bad_password",
+]
+
 class _FakeStore:
     def __init__(self, user: tuple[str, str] | None):
         self._user = user

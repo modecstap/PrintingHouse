@@ -9,6 +9,13 @@ from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
 
 
+__all__ = [
+    "imposition_test_sheet",
+    "test_imposition_counts_six_and_cuts_ten_on_the_straight_grid",
+    "test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid",
+    "test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing",
+]
+
 def imposition_test_sheet(
     width: int,
     height: int,

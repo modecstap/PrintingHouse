@@ -9,6 +9,11 @@ from backend.new_core.materials.paper import Paper
 from backend.new_core.format import Format
 
 
+__all__ = [
+    "SheetID",
+    "Sheet",
+]
+
 @dataclass(frozen=True, slots=True)
 class SheetID:
     """Value Object. Stable identifier of a sheet in the materials catalog."""

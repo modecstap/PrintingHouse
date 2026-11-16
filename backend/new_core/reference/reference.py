@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from backend.new_core.order.order import OrderID
 
 
+__all__ = ["Reference"]
+
 @dataclass(frozen=True, slots=True)
 class Reference:
     """Value Object. A named exemplar order for templates or comparison."""

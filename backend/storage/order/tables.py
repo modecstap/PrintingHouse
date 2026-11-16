@@ -8,6 +8,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.base import Base
 
+__all__ = [
+    "OrderRow",
+    "OrderBlockRow",
+    "OrderAdditionalWorkRow",
+]
+
 _MONEY = Numeric(18, 4)
 
 

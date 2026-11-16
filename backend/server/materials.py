@@ -33,6 +33,22 @@ from backend.server.schemas import (
     SheetReadDto,
 )
 
+__all__ = [
+    "list_films",
+    "get_film",
+    "create_film",
+    "replace_film",
+    "delete_film",
+    "list_paper_types",
+    "list_paper_densities",
+    "list_film_densities",
+    "list_sheets",
+    "get_sheet",
+    "create_sheet",
+    "replace_sheet",
+    "delete_sheet",
+]
+
 router = APIRouter(prefix="/api/materials", tags=["materials"])
 
 

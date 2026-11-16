@@ -22,6 +22,20 @@ from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+__all__ = [
+    "test_orders_missing_token_401",
+    "test_quote_200_and_save_not_called",
+    "test_save_returns_id",
+    "test_save_passes_description_to_service",
+    "test_get_order_404",
+    "test_list_limit_query",
+    "test_bad_product_422",
+    "test_save_409_on_allocation_failure",
+    "test_quote_404_on_key_error",
+    "test_replace_returns_same_id",
+    "test_replace_404_when_missing",
+]
+
 @dataclass
 class _FakeOrderService:
     calls: list[str] = field(default_factory=list)

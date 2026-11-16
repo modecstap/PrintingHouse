@@ -6,6 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from backend.storage.base import Base
 
 
+__all__ = [
+    "PrintRunRow",
+    "PrintRunIdCounterRow",
+]
+
 class PrintRunRow(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "print_runs"
     __table_args__ = (UniqueConstraint("order_id", "position"),)

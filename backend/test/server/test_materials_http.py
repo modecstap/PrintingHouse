@@ -19,6 +19,23 @@ from backend.server.app import create_app
 from backend.test.server.conftest import InMemoryUserStore, _DummyDatabase
 
 
+__all__ = [
+    "test_materials_films_require_token",
+    "test_create_film_200_returns_assigned_id",
+    "test_replace_film_204",
+    "test_get_film_404_when_service_raises_key_error",
+    "test_delete_film_204",
+    "test_paper_types_require_token",
+    "test_paper_types_200_returns_list_from_service",
+    "test_paper_types_empty_catalog_returns_empty_list",
+    "test_paper_densities_require_token",
+    "test_paper_densities_200_returns_list_from_service",
+    "test_paper_densities_empty_catalog_returns_empty_list",
+    "test_film_densities_require_token",
+    "test_film_densities_200_returns_list_from_service",
+    "test_film_densities_empty_catalog_returns_empty_list",
+]
+
 @dataclass
 class _FakeFilmCatalog:
     films_rows: tuple[Film, ...] = ()

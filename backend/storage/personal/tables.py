@@ -7,6 +7,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.storage.base import Base
 
+__all__ = [
+    "PressOperatorRow",
+    "LaminatorOperatorRow",
+    "CutterOperatorRow",
+    "DieCutterOperatorRow",
+]
+
 _MONEY = Numeric(18, 4)
 
 

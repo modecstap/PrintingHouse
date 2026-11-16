@@ -50,6 +50,38 @@ from backend.server.schemas import (
 )
 
 
+__all__ = [
+    "printer_to_dto",
+    "printer_from_dto",
+    "printer_from_write_dto",
+    "laminator_to_dto",
+    "laminator_from_dto",
+    "laminator_from_write_dto",
+    "cutter_to_dto",
+    "cutter_from_dto",
+    "cutter_from_write_dto",
+    "operator_to_dto",
+    "press_operator_from_dto",
+    "operator_from_write_dto",
+    "laminator_operator_from_dto",
+    "cutter_operator_from_dto",
+    "die_cut_operator_from_dto",
+    "printer_replace_from_dto",
+    "laminator_replace_from_dto",
+    "cutter_replace_from_dto",
+    "press_operator_replace_from_dto",
+    "laminator_operator_replace_from_dto",
+    "cutter_operator_replace_from_dto",
+    "die_cut_operator_replace_from_dto",
+    "film_to_read_dto",
+    "film_from_write_dto",
+    "film_replace_from_dto",
+    "sheet_to_read_dto",
+    "sheet_from_write_dto",
+    "sheet_replace_from_dto",
+    "sheet_from_read_dto",
+]
+
 def _money(amount: str) -> Money:
     return Money(Decimal(amount))
 

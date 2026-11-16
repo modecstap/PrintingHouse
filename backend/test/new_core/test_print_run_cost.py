@@ -18,6 +18,19 @@ from backend.test.new_core.test_print_run import (
 )
 
 
+__all__ = [
+    "test_cost_report_prices_the_worked_run",
+    "test_cost_report_drops_ink_and_printer_salary_for_zero_chroma",
+    "test_cost_report_omits_lamination_when_it_is_not_passed",
+    "test_cost_report_adds_paper_and_ink_for_a_second_print",
+    "test_press_sheet_material_equals_the_chroma_shares",
+    "test_list_report_divides_by_the_imposition_count",
+    "test_cost_report_is_zero_without_operations",
+    "test_cost_report_is_zero_for_lamination_with_no_sides",
+    "test_cost_report_prices_two_film_sides_once_for_salary",
+    "test_cost_report_adds_the_die_cutter_salary_once",
+]
+
 def test_cost_report_prices_the_worked_run():
     """Print, laminate, and cut price the press sheet at 13, 16, 44, and 21.9.
 

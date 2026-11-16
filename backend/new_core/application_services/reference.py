@@ -8,6 +8,8 @@ from backend.new_core.reference.reference import Reference
 from backend.new_core.reference.repository import ReferenceRepository
 
 
+__all__ = ["ReferenceOrderService"]
+
 class ReferenceOrderService:
     """Loads exemplar orders behind references and saves new reference rows."""
 

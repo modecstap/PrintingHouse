@@ -7,6 +7,8 @@ from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
 
 
+__all__ = ["CostReport"]
+
 @dataclass(frozen=True, slots=True)
 class CostReport:
     """

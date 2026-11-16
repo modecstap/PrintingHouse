@@ -15,6 +15,15 @@ from backend.server.schemas import (
     SaveOrderResponseDto,
 )
 
+__all__ = [
+    "list_orders",
+    "get_order",
+    "get_order_report",
+    "quote_order",
+    "save_order",
+    "replace_order",
+]
+
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
 

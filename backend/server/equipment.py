@@ -48,6 +48,24 @@ from backend.server.schemas import (
     PrinterWriteDto,
 )
 
+__all__ = [
+    "list_printers",
+    "get_printer",
+    "create_printer",
+    "replace_printer",
+    "delete_printer",
+    "list_laminators",
+    "get_laminator",
+    "create_laminator",
+    "replace_laminator",
+    "delete_laminator",
+    "list_cutters",
+    "get_cutter",
+    "create_cutter",
+    "replace_cutter",
+    "delete_cutter",
+]
+
 router = APIRouter(prefix="/api/equipment", tags=["equipment"])
 
 

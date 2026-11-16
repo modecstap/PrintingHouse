@@ -7,6 +7,11 @@ from typing import Literal, Protocol
 from backend.new_core.catalog.errors import CatalogIdOccupied
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 
+__all__ = [
+    "LaminatorIdOccupied",
+    "LaminatorRepository",
+]
+
 LaminatorStoreOperation = Literal["save"]
 
 

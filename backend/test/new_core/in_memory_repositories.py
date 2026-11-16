@@ -55,6 +55,23 @@ from backend.new_core.print_run.print_run import (
 )
 from backend.new_core.reference.reference import Reference
 
+__all__ = [
+    "T",
+    "InMemoryOrderRepository",
+    "InMemoryPrintRunRepository",
+    "InMemoryUnitOfWork",
+    "InMemoryFilmRepository",
+    "InMemorySheetRepository",
+    "InMemoryPrinterRepository",
+    "InMemoryPressOperatorRepository",
+    "InMemoryLaminatorRepository",
+    "InMemoryLaminatorOperatorRepository",
+    "InMemoryCutterRepository",
+    "InMemoryCutterOperatorRepository",
+    "InMemoryDieCutterOperatorRepository",
+    "InMemoryReferenceRepository",
+]
+
 T = TypeVar("T")
 
 

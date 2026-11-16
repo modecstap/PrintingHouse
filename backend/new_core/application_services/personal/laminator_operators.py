@@ -13,6 +13,8 @@ from backend.new_core.personal.laminator_operator_repository import (
 from backend.new_core.values.money import Money
 
 
+__all__ = ["LaminatorOperatorCatalog"]
+
 class LaminatorOperatorCatalog:
     """Loads and edits laminator operators."""
 

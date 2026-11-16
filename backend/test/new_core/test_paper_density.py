@@ -8,6 +8,11 @@ from backend.new_core.errors import InvalidInput
 from backend.new_core.materials.paper_density import PaperDensity
 
 
+__all__ = [
+    "test_paper_density_rejects_non_positive",
+    "test_paper_density_keeps_positive_value",
+]
+
 def _rejects(message: str, call) -> None:
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()

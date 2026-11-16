@@ -6,6 +6,8 @@ from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
 
 
+__all__ = ["AdditionalWork"]
+
 @dataclass(frozen=True, slots=True)
 class AdditionalWork:
     """
