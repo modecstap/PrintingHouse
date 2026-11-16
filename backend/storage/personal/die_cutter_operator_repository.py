@@ -26,16 +26,20 @@ class SqlDieCutterOperatorRepository:
     """Loads and stores die cutter operators in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, operator_id: DieCutterOperatorID) -> DieCutterOperator:
         """Returns the die cutter operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the DieCutterOperator result.
         """
         row = self._session.get(DieCutterOperatorRow, operator_id.value)
         if row is None:
@@ -49,7 +53,7 @@ class SqlDieCutterOperatorRepository:
     def take_all(self) -> tuple[DieCutterOperator, ...]:
         """Returns every stored die-cut operator.
 
-        :return: operators in ascending id order.
+        :return: the tuple[DieCutterOperator, ...] result.
         """
         stmt = select(DieCutterOperatorRow).order_by(DieCutterOperatorRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -65,7 +69,7 @@ class SqlDieCutterOperatorRepository:
     def generate_id(self) -> DieCutterOperatorID:
         """Returns the next die cutter operator id from the store sequence.
 
-        :return: a new operator id. It may already be occupied.
+        :return: the DieCutterOperatorID result.
         """
         value = self._session.execute(
             text("SELECT nextval('die_cutter_operator_id_seq')"),
@@ -78,8 +82,6 @@ class SqlDieCutterOperatorRepository:
         :param operator:
 
         :raises DieCutterOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         save_operator_row(
             self._session,
@@ -98,8 +100,6 @@ class SqlDieCutterOperatorRepository:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         replace_operator_row(
             self._session,
@@ -113,8 +113,6 @@ class SqlDieCutterOperatorRepository:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         row = self._session.get(DieCutterOperatorRow, operator_id.value)
         if row is None:

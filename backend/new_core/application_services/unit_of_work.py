@@ -25,10 +25,8 @@ class OrderUnitOfWork(Protocol):
     def transaction(self, work: Callable[[], T]) -> T:
         """Runs work and rolls back stored rows on any exception.
 
-        :param work:
-
-        :return: the value from work.
+        :param work: the work.
 
         :raises Exception: re-raises whatever work raised after rollback.
-        """
+"""
         ...

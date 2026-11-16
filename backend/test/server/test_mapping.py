@@ -36,6 +36,10 @@ __all__ = [
 ]
 
 def _product_with_die_cut() -> Product:
+    """Handles product with die cut.
+
+    :return: the Product result.
+    """
     run, _, _, _, _ = build_worked_run(with_cut=False)
     block: Part = replace(
         run.block,
@@ -49,11 +53,17 @@ def _product_with_die_cut() -> Product:
 
 
 def _sample_imposition() -> dict:
+    """Handles sample imposition.
+
+    :return: the dict result.
+    """
     product = product_from_run(build_worked_run()[0])
     return product_to_dto(product).model_dump()["blocks"][0]["imposition"]
 
 
 def test_product_dto_embeds_press_sheet():
+    """Handles test product dto embeds press sheet.
+    """
     product = _product_with_die_cut()
     dumped = product_to_dto(product).model_dump()
     imp = dumped["blocks"][0]["imposition"]
@@ -68,6 +78,8 @@ def test_product_dto_embeds_press_sheet():
 
 
 def test_product_from_dto_round_trips_press_sheet():
+    """Handles test product from dto round trips press sheet.
+    """
     product = _product_with_die_cut()
     restored = product_from_dto(product_to_dto(product))
     original = product.blocks[0]
@@ -83,6 +95,8 @@ def test_product_from_dto_round_trips_press_sheet():
 
 
 def test_imposition_extra_fields_ignored():
+    """Handles test imposition extra fields ignored.
+    """
     product = product_from_run(build_worked_run()[0])
     dumped = product_to_dto(product).model_dump()
     dumped["blocks"][0]["imposition"]["ignored_field"] = 1
@@ -92,6 +106,8 @@ def test_imposition_extra_fields_ignored():
 
 
 def test_unknown_kind_rejected():
+    """Handles test unknown kind rejected.
+    """
     payload = {
         "parts_markup": 0,
         "blocks": [
@@ -108,6 +124,8 @@ def test_unknown_kind_rejected():
 
 
 def test_block_markup_field_rejected():
+    """Handles test block markup field rejected.
+    """
     payload = {
         "parts_markup": 0,
         "blocks": [
@@ -125,6 +143,8 @@ def test_block_markup_field_rejected():
 
 
 def test_dump_uses_enum_names_not_values():
+    """Handles test dump uses enum names not values.
+    """
     product = product_from_run(build_worked_run()[0])
     dto = product_to_dto(product)
     first_op = dto.blocks[0].operations[0]
@@ -134,6 +154,8 @@ def test_dump_uses_enum_names_not_values():
 
 
 def test_order_id_dumps_as_int():
+    """Handles test order id dumps as int.
+    """
     product = product_from_run(build_worked_run()[0])
     order = Order(
         id=OrderID(7),
@@ -149,6 +171,8 @@ def test_order_id_dumps_as_int():
 
 
 def test_reference_round_trip():
+    """Handles test reference round trip.
+    """
     ref = reference_from_dto(
         ReferenceDto(name="n", description="d", order_id=5),
     )

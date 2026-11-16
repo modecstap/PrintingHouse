@@ -13,7 +13,7 @@ def stripped_required_name(name: str, subject: str) -> str:
 
     :raises InvalidInput: when the stripped name is empty.
 
-    :return: the stripped name.
+    :return: the str result.
     """
     stripped = name.strip()
     if not stripped:

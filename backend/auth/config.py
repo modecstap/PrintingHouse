@@ -24,7 +24,7 @@ class AuthConfig:
 
         :raises MissingJwtSecret: if ``JWT_SECRET_KEY`` is missing or empty.
 
-        :return: validated auth settings.
+        :return: the AuthConfig result.
         """
         secret = os.getenv("JWT_SECRET_KEY")
         if not secret:

@@ -47,6 +47,17 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
         films: FilmRepository,
     ) -> None:
         # Eight independent catalog repositories, one per priced resource.
+        """Initializes this instance.
+
+        :param printers: the printers.
+        :param press_operators: the press operators.
+        :param laminators: the laminators.
+        :param laminator_operators: the laminator operators.
+        :param cutters: the cutters.
+        :param cutter_operators: the cutter operators.
+        :param die_cut_operators: the die cut operators.
+        :param films: the films.
+        """
         self._printers = printers
         self._press_operators = press_operators
         self._laminators = laminators
@@ -59,8 +70,13 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
     def create(self, operation: object, print_run: PrintRun) -> PricingStrategy:
         """Builds the pricing strategy for one run operation.
 
+        :param operation: the operation.
+        :param print_run: the print run.
+
         :raises KeyError: if a catalog id from the operation is missing.
         :raises TypeError: if the operation type is not supported.
+
+        :return: the PricingStrategy result.
         """
         if isinstance(operation, Print):
             return self._print_pricing(operation, print_run)
@@ -78,6 +94,13 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
             self,
             operation: Print,
             print_run: PrintRun) -> PrintPricing:
+        """Handles print pricing.
+
+        :param operation: the operation.
+        :param print_run: the print run.
+
+        :return: the PrintPricing result.
+        """
         return PrintPricing(
             printer=self._printers.take(operation.printer_id),
             operator=self._press_operators.take(operation.operator_id),
@@ -90,6 +113,13 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
         operation: Laminate,
         print_run: PrintRun,
     ) -> LaminatePricing:
+        """Handles laminate pricing.
+
+        :param operation: the operation.
+        :param print_run: the print run.
+
+        :return: the LaminatePricing result.
+        """
         return LaminatePricing(
             laminator=self._laminators.take(operation.laminator_id),
             operator=self._laminator_operators.take(operation.operator_id),
@@ -99,6 +129,13 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
         )
 
     def _cut_pricing(self, operation: Cut, print_run: PrintRun) -> CutPricing:
+        """Handles cut pricing.
+
+        :param operation: the operation.
+        :param print_run: the print run.
+
+        :return: the CutPricing result.
+        """
         return CutPricing(
             cutter=self._cutters.take(operation.cutter_id),
             operator=self._cutter_operators.take(operation.operator_id),
@@ -110,6 +147,13 @@ class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
         operation: DieCut,
         print_run: PrintRun,
     ) -> DieCutPricing:
+        """Handles die cut pricing.
+
+        :param operation: the operation.
+        :param print_run: the print run.
+
+        :return: the DieCutPricing result.
+        """
         return DieCutPricing(
             operator=self._die_cut_operators.take(operation.operator_id),
             print_run=print_run,

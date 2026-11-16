@@ -19,16 +19,20 @@ class SqlPrinterRepository:
     """Loads and stores printers in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, printer_id: PrinterID) -> Printer:
         """Returns the printer with this id.
 
-        :param printer_id:
+        :param printer_id: id of the printer.
 
         :raises KeyError: if there is no printer.
 
-        :return: the printer row.
+        :return: the Printer result.
         """
         row = self._session.get(PrinterRow, printer_id.value)
         if row is None:
@@ -38,7 +42,7 @@ class SqlPrinterRepository:
     def take_all(self) -> tuple[Printer, ...]:
         """Returns every stored printer.
 
-        :return: printers in ascending id order.
+        :return: the tuple[Printer, ...] result.
         """
         stmt = select(PrinterRow).order_by(PrinterRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -49,7 +53,7 @@ class SqlPrinterRepository:
     def generate_id(self) -> PrinterID:
         """Returns the next printer id from the store sequence.
 
-        :return: a new printer id. It may already be occupied.
+        :return: the PrinterID result.
         """
         value = self._session.execute(
             text("SELECT nextval('printer_id_seq')"),
@@ -62,8 +66,6 @@ class SqlPrinterRepository:
         :param printer:
 
         :raises PrinterIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         try:
             self._session.add(new_printer_row(printer))
@@ -77,8 +79,6 @@ class SqlPrinterRepository:
         :param printer:
 
         :raises KeyError: if there is no printer with this id.
-
-        :return: nothing.
         """
         row = self._session.get(PrinterRow, printer.id.value)
         if row is None:
@@ -98,8 +98,6 @@ class SqlPrinterRepository:
         :param printer_id:
 
         :raises KeyError: if there is no printer.
-
-        :return: nothing.
         """
         row = self._session.get(PrinterRow, printer_id.value)
         if row is None:
@@ -108,6 +106,13 @@ class SqlPrinterRepository:
 
     @staticmethod
     def _printer_from_row(printer_id: PrinterID, row: PrinterRow) -> Printer:
+        """Handles printer from row.
+
+        :param printer_id: id of the printer.
+        :param row: the row.
+
+        :return: the Printer result.
+        """
         return Printer(
             id=printer_id,
             name=row.name,

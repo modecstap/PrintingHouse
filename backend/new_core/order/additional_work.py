@@ -10,8 +10,7 @@ __all__ = ["AdditionalWork"]
 
 @dataclass(frozen=True, slots=True)
 class AdditionalWork:
-    """
-    Value Object. One extra job on a product: its name, price,
+    """Value Object. One extra job on a product: its name, price,
     description, and markup.
     """
 

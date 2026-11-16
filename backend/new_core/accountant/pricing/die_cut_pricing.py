@@ -20,6 +20,10 @@ class DieCutPricing:
     print_run: PrintRun
 
     def report(self) -> CostReport:
+        """Handles report.
+
+        :return: the CostReport result.
+        """
         return CostReport(
             material=Money.zero(),
             work=self.operator.salary_by_operation,
@@ -28,4 +32,8 @@ class DieCutPricing:
         )
 
     def run(self) -> PrintRun:
+        """Handles run.
+
+        :return: the PrintRun result.
+        """
         return self.print_run

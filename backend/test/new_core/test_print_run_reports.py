@@ -180,6 +180,12 @@ def test_print_run_rejects_a_required_count_of_zero():
 
 def _die_cut_only_run(
         required_count: int) -> tuple[PrintRun, _RunPricingFixtures]:
+    """Handles die cut only run.
+
+    :param required_count: the required count.
+
+    :return: the tuple[PrintRun, _RunPricingFixtures] result.
+    """
     run, _, _, _, ctx = build_run_without_block_operations(
         required_count=required_count,
     )
@@ -201,7 +207,12 @@ def test_sheet_cost_report_uses_volume_markup_tiers(
     press_sheets: int,
     expected_markup: Decimal,
 ):
-    """Volume markup is 30, 15, 5, or 0 percent by press sheet count."""
+    """Volume markup is 30, 15, 5, or 0 percent by press sheet count.
+
+    :param required_count: the required count.
+    :param press_sheets: the press sheets.
+    :param expected_markup: the expected markup.
+    """
     run, ctx = _die_cut_only_run(required_count)
 
     assert run.imposition_count() == press_sheets

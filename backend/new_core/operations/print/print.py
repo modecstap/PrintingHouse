@@ -13,8 +13,7 @@ __all__ = ["Print"]
 
 @dataclass(frozen=True, slots=True)
 class Print:
-    """
-    Value Object. One print of a press target: the specification,
+    """Value Object. One print of a press target: the specification,
     the printer, and the operator.
     """
 

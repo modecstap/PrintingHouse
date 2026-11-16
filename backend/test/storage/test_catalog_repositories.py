@@ -1,8 +1,11 @@
 """Catalog ``take`` protocols backed by SQL."""
 
+from collections.abc import Callable
 from decimal import Decimal
+from typing import Any
 
 import pytest
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from backend.new_core.equipment.cutter import CutterID
@@ -70,8 +73,11 @@ __all__ = [
     "test_delete_film_referenced_by_part_raises_integrity_error",
 ]
 
-def test_catalog_take_round_trips_domain_objects(db_session):
-    """Each catalog ``take`` reloads the inserted domain entity."""
+def test_catalog_take_round_trips_domain_objects(db_session: Session):
+    """Each catalog ``take`` reloads the inserted domain entity.
+
+    :param db_session: the db session.
+    """
     _, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     db_session.commit()
@@ -98,14 +104,20 @@ def test_catalog_take_round_trips_domain_objects(db_session):
             ctx.cutter_operators.values()), )
 
 
-def test_catalog_take_missing_raises_key_error(db_session):
-    """Unknown catalog ids raise ``KeyError`` like the in-memory dict."""
+def test_catalog_take_missing_raises_key_error(db_session: Session):
+    """Unknown catalog ids raise ``KeyError`` like the in-memory dict.
+
+    :param db_session: the db session.
+    """
     with pytest.raises(KeyError):
         SqlPrinterRepository(db_session).take(PrinterID(404))
 
 
-def test_printer_save_list_delete_round_trip(db_session):
-    """``save``, ``take_all``, and ``delete`` change the printer catalog."""
+def test_printer_save_list_delete_round_trip(db_session: Session):
+    """``save``, ``take_all``, and ``delete`` change the printer catalog.
+
+    :param db_session: the db session.
+    """
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(10, "№ 10", 0)
     repo.save(printer)
@@ -122,8 +134,11 @@ def test_printer_save_list_delete_round_trip(db_session):
         repo.save(printer)
 
 
-def test_printer_spacing_round_trip(db_session):
-    """``spacing`` survives save and load."""
+def test_printer_spacing_round_trip(db_session: Session):
+    """``spacing`` survives save and load.
+
+    :param db_session: the db session.
+    """
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(11, "№ 11", 7, prices=zero_printer_prices())
     repo.save(printer)
@@ -132,8 +147,11 @@ def test_printer_spacing_round_trip(db_session):
     assert repo.take_all() == (printer,)
 
 
-def test_printer_save_replace_take_round_trip(db_session):
-    """``save``, ``replace``, and ``take`` round-trip a printer."""
+def test_printer_save_replace_take_round_trip(db_session: Session):
+    """``save``, ``replace``, and ``take`` round-trip a printer.
+
+    :param db_session: the db session.
+    """
     repo = SqlPrinterRepository(db_session)
     printer = sample_printer(12, "№ 12", 3)
     repo.save(printer)
@@ -156,8 +174,11 @@ def test_printer_save_replace_take_round_trip(db_session):
     assert repo.take(PrinterID(12)) == updated
 
 
-def test_film_add_take_all_replace_take_round_trip(db_session):
-    """``add``, ``take_all``, ``replace``, and ``take`` round-trip a film."""
+def test_film_add_take_all_replace_take_round_trip(db_session: Session):
+    """``add``, ``take_all``, ``replace``, and ``take`` round-trip a film.
+
+    :param db_session: the db session.
+    """
     repo = SqlFilmRepository(db_session)
     price = Money(Decimal("1.25"))
     first_id = repo.add("dup", price, 50)
@@ -177,8 +198,11 @@ def test_film_add_take_all_replace_take_round_trip(db_session):
     assert repo.take(first_id) == updated
 
 
-def test_sheet_add_take_all_replace_take_round_trip(db_session):
-    """``add``, ``take_all``, ``replace``, and ``take`` round-trip a sheet."""
+def test_sheet_add_take_all_replace_take_round_trip(db_session: Session):
+    """``add``, ``take_all``, ``replace``, and ``take`` round-trip a sheet.
+
+    :param db_session: the db session.
+    """
     repo = SqlSheetRepository(db_session)
     paper = Paper(
         density=PaperDensity(100),
@@ -208,8 +232,11 @@ def test_sheet_add_take_all_replace_take_round_trip(db_session):
     assert repo.take(first_id) == updated
 
 
-def test_sheet_round_trip_fractional_thickness(db_session):
-    """Fractional and whole thickness values round-trip through storage."""
+def test_sheet_round_trip_fractional_thickness(db_session: Session):
+    """Fractional and whole thickness values round-trip through storage.
+
+    :param db_session: the db session.
+    """
     repo = SqlSheetRepository(db_session)
     fractional = Paper(
         density=PaperDensity(80),
@@ -237,9 +264,11 @@ def test_sheet_round_trip_fractional_thickness(db_session):
     assert whole.paper.thickness.quantize(Decimal("0.01")) == Decimal("1.00")
 
 
-def test_sheet_distinct_paper_types_dedup_and_sort(db_session):
+def test_sheet_distinct_paper_types_dedup_and_sort(db_session: Session):
     """``distinct_paper_types`` deduplicates canonical values and sorts
-    ascending."""
+
+    :param db_session: the db session.
+    """
     repo = SqlSheetRepository(db_session)
     paper = Paper(
         density=PaperDensity(100),
@@ -277,8 +306,11 @@ def test_sheet_distinct_paper_types_dedup_and_sort(db_session):
     assert repo.distinct_paper_types() == ("мелованная", "офсет")
 
 
-def test_sheet_distinct_paper_densities_dedup_and_sort(db_session):
-    """``distinct_paper_densities`` deduplicates values and sorts ascending."""
+def test_sheet_distinct_paper_densities_dedup_and_sort(db_session: Session):
+    """``distinct_paper_densities`` deduplicates values and sorts ascending.
+
+    :param db_session: the db session.
+    """
     repo = SqlSheetRepository(db_session)
     paper = Paper(
         density=PaperDensity(100),
@@ -316,8 +348,11 @@ def test_sheet_distinct_paper_densities_dedup_and_sort(db_session):
     assert repo.distinct_paper_densities() == (80, 100, 120)
 
 
-def test_film_distinct_film_densities_dedup_and_sort(db_session):
-    """``distinct_film_densities`` deduplicates values and sorts ascending."""
+def test_film_distinct_film_densities_dedup_and_sort(db_session: Session):
+    """``distinct_film_densities`` deduplicates values and sorts ascending.
+
+    :param db_session: the db session.
+    """
     repo = SqlFilmRepository(db_session)
     price = Money(Decimal("1"))
     repo.add("a", price, 80)
@@ -336,8 +371,16 @@ def test_film_distinct_film_densities_dedup_and_sort(db_session):
     ],
 )
 def test_material_catalog_take_missing_raises_key_error(
-        db_session, repo_factory, missing_id):
-    """Unknown film or sheet ids raise ``KeyError``."""
+    db_session: Session,
+    repo_factory: Callable[[Session], Any],
+    missing_id: FilmID | SheetID,
+):
+    """Unknown film or sheet ids raise ``KeyError``.
+
+    :param db_session: the db session.
+    :param repo_factory: the repo factory.
+    :param missing_id: id of the missing.
+    """
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
         repo.take(missing_id)
@@ -371,11 +414,16 @@ def test_material_catalog_take_missing_raises_key_error(
     ],
 )
 def test_material_catalog_replace_missing_raises_key_error(
-    db_session,
-    repo_factory,
-    entity,
+    db_session: Session,
+    repo_factory: Callable[[Session], Any],
+    entity: Film | Sheet,
 ):
-    """``replace`` on a missing film or sheet raises ``KeyError``."""
+    """``replace`` on a missing film or sheet raises ``KeyError``.
+
+    :param db_session: the db session.
+    :param repo_factory: the repo factory.
+    :param entity: the entity.
+    """
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
         repo.replace(entity)
@@ -410,13 +458,15 @@ def test_material_catalog_replace_missing_raises_key_error(
     ],
 )
 def test_equipment_or_staff_catalog_replace_missing_raises_key_error(
-    db_session,
-    repo_factory,
-    entity,
+    db_session: Session,
+    repo_factory: Callable[[Session], Any],
+    entity: Printer | PressOperator,
 ):
     """``replace`` on a missing printer or press operator
 
-    raises ``KeyError``.
+    :param db_session: the db session.
+    :param repo_factory: the repo factory.
+    :param entity: the entity.
     """
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
@@ -431,18 +481,26 @@ def test_equipment_or_staff_catalog_replace_missing_raises_key_error(
     ],
 )
 def test_material_catalog_delete_missing_raises_key_error(
-    db_session,
-    repo_factory,
-    missing_id,
+    db_session: Session,
+    repo_factory: Callable[[Session], Any],
+    missing_id: FilmID | SheetID,
 ):
-    """``delete`` on a missing film or sheet raises ``KeyError``."""
+    """``delete`` on a missing film or sheet raises ``KeyError``.
+
+    :param db_session: the db session.
+    :param repo_factory: the repo factory.
+    :param missing_id: id of the missing.
+    """
     repo = repo_factory(db_session)
     with pytest.raises(KeyError):
         repo.delete(missing_id)
 
 
-def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
-    """A sheet still referenced by ``parts.sheet_id`` cannot be removed."""
+def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session: Session):
+    """A sheet still referenced by ``parts.sheet_id`` cannot be removed.
+
+    :param db_session: the db session.
+    """
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
         Paper(
@@ -468,10 +526,10 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session):
         db_session.commit()
 
 
-def test_delete_film_referenced_by_part_raises_integrity_error(db_session):
+def test_delete_film_referenced_by_part_raises_integrity_error(db_session: Session):
     """A film still referenced by ``part_laminates.film_id``
 
-    cannot be removed.
+    :param db_session: the db session.
     """
     _, _, _, _, ctx = build_worked_run(
         with_laminate=True, with_cut=False, with_print=False)

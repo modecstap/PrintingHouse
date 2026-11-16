@@ -27,6 +27,10 @@ class OrderIdAllocationFailed(Exception):
     """Reports that save exhausted occupied-id retries."""
 
     def __init__(self, last_occupied: OrderID) -> None:
+        """Initializes this instance.
+
+        :param last_occupied: the last occupied.
+        """
         super().__init__(
             f"save: не удалось выделить id заказа за {_MAX_ORDER_ID_ATTEMPTS} "
             f"попытки, id={last_occupied.value}",
@@ -44,11 +48,12 @@ class OrderService:
         print_run_factory: PrintRunFactory,
         pricing_factory: PricingStrategyFactory,
     ) -> None:
-        """
-        :param uow:
-        :param order_factory:
-        :param print_run_factory:
-        :param pricing_factory:
+        """:param uow:
+
+        :param order_factory: the order factory.
+        :param print_run_factory: the print run factory.
+        :param pricing_factory: the pricing factory.
+        :param uow: the uow.
         """
         self._uow = uow
         self._order_factory = order_factory
@@ -58,32 +63,32 @@ class OrderService:
     def get_orders(self, limit: int) -> tuple[Order, ...]:
         """Returns the latest orders by id.
 
-        :param limit:
+        :param limit: the limit.
 
-        :return: orders from :meth:`OrderRepository.take_latest`.
+        :return: the tuple[Order, ...] result.
         """
         return self._uow.orders.take_latest(limit)
 
     def get_order(self, order_id: OrderID) -> Order:
         """Returns the order with this id.
 
-        :param order_id:
+        :param order_id: id of the order.
 
         :raises OrderNotFound: if the order does not exist.
 
-        :return: the order from :meth:`OrderRepository.take`.
+        :return: the Order result.
         """
         return self._uow.orders.take(order_id)
 
     def order_report(self, order_id: OrderID) -> OrderReport:
         """Prices the order after tax compensation.
 
-        :param order_id:
+        :param order_id: id of the order.
 
         :raises OrderNotFound: if the order does not exist.
         :raises KeyError: if a catalog id from a run operation is missing.
 
-        :return: the report from :meth:`Accountant.order_report`.
+        :return: the OrderReport result.
         """
         order = self._uow.orders.take(order_id)
         parts_markup = order.product.parts_markup
@@ -97,14 +102,14 @@ class OrderService:
     def quote(self, product: Product, count: int) -> OrderReport:
         """Prices the product without persisting an order.
 
-        :param product:
-        :param count:
+        :param product: the product.
+        :param count: the count.
 
         :raises KeyError: if a catalog id is missing.
         :raises TypeError: if an operation type is not supported.
         :raises InvalidInput: if the product or run data is invalid.
 
-        :return: the report from :meth:`Accountant.order_report`.
+        :return: the OrderReport result.
         """
         order = self._order_factory.create(product, count)
         runs = self._made_run_for_order(order)
@@ -118,19 +123,24 @@ class OrderService:
              description: str = "") -> OrderID:
         """Persists the order and one print run per block.
 
-        :param product:
-        :param count:
-        :param description:
+        :param product: the product.
+        :param count: the count.
+        :param description: the description.
 
         :raises OrderIdAllocationFailed: after three occupied order ids.
         :raises InvalidInput: if the product or run data is invalid.
+        :raises RuntimeError: when the operation fails.
 
-        :return: the stored order id.
+        :return: the OrderID result.
         """
         last_occupied: OrderIdOccupied | None = None
         for _ in range(_MAX_ORDER_ID_ATTEMPTS):
             try:
                 def work() -> OrderID:
+                    """Handles work.
+
+                    :return: the OrderID result.
+                    """
                     order = self._order_factory.create(product, count,
                                                        description)
                     runs = self._made_run_for_order(order)
@@ -152,18 +162,22 @@ class OrderService:
     ) -> OrderID:
         """Replaces an existing order and its print runs.
 
-        :param order_id:
-        :param content:
+        :param order_id: id of the order.
+        :param content: the content.
 
         :raises OrderNotFound: if the order does not exist.
         :raises KeyError: if a catalog id is missing.
         :raises TypeError: if an operation type is not supported.
         :raises InvalidInput: if the product or run data is invalid.
 
-        :return: the same order id.
+        :return: the OrderID result.
         """
 
         def work() -> OrderID:
+            """Handles work.
+
+            :return: the OrderID result.
+            """
             existing = self._uow.orders.take(order_id)
             order = Order(
                 id=order_id,
@@ -185,12 +199,13 @@ class OrderService:
             parts_markup: Percent) -> RunEstimate:
         """Turns run operations into one run estimate.
 
-        :param run:
+        :param run: the run.
+        :param parts_markup: the parts markup.
 
         :raises KeyError: if a catalog id from an operation is missing.
         :raises TypeError: if an operation type is not supported.
 
-        :return: pricing strategies bound to this run.
+        :return: the RunEstimate result.
         """
         strategies = [
             self._pricing_factory.create(operation, run)
@@ -203,6 +218,12 @@ class OrderService:
         self,
         order: Order,
     ) -> tuple[PrintRun, ...]:
+        """Handles made run for order.
+
+        :param order: the order.
+
+        :return: the tuple[PrintRun, ...] result.
+        """
         runs = tuple(
             self._print_run_factory.create(
                 for_order=order.id,

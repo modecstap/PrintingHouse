@@ -38,6 +38,8 @@ __all__ = [
 
 @dataclass
 class _FakeFilmCatalog:
+    """Fake Film Catalog.
+    """
     films_rows: tuple[Film, ...] = ()
     film_densities_rows: tuple[int, ...] = ()
     calls: list[str] = field(default_factory=list)
@@ -47,60 +49,129 @@ class _FakeFilmCatalog:
     last_replace_film: Film | None = None
 
     def films(self) -> tuple[Film, ...]:
+        """Handles films.
+
+        :return: the tuple[Film, ...] result.
+        """
         self.calls.append("list_films")
         return self.films_rows
 
     def film(self, film_id: FilmID) -> Film:
+        """Handles film.
+
+        :param film_id: id of the film.
+
+        :raises KeyError: when the operation fails.
+
+        :return: the Film result.
+        """
         self.calls.append(f"get_film:{film_id.value}")
         if film_id.value in self.missing_film_ids:
             raise KeyError(film_id)
         return self.films_rows[0]
 
     def create_film(self, name: str, price: Money, density: int) -> FilmID:
+        """Creates a film.
+
+        :param name: the name.
+        :param price: the price.
+        :param density: the density.
+
+        :return: the FilmID result.
+        """
         self.calls.append("create_film")
         self.last_create_film = (name, price, density)
         return FilmID(self.created_film_id)
 
     def replace_film(self, film: Film) -> None:
+        """Replaces the film.
+
+        :param film: the film.
+        """
         self.calls.append(f"replace:{film.id.value}")
         self.last_replace_film = film
 
     def delete_film(self, film_id: FilmID) -> None:
+        """Deletes the film.
+
+        :param film_id: id of the film.
+
+        :raises KeyError: when the operation fails.
+        """
         if film_id.value in self.missing_film_ids:
             raise KeyError(film_id)
         self.calls.append(f"delete:{film_id.value}")
 
     def film_densities(self) -> tuple[int, ...]:
+        """Handles film densities.
+
+        :return: the tuple[int, ...] result.
+        """
         self.calls.append("list_film_densities")
         return self.film_densities_rows
 
 
 @dataclass
 class _FakeSheetCatalog:
+    """Fake Sheet Catalog.
+    """
     paper_types_rows: tuple[str, ...] = ()
     paper_densities_rows: tuple[int, ...] = ()
     calls: list[str] = field(default_factory=list)
 
     def sheets(self) -> tuple:
+        """Handles sheets.
+
+        :return: the tuple result.
+        """
         return ()
 
     def sheet(self, sheet_id):
+        """Handles sheet.
+
+        :param sheet_id: id of the sheet.
+
+        :raises KeyError: when the operation fails.
+        """
         raise KeyError(sheet_id)
 
     def create_sheet(self, paper, sheet_format):
+        """Creates a sheet.
+
+        :param paper: the paper.
+        :param sheet_format: the sheet format.
+
+        :return: the computed value.
+        """
         return SheetID(1)
 
     def replace_sheet(self, sheet) -> None:
+        """Replaces the sheet.
+
+        :param sheet: the sheet.
+        """
         pass
 
     def delete_sheet(self, sheet_id) -> None:
+        """Deletes the sheet.
+
+        :param sheet_id: id of the sheet.
+        """
         pass
 
     def paper_types(self) -> tuple[str, ...]:
+        """Handles paper types.
+
+        :return: the tuple[str, ...] result.
+        """
         self.calls.append("list_paper_types")
         return self.paper_types_rows
 
     def paper_densities(self) -> tuple[int, ...]:
+        """Handles paper densities.
+
+        :return: the tuple[int, ...] result.
+        """
         self.calls.append("list_paper_densities")
         return self.paper_densities_rows
 
@@ -112,6 +183,13 @@ def _client_with_fakes(
     film_fake: _FakeFilmCatalog | None = None,
     sheet_fake: _FakeSheetCatalog | None = None,
 ) -> tuple[TestClient, dict[str, str]]:
+    """Handles client with fakes.
+
+    :param film_fake: the film fake.
+    :param sheet_fake: the sheet fake.
+
+    :return: the tuple[TestClient, dict[str, str]] result.
+    """
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_film_catalog] = lambda: (
@@ -128,11 +206,15 @@ def _client_with_fakes(
 
 
 def test_materials_films_require_token():
+    """Handles test materials films require token.
+    """
     client, _ = _client_with_fakes()
     assert client.get("/api/materials/films").status_code == 401
 
 
 def test_create_film_200_returns_assigned_id():
+    """Handles test create film 200 returns assigned id.
+    """
     fake = _FakeFilmCatalog(created_film_id=11)
     client, headers = _client_with_fakes(film_fake=fake)
     body = {"name": "matte", "price": "3.50", "density": 80}
@@ -145,6 +227,8 @@ def test_create_film_200_returns_assigned_id():
 
 
 def test_replace_film_204():
+    """Handles test replace film 204.
+    """
     fake = _FakeFilmCatalog()
     client, headers = _client_with_fakes(film_fake=fake)
     response = client.put(
@@ -163,6 +247,8 @@ def test_replace_film_204():
 
 
 def test_get_film_404_when_service_raises_key_error():
+    """Handles test get film 404 when service raises key error.
+    """
     fake = _FakeFilmCatalog(
         films_rows=(
             Film(
@@ -181,6 +267,8 @@ def test_get_film_404_when_service_raises_key_error():
 
 
 def test_delete_film_204():
+    """Handles test delete film 204.
+    """
     fake = _FakeFilmCatalog()
     client, headers = _client_with_fakes(film_fake=fake)
     response = client.delete("/api/materials/films/3", headers=headers)
@@ -189,11 +277,15 @@ def test_delete_film_204():
 
 
 def test_paper_types_require_token():
+    """Handles test paper types require token.
+    """
     client, _ = _client_with_fakes()
     assert client.get("/api/materials/paper-types").status_code == 401
 
 
 def test_paper_types_200_returns_list_from_service():
+    """Handles test paper types 200 returns list from service.
+    """
     fake = _FakeSheetCatalog(paper_types_rows=("a", "b"))
     client, headers = _client_with_fakes(sheet_fake=fake)
     response = client.get("/api/materials/paper-types", headers=headers)
@@ -203,6 +295,8 @@ def test_paper_types_200_returns_list_from_service():
 
 
 def test_paper_types_empty_catalog_returns_empty_list():
+    """Handles test paper types empty catalog returns empty list.
+    """
     fake = _FakeSheetCatalog(paper_types_rows=())
     client, headers = _client_with_fakes(sheet_fake=fake)
     response = client.get("/api/materials/paper-types", headers=headers)
@@ -212,11 +306,15 @@ def test_paper_types_empty_catalog_returns_empty_list():
 
 
 def test_paper_densities_require_token():
+    """Handles test paper densities require token.
+    """
     client, _ = _client_with_fakes()
     assert client.get("/api/materials/paper-densities").status_code == 401
 
 
 def test_paper_densities_200_returns_list_from_service():
+    """Handles test paper densities 200 returns list from service.
+    """
     fake = _FakeSheetCatalog(paper_densities_rows=(80, 100))
     client, headers = _client_with_fakes(sheet_fake=fake)
     response = client.get("/api/materials/paper-densities", headers=headers)
@@ -226,6 +324,8 @@ def test_paper_densities_200_returns_list_from_service():
 
 
 def test_paper_densities_empty_catalog_returns_empty_list():
+    """Handles test paper densities empty catalog returns empty list.
+    """
     fake = _FakeSheetCatalog(paper_densities_rows=())
     client, headers = _client_with_fakes(sheet_fake=fake)
     response = client.get("/api/materials/paper-densities", headers=headers)
@@ -235,11 +335,15 @@ def test_paper_densities_empty_catalog_returns_empty_list():
 
 
 def test_film_densities_require_token():
+    """Handles test film densities require token.
+    """
     client, _ = _client_with_fakes()
     assert client.get("/api/materials/film-densities").status_code == 401
 
 
 def test_film_densities_200_returns_list_from_service():
+    """Handles test film densities 200 returns list from service.
+    """
     fake = _FakeFilmCatalog(film_densities_rows=(50, 120))
     client, headers = _client_with_fakes(film_fake=fake)
     response = client.get("/api/materials/film-densities", headers=headers)
@@ -249,6 +353,8 @@ def test_film_densities_200_returns_list_from_service():
 
 
 def test_film_densities_empty_catalog_returns_empty_list():
+    """Handles test film densities empty catalog returns empty list.
+    """
     fake = _FakeFilmCatalog(film_densities_rows=())
     client, headers = _client_with_fakes(film_fake=fake)
     response = client.get("/api/materials/film-densities", headers=headers)

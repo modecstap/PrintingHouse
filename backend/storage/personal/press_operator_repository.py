@@ -26,16 +26,20 @@ class SqlPressOperatorRepository:
     """Loads and stores press operators in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, operator_id: PressOperatorID) -> PressOperator:
         """Returns the press operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the PressOperator result.
         """
         row = self._session.get(PressOperatorRow, operator_id.value)
         if row is None:
@@ -49,7 +53,7 @@ class SqlPressOperatorRepository:
     def take_all(self) -> tuple[PressOperator, ...]:
         """Returns every stored press operator.
 
-        :return: operators in ascending id order.
+        :return: the tuple[PressOperator, ...] result.
         """
         stmt = select(PressOperatorRow).order_by(PressOperatorRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -65,7 +69,7 @@ class SqlPressOperatorRepository:
     def generate_id(self) -> PressOperatorID:
         """Returns the next press operator id from the store sequence.
 
-        :return: a new operator id. It may already be occupied.
+        :return: the PressOperatorID result.
         """
         value = self._session.execute(
             text("SELECT nextval('press_operator_id_seq')"),
@@ -78,8 +82,6 @@ class SqlPressOperatorRepository:
         :param operator:
 
         :raises PressOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         save_operator_row(
             self._session,
@@ -98,8 +100,6 @@ class SqlPressOperatorRepository:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         replace_operator_row(
             self._session,
@@ -113,8 +113,6 @@ class SqlPressOperatorRepository:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         row = self._session.get(PressOperatorRow, operator_id.value)
         if row is None:

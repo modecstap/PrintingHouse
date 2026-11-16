@@ -25,11 +25,8 @@ class LaminatorIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param laminator_id:
-
-        :return: sets the message
-        ``{operation}: ламинатор уже есть, id={laminator_id.value}``.
+        :param operation: the operation.
+        :param laminator_id: id of the laminator.
         """
         super().__init__(
             f"{operation}: ламинатор уже есть, id={laminator_id.value}",
@@ -42,26 +39,20 @@ class LaminatorRepository(Protocol):
     def take(self, laminator_id: LaminatorID) -> Laminator:
         """Returns the laminator with this id.
 
-        :param laminator_id:
+        :param laminator_id: id of the laminator.
 
         :raises KeyError: if there is no laminator.
-
-        :return: the laminator row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[Laminator, ...]:
         """Returns every stored laminator.
-
-        :return: laminators in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> LaminatorID:
         """Returns the next laminator id from the store sequence.
-
-        :return: a new laminator id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, laminator: Laminator) -> None:
@@ -70,8 +61,6 @@ class LaminatorRepository(Protocol):
         :param laminator:
 
         :raises LaminatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -81,8 +70,6 @@ class LaminatorRepository(Protocol):
         :param laminator:
 
         :raises KeyError: if there is no laminator with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -92,7 +79,5 @@ class LaminatorRepository(Protocol):
         :param laminator_id:
 
         :raises KeyError: if there is no laminator.
-
-        :return: nothing.
         """
         ...

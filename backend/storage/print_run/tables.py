@@ -12,6 +12,8 @@ __all__ = [
 ]
 
 class PrintRunRow(Base):  # pylint: disable=too-few-public-methods
+    """Print Run Row.
+    """
     __tablename__ = "print_runs"
     __table_args__ = (UniqueConstraint("order_id", "position"),)
 
@@ -26,6 +28,8 @@ class PrintRunRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PrintRunIdCounterRow(Base):  # pylint: disable=too-few-public-methods
+    """Print Run Id Counter Row.
+    """
     __tablename__ = "print_run_id_counters"
 
     order_id: Mapped[int] = mapped_column(Integer, primary_key=True)

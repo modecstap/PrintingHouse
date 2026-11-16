@@ -1,3 +1,6 @@
+"""Tests for auth.test_tokens.py.
+"""
+
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -14,12 +17,16 @@ __all__ = [
 ]
 
 def test_token_round_trip_sub():
+    """Handles test token round trip sub.
+    """
     cfg = AuthConfig("key", "HS256", 60)
     token = create_access_token("alice", cfg)
     assert decode_access_token(token, cfg) == "alice"
 
 
 def test_expired_token_is_credentials_error():
+    """Handles test expired token is credentials error.
+    """
     cfg = AuthConfig("key", "HS256", 60)
     expired = datetime.now(UTC) - timedelta(minutes=1)
     token = jwt.encode(

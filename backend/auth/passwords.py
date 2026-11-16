@@ -14,9 +14,9 @@ _hasher = PasswordHasher()
 def hash_password(password: str) -> str:
     """Hashes a plain password for storage.
 
-    :param password:
+    :param password: the password.
 
-    :return: encoded password hash.
+    :return: the str result.
     """
     return _hasher.hash(password)
 
@@ -24,10 +24,10 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, password_hash: str) -> bool:
     """Checks a plain password against a stored hash.
 
-    :param password:
-    :param password_hash:
+    :param password: the password.
+    :param password_hash: the password hash.
 
-    :return: ``True`` when the password matches.
+    :return: the bool result.
     """
     try:
         return _hasher.verify(password_hash, password)

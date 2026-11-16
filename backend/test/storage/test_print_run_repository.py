@@ -1,6 +1,7 @@
 """Print-run repository persistence against PostgreSQL."""
 
 import pytest
+from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 
 from backend.new_core.order.order import OrderID
@@ -22,12 +23,21 @@ __all__ = [
     "test_generate_id_starts_at_zero",
 ]
 
-def _repo(db_session) -> SqlPrintRunRepository:
+def _repo(db_session: Session) -> SqlPrintRunRepository:
+    """Handles repo.
+
+    :param db_session: the db session.
+
+    :return: the SqlPrintRunRepository result.
+    """
     return SqlPrintRunRepository(db_session)
 
 
-def test_save_all_then_take_all_preserves_order(db_session):
-    """Tuple order and block graph survive a round trip."""
+def test_save_all_then_take_all_preserves_order(db_session: Session):
+    """Tuple order and block graph survive a round trip.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
@@ -42,8 +52,11 @@ def test_save_all_then_take_all_preserves_order(db_session):
     assert_print_run_equal(loaded[0], run)
 
 
-def test_second_save_all_replaces_runs(db_session):
-    """Second write replaces prior runs for the order."""
+def test_second_save_all_replaces_runs(db_session: Session):
+    """Second write replaces prior runs for the order.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run(required_count=10)
     insert_catalogs_from_ctx(db_session, ctx)
     insert_minimal_order_row(db_session, 1)
@@ -60,10 +73,10 @@ def test_second_save_all_replaces_runs(db_session):
     assert loaded[0].required_count == 20
 
 
-def test_mismatched_for_order_raises_before_persisting(db_session):
+def test_mismatched_for_order_raises_before_persisting(db_session: Session):
     """Bad ``for_order`` raises ``ValueError``
 
-    and leaves zero print-run rows.
+    :param db_session: the db session.
     """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
@@ -85,8 +98,11 @@ def test_mismatched_for_order_raises_before_persisting(db_session):
     assert count == 0
 
 
-def test_generate_id_starts_at_zero(db_session):
-    """Per-order counter returns ``PrintRunID(0)`` first."""
+def test_generate_id_starts_at_zero(db_session: Session):
+    """Per-order counter returns ``PrintRunID(0)`` first.
+
+    :param db_session: the db session.
+    """
     insert_minimal_order_row(db_session, 1)
     repo = _repo(db_session)
     assert repo.generate_id(OrderID(1)) == PrintRunID(0)

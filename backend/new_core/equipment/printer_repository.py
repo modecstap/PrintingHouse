@@ -25,11 +25,8 @@ class PrinterIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param printer_id:
-
-        :return: sets the message
-        ``{operation}: принтер уже есть, id={printer_id.value}``.
+        :param operation: the operation.
+        :param printer_id: id of the printer.
         """
         super().__init__(
             f"{operation}: принтер уже есть, id={printer_id.value}",
@@ -42,26 +39,20 @@ class PrinterRepository(Protocol):
     def take(self, printer_id: PrinterID) -> Printer:
         """Returns the printer with this id.
 
-        :param printer_id:
+        :param printer_id: id of the printer.
 
         :raises KeyError: if there is no printer.
-
-        :return: the printer row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[Printer, ...]:
         """Returns every stored printer.
-
-        :return: printers in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> PrinterID:
         """Returns the next printer id from the store sequence.
-
-        :return: a new printer id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, printer: Printer) -> None:
@@ -70,8 +61,6 @@ class PrinterRepository(Protocol):
         :param printer:
 
         :raises PrinterIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -81,8 +70,6 @@ class PrinterRepository(Protocol):
         :param printer:
 
         :raises KeyError: if there is no printer with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -92,7 +79,5 @@ class PrinterRepository(Protocol):
         :param printer_id:
 
         :raises KeyError: if there is no printer.
-
-        :return: nothing.
         """
         ...

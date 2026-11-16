@@ -70,6 +70,13 @@ router = APIRouter(prefix="/api/equipment", tags=["equipment"])
 
 
 def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
+    """Handles require body id matches path.
+
+    :param path_id: id of the path.
+    :param body_id: id of the body.
+
+    :raises HTTPException: when the operation fails.
+    """
     if body_id != path_id:
         raise HTTPException(
             status_code=400,
@@ -82,7 +89,12 @@ def list_printers(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
 ) -> list[PrinterDto]:
-    """Returns every stored printer."""
+    """Returns every stored printer.
+
+    :param service: the service.
+
+    :return: the list[PrinterDto] result.
+    """
     return [printer_to_dto(row) for row in service.printers()]
 
 
@@ -92,7 +104,13 @@ def get_printer(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
 ) -> PrinterDto:
-    """Returns one printer by id."""
+    """Returns one printer by id.
+
+    :param printer_id: id of the printer.
+    :param service: the service.
+
+    :return: the PrinterDto result.
+    """
     return printer_to_dto(service.printer(PrinterID(printer_id)))
 
 
@@ -103,7 +121,14 @@ def create_printer(
     service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new printer and returns its assigned id."""
+    """Inserts a new printer and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, spacing, prices = printer_from_write_dto(body)
     new_id = service.create_printer(name, spacing, prices)
     session.commit()
@@ -120,7 +145,14 @@ def replace_printer(
         Depends(get_printer_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing printer."""
+    """Replaces non-id fields of an existing printer.
+
+    :param printer_id: id of the printer.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(printer_id, body.id)
     service.replace_printer(printer_replace_from_dto(printer_id, body))
@@ -136,7 +168,14 @@ def delete_printer(
     service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a printer."""
+    """Removes a printer.
+
+    :param printer_id: id of the printer.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_printer(PrinterID(printer_id))
     session.commit()
     return Response(status_code=204)
@@ -147,7 +186,12 @@ def list_laminators(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
 ) -> list[LaminatorDto]:
-    """Returns every stored laminator."""
+    """Returns every stored laminator.
+
+    :param service: the service.
+
+    :return: the list[LaminatorDto] result.
+    """
     return [laminator_to_dto(row) for row in service.laminators()]
 
 
@@ -157,7 +201,13 @@ def get_laminator(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
 ) -> LaminatorDto:
-    """Returns one laminator by id."""
+    """Returns one laminator by id.
+
+    :param laminator_id: id of the laminator.
+    :param service: the service.
+
+    :return: the LaminatorDto result.
+    """
     return laminator_to_dto(service.laminator(LaminatorID(laminator_id)))
 
 
@@ -168,7 +218,14 @@ def create_laminator(
     service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new laminator and returns its assigned id."""
+    """Inserts a new laminator and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, startup = laminator_from_write_dto(body)
     new_id = service.create_laminator(name, startup)
     session.commit()
@@ -186,7 +243,14 @@ def replace_laminator(
         Depends(get_laminator_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing laminator."""
+    """Replaces non-id fields of an existing laminator.
+
+    :param laminator_id: id of the laminator.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(laminator_id, body.id)
     service.replace_laminator(laminator_replace_from_dto(laminator_id, body))
@@ -202,7 +266,14 @@ def delete_laminator(
     service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a laminator."""
+    """Removes a laminator.
+
+    :param laminator_id: id of the laminator.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_laminator(LaminatorID(laminator_id))
     session.commit()
     return Response(status_code=204)
@@ -213,7 +284,12 @@ def list_cutters(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
 ) -> list[CutterDto]:
-    """Returns every stored cutter."""
+    """Returns every stored cutter.
+
+    :param service: the service.
+
+    :return: the list[CutterDto] result.
+    """
     return [cutter_to_dto(row) for row in service.cutters()]
 
 
@@ -223,7 +299,13 @@ def get_cutter(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
 ) -> CutterDto:
-    """Returns one cutter by id."""
+    """Returns one cutter by id.
+
+    :param cutter_id: id of the cutter.
+    :param service: the service.
+
+    :return: the CutterDto result.
+    """
     return cutter_to_dto(service.cutter(CutterID(cutter_id)))
 
 
@@ -234,7 +316,14 @@ def create_cutter(
     service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new cutter and returns its assigned id."""
+    """Inserts a new cutter and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, max_stack = cutter_from_write_dto(body)
     new_id = service.create_cutter(name, max_stack)
     session.commit()
@@ -251,7 +340,14 @@ def replace_cutter(
         Depends(get_cutter_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing cutter."""
+    """Replaces non-id fields of an existing cutter.
+
+    :param cutter_id: id of the cutter.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(cutter_id, body.id)
     service.replace_cutter(cutter_replace_from_dto(cutter_id, body))
@@ -266,7 +362,14 @@ def delete_cutter(
     service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a cutter."""
+    """Removes a cutter.
+
+    :param cutter_id: id of the cutter.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_cutter(CutterID(cutter_id))
     session.commit()
     return Response(status_code=204)

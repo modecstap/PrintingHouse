@@ -19,6 +19,10 @@ class PrinterID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "printer id",
@@ -47,6 +51,10 @@ class Printer:
     prices: PrinterPrices
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         stripped = self.name.strip()
         if not stripped:
             raise InvalidInput(

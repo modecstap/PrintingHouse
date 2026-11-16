@@ -11,8 +11,7 @@ __all__ = ["CostReport"]
 
 @dataclass(frozen=True, slots=True)
 class CostReport:
-    """
-    Value Object. A price split into material, startup, work,
+    """Value Object. A price split into material, startup, work,
     and the markup added on top.
     """
 
@@ -25,10 +24,8 @@ class CostReport:
         """Adds a percent of material, startup, and work to markup.
 
         :param percent: the percent to add. Zero adds nothing.
-        Markup already stored is kept and is not scaled.
 
-        :return: the same material, startup, and work. The markup is
-        (material + startup + work) * (factor - 1) plus the stored markup.
+        :return: the 'CostReport' result.
         """
         base = self.material + self.startup + self.work
         added = base * (percent.factor() - 1)
@@ -42,14 +39,14 @@ class CostReport:
     def total(self) -> Money:
         """Returns material, startup, work, and markup added together.
 
-        :return: the sum of the four amounts.
+        :return: the Money result.
         """
         return self.material + self.startup + self.work + self.markup
 
     def cost_price(self) -> Money:
         """Returns material and startup, without work or markup.
 
-        :return: the sum of material and startup.
+        :return: the Money result.
         """
         return self.material + self.startup
 
@@ -57,7 +54,7 @@ class CostReport:
     def zero(cls) -> "CostReport":
         """Returns a report whose four amounts are zero.
 
-        :return: material, startup, work, and markup, each zero.
+        :return: the 'CostReport' result.
         """
         return cls(
             material=Money.zero(),
@@ -66,7 +63,13 @@ class CostReport:
             markup=Money.zero(),
         )
 
-    def __mul__(self, other):
+    def __mul__(self, other: object) -> "CostReport | type[NotImplemented]":
+        """Multiplies by a factor.
+
+        :param other: numeric factor.
+
+        :return: the 'CostReport | type[NotImplemented]' result.
+        """
         if isinstance(other, (int, float, Decimal)):
             return CostReport(
                 material=self.material * other,
@@ -76,7 +79,15 @@ class CostReport:
             )
         return NotImplemented
 
-    def __add__(self, other):
+    def __add__(
+        self, other: object
+    ) -> "CostReport | type[NotImplemented]":
+        """Adds another operand.
+
+        :param other: another cost report.
+
+        :return: the 'CostReport | type[NotImplemented]' result.
+        """
         if isinstance(other, CostReport):
             return CostReport(
                 material=self.material + other.material,
@@ -86,7 +97,15 @@ class CostReport:
             )
         return NotImplemented
 
-    def __truediv__(self, other):
+    def __truediv__(
+        self, other: object
+    ) -> "CostReport | type[NotImplemented]":
+        """Divides by a divisor.
+
+        :param other: numeric divisor.
+
+        :return: the 'CostReport | type[NotImplemented]' result.
+        """
         if isinstance(other, (int, float)):
             return CostReport(
                 material=self.material / other,

@@ -16,6 +16,8 @@ __all__ = [
 ]
 
 def test_create_rejects_strategies_for_different_runs():
+    """Handles test create rejects strategies for different runs.
+    """
     run_a, printing, _, _, ctx = build_worked_run()
     run_b = PrintRun(
         id=PrintRunID(99),
@@ -41,11 +43,15 @@ def test_create_rejects_strategies_for_different_runs():
 
 
 def test_create_requires_strategies_or_explicit_run():
+    """Handles test create requires strategies or explicit run.
+    """
     with pytest.raises(ValueError, match="strategies or an explicit run"):
         RunEstimate.create(())
 
 
 def test_create_accepts_empty_strategies_with_explicit_run():
+    """Handles test create accepts empty strategies with explicit run.
+    """
     run, _, _, _, _ = build_worked_run(
         with_print=False,
         with_laminate=False,

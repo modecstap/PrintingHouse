@@ -1,3 +1,6 @@
+"""Code for new_core.print_run.imposition.py.
+"""
+
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -10,8 +13,7 @@ __all__ = ["Imposition"]
 
 @dataclass(frozen=True, slots=True)
 class Imposition:
-    """
-    Value Object. How target sheets sit on a press sheet,
+    """Value Object. How target sheets sit on a press sheet,
     including bleeds and spacing.
     """
 
@@ -27,8 +29,6 @@ class Imposition:
         below zero, if a cell side is zero, or if the grid fits no positive
         number of target sheets. Negative bleeds or spacing are reported first
         without a fit reason in the same error.
-
-        :return: nothing. A bleed or spacing of zero stays.
         """
         reasons: list[str] = []
         if self.bleeds < 0:
@@ -54,13 +54,16 @@ class Imposition:
             )
 
     def thickness(self) -> Decimal:
+        """Handles thickness.
+
+        :return: the Decimal result.
+        """
         return self.press_sheet.thickness()
 
     def count(self) -> int:
         """Returns how many target sheets fit on the press sheet.
 
-        :return: the product of the chosen grid axes. The straight grid
-        is kept only when it fits strictly more sheets than the turned grid.
+        :return: the int result.
         """
         count_x, count_y = self._axis_counts()
         return count_x * count_y
@@ -68,13 +71,16 @@ class Imposition:
     def cuts(self) -> int:
         """Returns the cut count for the same grid as count.
 
-        :return: (max(0, x - 1) + max(0, y - 1)) * 2 + 4
-        for the axes count keeps.
+        :return: the int result.
         """
         count_x, count_y = self._axis_counts()
         return (max(0, count_x - 1) + max(0, count_y - 1)) * 2 + 4
 
     def _axis_counts(self) -> tuple[int, int]:
+        """Handles axis counts.
+
+        :return: the tuple[int, int] result.
+        """
         cell_width = self.target.width + 2 * self.bleeds
         cell_height = self.target.height + 2 * self.bleeds
 

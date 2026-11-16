@@ -24,6 +24,10 @@ class PrintPricing:
     print_run: PrintRun
 
     def report(self) -> CostReport:
+        """Handles report.
+
+        :return: the CostReport result.
+        """
         cyan, magenta, yellow, black = self.chroma.consumed_sheets()
         printer = self.printer
         prices = printer.prices
@@ -48,4 +52,8 @@ class PrintPricing:
         )
 
     def run(self) -> PrintRun:
+        """Handles run.
+
+        :return: the PrintRun result.
+        """
         return self.print_run

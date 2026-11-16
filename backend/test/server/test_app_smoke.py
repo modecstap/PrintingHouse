@@ -19,12 +19,20 @@ __all__ = [
 ]
 
 def test_docs_reachable_without_auth(auth_config):
+    """Handles test docs reachable without auth.
+
+    :param auth_config: the auth config.
+    """
     client = TestClient(create_app(auth_config, _DummyDatabase()))
     assert client.get("/docs").status_code == 200
     assert client.get("/openapi.json").status_code == 200
 
 
 def test_expired_jwt_on_protected_route_401(auth_config):
+    """Handles test expired jwt on protected route 401.
+
+    :param auth_config: the auth config.
+    """
     app = create_app(auth_config, _DummyDatabase())
     store = InMemoryUserStore()
     from backend.server import dependencies

@@ -22,6 +22,14 @@ def imposition_test_sheet(
     *,
     sheet_id: SheetID | None = None,
 ) -> Sheet:
+    """Handles imposition test sheet.
+
+    :param width: the width.
+    :param height: the height.
+    :param sheet_id: id of the sheet.
+
+    :return: the Sheet result.
+    """
     return Sheet(
         id=sheet_id or SheetID(1),
         paper=Paper(

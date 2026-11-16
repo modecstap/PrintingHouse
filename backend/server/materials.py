@@ -57,7 +57,12 @@ def list_films(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> list[FilmReadDto]:
-    """Returns every stored film."""
+    """Returns every stored film.
+
+    :param service: the service.
+
+    :return: the list[FilmReadDto] result.
+    """
     return [film_to_read_dto(row) for row in service.films()]
 
 
@@ -67,7 +72,13 @@ def get_film(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> FilmReadDto:
-    """Returns one film by id."""
+    """Returns one film by id.
+
+    :param film_id: id of the film.
+    :param service: the service.
+
+    :return: the FilmReadDto result.
+    """
     return film_to_read_dto(service.film(FilmID(film_id)))
 
 
@@ -78,7 +89,14 @@ def create_film(
     service: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new film and returns its assigned id."""
+    """Inserts a new film and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, price, density = film_from_write_dto(body)
     new_id = service.create_film(name, price, density)
     session.commit()
@@ -95,7 +113,14 @@ def replace_film(
         Depends(get_film_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing film."""
+    """Replaces non-id fields of an existing film.
+
+    :param film_id: id of the film.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     service.replace_film(film_replace_from_dto(film_id, body))
     session.commit()
@@ -109,7 +134,14 @@ def delete_film(
     service: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a film."""
+    """Removes a film.
+
+    :param film_id: id of the film.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_film(FilmID(film_id))
     session.commit()
     return Response(status_code=204)
@@ -120,7 +152,12 @@ def list_paper_types(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[str]:
-    """Returns unique paper type names across stored sheets."""
+    """Returns unique paper type names across stored sheets.
+
+    :param service: the service.
+
+    :return: the list[str] result.
+    """
     return list(service.paper_types())
 
 
@@ -129,7 +166,12 @@ def list_paper_densities(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[int]:
-    """Returns unique paper densities across stored sheets."""
+    """Returns unique paper densities across stored sheets.
+
+    :param service: the service.
+
+    :return: the list[int] result.
+    """
     return list(service.paper_densities())
 
 
@@ -138,7 +180,12 @@ def list_film_densities(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[FilmCatalog, Depends(get_film_catalog)],
 ) -> list[int]:
-    """Returns unique film densities across stored films."""
+    """Returns unique film densities across stored films.
+
+    :param service: the service.
+
+    :return: the list[int] result.
+    """
     return list(service.film_densities())
 
 
@@ -147,7 +194,12 @@ def list_sheets(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> list[SheetReadDto]:
-    """Returns every stored sheet."""
+    """Returns every stored sheet.
+
+    :param service: the service.
+
+    :return: the list[SheetReadDto] result.
+    """
     return [sheet_to_read_dto(row) for row in service.sheets()]
 
 
@@ -157,7 +209,13 @@ def get_sheet(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
 ) -> SheetReadDto:
-    """Returns one sheet by id."""
+    """Returns one sheet by id.
+
+    :param sheet_id: id of the sheet.
+    :param service: the service.
+
+    :return: the SheetReadDto result.
+    """
     return sheet_to_read_dto(service.sheet(SheetID(sheet_id)))
 
 
@@ -168,7 +226,14 @@ def create_sheet(
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new sheet and returns its assigned id."""
+    """Inserts a new sheet and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     paper, sheet_format = sheet_from_write_dto(body)
     new_id = service.create_sheet(paper, sheet_format)
     session.commit()
@@ -185,7 +250,14 @@ def replace_sheet(
         Depends(get_sheet_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing sheet."""
+    """Replaces non-id fields of an existing sheet.
+
+    :param sheet_id: id of the sheet.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     service.replace_sheet(sheet_replace_from_dto(sheet_id, body))
     session.commit()
@@ -199,7 +271,14 @@ def delete_sheet(
     service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a sheet."""
+    """Removes a sheet.
+
+    :param sheet_id: id of the sheet.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_sheet(SheetID(sheet_id))
     session.commit()
     return Response(status_code=204)

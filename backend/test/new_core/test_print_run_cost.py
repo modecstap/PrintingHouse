@@ -145,7 +145,8 @@ def test_press_sheet_material_equals_the_chroma_shares(
 ):
     """One print with free paper, startup, and salary.
 
-    It prices only the ink shares.
+    :param chroma: the chroma.
+    :param material: the material.
     """
     run, _, _, _, ctx = build_run_with_free_chroma_pricing(chroma=chroma)
 

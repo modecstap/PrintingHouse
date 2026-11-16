@@ -22,7 +22,7 @@ class DBConfig:
     def from_env(cls) -> DBConfig:
         """Builds config from ``DB_*`` variables and documented defaults.
 
-        :return: connection settings for the application database.
+        :return: the DBConfig result.
         """
         return cls(
             user=os.getenv("DB_USER", "postgres"),
@@ -37,7 +37,7 @@ class DBConfig:
 
         :param driver: sync driver segment, e.g. ``psycopg``.
 
-        :return: ``postgresql+{driver}://…`` URL.
+        :return: the str result.
         """
         if self.password:
             auth = f"{self.user}:{self.password}"

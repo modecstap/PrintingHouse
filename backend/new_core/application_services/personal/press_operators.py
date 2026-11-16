@@ -25,8 +25,8 @@ class PressOperatorCatalog:
     ) -> None:
         """Remembers the press operator store.
 
-        :param press_operators:
-        :param press_operator_factory:
+        :param press_operators: the press operators.
+        :param press_operator_factory: the press operator factory.
         """
         self._press_operators = press_operators
         self._press_operator_factory = press_operator_factory
@@ -34,27 +34,25 @@ class PressOperatorCatalog:
     def press_operators(self) -> tuple[PressOperator, ...]:
         """Returns every press operator.
 
-        :return: rows in ascending id order.
+        :return: the tuple[PressOperator, ...] result.
         """
         return self._press_operators.take_all()
 
     def press_operator(self, operator_id: PressOperatorID) -> PressOperator:
         """Returns one press operator.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the PressOperator result.
         """
         return self._press_operators.take(operator_id)
 
     def save_press_operator(self, operator: PressOperator) -> None:
         """Stores a new press operator under its id.
 
-        :param operator:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param operator: the operator.
         """
         self._press_operators.save(operator)
 
@@ -65,10 +63,10 @@ class PressOperatorCatalog:
     ) -> PressOperatorID:
         """Inserts a new press operator; the store assigns the id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the assigned operator id.
+        :return: the PressOperatorID result.
         """
         operator = self._press_operator_factory.create(
             name, salary_by_operation)
@@ -81,8 +79,6 @@ class PressOperatorCatalog:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         self._press_operators.replace(operator)
 
@@ -92,7 +88,5 @@ class PressOperatorCatalog:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         self._press_operators.delete(operator_id)

@@ -19,6 +19,10 @@ class FilmID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "film id",
@@ -28,8 +32,7 @@ class FilmID:
 
 @dataclass(frozen=True, slots=True)
 class Film:
-    """
-    Entity. A film row in the materials catalog.
+    """Entity. A film row in the materials catalog.
 
     Density does not change the money of a run.
     """

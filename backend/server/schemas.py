@@ -43,6 +43,8 @@ __all__ = [
 ]
 
 class FormatDto(BaseModel):
+    """Format Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -51,6 +53,8 @@ class FormatDto(BaseModel):
 
 
 class PaperDto(BaseModel):
+    """Paper Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     density: int
@@ -61,6 +65,14 @@ class PaperDto(BaseModel):
     @field_validator("thickness")
     @classmethod
     def validate_thickness(cls, value: Decimal) -> Decimal:
+        """Validates thickness.
+
+        :param value: the value.
+
+        :raises ValueError: when the operation fails.
+
+        :return: the Decimal result.
+        """
         if value <= 0:
             msg = f"толщина бумаги меньше или равна 0, толщина={value} мм"
             raise ValueError(msg)
@@ -74,6 +86,8 @@ class PaperDto(BaseModel):
 
 
 class SheetDto(BaseModel):
+    """Sheet Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     paper: PaperDto
@@ -81,6 +95,8 @@ class SheetDto(BaseModel):
 
 
 class ImpositionDto(BaseModel):
+    """Imposition Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     target: FormatDto
@@ -90,6 +106,8 @@ class ImpositionDto(BaseModel):
 
 
 class PrintOpDto(BaseModel):
+    """Print Op Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     kind: Literal["print"]
@@ -106,6 +124,8 @@ class PrintOpDto(BaseModel):
 
 
 class FilmDto(BaseModel):
+    """Film Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -114,6 +134,8 @@ class FilmDto(BaseModel):
 
 
 class FilmReadDto(BaseModel):
+    """Film Read Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -123,6 +145,8 @@ class FilmReadDto(BaseModel):
 
 
 class SheetReadDto(BaseModel):
+    """Sheet Read Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -131,10 +155,14 @@ class SheetReadDto(BaseModel):
 
 
 class CreatedIdDto(BaseModel):
+    """Created Id Dto.
+    """
     id: int
 
 
 class LaminateOpDto(BaseModel):
+    """Laminate Op Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     kind: Literal["laminate"]
@@ -145,6 +173,8 @@ class LaminateOpDto(BaseModel):
 
 
 class CutOpDto(BaseModel):
+    """Cut Op Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     kind: Literal["cut"]
@@ -153,6 +183,8 @@ class CutOpDto(BaseModel):
 
 
 class DieCutOpDto(BaseModel):
+    """Die Cut Op Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     kind: Literal["die_cut"]
@@ -166,6 +198,8 @@ RunOperationDto = Annotated[
 
 
 class PartDto(BaseModel):
+    """Part Dto.
+    """
     model_config = ConfigDict(extra="forbid")
 
     imposition: ImpositionDto
@@ -175,6 +209,8 @@ class PartDto(BaseModel):
 
 
 class AdditionalWorkDto(BaseModel):
+    """Additional Work Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -184,6 +220,8 @@ class AdditionalWorkDto(BaseModel):
 
 
 class ProductDto(BaseModel):
+    """Product Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     parts_markup: int
@@ -192,6 +230,8 @@ class ProductDto(BaseModel):
 
 
 class OrderWriteDto(BaseModel):
+    """Order Write Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     product: ProductDto
@@ -200,6 +240,8 @@ class OrderWriteDto(BaseModel):
 
 
 class OrderDto(BaseModel):
+    """Order Dto.
+    """
     id: int
     count: int
     description: str
@@ -208,6 +250,8 @@ class OrderDto(BaseModel):
 
 
 class OrderReportDto(BaseModel):
+    """Order Report Dto.
+    """
     product_price: str
     order_price: str
     income: str
@@ -215,10 +259,14 @@ class OrderReportDto(BaseModel):
 
 
 class SaveOrderResponseDto(BaseModel):
+    """Save Order Response Dto.
+    """
     id: int
 
 
 class ReferenceDto(BaseModel):
+    """Reference Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -227,16 +275,22 @@ class ReferenceDto(BaseModel):
 
 
 class LoginRequest(BaseModel):
+    """Login Request.
+    """
     username: str
     password: str
 
 
 class TokenResponse(BaseModel):
+    """Token Response.
+    """
     access_token: str
     token_type: Literal["bearer"] = "bearer"
 
 
 class PrinterDto(BaseModel):
+    """Printer Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -250,6 +304,8 @@ class PrinterDto(BaseModel):
 
 
 class LaminatorDto(BaseModel):
+    """Laminator Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -258,6 +314,8 @@ class LaminatorDto(BaseModel):
 
 
 class CutterDto(BaseModel):
+    """Cutter Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -266,6 +324,8 @@ class CutterDto(BaseModel):
 
 
 class OperatorDto(BaseModel):
+    """Operator Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     id: int
@@ -274,6 +334,8 @@ class OperatorDto(BaseModel):
 
 
 class PrinterWriteDto(BaseModel):
+    """Printer Write Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -286,6 +348,8 @@ class PrinterWriteDto(BaseModel):
 
 
 class LaminatorWriteDto(BaseModel):
+    """Laminator Write Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -293,6 +357,8 @@ class LaminatorWriteDto(BaseModel):
 
 
 class CutterWriteDto(BaseModel):
+    """Cutter Write Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str
@@ -300,6 +366,8 @@ class CutterWriteDto(BaseModel):
 
 
 class OperatorWriteDto(BaseModel):
+    """Operator Write Dto.
+    """
     model_config = ConfigDict(extra="ignore")
 
     name: str

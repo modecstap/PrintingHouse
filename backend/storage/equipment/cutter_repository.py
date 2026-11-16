@@ -17,16 +17,20 @@ class SqlCutterRepository:
     """Loads and stores cutters in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, cutter_id: CutterID) -> Cutter:
         """Returns the cutter with this id.
 
-        :param cutter_id:
+        :param cutter_id: id of the cutter.
 
         :raises KeyError: if there is no cutter.
 
-        :return: the cutter row.
+        :return: the Cutter result.
         """
         row = self._session.get(CutterRow, cutter_id.value)
         if row is None:
@@ -36,7 +40,7 @@ class SqlCutterRepository:
     def take_all(self) -> tuple[Cutter, ...]:
         """Returns every stored cutter.
 
-        :return: cutters in ascending id order.
+        :return: the tuple[Cutter, ...] result.
         """
         stmt = select(CutterRow).order_by(CutterRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -48,7 +52,7 @@ class SqlCutterRepository:
     def generate_id(self) -> CutterID:
         """Returns the next cutter id from the store sequence.
 
-        :return: a new cutter id. It may already be occupied.
+        :return: the CutterID result.
         """
         value = self._session.execute(
             text("SELECT nextval('cutter_id_seq')"),
@@ -61,8 +65,6 @@ class SqlCutterRepository:
         :param cutter:
 
         :raises CutterIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         try:
             self._session.add(
@@ -82,8 +84,6 @@ class SqlCutterRepository:
         :param cutter:
 
         :raises KeyError: if there is no cutter with this id.
-
-        :return: nothing.
         """
         row = self._session.get(CutterRow, cutter.id.value)
         if row is None:
@@ -98,8 +98,6 @@ class SqlCutterRepository:
         :param cutter_id:
 
         :raises KeyError: if there is no cutter.
-
-        :return: nothing.
         """
         row = self._session.get(CutterRow, cutter_id.value)
         if row is None:

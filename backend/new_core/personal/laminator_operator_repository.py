@@ -28,11 +28,8 @@ class LaminatorOperatorIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param operator_id:
-
-        :return: sets the message
-        ``{operation}: оператор ламинации уже есть, id={operator_id.value}``.
+        :param operation: the operation.
+        :param operator_id: id of the operator.
         """
         super().__init__(
             f"{operation}: оператор ламинации уже есть, id={operator_id.value}",
@@ -45,26 +42,20 @@ class LaminatorOperatorRepository(Protocol):
     def take(self, operator_id: LaminatorOperatorID) -> LaminatorOperator:
         """Returns the laminator operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
-
-        :return: the operator row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[LaminatorOperator, ...]:
         """Returns every stored laminator operator.
-
-        :return: operators in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> LaminatorOperatorID:
         """Returns the next laminator operator id from the store sequence.
-
-        :return: a new operator id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, operator: LaminatorOperator) -> None:
@@ -73,8 +64,6 @@ class LaminatorOperatorRepository(Protocol):
         :param operator:
 
         :raises LaminatorOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -84,8 +73,6 @@ class LaminatorOperatorRepository(Protocol):
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -95,7 +82,5 @@ class LaminatorOperatorRepository(Protocol):
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         ...

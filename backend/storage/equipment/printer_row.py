@@ -7,7 +7,12 @@ from backend.storage.equipment.tables import PrinterRow
 __all__ = ["new_printer_row"]
 
 def new_printer_row(printer: Printer) -> PrinterRow:
-    """Builds a row for inserting or saving a printer."""
+    """Builds a row for inserting or saving a printer.
+
+    :param printer: the printer.
+
+    :return: the PrinterRow result.
+    """
     return PrinterRow(
         id=printer.id.value,
         name=printer.name,

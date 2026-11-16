@@ -22,6 +22,12 @@ TAX_COMPENSATION_FACTOR = Percent(93)
 
 
 def _volume_factor(sheet_count: int) -> Percent:
+    """Handles volume factor.
+
+    :param sheet_count: the sheet count.
+
+    :return: the Percent result.
+    """
     if sheet_count < 5:
         return Percent(30)
     if sheet_count < 100:
@@ -38,13 +44,9 @@ class Accountant:
     def sheet_cost_report(estimate: RunEstimate) -> CostReport:
         """Returns the operation cost of one press target.
 
-        Product parts markup and the volume markup are added after
-        the operations.
-        Each one is a percent of material, startup, and work. The second
-        does not scale the first.
+        :param estimate: the estimate.
 
-        :return: material and work as each operation returns them, plus
-        each startup divided by the press target count, plus markup.
+        :return: the CostReport result.
         """
         report = estimate.aggregated_operations()
 
@@ -57,7 +59,9 @@ class Accountant:
     def list_report(self, estimate: RunEstimate) -> CostReport:
         """Returns the press-target cost divided across the target sheets.
 
-        :return: the press-target report divided by the imposition count.
+        :param estimate: the estimate.
+
+        :return: the CostReport result.
         """
         sheet_report = self.sheet_cost_report(estimate)
         return sheet_report / estimate.targets_on_imposition()
@@ -65,7 +69,9 @@ class Accountant:
     def block_cost_report(self, estimate: RunEstimate) -> CostReport:
         """Returns the target-target cost times the block count.
 
-        :return: the list report multiplied by the block count.
+        :param estimate: the estimate.
+
+        :return: the CostReport result.
         """
         report = self.list_report(estimate)
         return report * estimate.block_count()
@@ -77,13 +83,10 @@ class Accountant:
     ) -> CostReport:
         """Returns the sum of the block reports and the additional work.
 
-        Additional work does not receive the volume markup.
-
         :param works: the additional work of the product. Each price is
-        work, and its markup is a percent of that price.
+        :param estimates: the estimates.
 
-        :return: one report. An empty run list and an empty work tuple
-        yield zero.
+        :return: the CostReport result.
         """
         total_report = CostReport.zero()
         for estimate in estimates:
@@ -107,12 +110,11 @@ class Accountant:
     ) -> CostReport:
         """Returns the product report times the order count.
 
-        Tax compensation is not applied.
-
         :param works: the additional work of the product.
         :param order: the order whose count scales the report.
+        :param estimates: the estimates.
 
-        :return: the product report multiplied by the order count.
+        :return: the CostReport result.
         """
         report = self.product_cost_report(estimates, works)
         return report * order.count
@@ -125,11 +127,9 @@ class Accountant:
         """Returns the priced order after tax compensation.
 
         :param order: the order whose product work and count are priced.
+        :param estimates: the estimates.
 
-        :return: product price, order price, income, and imposition counts
-        in run order. The product report is multiplied by 100/93. The order
-        price is that report times the order count. Income is the order
-        price minus the order cost price.
+        :return: the OrderReport result.
         """
         product_report = self.product_cost_report(
             estimates,

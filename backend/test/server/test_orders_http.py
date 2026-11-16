@@ -38,6 +38,8 @@ __all__ = [
 
 @dataclass
 class _FakeOrderService:
+    """Fake Order Service.
+    """
     calls: list[str] = field(default_factory=list)
     quote_report: OrderReport | None = None
     save_id: OrderID = OrderID(9)
@@ -48,10 +50,24 @@ class _FakeOrderService:
     get_error: Exception | None = None
 
     def get_orders(self, limit: int) -> tuple[Order, ...]:
+        """Returns the orders.
+
+        :param limit: the limit.
+
+        :return: the tuple[Order, ...] result.
+        """
         self.calls.append(f"list:{limit}")
         return self.orders[:limit]
 
     def get_order(self, order_id: OrderID) -> Order:
+        """Returns the order.
+
+        :param order_id: id of the order.
+
+        :raises OrderNotFound: when the operation fails.
+
+        :return: the Order result.
+        """
         self.calls.append(f"get:{order_id.value}")
         if self.get_error:
             raise self.get_error
@@ -61,6 +77,12 @@ class _FakeOrderService:
         raise OrderNotFound("take", order_id)
 
     def order_report(self, order_id: OrderID) -> OrderReport:
+        """Handles order report.
+
+        :param order_id: id of the order.
+
+        :return: the OrderReport result.
+        """
         self.calls.append(f"report:{order_id.value}")
         return self.quote_report or OrderReport(
             product_price=Money(Decimal("1")),
@@ -70,6 +92,13 @@ class _FakeOrderService:
         )
 
     def quote(self, product, count: int) -> OrderReport:
+        """Handles quote.
+
+        :param product: the product.
+        :param count: the count.
+
+        :return: the OrderReport result.
+        """
         self.calls.append(f"quote:{count}")
         if self.quote_error:
             raise self.quote_error
@@ -81,6 +110,14 @@ class _FakeOrderService:
         )
 
     def save(self, product, count: int, description: str = "") -> OrderID:
+        """Persists the save.
+
+        :param product: the product.
+        :param count: the count.
+        :param description: the description.
+
+        :return: the OrderID result.
+        """
         self.calls.append(f"save:{count}:{description}")
         if self.save_error:
             raise self.save_error
@@ -91,6 +128,13 @@ class _FakeOrderService:
         order_id: OrderID,
         content: OrderContent,
     ) -> OrderID:
+        """Replaces the replace.
+
+        :param order_id: id of the order.
+        :param content: the content.
+
+        :return: the OrderID result.
+        """
         self.calls.append(
             f"replace:{order_id.value}:{content.count}:{content.description}",
         )
@@ -104,6 +148,12 @@ _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 def _client_with_fake(
         fake: _FakeOrderService) -> tuple[TestClient, dict[str, str]]:
+    """Handles client with fake.
+
+    :param fake: the fake.
+
+    :return: the tuple[TestClient, dict[str, str]] result.
+    """
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_order_service] = lambda: fake
@@ -115,6 +165,10 @@ def _client_with_fake(
 
 
 def _product_payload() -> dict:
+    """Handles product payload.
+
+    :return: the dict result.
+    """
     run, _, _, _, _ = build_worked_run()
     product = product_from_run(run)
     from backend.server.mapping import product_to_dto
@@ -126,6 +180,8 @@ def _product_payload() -> dict:
 
 
 def test_orders_missing_token_401():
+    """Handles test orders missing token 401.
+    """
     fake = _FakeOrderService()
     client, _ = _client_with_fake(fake)
     response = client.get("/api/orders")
@@ -133,6 +189,8 @@ def test_orders_missing_token_401():
 
 
 def test_quote_200_and_save_not_called():
+    """Handles test quote 200 and save not called.
+    """
     fake = _FakeOrderService()
     client, headers = _client_with_fake(fake)
     response = client.post(
@@ -150,6 +208,8 @@ def test_quote_200_and_save_not_called():
 
 
 def test_save_returns_id():
+    """Handles test save returns id.
+    """
     fake = _FakeOrderService(save_id=OrderID(42))
     client, headers = _client_with_fake(fake)
     response = client.post(
@@ -161,6 +221,8 @@ def test_save_returns_id():
 
 
 def test_save_passes_description_to_service():
+    """Handles test save passes description to service.
+    """
     fake = _FakeOrderService()
     client, headers = _client_with_fake(fake)
     payload = _product_payload()
@@ -170,6 +232,8 @@ def test_save_passes_description_to_service():
 
 
 def test_get_order_404():
+    """Handles test get order 404.
+    """
     fake = _FakeOrderService(get_error=OrderNotFound("take", OrderID(1)))
     client, headers = _client_with_fake(fake)
     response = client.get("/api/orders/1", headers=headers)
@@ -177,6 +241,8 @@ def test_get_order_404():
 
 
 def test_list_limit_query():
+    """Handles test list limit query.
+    """
     run, _, _, _, _ = build_worked_run()
     order = make_order(1, OrderContent(product=product_from_run(run), count=1))
     fake = _FakeOrderService(orders=(order,))
@@ -188,6 +254,8 @@ def test_list_limit_query():
 
 
 def test_bad_product_422():
+    """Handles test bad product 422.
+    """
     fake = _FakeOrderService()
     client, headers = _client_with_fake(fake)
     payload = _product_payload()
@@ -197,6 +265,8 @@ def test_bad_product_422():
 
 
 def test_save_409_on_allocation_failure():
+    """Handles test save 409 on allocation failure.
+    """
     fake = _FakeOrderService(save_error=OrderIdAllocationFailed(OrderID(3)))
     client, headers = _client_with_fake(fake)
     response = client.post(
@@ -207,6 +277,8 @@ def test_save_409_on_allocation_failure():
 
 
 def test_quote_404_on_key_error():
+    """Handles test quote 404 on key error.
+    """
     fake = _FakeOrderService(quote_error=KeyError("missing printer"))
     client, headers = _client_with_fake(fake)
     response = client.post(
@@ -217,6 +289,8 @@ def test_quote_404_on_key_error():
 
 
 def test_replace_returns_same_id():
+    """Handles test replace returns same id.
+    """
     fake = _FakeOrderService()
     client, headers = _client_with_fake(fake)
     payload = _product_payload()
@@ -228,6 +302,8 @@ def test_replace_returns_same_id():
 
 
 def test_replace_404_when_missing():
+    """Handles test replace 404 when missing.
+    """
     fake = _FakeOrderService(
         replace_error=OrderNotFound("replace", OrderID(8)),
     )

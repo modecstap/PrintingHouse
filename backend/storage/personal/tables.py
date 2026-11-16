@@ -18,6 +18,8 @@ _MONEY = Numeric(18, 4)
 
 
 class PressOperatorRow(Base):  # pylint: disable=too-few-public-methods
+    """Press Operator Row.
+    """
     __tablename__ = "press_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -26,6 +28,8 @@ class PressOperatorRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class LaminatorOperatorRow(Base):  # pylint: disable=too-few-public-methods
+    """Laminator Operator Row.
+    """
     __tablename__ = "laminator_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -34,6 +38,8 @@ class LaminatorOperatorRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class CutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
+    """Cutter Operator Row.
+    """
     __tablename__ = "cutter_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -42,6 +48,8 @@ class CutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class DieCutterOperatorRow(Base):  # pylint: disable=too-few-public-methods
+    """Die Cutter Operator Row.
+    """
     __tablename__ = "die_cutter_operators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

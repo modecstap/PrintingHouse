@@ -15,12 +15,16 @@ class SqlUserRepository(UserStore):
     """Stores username and password hash only."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def count(self) -> int:
         """Returns the number of stored users.
 
-        :return: row count in ``users``.
+        :return: the int result.
         """
         return self._session.scalar(
             select(func.count()).select_from(UserRow)) or 0
@@ -28,9 +32,9 @@ class SqlUserRepository(UserStore):
     def get_by_username(self, username: str) -> StoredUser | None:
         """Loads one user by username.
 
-        :param username:
+        :param username: the username.
 
-        :return: stored credentials, or ``None`` if missing.
+        :return: the StoredUser | None result.
         """
         row = self._session.execute(
             select(UserRow).where(UserRow.username == username),
@@ -44,10 +48,8 @@ class SqlUserRepository(UserStore):
     def add(self, username: str, password_hash: str) -> None:
         """Inserts a user row.
 
-        :param username:
-        :param password_hash:
-
-        :return: nothing.
+        :param username: the username.
+        :param password_hash: the password hash.
         """
         self._session.add(
             UserRow(

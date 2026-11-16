@@ -23,7 +23,13 @@ def issue_token(
 ) -> TokenResponse:
     """Exchanges username and password for a JWT.
 
+    :param body: request body payload.
+    :param store: user persistence store.
+    :param auth_config: the auth config.
+
     :raises HTTPException: 401 on invalid credentials without WWW-Authenticate.
+
+    :return: the TokenResponse result.
     """
     try:
         token = login(

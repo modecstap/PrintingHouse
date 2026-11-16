@@ -14,16 +14,12 @@ class ReferenceRepository(Protocol):
 
     def take_all(self) -> tuple[Reference, ...]:
         """Returns every stored reference.
-
-        :return: references in store order. None: an empty tuple.
-        """
+"""
         ...
 
     def save(self, reference: Reference) -> None:
         """Appends a new reference row.
 
-        :param reference:
-
-        :return: nothing. Existing rows are not changed.
+        :param reference: the reference.
         """
         ...

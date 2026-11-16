@@ -70,6 +70,13 @@ router = APIRouter(prefix="/api/staff", tags=["staff"])
 
 
 def _require_body_id_matches_path(path_id: int, body_id: int) -> None:
+    """Handles require body id matches path.
+
+    :param path_id: id of the path.
+    :param body_id: id of the body.
+
+    :raises HTTPException: when the operation fails.
+    """
     if body_id != path_id:
         raise HTTPException(
             status_code=400,
@@ -85,7 +92,12 @@ def list_press_operators(
         Depends(get_press_operator_catalog),
     ],
 ) -> list[OperatorDto]:
-    """Returns every press operator."""
+    """Returns every press operator.
+
+    :param service: the service.
+
+    :return: the list[OperatorDto] result.
+    """
     return [operator_to_dto(row) for row in service.press_operators()]
 
 
@@ -98,7 +110,13 @@ def get_press_operator(
         Depends(get_press_operator_catalog),
     ],
 ) -> OperatorDto:
-    """Returns one press operator by id."""
+    """Returns one press operator by id.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+
+    :return: the OperatorDto result.
+    """
     return operator_to_dto(service.press_operator(PressOperatorID(operator_id)))
 
 
@@ -112,7 +130,14 @@ def create_press_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new press operator and returns its assigned id."""
+    """Inserts a new press operator and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, salary = operator_from_write_dto(body)
     new_id = service.create_press_operator(name, salary)
     session.commit()
@@ -130,7 +155,14 @@ def replace_press_operator(
         Depends(get_press_operator_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing press operator."""
+    """Replaces non-id fields of an existing press operator.
+
+    :param operator_id: id of the operator.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_press_operator(
@@ -151,7 +183,14 @@ def delete_press_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a press operator."""
+    """Removes a press operator.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_press_operator(PressOperatorID(operator_id))
     session.commit()
     return Response(status_code=204)
@@ -165,7 +204,12 @@ def list_laminator_operators(
         Depends(get_laminator_operator_catalog),
     ],
 ) -> list[OperatorDto]:
-    """Returns every laminator operator."""
+    """Returns every laminator operator.
+
+    :param service: the service.
+
+    :return: the list[OperatorDto] result.
+    """
     return [operator_to_dto(row) for row in service.laminator_operators()]
 
 
@@ -178,7 +222,13 @@ def get_laminator_operator(
         Depends(get_laminator_operator_catalog),
     ],
 ) -> OperatorDto:
-    """Returns one laminator operator by id."""
+    """Returns one laminator operator by id.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+
+    :return: the OperatorDto result.
+    """
     return operator_to_dto(
         service.laminator_operator(LaminatorOperatorID(operator_id)),
     )
@@ -194,7 +244,14 @@ def create_laminator_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new laminator operator and returns its assigned id."""
+    """Inserts a new laminator operator and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, salary = operator_from_write_dto(body)
     new_id = service.create_laminator_operator(name, salary)
     session.commit()
@@ -215,7 +272,14 @@ def replace_laminator_operator(
         Depends(get_laminator_operator_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing laminator operator."""
+    """Replaces non-id fields of an existing laminator operator.
+
+    :param operator_id: id of the operator.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_laminator_operator(
@@ -239,7 +303,14 @@ def delete_laminator_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a laminator operator."""
+    """Removes a laminator operator.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_laminator_operator(LaminatorOperatorID(operator_id))
     session.commit()
     return Response(status_code=204)
@@ -253,7 +324,12 @@ def list_cutter_operators(
         Depends(get_cutter_operator_catalog),
     ],
 ) -> list[OperatorDto]:
-    """Returns every cutter operator."""
+    """Returns every cutter operator.
+
+    :param service: the service.
+
+    :return: the list[OperatorDto] result.
+    """
     return [operator_to_dto(row) for row in service.cutter_operators()]
 
 
@@ -266,7 +342,13 @@ def get_cutter_operator(
         Depends(get_cutter_operator_catalog),
     ],
 ) -> OperatorDto:
-    """Returns one cutter operator by id."""
+    """Returns one cutter operator by id.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+
+    :return: the OperatorDto result.
+    """
     return operator_to_dto(
         service.cutter_operator(
             CutterOperatorID(operator_id)))
@@ -282,7 +364,14 @@ def create_cutter_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new cutter operator and returns its assigned id."""
+    """Inserts a new cutter operator and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, salary = operator_from_write_dto(body)
     new_id = service.create_cutter_operator(name, salary)
     session.commit()
@@ -300,7 +389,14 @@ def replace_cutter_operator(
         Depends(get_cutter_operator_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing cutter operator."""
+    """Replaces non-id fields of an existing cutter operator.
+
+    :param operator_id: id of the operator.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_cutter_operator(
@@ -321,7 +417,14 @@ def delete_cutter_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a cutter operator."""
+    """Removes a cutter operator.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_cutter_operator(CutterOperatorID(operator_id))
     session.commit()
     return Response(status_code=204)
@@ -335,7 +438,12 @@ def list_die_cut_operators(
         Depends(get_die_cut_operator_catalog),
     ],
 ) -> list[OperatorDto]:
-    """Returns every die-cut operator."""
+    """Returns every die-cut operator.
+
+    :param service: the service.
+
+    :return: the list[OperatorDto] result.
+    """
     return [operator_to_dto(row) for row in service.die_cut_operators()]
 
 
@@ -348,7 +456,13 @@ def get_die_cut_operator(
         Depends(get_die_cut_operator_catalog),
     ],
 ) -> OperatorDto:
-    """Returns one die-cut operator by id."""
+    """Returns one die-cut operator by id.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+
+    :return: the OperatorDto result.
+    """
     return operator_to_dto(
         service.die_cut_operator(DieCutterOperatorID(operator_id)),
     )
@@ -364,7 +478,14 @@ def create_die_cut_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
-    """Inserts a new die-cut operator and returns its assigned id."""
+    """Inserts a new die-cut operator and returns its assigned id.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the CreatedIdDto result.
+    """
     name, salary = operator_from_write_dto(body)
     new_id = service.create_die_cut_operator(name, salary)
     session.commit()
@@ -385,7 +506,14 @@ def replace_die_cut_operator(
         Depends(get_die_cut_operator_catalog_and_session),
     ],
 ) -> Response:
-    """Replaces non-id fields of an existing die-cut operator."""
+    """Replaces non-id fields of an existing die-cut operator.
+
+    :param operator_id: id of the operator.
+    :param body: request body payload.
+    :param deps: the deps.
+
+    :return: the Response result.
+    """
     service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_die_cut_operator(
@@ -409,7 +537,14 @@ def delete_die_cut_operator(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Removes a die-cut operator."""
+    """Removes a die-cut operator.
+
+    :param operator_id: id of the operator.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.delete_die_cut_operator(DieCutterOperatorID(operator_id))
     session.commit()
     return Response(status_code=204)

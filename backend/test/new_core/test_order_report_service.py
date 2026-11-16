@@ -19,6 +19,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import (
+    _RunPricingFixtures,
     assert_tax_scaling_report_prices,
     attach_die_cut_operator,
     build_run_without_block_operations,
@@ -37,7 +38,14 @@ __all__ = [
     "test_order_report_raises_when_order_is_missing",
 ]
 
-def _service_from_fixtures(run, ctx) -> OrderService:
+def _service_from_fixtures(run: object, ctx: _RunPricingFixtures) -> OrderService:
+    """Handles service from fixtures.
+
+    :param run: the run.
+    :param ctx: shared test fixtures.
+
+    :return: the OrderService result.
+    """
     return order_service(InMemoryUnitOfWork(), ctx)
 
 

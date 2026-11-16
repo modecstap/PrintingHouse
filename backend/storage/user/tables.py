@@ -9,6 +9,8 @@ from backend.storage.base import Base
 __all__ = ["UserRow"]
 
 class UserRow(Base):  # pylint: disable=too-few-public-methods
+    """User Row.
+    """
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)

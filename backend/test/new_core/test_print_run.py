@@ -123,7 +123,14 @@ def pricing_strategy_factory(
     printers: InMemoryPrinterRepository | None = None,
     films: InMemoryFilmRepository | None = None,
 ) -> PricingStrategyFactory:
-    """In-memory catalogs for pricing strategy tests."""
+    """In-memory catalogs for pricing strategy tests.
+
+    :param ctx: shared test fixtures.
+    :param printers: the printers.
+    :param films: the films.
+
+    :return: the PricingStrategyFactory result.
+    """
     printer_repo = printers or InMemoryPrinterRepository(
         items=dict(ctx.printers))
     film_repo = films or InMemoryFilmRepository(items=dict(ctx.films))
@@ -146,7 +153,14 @@ def order_service(
     *,
     films: InMemoryFilmRepository | None = None,
 ) -> OrderService:
-    """OrderService wired like production with in-memory catalogs."""
+    """OrderService wired like production with in-memory catalogs.
+
+    :param uow: the uow.
+    :param ctx: shared test fixtures.
+    :param films: the films.
+
+    :return: the OrderService result.
+    """
     pricing_factory = pricing_strategy_factory(ctx, films=films)
     return OrderService(
         uow=uow,
@@ -169,7 +183,21 @@ def _worked_run_catalog(  # pylint: disable=too-many-arguments
     sheet_id: SheetID | None,
     film_id: FilmID | None,
 ) -> _WorkedRunCatalog:
-    """Builds default catalog entities for :func:`build_worked_run`."""
+    """Builds default catalog entities for :func:`build_worked_run`.
+
+    :param printer_startup: the printer startup.
+    :param press_salary: the press salary.
+    :param max_stack: the max stack.
+    :param paper_thickness: the paper thickness.
+    :param press_density: the press density.
+    :param press_price: the press price.
+    :param press_width: the press width.
+    :param press_height: the press height.
+    :param sheet_id: id of the sheet.
+    :param film_id: id of the film.
+
+    :return: the _WorkedRunCatalog result.
+    """
     printer = Printer(
         id=PrinterID(1),
         name="№ 1",
@@ -247,7 +275,17 @@ def _worked_run_block_operations(
     chroma: Chroma,
     lamination: Lamination,
 ) -> tuple[tuple[object, ...], Print | None, Laminate | None, Cut | None]:
-    """Builds block operations for :func:`build_worked_run`."""
+    """Builds block operations for :func:`build_worked_run`.
+
+    :param catalog: the catalog.
+    :param with_print: the with print.
+    :param with_laminate: the with laminate.
+    :param with_cut: the with cut.
+    :param chroma: the chroma.
+    :param lamination: the lamination.
+
+    :return: the tuple[tuple[object, ...], Print | None, Laminate | None, Cut | None] result.
+    """
     run_operations: list = []
     printing = None
     if with_print:
@@ -306,18 +344,27 @@ def build_worked_run(  # pylint: disable=too-many-arguments
 ]:
     """Assembles one run and the operations the flags allow.
 
-    It does not price them.
+    :param target_width: the target width.
+    :param target_height: the target height.
+    :param press_width: the press width.
+    :param press_height: the press height.
+    :param press_density: the press density.
+    :param press_price: the press price.
+    :param required_count: the required count.
+    :param chroma: the chroma.
+    :param printer_startup: the printer startup.
+    :param press_salary: the press salary.
+    :param lamination: the lamination.
+    :param max_stack: the max stack.
+    :param paper_thickness: the paper thickness.
+    :param with_print: the with print.
+    :param with_laminate: the with laminate.
+    :param with_cut: the with cut.
+    :param parts_markup: the parts markup.
+    :param sheet_id: id of the sheet.
+    :param film_id: id of the film.
 
-    with_print, with_laminate, and with_cut default to True. A False flag
-    skips that factory and returns None in its place. Chroma and lamination
-    are set on the print and laminate operations.
-
-    The block sheet costs 999, the target sheet costs 9999, the order count
-    is 4, and assembly costs 999. Those values stay out of the sheet report.
-    The block count is 3 and scales only block_cost_report. Product
-    parts_markup defaults to 0. Two press sheets add a 30 percent volume markup.
-    Paper thickness is 1 mm, so the 50 mm stack cuts both press sheets
-    in one lift.
+    :return: the tuple[PrintRun, Print | None, Laminate | None, Cut | None, _RunPricingFixtures] result.
     """
     catalog = _worked_run_catalog(
         printer_startup=printer_startup,
@@ -397,7 +444,12 @@ def build_run_without_block_operations(
     Cut | None,
     _RunPricingFixtures,
 ]:
-    """Worked run whose block has no print, laminate, or cut operations."""
+    """Worked run whose block has no print, laminate, or cut operations.
+
+    :param kwargs: the kwargs.
+
+    :return: the tuple[PrintRun, Print | None, Laminate | None, Cut | None, _RunPricingFixtures] result.
+    """
     return build_worked_run(
         with_print=False,
         with_laminate=False,
@@ -406,8 +458,11 @@ def build_run_without_block_operations(
     )
 
 
-def assert_tax_scaling_report_prices(report) -> None:
-    """Shared asserts for tax and order-count scaling on order reports."""
+def assert_tax_scaling_report_prices(report: object) -> None:
+    """Shared asserts for tax and order-count scaling on order reports.
+
+    :param report: the report.
+    """
     compensation = Decimal(100) / Decimal(93)
     assert report.product_price == (
         Money(Decimal(100) * compensation) + Money(Decimal(10) * compensation)
@@ -429,7 +484,10 @@ def build_run_with_free_chroma_pricing(*,
                                                   _RunPricingFixtures]:
     """Worked run with zero paper, startup, and press salary.
 
-    Chroma is optional.
+    :param chroma: the chroma.
+    :param required_count: the required count.
+
+    :return: the tuple[PrintRun, Print | None, Laminate | None, Cut | None, _RunPricingFixtures] result.
     """
     kwargs: dict = {
         "press_price": 0,
@@ -446,7 +504,12 @@ def build_run_with_free_chroma_pricing(*,
 
 
 def tax_scaling_order(run: PrintRun) -> Order:
-    """Order with сборка work priced for tax and count scaling tests."""
+    """Order with сборка work priced for tax and count scaling tests.
+
+    :param run: the run.
+
+    :return: the Order result.
+    """
     return Order(
         id=OrderID(1),
         product=Product(
@@ -472,7 +535,15 @@ def attach_die_cut_operator(
     operator_id: int = 2,
     salary: Decimal = Decimal(8),
 ) -> DieCutterOperator:
-    """Appends a die-cut operation and registers the operator on ``ctx``."""
+    """Appends a die-cut operation and registers the operator on ``ctx``.
+
+    :param run: the run.
+    :param ctx: shared test fixtures.
+    :param operator_id: id of the operator.
+    :param salary: the salary.
+
+    :return: the DieCutterOperator result.
+    """
     die_operator = DieCutterOperator(
         id=DieCutterOperatorID(operator_id),
         name=f"№ {operator_id}",
@@ -483,7 +554,12 @@ def attach_die_cut_operator(
     return die_operator
 
 
-def _append_block_operation(run: PrintRun, operation) -> None:
+def _append_block_operation(run: PrintRun, operation: object) -> None:
+    """Handles append block operation.
+
+    :param run: the run.
+    :param operation: the operation.
+    """
     run.block = replace(
         run.block, operations=run.block.operations + (operation,))
 
@@ -494,6 +570,14 @@ def _estimate(
     *,
     parts_markup: Percent = Percent(0),
 ) -> RunEstimate:
+    """Handles estimate.
+
+    :param run: the run.
+    :param ctx: shared test fixtures.
+    :param parts_markup: the parts markup.
+
+    :return: the RunEstimate result.
+    """
     strategies = [
         pricing_strategy_factory(ctx).create(operation, run)
         for operation in run.block.operations

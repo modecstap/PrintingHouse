@@ -19,6 +19,10 @@ class DieCutterOperatorID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "die cutter operator id",
@@ -35,6 +39,8 @@ class DieCutterOperator:
     salary_by_operation: Money
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+        """
         stripped = stripped_required_name(self.name, "die cutter operator")
         if stripped != self.name:
             object.__setattr__(self, "name", stripped)

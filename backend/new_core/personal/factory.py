@@ -32,15 +32,19 @@ class PressOperatorFactory:
     """Allocates press-operator ids and builds rows."""
 
     def __init__(self, press_operators: PressOperatorRepository) -> None:
+        """Initializes this instance.
+
+        :param press_operators: the press operators.
+        """
         self._press_operators = press_operators
 
     def create(self, name: str, salary_by_operation: Money) -> PressOperator:
         """Builds a press operator with a generated id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the new operator row.
+        :return: the PressOperator result.
         """
         return PressOperator(
             id=self._press_operators.generate_id(),
@@ -55,6 +59,10 @@ class LaminatorOperatorFactory:
     def __init__(
             self,
             laminator_operators: LaminatorOperatorRepository) -> None:
+        """Initializes this instance.
+
+        :param laminator_operators: the laminator operators.
+        """
         self._laminator_operators = laminator_operators
 
     def create(
@@ -63,10 +71,10 @@ class LaminatorOperatorFactory:
             salary_by_operation: Money) -> LaminatorOperator:
         """Builds a laminator operator with a generated id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the new operator row.
+        :return: the LaminatorOperator result.
         """
         return LaminatorOperator(
             id=self._laminator_operators.generate_id(),
@@ -79,15 +87,19 @@ class CutterOperatorFactory:
     """Allocates cutter-operator ids and builds rows."""
 
     def __init__(self, cutter_operators: CutterOperatorRepository) -> None:
+        """Initializes this instance.
+
+        :param cutter_operators: the cutter operators.
+        """
         self._cutter_operators = cutter_operators
 
     def create(self, name: str, salary_by_operation: Money) -> CutterOperator:
         """Builds a cutter operator with a generated id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the new operator row.
+        :return: the CutterOperator result.
         """
         return CutterOperator(
             id=self._cutter_operators.generate_id(),
@@ -100,6 +112,10 @@ class DieCutterOperatorFactory:
     """Allocates die-cut-operator ids and builds rows."""
 
     def __init__(self, die_cut_operators: DieCutterOperatorRepository) -> None:
+        """Initializes this instance.
+
+        :param die_cut_operators: the die cut operators.
+        """
         self._die_cut_operators = die_cut_operators
 
     def create(
@@ -108,10 +124,10 @@ class DieCutterOperatorFactory:
             salary_by_operation: Money) -> DieCutterOperator:
         """Builds a die-cut operator with a generated id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the new operator row.
+        :return: the DieCutterOperator result.
         """
         return DieCutterOperator(
             id=self._die_cut_operators.generate_id(),

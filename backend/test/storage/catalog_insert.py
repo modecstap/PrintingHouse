@@ -54,15 +54,31 @@ def _insert_catalog_map(
     entities: Mapping[object, _CatalogEntity],
     insert: Callable[[Session, _CatalogEntity], None],
 ) -> None:
+    """Inserts each entity in the mapping with the given inserter.
+
+    :param session: the SQLAlchemy session.
+    :param entities: catalog entities keyed by id.
+    :param insert: row inserter for one entity type.
+    """
     for entity in entities.values():
         insert(session, entity)
 
 
 def insert_printer(session: Session, printer: Printer) -> None:
+    """Persists one printer row from a domain ``Printer``.
+
+    :param session: the SQLAlchemy session.
+    :param printer: the printer to insert.
+    """
     session.add(new_printer_row(printer))
 
 
 def insert_laminator(session: Session, laminator: Laminator) -> None:
+    """Persists one laminator row from a domain ``Laminator``.
+
+    :param session: the SQLAlchemy session.
+    :param laminator: the laminator to insert.
+    """
     session.add(
         LaminatorRow(
             id=laminator.id.value,
@@ -73,6 +89,11 @@ def insert_laminator(session: Session, laminator: Laminator) -> None:
 
 
 def insert_cutter(session: Session, cutter: Cutter) -> None:
+    """Persists one cutter row from a domain ``Cutter``.
+
+    :param session: the SQLAlchemy session.
+    :param cutter: the cutter to insert.
+    """
     session.add(
         CutterRow(
             id=cutter.id.value,
@@ -82,6 +103,11 @@ def insert_cutter(session: Session, cutter: Cutter) -> None:
 
 
 def insert_press_operator(session: Session, operator: PressOperator) -> None:
+    """Persists one press operator row.
+
+    :param session: the SQLAlchemy session.
+    :param operator: the press operator to insert.
+    """
     session.add(
         PressOperatorRow(
             id=operator.id.value,
@@ -95,6 +121,11 @@ def insert_laminator_operator(
     session: Session,
     operator: LaminatorOperator,
 ) -> None:
+    """Persists one laminator operator row.
+
+    :param session: the SQLAlchemy session.
+    :param operator: the laminator operator to insert.
+    """
     session.add(
         LaminatorOperatorRow(
             id=operator.id.value,
@@ -105,6 +136,11 @@ def insert_laminator_operator(
 
 
 def insert_cutter_operator(session: Session, operator: CutterOperator) -> None:
+    """Persists one cutter operator row.
+
+    :param session: the SQLAlchemy session.
+    :param operator: the cutter operator to insert.
+    """
     session.add(
         CutterOperatorRow(
             id=operator.id.value,
@@ -118,6 +154,11 @@ def insert_die_cutter_operator(
     session: Session,
     operator: DieCutterOperator,
 ) -> None:
+    """Persists one die-cutter operator row.
+
+    :param session: the SQLAlchemy session.
+    :param operator: the die-cutter operator to insert.
+    """
     session.add(
         DieCutterOperatorRow(
             id=operator.id.value,
@@ -128,6 +169,11 @@ def insert_die_cutter_operator(
 
 
 def insert_film(session: Session, film: Film) -> None:
+    """Persists one film row from a domain ``Film``.
+
+    :param session: the SQLAlchemy session.
+    :param film: the film to insert.
+    """
     session.add(
         FilmRow(
             id=film.id.value,
@@ -139,6 +185,11 @@ def insert_film(session: Session, film: Film) -> None:
 
 
 def insert_sheet(session: Session, sheet: Sheet) -> None:
+    """Persists one sheet row from a domain ``Sheet``.
+
+    :param session: the SQLAlchemy session.
+    :param sheet: the sheet to insert.
+    """
     session.add(
         SheetRow(
             id=sheet.id.value,
@@ -154,11 +205,13 @@ def insert_sheet(session: Session, sheet: Sheet) -> None:
 
 
 def insert_catalogs_from_ctx(
-        session: Session,
-        ctx: _RunPricingFixtures) -> None:
-    """Inserts every catalog entity referenced
+    session: Session,
+    ctx: _RunPricingFixtures,
+) -> None:
+    """Inserts every catalog entity from ``build_worked_run`` fixtures.
 
-    by ``build_worked_run`` fixtures.
+    :param session: the SQLAlchemy session.
+    :param ctx: the in-memory fixture catalogs to mirror into SQL.
     """
     _insert_catalog_map(session, ctx.printers, insert_printer)
     _insert_catalog_map(session, ctx.press_operators, insert_press_operator)
@@ -180,7 +233,11 @@ def insert_catalogs_from_ctx(
 
 
 def insert_minimal_order_row(session: Session, order_id: int) -> None:
-    """Placeholder order row so print-run FK tests can insert runs."""
+    """Inserts a placeholder order row for print-run foreign-key tests.
+
+    :param session: the SQLAlchemy session.
+    :param order_id: primary key for the new order row.
+    """
     session.add(
         OrderRow(
             id=order_id,

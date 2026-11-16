@@ -22,37 +22,72 @@ __all__ = [
 ]
 
 class _DummySession:
+    """Dummy Session.
+    """
     def close(self) -> None:
+        """Handles close.
+        """
         return None
 
     def commit(self) -> None:
+        """Handles commit.
+        """
         return None
 
 
 class _DummyDatabase:
+    """Dummy Database.
+    """
     def __init__(self) -> None:
+        """Initializes this instance.
+        """
         self.session_factory = lambda: _DummySession()
 
 
 class InMemoryUserStore:
+    """In Memory User Store.
+    """
     def __init__(self, users: dict[str, str] | None = None) -> None:
+        """Initializes this instance.
+
+        :param users: the users.
+        """
         self._users = users or {}
 
     def count(self) -> int:
+        """Handles count.
+
+        :return: the int result.
+        """
         return len(self._users)
 
     def get_by_username(self, username: str) -> StoredUser | None:
+        """Returns the by username.
+
+        :param username: the username.
+
+        :return: the StoredUser | None result.
+        """
         stored = self._users.get(username)
         if stored is None:
             return None
         return StoredUser(username=username, password_hash=stored)
 
     def add(self, username: str, password_hash: str) -> None:
+        """Adds a add.
+
+        :param username: the username.
+        :param password_hash: the password hash.
+        """
         self._users[username] = password_hash
 
 
 @pytest.fixture
 def auth_config() -> AuthConfig:
+    """Handles auth config.
+
+    :return: the AuthConfig result.
+    """
     return AuthConfig(
         secret_key="unit-test-secret",
         algorithm="HS256",
@@ -62,11 +97,20 @@ def auth_config() -> AuthConfig:
 
 @pytest.fixture
 def user_store() -> InMemoryUserStore:
+    """Handles user store.
+
+    :return: the InMemoryUserStore result.
+    """
     return InMemoryUserStore({"tester": hash_password("pass")})
 
 
 @pytest.fixture
 def api_client(auth_config, user_store):
+    """Handles api client.
+
+    :param auth_config: the auth config.
+    :param user_store: the user store.
+    """
     app = create_app(auth_config, _DummyDatabase())
 
     from backend.server import dependencies
@@ -81,9 +125,21 @@ def api_client(auth_config, user_store):
 
 @pytest.fixture
 def bearer_token(auth_config) -> str:
+    """Handles bearer token.
+
+    :param auth_config: the auth config.
+
+    :return: the str result.
+    """
     return create_access_token("tester", auth_config)
 
 
 @pytest.fixture
 def auth_headers(bearer_token) -> dict[str, str]:
+    """Handles auth headers.
+
+    :param bearer_token: the bearer token.
+
+    :return: the dict[str, str] result.
+    """
     return {"Authorization": f"Bearer {bearer_token}"}

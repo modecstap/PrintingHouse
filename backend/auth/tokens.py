@@ -18,10 +18,10 @@ __all__ = [
 def create_access_token(username: str, config: AuthConfig) -> str:
     """Issues a signed access token for ``username``.
 
-    :param username:
-    :param config:
+    :param username: the username.
+    :param config: runtime configuration.
 
-    :return: encoded JWT string.
+    :return: the str result.
     """
     expire = datetime.now(
         UTC) + timedelta(minutes=config.access_token_expire_minutes)
@@ -32,12 +32,12 @@ def create_access_token(username: str, config: AuthConfig) -> str:
 def decode_access_token(token: str, config: AuthConfig) -> str:
     """Decodes and validates an access token.
 
-    :param token:
-    :param config:
+    :param token: the token.
+    :param config: runtime configuration.
 
     :raises CredentialsError: on signature, expiry, or payload problems.
 
-    :return: username from ``sub``.
+    :return: the str result.
     """
     try:
         payload = jwt.decode(

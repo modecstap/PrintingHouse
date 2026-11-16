@@ -1,3 +1,6 @@
+"""Code for new_core.operations.run_operation.py.
+"""
+
 from typing import Protocol
 
 

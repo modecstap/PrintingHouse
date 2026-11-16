@@ -16,12 +16,16 @@ class SqlReferenceRepository:
     """Persists named order references in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take_all(self) -> tuple[Reference, ...]:
         """Returns every stored reference.
 
-        :return: references in store order. None: an empty tuple.
+        :return: the tuple[Reference, ...] result.
         """
         stmt = select(OrderReferenceRow).order_by(OrderReferenceRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -37,9 +41,7 @@ class SqlReferenceRepository:
     def save(self, reference: Reference) -> None:
         """Appends a new reference row.
 
-        :param reference:
-
-        :return: nothing. Existing rows are not changed.
+        :param reference: the reference.
         """
         self._session.add(
             OrderReferenceRow(

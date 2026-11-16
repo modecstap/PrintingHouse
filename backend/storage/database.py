@@ -29,6 +29,8 @@ class Database:
         )
 
     def _ping(self) -> None:
+        """Handles ping.
+        """
         with self.engine.connect() as connection:
             connection.execute(text("SELECT 1"))
 

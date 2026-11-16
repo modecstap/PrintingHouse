@@ -25,8 +25,8 @@ class CutterOperatorCatalog:
     ) -> None:
         """Remembers the cutter operator store.
 
-        :param cutter_operators:
-        :param cutter_operator_factory:
+        :param cutter_operators: the cutter operators.
+        :param cutter_operator_factory: the cutter operator factory.
         """
         self._cutter_operators = cutter_operators
         self._cutter_operator_factory = cutter_operator_factory
@@ -34,27 +34,25 @@ class CutterOperatorCatalog:
     def cutter_operators(self) -> tuple[CutterOperator, ...]:
         """Returns every cutter operator.
 
-        :return: rows in ascending id order.
+        :return: the tuple[CutterOperator, ...] result.
         """
         return self._cutter_operators.take_all()
 
     def cutter_operator(self, operator_id: CutterOperatorID) -> CutterOperator:
         """Returns one cutter operator.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the CutterOperator result.
         """
         return self._cutter_operators.take(operator_id)
 
     def save_cutter_operator(self, operator: CutterOperator) -> None:
         """Stores a new cutter operator under its id.
 
-        :param operator:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param operator: the operator.
         """
         self._cutter_operators.save(operator)
 
@@ -65,10 +63,10 @@ class CutterOperatorCatalog:
     ) -> CutterOperatorID:
         """Inserts a new cutter operator; the store assigns the id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the assigned operator id.
+        :return: the CutterOperatorID result.
         """
         operator = self._cutter_operator_factory.create(
             name, salary_by_operation)
@@ -81,8 +79,6 @@ class CutterOperatorCatalog:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         self._cutter_operators.replace(operator)
 
@@ -92,7 +88,5 @@ class CutterOperatorCatalog:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         self._cutter_operators.delete(operator_id)

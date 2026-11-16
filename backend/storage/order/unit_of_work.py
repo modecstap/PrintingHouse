@@ -22,6 +22,10 @@ class SqlOrderUnitOfWork:
     """Orders and print runs written in one database transaction."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
         self.orders = SqlOrderRepository(session)
         self.print_runs = SqlPrintRunRepository(session)
@@ -29,11 +33,11 @@ class SqlOrderUnitOfWork:
     def transaction(self, work: Callable[[], T]) -> T:
         """Runs work and rolls back stored rows on any exception.
 
-        :param work:
-
-        :return: the value from work.
+        :param work: the work.
 
         :raises Exception: re-raises whatever work raised after rollback.
+
+        :return: the T result.
         """
         with self._session.begin():
             return work()

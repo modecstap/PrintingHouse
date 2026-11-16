@@ -13,14 +13,22 @@ __all__ = [
     "test_paper_type_strips_surrounding_whitespace",
 ]
 
-def _rejects(message: str, call) -> None:
+def _rejects(message: str, call: object) -> None:
+    """Handles rejects.
+
+    :param message: the message.
+    :param call: the call.
+    """
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()
 
 
 @pytest.mark.parametrize("raw", ["", "   "])
 def test_paper_type_rejects_blank(raw: str) -> None:
-    """Empty or whitespace-only type is rejected."""
+    """Empty or whitespace-only type is rejected.
+
+    :param raw: the raw.
+    """
     _rejects(
         "PaperType: тип бумаги не задан",
         lambda: PaperType(raw),

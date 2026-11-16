@@ -28,11 +28,8 @@ class PressOperatorIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param operator_id:
-
-        :return: sets the message
-        ``{operation}: оператор печати уже есть, id={operator_id.value}``.
+        :param operation: the operation.
+        :param operator_id: id of the operator.
         """
         super().__init__(
             f"{operation}: оператор печати уже есть, id={operator_id.value}",
@@ -45,26 +42,20 @@ class PressOperatorRepository(Protocol):
     def take(self, operator_id: PressOperatorID) -> PressOperator:
         """Returns the press operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
-
-        :return: the operator row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[PressOperator, ...]:
         """Returns every stored press operator.
-
-        :return: operators in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> PressOperatorID:
         """Returns the next press operator id from the store sequence.
-
-        :return: a new operator id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, operator: PressOperator) -> None:
@@ -73,8 +64,6 @@ class PressOperatorRepository(Protocol):
         :param operator:
 
         :raises PressOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -84,8 +73,6 @@ class PressOperatorRepository(Protocol):
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -95,7 +82,5 @@ class PressOperatorRepository(Protocol):
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         ...

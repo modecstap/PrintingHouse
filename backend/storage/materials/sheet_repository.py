@@ -20,16 +20,20 @@ class SqlSheetRepository:
     """Loads and stores sheets in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, sheet_id: SheetID) -> Sheet:
         """Returns the sheet with this id.
 
-        :param sheet_id:
+        :param sheet_id: id of the sheet.
 
         :raises KeyError: if there is no sheet.
 
-        :return: the sheet row.
+        :return: the Sheet result.
         """
         row = self._session.get(SheetRow, sheet_id.value)
         if row is None:
@@ -39,7 +43,7 @@ class SqlSheetRepository:
     def take_all(self) -> tuple[Sheet, ...]:
         """Returns every stored sheet.
 
-        :return: sheets in ascending id order.
+        :return: the tuple[Sheet, ...] result.
         """
         stmt = select(SheetRow).order_by(SheetRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -48,10 +52,10 @@ class SqlSheetRepository:
     def add(self, paper: Paper, sheet_format: Format) -> SheetID:
         """Inserts a new sheet; the database assigns the id.
 
-        :param paper:
-        :param sheet_format:
+        :param paper: the paper.
+        :param sheet_format: the sheet format.
 
-        :return: the assigned sheet id.
+        :return: the SheetID result.
         """
         row = SheetRow(
             paper_density=paper.density.value,
@@ -72,8 +76,6 @@ class SqlSheetRepository:
         :param sheet:
 
         :raises KeyError: if there is no sheet with this id.
-
-        :return: nothing.
         """
         row = self._session.get(SheetRow, sheet.id.value)
         if row is None:
@@ -93,8 +95,6 @@ class SqlSheetRepository:
         :param sheet_id:
 
         :raises KeyError: if there is no sheet.
-
-        :return: nothing.
         """
         row = self._session.get(SheetRow, sheet_id.value)
         if row is None:
@@ -104,7 +104,7 @@ class SqlSheetRepository:
     def distinct_paper_types(self) -> tuple[str, ...]:
         """Returns unique paper type names across stored sheets.
 
-        :return: canonical type strings in ascending order.
+        :return: the tuple[str, ...] result.
         """
         stmt = (
             select(SheetRow.paper_name)
@@ -125,7 +125,7 @@ class SqlSheetRepository:
     def distinct_paper_densities(self) -> tuple[int, ...]:
         """Returns unique paper densities across stored sheets.
 
-        :return: densities in ascending numeric order.
+        :return: the tuple[int, ...] result.
         """
         stmt = (
             select(SheetRow.paper_density)
@@ -136,6 +136,13 @@ class SqlSheetRepository:
 
     @staticmethod
     def _sheet_from_row(sheet_id: SheetID, row: SheetRow) -> Sheet:
+        """Handles sheet from row.
+
+        :param sheet_id: id of the sheet.
+        :param row: the row.
+
+        :return: the Sheet result.
+        """
         return Sheet(
             id=sheet_id,
             paper=Paper(

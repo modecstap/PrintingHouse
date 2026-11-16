@@ -9,8 +9,7 @@ __all__ = ["Format"]
 
 @dataclass(frozen=True, slots=True)
 class Format:
-    """
-    Value Object. The name and the height and width of a target, in millimeters.
+    """Value Object. The name and the height and width of a target, in millimeters.
     """
 
     name: str
@@ -22,8 +21,6 @@ class Format:
 
         :raises InvalidInput: if height is below zero, or if width is
         below zero. Both failures are reported together.
-
-        :return: nothing. A side of zero stays.
         """
         reasons: list[str] = []
         if self.height <= 0:

@@ -53,6 +53,10 @@ _ZERO_CELL = (
 
 
 def _fitting_imposition() -> Imposition:
+    """Handles fitting imposition.
+
+    :return: the Imposition result.
+    """
     press_sheet = imposition_test_sheet(200, 300)
     return Imposition(
         target=Format(name="t", height=100, width=100),
@@ -63,6 +67,12 @@ def _fitting_imposition() -> Imposition:
 
 
 def _block(count: int) -> Part:
+    """Handles block.
+
+    :param count: the count.
+
+    :return: the Part result.
+    """
     return Part(
         imposition=_fitting_imposition(),
         count=count,
@@ -71,7 +81,12 @@ def _block(count: int) -> Part:
     )
 
 
-def _rejects(message: str, call) -> None:
+def _rejects(message: str, call: object) -> None:
+    """Handles rejects.
+
+    :param message: the message.
+    :param call: the call.
+    """
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()
 
@@ -84,6 +99,8 @@ def test_imposition_rejects_count_when_nothing_fits():
     message = "Imposition: на печатный лист влезает 0 целевых листов"
 
     def _build() -> None:
+        """Handles build.
+        """
         press_sheet = imposition_test_sheet(50, 50)
         Imposition(
             target=Format(name="t", height=100, width=100),
@@ -216,8 +233,12 @@ def test_cutter_rejects_a_stack_height_of_zero():
         ),
     ],
 )
-def test_negative_measure_is_rejected(message: str, build):
-    """One negative measure is rejected in its constructor with that text."""
+def test_negative_measure_is_rejected(message: str, build: bool):
+    """One negative measure is rejected in its constructor with that text.
+
+    :param message: the message.
+    :param build: the build.
+    """
     _rejects(message, build)
 
 
@@ -249,8 +270,12 @@ def test_negative_measure_is_rejected(message: str, build):
         ),
     ],
 )
-def test_every_invalid_field_is_reported(message: str, build):
-    """Every invalid field is named in one error."""
+def test_every_invalid_field_is_reported(message: str, build: bool):
+    """Every invalid field is named in one error.
+
+    :param message: the message.
+    :param build: the build.
+    """
     _rejects(message, build)
 
 
@@ -302,7 +327,11 @@ def test_every_invalid_field_is_reported(message: str, build):
         ),
     ],
 )
-def test_negative_id_is_rejected(message: str, build):
-    """A negative catalog or entity id is rejected at construction."""
+def test_negative_id_is_rejected(message: str, build: bool):
+    """A negative catalog or entity id is rejected at construction.
+
+    :param message: the message.
+    :param build: the build.
+    """
     with pytest.raises(InvalidInput, match=message):
         build()

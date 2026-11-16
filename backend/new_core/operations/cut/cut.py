@@ -12,8 +12,7 @@ __all__ = ["Cut"]
 
 @dataclass(frozen=True, slots=True)
 class Cut:
-    """
-    Value Object. One cut of a run: the cutter id and the operator.
+    """Value Object. One cut of a run: the cutter id and the operator.
     """
 
     cutter_id: CutterID

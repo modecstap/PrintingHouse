@@ -17,6 +17,8 @@ _THICKNESS_MM = Numeric(6, 2)
 
 
 class FilmRow(Base):  # pylint: disable=too-few-public-methods
+    """Film Row.
+    """
     __tablename__ = "films"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -26,6 +28,8 @@ class FilmRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class SheetRow(Base):  # pylint: disable=too-few-public-methods
+    """Sheet Row.
+    """
     __tablename__ = "sheets"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)

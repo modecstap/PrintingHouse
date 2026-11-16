@@ -19,8 +19,8 @@ class CutterCatalog:
     ) -> None:
         """Remembers the cutter store.
 
-        :param cutters:
-        :param cutter_factory:
+        :param cutters: the cutters.
+        :param cutter_factory: the cutter factory.
         """
         self._cutters = cutters
         self._cutter_factory = cutter_factory
@@ -28,37 +28,35 @@ class CutterCatalog:
     def cutters(self) -> tuple[Cutter, ...]:
         """Returns every stored cutter.
 
-        :return: cutters in ascending id order.
+        :return: the tuple[Cutter, ...] result.
         """
         return self._cutters.take_all()
 
     def cutter(self, cutter_id: CutterID) -> Cutter:
         """Returns one cutter.
 
-        :param cutter_id:
+        :param cutter_id: id of the cutter.
 
         :raises KeyError: if there is no cutter.
 
-        :return: the cutter row.
+        :return: the Cutter result.
         """
         return self._cutters.take(cutter_id)
 
     def save_cutter(self, cutter: Cutter) -> None:
         """Stores a new cutter under its id.
 
-        :param cutter:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param cutter: the cutter.
         """
         self._cutters.save(cutter)
 
     def create_cutter(self, name: str, max_stack: int) -> CutterID:
         """Inserts a new cutter; the store assigns the id.
 
-        :param name:
-        :param max_stack:
+        :param name: the name.
+        :param max_stack: the max stack.
 
-        :return: the assigned cutter id.
+        :return: the CutterID result.
         """
         cutter = self._cutter_factory.create(name, max_stack)
         self._cutters.save(cutter)
@@ -70,8 +68,6 @@ class CutterCatalog:
         :param cutter:
 
         :raises KeyError: if there is no cutter with this id.
-
-        :return: nothing.
         """
         self._cutters.replace(cutter)
 
@@ -81,7 +77,5 @@ class CutterCatalog:
         :param cutter_id:
 
         :raises KeyError: if there is no cutter.
-
-        :return: nothing.
         """
         self._cutters.delete(cutter_id)

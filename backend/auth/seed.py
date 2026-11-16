@@ -21,8 +21,6 @@ def seed_admin_if_empty(
     :param password: ``ADMIN_PASSWORD`` value.
 
     :raises AdminSeedConfigError: when the store is empty and env is incomplete.
-
-    :return: nothing.
     """
     if store.count() > 0:
         return

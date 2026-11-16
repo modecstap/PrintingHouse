@@ -28,20 +28,34 @@ __all__ = [
 
 @dataclass
 class _FakeReferenceService:
+    """Fake Reference Service.
+    """
     references_rows: tuple[Reference, ...] = ()
     orders_rows: tuple[Order, ...] = ()
     save_error: Exception | None = None
     calls: list[str] = field(default_factory=list)
 
     def references(self) -> tuple[Reference, ...]:
+        """Handles references.
+
+        :return: the tuple[Reference, ...] result.
+        """
         self.calls.append("list")
         return self.references_rows
 
     def reference_orders(self) -> tuple[Order, ...]:
+        """Handles reference orders.
+
+        :return: the tuple[Order, ...] result.
+        """
         self.calls.append("orders")
         return self.orders_rows
 
     def save(self, reference: Reference) -> None:
+        """Persists the save.
+
+        :param reference: the reference.
+        """
         self.calls.append(f"save:{reference.name}")
         if self.save_error:
             raise self.save_error
@@ -52,6 +66,12 @@ _AUTH = AuthConfig("unit-test-secret", "HS256", 60)
 
 def _client_with_fake(
         fake: _FakeReferenceService) -> tuple[TestClient, dict[str, str]]:
+    """Handles client with fake.
+
+    :param fake: the fake.
+
+    :return: the tuple[TestClient, dict[str, str]] result.
+    """
     store = InMemoryUserStore({"tester": hash_password("pass")})
     app = create_app(_AUTH, _DummyDatabase())
     app.dependency_overrides[dependencies.get_reference_service] = lambda: fake
@@ -63,12 +83,16 @@ def _client_with_fake(
 
 
 def test_references_without_token_401():
+    """Handles test references without token 401.
+    """
     fake = _FakeReferenceService()
     client, _ = _client_with_fake(fake)
     assert client.get("/api/references").status_code == 401
 
 
 def test_list_and_orders_happy_path():
+    """Handles test list and orders happy path.
+    """
     run, _, _, _, _ = build_worked_run()
     product = product_from_run(run)
     order = make_order(1, OrderContent(product=product, count=1))
@@ -84,6 +108,8 @@ def test_list_and_orders_happy_path():
 
 
 def test_save_204_without_body():
+    """Handles test save 204 without body.
+    """
     fake = _FakeReferenceService()
     client, headers = _client_with_fake(fake)
     response = client.post(
@@ -97,6 +123,8 @@ def test_save_204_without_body():
 
 
 def test_save_404_when_order_missing():
+    """Handles test save 404 when order missing.
+    """
     fake = _FakeReferenceService(
         save_error=OrderNotFound("take", OrderID(2)),
     )

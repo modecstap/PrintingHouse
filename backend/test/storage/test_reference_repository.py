@@ -9,12 +9,15 @@ from backend.test.storage.catalog_insert import insert_catalogs_from_ctx
 from backend.test.storage.helpers import make_order, product_from_run
 
 
+from sqlalchemy.orm import Session
+
 __all__ = ["test_save_appends_references_in_insertion_order"]
 
-def test_save_appends_references_in_insertion_order(db_session):
+def test_save_appends_references_in_insertion_order(db_session: Session):
     """``take_all`` returns rows in store order
 
-    without rewriting earlier ones.
+
+    :param db_session: the db session.
     """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)

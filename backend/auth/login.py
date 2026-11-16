@@ -31,13 +31,13 @@ def login(
 ) -> str:
     """Authenticates and returns an access token.
 
-    :param credentials:
-    :param store:
-    :param config:
+    :param credentials: username and password.
+    :param store: user persistence store.
+    :param config: runtime configuration.
 
     :raises InvalidCredentials: on unknown user or bad password.
 
-    :return: JWT access token.
+    :return: the str result.
     """
     user = store.get_by_username(credentials.username)
     if user is None or not verify_password(

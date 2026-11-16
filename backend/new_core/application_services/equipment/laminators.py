@@ -20,8 +20,8 @@ class LaminatorCatalog:
     ) -> None:
         """Remembers the laminator store.
 
-        :param laminators:
-        :param laminator_factory:
+        :param laminators: the laminators.
+        :param laminator_factory: the laminator factory.
         """
         self._laminators = laminators
         self._laminator_factory = laminator_factory
@@ -29,37 +29,35 @@ class LaminatorCatalog:
     def laminators(self) -> tuple[Laminator, ...]:
         """Returns every stored laminator.
 
-        :return: laminators in ascending id order.
+        :return: the tuple[Laminator, ...] result.
         """
         return self._laminators.take_all()
 
     def laminator(self, laminator_id: LaminatorID) -> Laminator:
         """Returns one laminator.
 
-        :param laminator_id:
+        :param laminator_id: id of the laminator.
 
         :raises KeyError: if there is no laminator.
 
-        :return: the laminator row.
+        :return: the Laminator result.
         """
         return self._laminators.take(laminator_id)
 
     def save_laminator(self, laminator: Laminator) -> None:
         """Stores a new laminator under its id.
 
-        :param laminator:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param laminator: the laminator.
         """
         self._laminators.save(laminator)
 
     def create_laminator(self, name: str, startup: Money) -> LaminatorID:
         """Inserts a new laminator; the store assigns the id.
 
-        :param name:
-        :param startup:
+        :param name: the name.
+        :param startup: the startup.
 
-        :return: the assigned laminator id.
+        :return: the LaminatorID result.
         """
         laminator = self._laminator_factory.create(name, startup)
         self._laminators.save(laminator)
@@ -71,8 +69,6 @@ class LaminatorCatalog:
         :param laminator:
 
         :raises KeyError: if there is no laminator with this id.
-
-        :return: nothing.
         """
         self._laminators.replace(laminator)
 
@@ -82,7 +78,5 @@ class LaminatorCatalog:
         :param laminator_id:
 
         :raises KeyError: if there is no laminator.
-
-        :return: nothing.
         """
         self._laminators.delete(laminator_id)

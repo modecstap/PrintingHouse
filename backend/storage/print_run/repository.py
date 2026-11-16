@@ -22,14 +22,18 @@ class SqlPrintRunRepository:
     """Persists print runs per order in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take_all_for_order(self, order_id: OrderID) -> tuple[PrintRun, ...]:
         """Returns every print run linked to the order.
 
-        :param order_id:
+        :param order_id: id of the order.
 
-        :return: runs in repository order. No runs: an empty tuple.
+        :return: the tuple[PrintRun, ...] result.
         """
         stmt = (
             select(PrintRunRow)
@@ -55,7 +59,7 @@ class SqlPrintRunRepository:
 
         :param order_id: scopes the id sequence.
 
-        :return: a new print run id. It may already be stored for this order.
+        :return: the PrintRunID result.
         """
         engine = self._session.get_bind()
         with engine.connect() as conn:
@@ -85,8 +89,6 @@ class SqlPrintRunRepository:
         :param runs:
 
         :raises ValueError: if a run's for_order is not order_id.
-
-        :return: nothing.
         """
         require_runs_belong_to_order(order_id, runs)
 

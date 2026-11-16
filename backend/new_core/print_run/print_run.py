@@ -24,6 +24,10 @@ class PrintRunID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "print run id",
@@ -44,8 +48,6 @@ def require_runs_belong_to_order(
     :param runs:
 
     :raises ValueError: when a run's ``for_order`` differs.
-
-    :return: nothing.
     """
     for run in runs:
         if run.for_order != order_id:
@@ -66,6 +68,15 @@ class PrintRun:
             required_count: int,
     ) -> None:
         # The four parameters are the four fields of one run.
+        """Initializes this instance.
+
+        :param id: the id.
+        :param for_order: the for order.
+        :param block: the block.
+        :param required_count: the required count.
+
+        :raises InvalidInput: when the operation fails.
+        """
         self.id = id
         self.for_order = for_order
         self.block = block
@@ -88,7 +99,7 @@ class PrintRun:
     def production_count(self) -> int:
         """Returns how many target sheets the run produces.
 
-        :return: the press sheet count times the sheets on one press sheet.
+        :return: the int result.
         """
         return self.imposition_count() * self.block.imposition.count()
 
@@ -96,11 +107,8 @@ class PrintRun:
         """Returns how many press sheets the run prints.
 
         :raises InvalidInput: if a cell side is zero, or if the press sheet
-        fits no positive number of target sheets.
 
-        :return: required_count times a 3 percent waste allowance, divided
-        by the number of target sheets on one press sheet, rounded up
-        to an integer.
+        :return: the int result.
         """
         sheets = (
             Decimal(self.required_count)

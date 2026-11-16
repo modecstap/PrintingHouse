@@ -24,12 +24,12 @@ def save_operator_row(
 ) -> None:
     """Inserts an operator row or maps id conflicts to occupied errors.
 
-    :param session:
+    :param session: database session.
     :param row: mapped row to insert.
     :param operator_id: id passed to ``occupied`` on conflict.
     :param occupied: builds the domain occupied error.
 
-    :return: nothing.
+    :raises occupied: when the operation fails.
     """
     try:
         session.add(row)
@@ -51,8 +51,6 @@ def replace_operator_row(
         ``salary_by_operation``.
 
     :raises KeyError: when ``row`` is ``None``.
-
-    :return: nothing.
     """
     if row is None:
         raise KeyError(operator.id)

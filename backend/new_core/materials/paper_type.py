@@ -9,13 +9,16 @@ __all__ = ["PaperType"]
 
 @dataclass(frozen=True, slots=True)
 class PaperType:
-    """
-    Value Object. The type or grade of paper (for example offset or coated).
+    """Value Object. The type or grade of paper (for example offset or coated).
     """
 
     value: str
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         stripped = self.value.strip()
         if not stripped:
             raise InvalidInput(

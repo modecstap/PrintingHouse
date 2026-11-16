@@ -22,6 +22,8 @@ __all__ = [
 ]
 
 def test_paper_dto_accepts_fractional_thickness():
+    """Handles test paper dto accepts fractional thickness.
+    """
     dto = PaperDto.model_validate(
         {
             "density": 80,
@@ -35,6 +37,10 @@ def test_paper_dto_accepts_fractional_thickness():
 
 @pytest.mark.parametrize("thickness", [0, 0.151])
 def test_paper_dto_rejects_invalid_thickness(thickness):
+    """Handles test paper dto rejects invalid thickness.
+
+    :param thickness: the thickness.
+    """
     with pytest.raises(ValidationError):
         PaperDto.model_validate(
             {
@@ -47,6 +53,8 @@ def test_paper_dto_rejects_invalid_thickness(thickness):
 
 
 def test_sheet_dto_round_trip_fractional_thickness():
+    """Handles test sheet dto round trip fractional thickness.
+    """
     sheet = Sheet(
         id=SheetID(1),
         paper=Paper(

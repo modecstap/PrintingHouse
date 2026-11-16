@@ -1,9 +1,14 @@
+"""Code for new_core.operations.laminate.lamination.py.
+"""
+
 from enum import Enum
 
 
 __all__ = ["Lamination"]
 
 class Lamination(Enum):
+    """Lamination.
+    """
     DONT = 1
     ONE_ZERO = 2
     ONE_ONE = 3
@@ -13,7 +18,7 @@ class Lamination(Enum):
 
         :raises ValueError: if there is no lamination.
 
-        :return: 1 if the film is on one side, and 2 if it is on two sides.
+        :return: the int result.
         """
         if self is Lamination.DONT:
             return 0

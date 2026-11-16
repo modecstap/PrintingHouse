@@ -29,6 +29,13 @@ def _service(
     orders: InMemoryOrderRepository | None = None,
     references: InMemoryReferenceRepository | None = None,
 ) -> ReferenceOrderService:
+    """Handles service.
+
+    :param orders: the orders.
+    :param references: the references.
+
+    :return: the ReferenceOrderService result.
+    """
     return ReferenceOrderService(
         references=references or InMemoryReferenceRepository(),
         orders=orders or InMemoryOrderRepository(),
@@ -36,6 +43,8 @@ def _service(
 
 
 def test_references_returns_stored_rows_in_order():
+    """Handles test references returns stored rows in order.
+    """
     refs = InMemoryReferenceRepository()
     refs.save(Reference(name="a", description="one", order_id=OrderID(1)))
     refs.save(Reference(name="b", description="two", order_id=OrderID(2)))
@@ -44,6 +53,8 @@ def test_references_returns_stored_rows_in_order():
 
 
 def test_save_stores_reference_when_order_exists():
+    """Handles test save stores reference when order exists.
+    """
     run, _, _, _, _ = build_worked_run(
         with_print=False,
         with_laminate=False,
@@ -72,6 +83,8 @@ def test_save_stores_reference_when_order_exists():
 
 
 def test_save_raises_when_order_is_missing():
+    """Handles test save raises when order is missing.
+    """
     with pytest.raises(OrderNotFound):
         _service().save(
             Reference(name="ref", description="desc", order_id=OrderID(99)),
@@ -79,6 +92,8 @@ def test_save_raises_when_order_is_missing():
 
 
 def test_reference_orders_loads_orders_in_reference_order():
+    """Handles test reference orders loads orders in reference order.
+    """
     run, _, _, _, _ = build_worked_run(
         with_print=False,
         with_laminate=False,

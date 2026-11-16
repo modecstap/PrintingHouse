@@ -13,14 +13,22 @@ __all__ = [
     "test_paper_density_keeps_positive_value",
 ]
 
-def _rejects(message: str, call) -> None:
+def _rejects(message: str, call: object) -> None:
+    """Handles rejects.
+
+    :param message: the message.
+    :param call: the call.
+    """
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()
 
 
 @pytest.mark.parametrize("value", [0, -1])
 def test_paper_density_rejects_non_positive(value: int) -> None:
-    """Non-positive density is rejected with grammage units in the message."""
+    """Non-positive density is rejected with grammage units in the message.
+
+    :param value: the value.
+    """
     _rejects(
         (
             f"PaperDensity: плотность бумаги меньше или равна 0, "

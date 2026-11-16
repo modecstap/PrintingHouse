@@ -13,14 +13,22 @@ __all__ = [
     "test_film_density_keeps_positive_value",
 ]
 
-def _rejects(message: str, call) -> None:
+def _rejects(message: str, call: object) -> None:
+    """Handles rejects.
+
+    :param message: the message.
+    :param call: the call.
+    """
     with pytest.raises(InvalidInput, match=f"^{re.escape(message)}$"):
         call()
 
 
 @pytest.mark.parametrize("value", [0, -1])
 def test_film_density_rejects_non_positive(value: int) -> None:
-    """Non-positive density is rejected with micron units in the message."""
+    """Non-positive density is rejected with micron units in the message.
+
+    :param value: the value.
+    """
     _rejects(
         (
             f"FilmDensity: плотность плёнки меньше или равна 0, "

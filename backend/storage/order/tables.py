@@ -18,6 +18,8 @@ _MONEY = Numeric(18, 4)
 
 
 class OrderRow(Base):  # pylint: disable=too-few-public-methods
+    """Order Row.
+    """
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -32,6 +34,8 @@ class OrderRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class OrderBlockRow(Base):  # pylint: disable=too-few-public-methods
+    """Order Block Row.
+    """
     __tablename__ = "order_blocks"
 
     order_id: Mapped[int] = mapped_column(
@@ -43,6 +47,8 @@ class OrderBlockRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class OrderAdditionalWorkRow(Base):  # pylint: disable=too-few-public-methods
+    """Order Additional Work Row.
+    """
     __tablename__ = "order_additional_works"
 
     order_id: Mapped[int] = mapped_column(

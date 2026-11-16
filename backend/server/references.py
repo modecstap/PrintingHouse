@@ -34,7 +34,12 @@ def list_references(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[ReferenceOrderService, Depends(get_reference_service)],
 ) -> list[ReferenceDto]:
-    """Returns every stored reference."""
+    """Returns every stored reference.
+
+    :param service: the service.
+
+    :return: the list[ReferenceDto] result.
+    """
     return [reference_to_dto(row) for row in service.references()]
 
 
@@ -43,7 +48,12 @@ def list_reference_orders(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[ReferenceOrderService, Depends(get_reference_service)],
 ) -> list[OrderDto]:
-    """Returns orders linked to references."""
+    """Returns orders linked to references.
+
+    :param service: the service.
+
+    :return: the list[OrderDto] result.
+    """
     return [order_to_dto(order) for order in service.reference_orders()]
 
 
@@ -54,7 +64,14 @@ def save_reference(
     service: Annotated[ReferenceOrderService, Depends(get_reference_service)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
-    """Stores a new reference row."""
+    """Stores a new reference row.
+
+    :param body: request body payload.
+    :param service: the service.
+    :param session: database session.
+
+    :return: the Response result.
+    """
     service.save(reference_from_dto(body))
     session.commit()
     return Response(status_code=204)

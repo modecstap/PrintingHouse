@@ -33,7 +33,13 @@ def list_orders(
     service: Annotated[OrderService, Depends(get_order_service)],
     limit: int = 50,
 ) -> list[OrderDto]:
-    """Returns the newest orders up to ``limit``."""
+    """Returns the newest orders up to ``limit``.
+
+    :param service: the service.
+    :param limit: the limit.
+
+    :return: the list[OrderDto] result.
+    """
     return [order_to_dto(order) for order in service.get_orders(limit)]
 
 
@@ -43,7 +49,13 @@ def get_order(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> OrderDto:
-    """Returns one order by id."""
+    """Returns one order by id.
+
+    :param order_id: id of the order.
+    :param service: the service.
+
+    :return: the OrderDto result.
+    """
     return order_to_dto(service.get_order(OrderID(order_id)))
 
 
@@ -53,7 +65,13 @@ def get_order_report(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> OrderReportDto:
-    """Returns the price report for an order."""
+    """Returns the price report for an order.
+
+    :param order_id: id of the order.
+    :param service: the service.
+
+    :return: the OrderReportDto result.
+    """
     return report_to_dto(service.order_report(OrderID(order_id)))
 
 
@@ -63,7 +81,13 @@ def quote_order(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> OrderReportDto:
-    """Prices a product without persisting."""
+    """Prices a product without persisting.
+
+    :param body: request body payload.
+    :param service: the service.
+
+    :return: the OrderReportDto result.
+    """
     product = product_from_dto(body.product)
     return report_to_dto(service.quote(product, body.count))
 
@@ -74,7 +98,13 @@ def save_order(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> SaveOrderResponseDto:
-    """Persists a new order."""
+    """Persists a new order.
+
+    :param body: request body payload.
+    :param service: the service.
+
+    :return: the SaveOrderResponseDto result.
+    """
     product = product_from_dto(body.product)
     order_id = service.save(product, body.count, body.description)
     return SaveOrderResponseDto(id=order_id.value)
@@ -87,7 +117,14 @@ def replace_order(
     _user: Annotated[str, Depends(require_user)],
     service: Annotated[OrderService, Depends(get_order_service)],
 ) -> SaveOrderResponseDto:
-    """Replaces an existing order."""
+    """Replaces an existing order.
+
+    :param order_id: id of the order.
+    :param body: request body payload.
+    :param service: the service.
+
+    :return: the SaveOrderResponseDto result.
+    """
     product = product_from_dto(body.product)
     stored_id = service.replace(
         OrderID(order_id),

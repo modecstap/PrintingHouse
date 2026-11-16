@@ -25,8 +25,8 @@ class LaminatorOperatorCatalog:
     ) -> None:
         """Remembers the laminator operator store.
 
-        :param laminator_operators:
-        :param laminator_operator_factory:
+        :param laminator_operators: the laminator operators.
+        :param laminator_operator_factory: the laminator operator factory.
         """
         self._laminator_operators = laminator_operators
         self._laminator_operator_factory = laminator_operator_factory
@@ -34,7 +34,7 @@ class LaminatorOperatorCatalog:
     def laminator_operators(self) -> tuple[LaminatorOperator, ...]:
         """Returns every laminator operator.
 
-        :return: rows in ascending id order.
+        :return: the tuple[LaminatorOperator, ...] result.
         """
         return self._laminator_operators.take_all()
 
@@ -44,20 +44,18 @@ class LaminatorOperatorCatalog:
     ) -> LaminatorOperator:
         """Returns one laminator operator.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the LaminatorOperator result.
         """
         return self._laminator_operators.take(operator_id)
 
     def save_laminator_operator(self, operator: LaminatorOperator) -> None:
         """Stores a new laminator operator under its id.
 
-        :param operator:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param operator: the operator.
         """
         self._laminator_operators.save(operator)
 
@@ -68,10 +66,10 @@ class LaminatorOperatorCatalog:
     ) -> LaminatorOperatorID:
         """Inserts a new laminator operator; the store assigns the id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the assigned operator id.
+        :return: the LaminatorOperatorID result.
         """
         operator = self._laminator_operator_factory.create(
             name, salary_by_operation)
@@ -84,8 +82,6 @@ class LaminatorOperatorCatalog:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         self._laminator_operators.replace(operator)
 
@@ -98,7 +94,5 @@ class LaminatorOperatorCatalog:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         self._laminator_operators.delete(operator_id)

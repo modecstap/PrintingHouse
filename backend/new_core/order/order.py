@@ -1,3 +1,6 @@
+"""Code for new_core.order.order.py.
+"""
+
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -18,6 +21,10 @@ class OrderID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "order id",
@@ -36,6 +43,8 @@ class OrderContent:  # pylint: disable=too-few-public-methods
 
 @dataclass(frozen=True)
 class Order:
+    """Order.
+    """
     id: OrderID
     product: Product
     count: int
@@ -46,8 +55,6 @@ class Order:
         """Rejects a negative order count.
 
         :raises InvalidInput: if count is below zero.
-
-        :return: nothing. A count of zero stays.
         """
         if self.count < 0:
             raise InvalidInput(

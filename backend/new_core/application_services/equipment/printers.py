@@ -19,8 +19,8 @@ class PrinterCatalog:
     ) -> None:
         """Remembers the printer store.
 
-        :param printers:
-        :param printer_factory:
+        :param printers: the printers.
+        :param printer_factory: the printer factory.
         """
         self._printers = printers
         self._printer_factory = printer_factory
@@ -28,27 +28,25 @@ class PrinterCatalog:
     def printers(self) -> tuple[Printer, ...]:
         """Returns every stored printer.
 
-        :return: printers in ascending id order.
+        :return: the tuple[Printer, ...] result.
         """
         return self._printers.take_all()
 
     def printer(self, printer_id: PrinterID) -> Printer:
         """Returns one printer.
 
-        :param printer_id:
+        :param printer_id: id of the printer.
 
         :raises KeyError: if there is no printer.
 
-        :return: the printer row.
+        :return: the Printer result.
         """
         return self._printers.take(printer_id)
 
     def save_printer(self, printer: Printer) -> None:
         """Stores a new printer under its id.
 
-        :param printer:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param printer: the printer.
         """
         self._printers.save(printer)
 
@@ -60,11 +58,11 @@ class PrinterCatalog:
     ) -> PrinterID:
         """Inserts a new printer; the store assigns the id.
 
-        :param name:
-        :param spacing:
-        :param prices:
+        :param name: the name.
+        :param spacing: the spacing.
+        :param prices: the prices.
 
-        :return: the assigned printer id.
+        :return: the PrinterID result.
         """
         printer = self._printer_factory.create(
             name,
@@ -80,8 +78,6 @@ class PrinterCatalog:
         :param printer:
 
         :raises KeyError: if there is no printer with this id.
-
-        :return: nothing.
         """
         self._printers.replace(printer)
 
@@ -91,7 +87,5 @@ class PrinterCatalog:
         :param printer_id:
 
         :raises KeyError: if there is no printer.
-
-        :return: nothing.
         """
         self._printers.delete(printer_id)

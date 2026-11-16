@@ -23,6 +23,8 @@ __all__ = [
 ]
 
 class PartRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Row.
+    """
     __tablename__ = "parts"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
@@ -36,6 +38,8 @@ class PartRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PartOperationRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Operation Row.
+    """
     __tablename__ = "part_operations"
     __table_args__ = (UniqueConstraint("part_id", "position"),)
 
@@ -48,6 +52,8 @@ class PartOperationRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PartPrintRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Print Row.
+    """
     __tablename__ = "part_prints"
 
     operation_id: Mapped[int] = mapped_column(
@@ -60,6 +66,8 @@ class PartPrintRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PartLaminateRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Laminate Row.
+    """
     __tablename__ = "part_laminates"
 
     operation_id: Mapped[int] = mapped_column(
@@ -74,6 +82,8 @@ class PartLaminateRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PartCutRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Cut Row.
+    """
     __tablename__ = "part_cuts"
 
     operation_id: Mapped[int] = mapped_column(
@@ -85,6 +95,8 @@ class PartCutRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class PartDieCutRow(Base):  # pylint: disable=too-few-public-methods
+    """Part Die Cut Row.
+    """
     __tablename__ = "part_die_cuts"
 
     operation_id: Mapped[int] = mapped_column(

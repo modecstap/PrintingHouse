@@ -26,6 +26,10 @@ class LaminatePricing:
     print_run: PrintRun
 
     def report(self) -> CostReport:
+        """Handles report.
+
+        :return: the CostReport result.
+        """
         sides = self.lamination.film_sides()
         if sides == 0:
             return CostReport.zero()
@@ -37,4 +41,8 @@ class LaminatePricing:
         )
 
     def run(self) -> PrintRun:
+        """Handles run.
+
+        :return: the PrintRun result.
+        """
         return self.print_run

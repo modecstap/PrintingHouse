@@ -11,6 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import Response
 
 from backend.auth import AuthConfig
 from backend.new_core.application_services.order import OrderIdAllocationFailed
@@ -36,6 +37,12 @@ _logger = logging.getLogger("backend.http")
 
 
 def _validation_detail(exc: RequestValidationError) -> str:
+    """Builds one detail string from request validation errors.
+
+    :param exc: the validation error from FastAPI.
+
+    :return: semicolon-separated field paths and messages.
+    """
     parts: list[str] = []
     for error in exc.errors():
         loc = ".".join(str(part) for part in error.get("loc", ()))
@@ -45,8 +52,23 @@ def _validation_detail(exc: RequestValidationError) -> str:
 
 
 def _add_http_logging_middleware(app: FastAPI) -> None:
+    """Registers middleware that logs each HTTP request and response.
+
+    :param app: the FastAPI application to wrap.
+    """
+
     @app.middleware("http")
-    async def log_requests(request: Request, call_next):
+    async def log_requests(
+        request: Request,
+        call_next: object,
+    ) -> Response:
+        """Logs method, path, status, and duration, then returns the response.
+
+        :param request: the incoming HTTP request.
+        :param call_next: the next ASGI handler in the stack.
+
+        :return: the downstream response, unchanged.
+        """
         start = time.perf_counter()
         response = await call_next(request)
         duration_ms = (time.perf_counter() - start) * 1000
@@ -66,19 +88,43 @@ def _add_http_logging_middleware(app: FastAPI) -> None:
 
 
 def _register_api_exception_handlers(app: FastAPI) -> None:
+    """Registers JSON exception handlers for domain and HTTP errors.
+
+    :param app: the FastAPI application to attach handlers to.
+    """
+
     @app.exception_handler(InvalidInput)
     @app.exception_handler(InvalidPriceException)
     async def unprocessable(_request: Request, exc: Exception) -> JSONResponse:
+        """Maps invalid input and price errors to HTTP 422.
+
+        :param exc: the domain error.
+
+        :return: JSON body with a ``detail`` field.
+        """
         return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     @app.exception_handler(OrderNotFound)
     async def order_not_found(
-            _request: Request,
-            exc: OrderNotFound) -> JSONResponse:
+        _request: Request,
+        exc: OrderNotFound,
+    ) -> JSONResponse:
+        """Maps a missing order to HTTP 404.
+
+        :param exc: the not-found error.
+
+        :return: JSON body with a ``detail`` field.
+        """
         return JSONResponse(status_code=404, content={"detail": str(exc)})
 
     @app.exception_handler(KeyError)
     async def catalog_miss(_request: Request, exc: KeyError) -> JSONResponse:
+        """Maps a missing catalog row to HTTP 404.
+
+        :param exc: the key error from the repository.
+
+        :return: JSON body with a ``detail`` field.
+        """
         return JSONResponse(status_code=404, content={"detail": str(exc)})
 
     @app.exception_handler(OrderIdAllocationFailed)
@@ -86,6 +132,12 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         exc: OrderIdAllocationFailed,
     ) -> JSONResponse:
+        """Maps order id exhaustion to HTTP 409.
+
+        :param exc: the allocation failure.
+
+        :return: JSON body with a ``detail`` field.
+        """
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
     @app.exception_handler(CatalogIdOccupied)
@@ -93,6 +145,12 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         exc: CatalogIdOccupied,
     ) -> JSONResponse:
+        """Maps duplicate catalog ids to HTTP 409.
+
+        :param exc: the occupied-id error.
+
+        :return: JSON body with a ``detail`` field.
+        """
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
     @app.exception_handler(TypeError)
@@ -100,6 +158,12 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         exc: TypeError,
     ) -> JSONResponse:
+        """Maps unsupported run operations to HTTP 400.
+
+        :param exc: the type error, or re-raised when unrelated.
+
+        :return: JSON body with a ``detail`` field when the message matches.
+        """
         text = str(exc)
         if text.startswith("Unsupported run operation type:"):
             return JSONResponse(status_code=400, content={"detail": text})
@@ -110,6 +174,12 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         exc: RequestValidationError,
     ) -> JSONResponse:
+        """Maps request schema validation failures to HTTP 422.
+
+        :param exc: the validation error.
+
+        :return: JSON body with a joined ``detail`` string.
+        """
         return JSONResponse(
             status_code=422,
             content={"detail": _validation_detail(exc)},
@@ -120,6 +190,12 @@ def _register_api_exception_handlers(app: FastAPI) -> None:
         _request: Request,
         exc: StarletteHTTPException,
     ) -> JSONResponse:
+        """Maps Starlette HTTP exceptions to a JSON response.
+
+        :param exc: the HTTP exception with status and detail.
+
+        :return: JSON body preserving status, detail, and headers.
+        """
         detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
         return JSONResponse(
             status_code=exc.status_code,

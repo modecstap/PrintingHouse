@@ -43,10 +43,12 @@ __all__ = [
 def part_row_to_part(session: Session, part_id: int) -> Part:
     """Loads a ``Part`` graph for the stored part id.
 
-    :param session:
-    :param part_id:
+    :param session: database session.
+    :param part_id: id of the part.
 
-    :return: the domain part with operations in position order.
+    :raises LookupError: when the operation fails.
+
+    :return: the Part result.
     """
     row = session.get(PartRow, part_id)
     if row is None:
@@ -72,10 +74,10 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
 def persist_part(session: Session, part: Part) -> int:
     """Writes a ``Part`` and its operations; returns the new part row id.
 
-    :param session:
-    :param part:
+    :param session: database session.
+    :param part: the part.
 
-    :return: the generated ``parts.id``.
+    :return: the int result.
     """
     imp = part.imposition
     row = PartRow(
@@ -104,6 +106,13 @@ def persist_part(session: Session, part: Part) -> int:
 
 def _load_operations(
         session: Session, part_id: int) -> tuple[RunOperation, ...]:
+    """Handles load operations.
+
+    :param session: database session.
+    :param part_id: id of the part.
+
+    :return: the tuple[RunOperation, ...] result.
+    """
     stmt = (
         select(PartOperationRow)
         .where(PartOperationRow.part_id == part_id)
@@ -121,6 +130,16 @@ def _require_subtype_row(
     table: str,
     operation_id: int,
 ) -> object:
+    """Handles require subtype row.
+
+    :param row: the row.
+    :param table: the table.
+    :param operation_id: id of the operation.
+
+    :raises RuntimeError: when the operation fails.
+
+    :return: the object result.
+    """
     if row is None:
         raise RuntimeError(f"missing {table} for operation id={operation_id}")
     return row
@@ -130,6 +149,15 @@ def _load_operation_subtype(
     session: Session,
     op_row: PartOperationRow,
 ) -> RunOperation:
+    """Handles load operation subtype.
+
+    :param session: database session.
+    :param op_row: the op row.
+
+    :raises RuntimeError: when the operation fails.
+
+    :return: the RunOperation result.
+    """
     if op_row.kind == "print":
         sub = _require_subtype_row(
             session.get(PartPrintRow, op_row.id),
@@ -178,6 +206,14 @@ def _persist_operation_subtype(
     operation_id: int,
     operation: RunOperation,
 ) -> None:
+    """Handles persist operation subtype.
+
+    :param session: database session.
+    :param operation_id: id of the operation.
+    :param operation: the operation.
+
+    :raises RuntimeError: when the operation fails.
+    """
     kind = _operation_kind(operation)
     if kind == "print":
         assert isinstance(operation, Print)
@@ -225,6 +261,14 @@ def _persist_operation_subtype(
 
 
 def _operation_kind(operation: RunOperation) -> str:
+    """Handles operation kind.
+
+    :param operation: the operation.
+
+    :raises RuntimeError: when the operation fails.
+
+    :return: the str result.
+    """
     if isinstance(operation, Print):
         return "print"
     if isinstance(operation, Laminate):

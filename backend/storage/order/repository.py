@@ -27,16 +27,20 @@ class SqlOrderRepository:
     """Persists customer orders in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, order_id: OrderID) -> Order:
         """Returns the order with this id.
 
-        :param order_id:
+        :param order_id: id of the order.
 
         :raises OrderNotFound: if there is no order.
 
-        :return: the order row.
+        :return: the Order result.
         """
         row = self._session.get(OrderRow, order_id.value)
         if row is None:
@@ -46,7 +50,7 @@ class SqlOrderRepository:
     def generate_id(self) -> OrderID:
         """Returns the next order id from the store sequence.
 
-        :return: a new order id. It may already be occupied.
+        :return: the OrderID result.
         """
         value = self._session.execute(
             text("SELECT nextval('order_id_seq')"),
@@ -59,8 +63,6 @@ class SqlOrderRepository:
         :param order:
 
         :raises OrderIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         try:
             self._session.add(
@@ -104,8 +106,6 @@ class SqlOrderRepository:
         :param order:
 
         :raises OrderNotFound: if there is no order with this id.
-
-        :return: nothing.
         """
         row = self._session.get(OrderRow, order.id.value)
         if row is None:
@@ -162,8 +162,7 @@ class SqlOrderRepository:
 
         :param limit: maximum row count. Zero: an empty tuple.
 
-        :return: at most ``limit`` orders, by descending id.
-        No rows: an empty tuple.
+        :return: the tuple[Order, ...] result.
         """
         if limit <= 0:
             return ()
@@ -178,6 +177,13 @@ class SqlOrderRepository:
         )
 
     def _order_from_rows(self, order_id: OrderID, row: OrderRow) -> Order:
+        """Handles order from rows.
+
+        :param order_id: id of the order.
+        :param row: the row.
+
+        :return: the Order result.
+        """
         blocks_stmt = (
             select(OrderBlockRow)
             .where(OrderBlockRow.order_id == order_id.value)

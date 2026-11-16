@@ -12,8 +12,7 @@ __all__ = ["Product"]
 
 @dataclass(frozen=True, slots=True)
 class Product:
-    """
-    Value Object. The parts and the additional work priced together
+    """Value Object. The parts and the additional work priced together
     as one product.
     """
 
@@ -25,8 +24,6 @@ class Product:
         """Rejects a product with no blocks.
 
         :raises InvalidInput: if blocks is empty.
-
-        :return: nothing.
         """
         if not self.blocks:
             raise InvalidInput(

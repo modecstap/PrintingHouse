@@ -20,8 +20,8 @@ class ReferenceOrderService:
     ) -> None:
         """Remembers the reference catalog and order store.
 
-        :param references:
-        :param orders:
+        :param references: the references.
+        :param orders: the orders.
         """
         self._references = references
         self._orders = orders
@@ -29,7 +29,7 @@ class ReferenceOrderService:
     def references(self) -> tuple[Reference, ...]:
         """Returns every stored reference.
 
-        :return: the rows from :meth:`ReferenceRepository.take_all`.
+        :return: the tuple[Reference, ...] result.
         """
         return self._references.take_all()
 
@@ -39,8 +39,6 @@ class ReferenceOrderService:
         :param reference:
 
         :raises OrderNotFound: if the linked order id is missing.
-
-        :return: nothing.
         """
         self._orders.take(reference.order_id)
         self._references.save(reference)
@@ -50,7 +48,7 @@ class ReferenceOrderService:
 
         :raises OrderNotFound: if any linked order id is missing.
 
-        :return: orders in the same order as :meth:`references`.
+        :return: the tuple[Order, ...] result.
         """
         return tuple(
             self._orders.take(reference.order_id)

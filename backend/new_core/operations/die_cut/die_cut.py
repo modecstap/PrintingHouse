@@ -11,8 +11,7 @@ __all__ = ["DieCut"]
 
 @dataclass(frozen=True, slots=True)
 class DieCut:
-    """
-    Value Object. One die cut of a press target,
+    """Value Object. One die cut of a press target,
     priced from the operator salary.
     """
 

@@ -16,30 +16,24 @@ class FilmRepository(Protocol):
     def take(self, film_id: FilmID) -> Film:
         """Returns the film with this id.
 
-        :param film_id:
+        :param film_id: id of the film.
 
         :raises KeyError: if there is no film.
-
-        :return: the film row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[Film, ...]:
         """Returns every stored film.
-
-        :return: films in ascending id order.
-        """
+"""
         ...
 
     def add(self, name: str, price: Money, density: int) -> FilmID:
         """Inserts a new film; the store assigns the id.
 
-        :param name:
-        :param price:
-        :param density:
-
-        :return: the assigned film id.
-        """
+        :param name: the name.
+        :param price: the price.
+        :param density: the density.
+"""
         ...
 
     def replace(self, film: Film) -> None:
@@ -48,8 +42,6 @@ class FilmRepository(Protocol):
         :param film:
 
         :raises KeyError: if there is no film with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -59,14 +51,10 @@ class FilmRepository(Protocol):
         :param film_id:
 
         :raises KeyError: if there is no film.
-
-        :return: nothing.
         """
         ...
 
     def distinct_film_densities(self) -> tuple[int, ...]:
         """Returns unique film densities across stored films.
-
-        :return: densities in ascending numeric order.
-        """
+"""
         ...

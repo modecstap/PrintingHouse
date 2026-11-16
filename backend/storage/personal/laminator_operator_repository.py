@@ -26,16 +26,20 @@ class SqlLaminatorOperatorRepository:
     """Loads and stores laminator operators in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, operator_id: LaminatorOperatorID) -> LaminatorOperator:
         """Returns the laminator operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the LaminatorOperator result.
         """
         row = self._session.get(LaminatorOperatorRow, operator_id.value)
         if row is None:
@@ -49,7 +53,7 @@ class SqlLaminatorOperatorRepository:
     def take_all(self) -> tuple[LaminatorOperator, ...]:
         """Returns every stored laminator operator.
 
-        :return: operators in ascending id order.
+        :return: the tuple[LaminatorOperator, ...] result.
         """
         stmt = select(LaminatorOperatorRow).order_by(LaminatorOperatorRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -65,7 +69,7 @@ class SqlLaminatorOperatorRepository:
     def generate_id(self) -> LaminatorOperatorID:
         """Returns the next laminator operator id from the store sequence.
 
-        :return: a new operator id. It may already be occupied.
+        :return: the LaminatorOperatorID result.
         """
         value = self._session.execute(
             text("SELECT nextval('laminator_operator_id_seq')"),
@@ -78,8 +82,6 @@ class SqlLaminatorOperatorRepository:
         :param operator:
 
         :raises LaminatorOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         save_operator_row(
             self._session,
@@ -98,8 +100,6 @@ class SqlLaminatorOperatorRepository:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         replace_operator_row(
             self._session,
@@ -113,8 +113,6 @@ class SqlLaminatorOperatorRepository:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         row = self._session.get(LaminatorOperatorRow, operator_id.value)
         if row is None:

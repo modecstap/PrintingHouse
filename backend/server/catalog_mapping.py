@@ -83,10 +83,22 @@ __all__ = [
 ]
 
 def _money(amount: str) -> Money:
+    """Handles money.
+
+    :param amount: the amount.
+
+    :return: the Money result.
+    """
     return Money(Decimal(amount))
 
 
 def printer_to_dto(printer: Printer) -> PrinterDto:
+    """Handles printer to dto.
+
+    :param printer: the printer.
+
+    :return: the PrinterDto result.
+    """
     return PrinterDto(
         id=printer.id.value,
         name=printer.name,
@@ -100,6 +112,12 @@ def printer_to_dto(printer: Printer) -> PrinterDto:
 
 
 def printer_from_dto(dto: PrinterDto) -> Printer:
+    """Handles printer from dto.
+
+    :param dto: the dto.
+
+    :return: the Printer result.
+    """
     return Printer(
         id=PrinterID(dto.id),
         name=dto.name,
@@ -117,6 +135,12 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
 def printer_from_write_dto(
     dto: PrinterWriteDto,
 ) -> tuple[str, int, PrinterPrices]:
+    """Handles printer from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, int, PrinterPrices] result.
+    """
     return (
         dto.name,
         dto.spacing,
@@ -131,6 +155,12 @@ def printer_from_write_dto(
 
 
 def laminator_to_dto(laminator: Laminator) -> LaminatorDto:
+    """Handles laminator to dto.
+
+    :param laminator: the laminator.
+
+    :return: the LaminatorDto result.
+    """
     return LaminatorDto(
         id=laminator.id.value,
         name=laminator.name,
@@ -139,6 +169,12 @@ def laminator_to_dto(laminator: Laminator) -> LaminatorDto:
 
 
 def laminator_from_dto(dto: LaminatorDto) -> Laminator:
+    """Handles laminator from dto.
+
+    :param dto: the dto.
+
+    :return: the Laminator result.
+    """
     return Laminator(
         id=LaminatorID(dto.id),
         name=dto.name,
@@ -147,10 +183,22 @@ def laminator_from_dto(dto: LaminatorDto) -> Laminator:
 
 
 def laminator_from_write_dto(dto: LaminatorWriteDto) -> tuple[str, Money]:
+    """Handles laminator from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, Money] result.
+    """
     return dto.name, _money(dto.startup)
 
 
 def cutter_to_dto(cutter: Cutter) -> CutterDto:
+    """Handles cutter to dto.
+
+    :param cutter: the cutter.
+
+    :return: the CutterDto result.
+    """
     return CutterDto(
         id=cutter.id.value,
         name=cutter.name,
@@ -158,15 +206,33 @@ def cutter_to_dto(cutter: Cutter) -> CutterDto:
 
 
 def cutter_from_dto(dto: CutterDto) -> Cutter:
+    """Handles cutter from dto.
+
+    :param dto: the dto.
+
+    :return: the Cutter result.
+    """
     return Cutter(id=CutterID(dto.id), name=dto.name, max_stack=dto.max_stack)
 
 
 def cutter_from_write_dto(dto: CutterWriteDto) -> tuple[str, int]:
+    """Handles cutter from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, int] result.
+    """
     return dto.name, dto.max_stack
 
 
 def operator_to_dto(operator: PressOperator | LaminatorOperator |
                     CutterOperator | DieCutterOperator) -> OperatorDto:
+    """Handles operator to dto.
+
+    :param operator: the operator.
+
+    :return: the OperatorDto result.
+    """
     return OperatorDto(
         id=operator.id.value,
         name=operator.name,
@@ -175,6 +241,12 @@ def operator_to_dto(operator: PressOperator | LaminatorOperator |
 
 
 def press_operator_from_dto(dto: OperatorDto) -> PressOperator:
+    """Handles press operator from dto.
+
+    :param dto: the dto.
+
+    :return: the PressOperator result.
+    """
     return PressOperator(
         id=PressOperatorID(dto.id),
         name=dto.name,
@@ -183,10 +255,22 @@ def press_operator_from_dto(dto: OperatorDto) -> PressOperator:
 
 
 def operator_from_write_dto(dto: OperatorWriteDto) -> tuple[str, Money]:
+    """Handles operator from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, Money] result.
+    """
     return dto.name, _money(dto.salary_by_operation)
 
 
 def laminator_operator_from_dto(dto: OperatorDto) -> LaminatorOperator:
+    """Handles laminator operator from dto.
+
+    :param dto: the dto.
+
+    :return: the LaminatorOperator result.
+    """
     return LaminatorOperator(
         id=LaminatorOperatorID(dto.id),
         name=dto.name,
@@ -195,6 +279,12 @@ def laminator_operator_from_dto(dto: OperatorDto) -> LaminatorOperator:
 
 
 def cutter_operator_from_dto(dto: OperatorDto) -> CutterOperator:
+    """Handles cutter operator from dto.
+
+    :param dto: the dto.
+
+    :return: the CutterOperator result.
+    """
     return CutterOperator(
         id=CutterOperatorID(dto.id),
         name=dto.name,
@@ -203,6 +293,12 @@ def cutter_operator_from_dto(dto: OperatorDto) -> CutterOperator:
 
 
 def die_cut_operator_from_dto(dto: OperatorDto) -> DieCutterOperator:
+    """Handles die cut operator from dto.
+
+    :param dto: the dto.
+
+    :return: the DieCutterOperator result.
+    """
     return DieCutterOperator(
         id=DieCutterOperatorID(dto.id),
         name=dto.name,
@@ -211,6 +307,13 @@ def die_cut_operator_from_dto(dto: OperatorDto) -> DieCutterOperator:
 
 
 def printer_replace_from_dto(printer_id: int, dto: PrinterDto) -> Printer:
+    """Handles printer replace from dto.
+
+    :param printer_id: id of the printer.
+    :param dto: the dto.
+
+    :return: the Printer result.
+    """
     parsed = printer_from_dto(dto)
     return replace(parsed, id=PrinterID(printer_id))
 
@@ -218,11 +321,25 @@ def printer_replace_from_dto(printer_id: int, dto: PrinterDto) -> Printer:
 def laminator_replace_from_dto(
         laminator_id: int,
         dto: LaminatorDto) -> Laminator:
+    """Handles laminator replace from dto.
+
+    :param laminator_id: id of the laminator.
+    :param dto: the dto.
+
+    :return: the Laminator result.
+    """
     parsed = laminator_from_dto(dto)
     return replace(parsed, id=LaminatorID(laminator_id))
 
 
 def cutter_replace_from_dto(cutter_id: int, dto: CutterDto) -> Cutter:
+    """Handles cutter replace from dto.
+
+    :param cutter_id: id of the cutter.
+    :param dto: the dto.
+
+    :return: the Cutter result.
+    """
     parsed = cutter_from_dto(dto)
     return replace(parsed, id=CutterID(cutter_id))
 
@@ -230,6 +347,13 @@ def cutter_replace_from_dto(cutter_id: int, dto: CutterDto) -> Cutter:
 def press_operator_replace_from_dto(
         operator_id: int,
         dto: OperatorDto) -> PressOperator:
+    """Handles press operator replace from dto.
+
+    :param operator_id: id of the operator.
+    :param dto: the dto.
+
+    :return: the PressOperator result.
+    """
     parsed = press_operator_from_dto(dto)
     return replace(parsed, id=PressOperatorID(operator_id))
 
@@ -238,6 +362,13 @@ def laminator_operator_replace_from_dto(
     operator_id: int,
     dto: OperatorDto,
 ) -> LaminatorOperator:
+    """Handles laminator operator replace from dto.
+
+    :param operator_id: id of the operator.
+    :param dto: the dto.
+
+    :return: the LaminatorOperator result.
+    """
     parsed = laminator_operator_from_dto(dto)
     return replace(parsed, id=LaminatorOperatorID(operator_id))
 
@@ -245,6 +376,13 @@ def laminator_operator_replace_from_dto(
 def cutter_operator_replace_from_dto(
         operator_id: int,
         dto: OperatorDto) -> CutterOperator:
+    """Handles cutter operator replace from dto.
+
+    :param operator_id: id of the operator.
+    :param dto: the dto.
+
+    :return: the CutterOperator result.
+    """
     parsed = cutter_operator_from_dto(dto)
     return replace(parsed, id=CutterOperatorID(operator_id))
 
@@ -253,11 +391,24 @@ def die_cut_operator_replace_from_dto(
     operator_id: int,
     dto: OperatorDto,
 ) -> DieCutterOperator:
+    """Handles die cut operator replace from dto.
+
+    :param operator_id: id of the operator.
+    :param dto: the dto.
+
+    :return: the DieCutterOperator result.
+    """
     parsed = die_cut_operator_from_dto(dto)
     return replace(parsed, id=DieCutterOperatorID(operator_id))
 
 
 def film_to_read_dto(film: Film) -> FilmReadDto:
+    """Handles film to read dto.
+
+    :param film: the film.
+
+    :return: the FilmReadDto result.
+    """
     return FilmReadDto(
         id=film.id.value,
         name=film.name,
@@ -267,10 +418,23 @@ def film_to_read_dto(film: Film) -> FilmReadDto:
 
 
 def film_from_write_dto(dto: FilmDto) -> tuple[str, Money, int]:
+    """Handles film from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, Money, int] result.
+    """
     return dto.name, _money(dto.price), dto.density
 
 
 def film_replace_from_dto(film_id: int, dto: FilmDto) -> Film:
+    """Handles film replace from dto.
+
+    :param film_id: id of the film.
+    :param dto: the dto.
+
+    :return: the Film result.
+    """
     name, price, density = film_from_write_dto(dto)
     return Film(
         id=FilmID(film_id),
@@ -281,14 +445,32 @@ def film_replace_from_dto(film_id: int, dto: FilmDto) -> Film:
 
 
 def _format_from_dto(dto: FormatDto) -> Format:
+    """Handles format from dto.
+
+    :param dto: the dto.
+
+    :return: the Format result.
+    """
     return Format(name=dto.name, height=dto.height, width=dto.width)
 
 
 def _format_to_dto(fmt: Format) -> FormatDto:
+    """Handles format to dto.
+
+    :param fmt: the fmt.
+
+    :return: the FormatDto result.
+    """
     return FormatDto(name=fmt.name, height=fmt.height, width=fmt.width)
 
 
 def sheet_to_read_dto(sheet: Sheet) -> SheetReadDto:
+    """Handles sheet to read dto.
+
+    :param sheet: the sheet.
+
+    :return: the SheetReadDto result.
+    """
     return SheetReadDto(
         id=sheet.id.value,
         paper=PaperDto(
@@ -302,6 +484,12 @@ def sheet_to_read_dto(sheet: Sheet) -> SheetReadDto:
 
 
 def sheet_from_write_dto(dto: SheetDto) -> tuple[Paper, Format]:
+    """Handles sheet from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[Paper, Format] result.
+    """
     paper = Paper(
         density=PaperDensity(dto.paper.density),
         thickness=dto.paper.thickness,
@@ -312,12 +500,24 @@ def sheet_from_write_dto(dto: SheetDto) -> tuple[Paper, Format]:
 
 
 def sheet_replace_from_dto(sheet_id: int, dto: SheetDto) -> Sheet:
+    """Handles sheet replace from dto.
+
+    :param sheet_id: id of the sheet.
+    :param dto: the dto.
+
+    :return: the Sheet result.
+    """
     paper, sheet_format = sheet_from_write_dto(dto)
     return Sheet(id=SheetID(sheet_id), paper=paper, format=sheet_format)
 
 
 def sheet_from_read_dto(dto: SheetReadDto) -> Sheet:
-    """Builds a domain sheet from a read DTO (id + paper + format)."""
+    """Builds a domain sheet from a read DTO (id + paper + format).
+
+    :param dto: the dto.
+
+    :return: the Sheet result.
+    """
     paper, sheet_format = sheet_from_write_dto(
         SheetDto(paper=dto.paper, format=dto.format),
     )

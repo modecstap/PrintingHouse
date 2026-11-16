@@ -33,6 +33,11 @@ class ImpositionFactory:
         sheets: SheetRepository,
         printers: PrinterRepository,
     ) -> None:
+        """Initializes this instance.
+
+        :param sheets: the sheets.
+        :param printers: the printers.
+        """
         self._sheets = sheets
         self._printers = printers
 
@@ -47,8 +52,7 @@ class ImpositionFactory:
         :raises KeyError: if the sheet or printer id is missing.
         :raises InvalidInput: if the assembled layout is not allowed.
 
-        :return: the imposition with catalog ``press_sheet`` and printer
-        ``spacing``.
+        :return: the Imposition result.
         """
         sheet = self._sheets.take(request.sheet_id)
         spacing = self._printers.take(request.printer_id).spacing

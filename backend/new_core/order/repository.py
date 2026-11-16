@@ -25,11 +25,8 @@ class OrderNotFound(Exception):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param order_id:
-
-        :return: sets the message
-        ``{operation}: заказа нет, id={order_id.value}``.
+        :param operation: the operation.
+        :param order_id: id of the order.
         """
         super().__init__(f"{operation}: заказа нет, id={order_id.value}")
 
@@ -44,11 +41,8 @@ class OrderIdOccupied(Exception):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param order_id:
-
-        :return: sets the message
-        ``{operation}: заказ уже есть, id={order_id.value}``.
+        :param operation: the operation.
+        :param order_id: id of the order.
         """
         self.order_id = order_id
         super().__init__(f"{operation}: заказ уже есть, id={order_id.value}")
@@ -60,19 +54,15 @@ class OrderRepository(Protocol):
     def take(self, order_id: OrderID) -> Order:
         """Returns the order with this id.
 
-        :param order_id:
+        :param order_id: id of the order.
 
         :raises OrderNotFound: if there is no order.
-
-        :return: the order row.
-        """
+"""
         ...
 
     def generate_id(self) -> OrderID:
         """Returns the next order id from the store sequence.
-
-        :return: a new order id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, order: Order) -> None:
@@ -81,8 +71,6 @@ class OrderRepository(Protocol):
         :param order:
 
         :raises OrderIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -92,8 +80,6 @@ class OrderRepository(Protocol):
         :param order:
 
         :raises OrderNotFound: if there is no order with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -101,8 +87,5 @@ class OrderRepository(Protocol):
         """Returns stored orders with the largest ids first.
 
         :param limit: maximum row count. Zero: an empty tuple.
-
-        :return: at most ``limit`` orders, by descending id.
-        No rows: an empty tuple.
-        """
+"""
         ...

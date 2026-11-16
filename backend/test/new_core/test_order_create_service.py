@@ -28,6 +28,7 @@ from backend.test.new_core.in_memory_repositories import (
     InMemoryUnitOfWork,
 )
 from backend.test.new_core.test_print_run import (
+    _RunPricingFixtures,
     build_worked_run,
     order_service,
     pricing_strategy_factory,
@@ -54,11 +55,26 @@ __all__ = [
     "test_save_does_not_retry_on_invalid_input",
 ]
 
-def _create_service(uow: InMemoryUnitOfWork, ctx) -> OrderService:
+def _create_service(uow: InMemoryUnitOfWork, ctx: _RunPricingFixtures) -> OrderService:
+    """Handles create service.
+
+    :param uow: the uow.
+    :param ctx: shared test fixtures.
+
+    :return: the OrderService result.
+    """
     return order_service(uow, ctx)
 
 
-def _block_with_spacing(block: Part, spacing: int, ctx) -> Part:
+def _block_with_spacing(block: Part, spacing: int, ctx: _RunPricingFixtures) -> Part:
+    """Handles block with spacing.
+
+    :param block: the block.
+    :param spacing: the spacing.
+    :param ctx: shared test fixtures.
+
+    :return: the Part result.
+    """
     sheet = ctx.sheets[block.imposition.press_sheet.id]
     imposition = replace(
         block.imposition,
@@ -184,7 +200,7 @@ def test_quote_with_two_blocks_reports_two_imposition_counts():
 def test_quote_applies_product_parts_markup_to_each_block():
     """One ``parts_markup`` prices every print run
 
-    like a single-block product.
+    :return: the computed value.
     """
     run, _, _, _, ctx = build_worked_run()
     uow = InMemoryUnitOfWork()
@@ -193,6 +209,12 @@ def test_quote_applies_product_parts_markup_to_each_block():
     accountant = Accountant()
 
     def sheet_markups(blocks: tuple) -> tuple:
+        """Handles sheet markups.
+
+        :param blocks: the blocks.
+
+        :return: the tuple result.
+        """
         product = Product(parts_markup=markup, blocks=blocks, operations=())
         order = OrderFactory(uow.orders).create(product, count=4)
         runs = service._made_run_for_order(order)
@@ -332,6 +354,10 @@ class _SeededOrderRepository(InMemoryOrderRepository):
     preset: list[int] = field(default_factory=list)
 
     def generate_id(self) -> OrderID:
+        """Handles generate id.
+
+        :return: the OrderID result.
+        """
         if self.preset:
             return OrderID(self.preset.pop(0))
         return super().generate_id()
@@ -371,6 +397,10 @@ class _AlwaysOccupiedOrderRepository(InMemoryOrderRepository):
     fixed_id: int = 1
 
     def generate_id(self) -> OrderID:
+        """Handles generate id.
+
+        :return: the OrderID result.
+        """
         return OrderID(self.fixed_id)
 
 
@@ -401,14 +431,13 @@ def test_save_raises_after_three_occupied_ids():
     assert not uow.print_runs.by_order
 
 
-def test_build_run_estimate_rejects_unknown_operation():
-    """An unsupported operation type raises TypeError
-
-    from build_run_estimate.
-    """
+def test_build_run_estimate_rejects_unknown_operation() -> None:
+    """An unsupported operation type raises TypeError."""
     run, _, _, _, ctx = build_worked_run()
 
     class _UnknownOperation:  # pylint: disable=too-few-public-methods
+        """Unknown Operation.
+        """
         pass
 
     broken = PrintRun(
@@ -423,7 +452,7 @@ def test_build_run_estimate_rejects_unknown_operation():
             pricing_strategy_factory(ctx).create(operation, run)
             for operation in broken.block.operations
         ]
-        return RunEstimate.create(strategies, run=run)
+        RunEstimate.create(strategies, run=broken)
 
 
 def test_replace_keeps_created_at_and_updates_description():

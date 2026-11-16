@@ -21,6 +21,10 @@ class SheetID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "sheet id",
@@ -30,8 +34,7 @@ class SheetID:
 
 @dataclass(frozen=True, slots=True)
 class Sheet:
-    """
-    Entity. One sheet row in the materials catalog.
+    """Entity. One sheet row in the materials catalog.
 
     Paper grade and format stay nested on the entity.
     """
@@ -43,8 +46,7 @@ class Sheet:
     def mass_kg(self) -> Decimal:
         """Returns the mass of one sheet in kilograms.
 
-        :return: width times height, divided by 1_000_000, times the paper
-        density, divided by 1000. Every factor is a Decimal.
+        :return: the Decimal result.
         """
         return (
             Decimal(self.format.width)
@@ -57,13 +59,13 @@ class Sheet:
     def thickness(self) -> Decimal:
         """Returns the thickness of the sheet.
 
-        :return: the thickness of the sheet in mm.
+        :return: the Decimal result.
         """
         return self.paper.thickness
 
     def price(self) -> Money:
         """Returns the price of one sheet.
 
-        :return: the paper price per kilo times the sheet mass.
+        :return: the Money result.
         """
         return self.paper.price_per_kilo * self.mass_kg()

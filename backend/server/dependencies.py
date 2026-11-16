@@ -108,12 +108,22 @@ _bearer = HTTPBearer(auto_error=False)
 
 
 def get_database(request: Request) -> Database:
-    """Returns the app database handle."""
+    """Returns the app database handle.
+
+    :param request: incoming request data.
+
+    :return: the Database result.
+    """
     return request.app.state.database
 
 
 def get_auth_config(request: Request) -> AuthConfig:
-    """Returns JWT settings stored on the app."""
+    """Returns JWT settings stored on the app.
+
+    :param request: incoming request data.
+
+    :return: the AuthConfig result.
+    """
     return request.app.state.auth_config
 
 
@@ -122,9 +132,9 @@ def get_db_session(
 ) -> Generator[Session]:
     """Opens one SQLAlchemy session per request.
 
-    :param database:
+    :param database: the database.
 
-    :yield: request-scoped session.
+    :return: the Generator[Session] result.
     """
     session = database.session_factory()
     try:
@@ -136,14 +146,24 @@ def get_db_session(
 def get_user_store(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> SqlUserRepository:
-    """Returns the SQL user repository for this request."""
+    """Returns the SQL user repository for this request.
+
+    :param session: database session.
+
+    :return: the SqlUserRepository result.
+    """
     return SqlUserRepository(session)
 
 
 def get_order_service(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> OrderService:
-    """Builds :class:`OrderService` for this request."""
+    """Builds :class:`OrderService` for this request.
+
+    :param session: database session.
+
+    :return: the OrderService result.
+    """
     uow = SqlOrderUnitOfWork(session)
     return OrderService(
         uow,
@@ -165,7 +185,12 @@ def get_order_service(
 def get_reference_service(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> ReferenceOrderService:
-    """Builds :class:`ReferenceOrderService` for this request."""
+    """Builds :class:`ReferenceOrderService` for this request.
+
+    :param session: database session.
+
+    :return: the ReferenceOrderService result.
+    """
     return ReferenceOrderService(
         SqlReferenceRepository(session),
         SqlOrderRepository(session),
@@ -175,7 +200,12 @@ def get_reference_service(
 def get_printer_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> PrinterCatalog:
-    """Builds :class:`PrinterCatalog` for this request."""
+    """Builds :class:`PrinterCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the PrinterCatalog result.
+    """
     printers = SqlPrinterRepository(session)
     return PrinterCatalog(printers, PrinterFactory(printers))
 
@@ -183,7 +213,12 @@ def get_printer_catalog(
 def get_laminator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> LaminatorCatalog:
-    """Builds :class:`LaminatorCatalog` for this request."""
+    """Builds :class:`LaminatorCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the LaminatorCatalog result.
+    """
     laminators = SqlLaminatorRepository(session)
     return LaminatorCatalog(laminators, LaminatorFactory(laminators))
 
@@ -191,7 +226,12 @@ def get_laminator_catalog(
 def get_cutter_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CutterCatalog:
-    """Builds :class:`CutterCatalog` for this request."""
+    """Builds :class:`CutterCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the CutterCatalog result.
+    """
     cutters = SqlCutterRepository(session)
     return CutterCatalog(cutters, CutterFactory(cutters))
 
@@ -199,21 +239,36 @@ def get_cutter_catalog(
 def get_film_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> FilmCatalog:
-    """Builds :class:`FilmCatalog` for this request."""
+    """Builds :class:`FilmCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the FilmCatalog result.
+    """
     return FilmCatalog(SqlFilmRepository(session))
 
 
 def get_sheet_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> SheetCatalog:
-    """Builds :class:`SheetCatalog` for this request."""
+    """Builds :class:`SheetCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the SheetCatalog result.
+    """
     return SheetCatalog(SqlSheetRepository(session))
 
 
 def get_press_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> PressOperatorCatalog:
-    """Builds :class:`PressOperatorCatalog` for this request."""
+    """Builds :class:`PressOperatorCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the PressOperatorCatalog result.
+    """
     press_operators = SqlPressOperatorRepository(session)
     return PressOperatorCatalog(
         press_operators,
@@ -224,7 +279,12 @@ def get_press_operator_catalog(
 def get_laminator_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> LaminatorOperatorCatalog:
-    """Builds :class:`LaminatorOperatorCatalog` for this request."""
+    """Builds :class:`LaminatorOperatorCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the LaminatorOperatorCatalog result.
+    """
     laminator_operators = SqlLaminatorOperatorRepository(session)
     return LaminatorOperatorCatalog(
         laminator_operators,
@@ -235,7 +295,12 @@ def get_laminator_operator_catalog(
 def get_cutter_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CutterOperatorCatalog:
-    """Builds :class:`CutterOperatorCatalog` for this request."""
+    """Builds :class:`CutterOperatorCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the CutterOperatorCatalog result.
+    """
     cutter_operators = SqlCutterOperatorRepository(session)
     return CutterOperatorCatalog(
         cutter_operators,
@@ -246,7 +311,12 @@ def get_cutter_operator_catalog(
 def get_die_cut_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> DieCutterOperatorCatalog:
-    """Builds :class:`DieCutterOperatorCatalog` for this request."""
+    """Builds :class:`DieCutterOperatorCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the DieCutterOperatorCatalog result.
+    """
     die_cut_operators = SqlDieCutterOperatorRepository(session)
     return DieCutterOperatorCatalog(
         die_cut_operators,
@@ -258,7 +328,13 @@ def get_printer_catalog_and_session(
     catalog: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[PrinterCatalog, Session]:
-    """Returns printer catalog and request session for replace routes."""
+    """Returns printer catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[PrinterCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -266,7 +342,13 @@ def get_laminator_catalog_and_session(
     catalog: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[LaminatorCatalog, Session]:
-    """Returns laminator catalog and request session for replace routes."""
+    """Returns laminator catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[LaminatorCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -274,7 +356,13 @@ def get_cutter_catalog_and_session(
     catalog: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[CutterCatalog, Session]:
-    """Returns cutter catalog and request session for replace routes."""
+    """Returns cutter catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[CutterCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -282,7 +370,13 @@ def get_film_catalog_and_session(
     catalog: Annotated[FilmCatalog, Depends(get_film_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[FilmCatalog, Session]:
-    """Returns film catalog and request session for replace routes."""
+    """Returns film catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[FilmCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -290,7 +384,13 @@ def get_sheet_catalog_and_session(
     catalog: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[SheetCatalog, Session]:
-    """Returns sheet catalog and request session for replace routes."""
+    """Returns sheet catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[SheetCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -301,7 +401,13 @@ def get_press_operator_catalog_and_session(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[PressOperatorCatalog, Session]:
-    """Returns press operator catalog and session for replace routes."""
+    """Returns press operator catalog and session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[PressOperatorCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -312,7 +418,13 @@ def get_laminator_operator_catalog_and_session(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[LaminatorOperatorCatalog, Session]:
-    """Returns laminator operator catalog and session for replace routes."""
+    """Returns laminator operator catalog and session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[LaminatorOperatorCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -323,7 +435,13 @@ def get_cutter_operator_catalog_and_session(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[CutterOperatorCatalog, Session]:
-    """Returns cutter operator catalog and session for replace routes."""
+    """Returns cutter operator catalog and session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[CutterOperatorCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -334,7 +452,13 @@ def get_die_cut_operator_catalog_and_session(
     ],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> tuple[DieCutterOperatorCatalog, Session]:
-    """Returns die-cut operator catalog and session for replace routes."""
+    """Returns die-cut operator catalog and session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[DieCutterOperatorCatalog, Session] result.
+    """
     return catalog, session
 
 
@@ -347,7 +471,12 @@ def require_user(
 ) -> str:
     """Validates Bearer JWT and returns the username.
 
+    :param credentials: username and password.
+    :param auth_config: the auth config.
+
     :raises HTTPException: 401 when credentials are missing or invalid.
+
+    :return: the str result.
     """
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(

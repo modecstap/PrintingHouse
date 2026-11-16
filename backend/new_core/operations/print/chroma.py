@@ -1,9 +1,14 @@
+"""Code for new_core.operations.print.chroma.py.
+"""
+
 from enum import Enum
 
 
 __all__ = ["Chroma"]
 
 class Chroma(Enum):
+    """Chroma.
+    """
     ZERO_ZERO = 0
     ONE_ZERO = 1
     ONE_ONE = 2
@@ -14,7 +19,7 @@ class Chroma(Enum):
     def consumed_sheets(self) -> tuple[int, int, int, int]:
         """Returns the cyan, magenta, yellow, and black consumption.
 
-        :return: four integers in the order cyan, magenta, yellow, black.
+        :return: the tuple[int, int, int, int] result.
         """
         return _FACTORS[self]
 

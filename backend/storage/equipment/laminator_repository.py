@@ -18,16 +18,20 @@ class SqlLaminatorRepository:
     """Loads and stores laminators in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, laminator_id: LaminatorID) -> Laminator:
         """Returns the laminator with this id.
 
-        :param laminator_id:
+        :param laminator_id: id of the laminator.
 
         :raises KeyError: if there is no laminator.
 
-        :return: the laminator row.
+        :return: the Laminator result.
         """
         row = self._session.get(LaminatorRow, laminator_id.value)
         if row is None:
@@ -41,7 +45,7 @@ class SqlLaminatorRepository:
     def take_all(self) -> tuple[Laminator, ...]:
         """Returns every stored laminator.
 
-        :return: laminators in ascending id order.
+        :return: the tuple[Laminator, ...] result.
         """
         stmt = select(LaminatorRow).order_by(LaminatorRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -57,7 +61,7 @@ class SqlLaminatorRepository:
     def generate_id(self) -> LaminatorID:
         """Returns the next laminator id from the store sequence.
 
-        :return: a new laminator id. It may already be occupied.
+        :return: the LaminatorID result.
         """
         value = self._session.execute(
             text("SELECT nextval('laminator_id_seq')"),
@@ -70,8 +74,6 @@ class SqlLaminatorRepository:
         :param laminator:
 
         :raises LaminatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         try:
             self._session.add(
@@ -91,8 +93,6 @@ class SqlLaminatorRepository:
         :param laminator:
 
         :raises KeyError: if there is no laminator with this id.
-
-        :return: nothing.
         """
         row = self._session.get(LaminatorRow, laminator.id.value)
         if row is None:
@@ -107,8 +107,6 @@ class SqlLaminatorRepository:
         :param laminator_id:
 
         :raises KeyError: if there is no laminator.
-
-        :return: nothing.
         """
         row = self._session.get(LaminatorRow, laminator_id.value)
         if row is None:

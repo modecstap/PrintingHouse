@@ -7,10 +7,10 @@ from pathlib import Path
 
 import psycopg
 import pytest
+from sqlalchemy.orm import Session
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
 from backend.storage.database import Database
 from backend.storage.db_config import DBConfig
@@ -40,12 +40,16 @@ MAINTENANCE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
 
 
 def _recreate_ph_database() -> None:
+    """Handles recreate ph database.
+    """
     with psycopg.connect(MAINTENANCE_URL, autocommit=True) as conn:
         conn.execute('DROP DATABASE IF EXISTS "PH" WITH (FORCE)')
         conn.execute('CREATE DATABASE "PH"')
 
 
 def _upgrade_head() -> None:
+    """Handles upgrade head.
+    """
     cfg = Config(str(ALEMBIC_INI))
     cfg.set_main_option("sqlalchemy.url", PH_CONFIG.get_db_url("psycopg"))
     previous_cwd = os.getcwd()
@@ -57,6 +61,10 @@ def _upgrade_head() -> None:
 
 
 def _truncate_all(session: Session) -> None:
+    """Handles truncate all.
+
+    :param session: database session.
+    """
     names = ", ".join(
         f'"{table.name}"' for table in reversed(Base.metadata.sorted_tables)
     )
@@ -79,7 +87,7 @@ def _truncate_all(session: Session) -> None:
 def ph_database() -> Database:
     """Drops ``PH``, migrates to head.
 
-    Yields a ``Database`` for that catalog.
+    :return: the Database result.
     """
     _recreate_ph_database()
     _upgrade_head()
@@ -90,7 +98,12 @@ def ph_database() -> Database:
 def db_session(  # pylint: disable=redefined-outer-name
     ph_database: Database,
 ) -> Session:
-    """Clean application tables before each test."""
+    """Clean application tables before each test.
+
+    :param ph_database: the ph database.
+
+    :return: the Session result.
+    """
     session = ph_database.session_factory()
     try:
         _truncate_all(session)

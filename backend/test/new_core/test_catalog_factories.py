@@ -19,6 +19,8 @@ __all__ = [
 ]
 
 def test_printer_factory_assigns_sequential_ids() -> None:
+    """Handles test printer factory assigns sequential ids.
+    """
     repo = InMemoryPrinterRepository()
     factory = PrinterFactory(repo)
     money = Money(Decimal("1"))
@@ -38,6 +40,8 @@ def test_printer_factory_assigns_sequential_ids() -> None:
 
 
 def test_press_operator_factory_assigns_id_from_repo() -> None:
+    """Handles test press operator factory assigns id from repo.
+    """
     repo = InMemoryPressOperatorRepository()
     factory = PressOperatorFactory(repo)
 

@@ -1,3 +1,6 @@
+"""Tests for auth.test_login.py.
+"""
+
 import pytest
 
 from backend.auth.config import AuthConfig
@@ -12,13 +15,29 @@ __all__ = [
 ]
 
 class _FakeStore:
+    """Fake Store.
+    """
     def __init__(self, user: tuple[str, str] | None):
+        """Initializes this instance.
+
+        :param user: the user.
+        """
         self._user = user
 
     def count(self) -> int:
+        """Handles count.
+
+        :return: the int result.
+        """
         return 1 if self._user else 0
 
     def get_by_username(self, username: str):
+        """Returns the by username.
+
+        :param username: the username.
+
+        :return: the computed value.
+        """
         from backend.auth.users import StoredUser
 
         if self._user and self._user[0] == username:
@@ -26,10 +45,19 @@ class _FakeStore:
         return None
 
     def add(self, username: str, password_hash: str) -> None:
+        """Adds a add.
+
+        :param username: the username.
+        :param password_hash: the password hash.
+
+        :raises AssertionError: when the operation fails.
+        """
         raise AssertionError("not used")
 
 
 def test_login_ok():
+    """Handles test login ok.
+    """
     cfg = AuthConfig("k", "HS256", 10)
     store = _FakeStore(("u", hash_password("p")))
     token = login(PasswordLogin("u", "p"), store, cfg)
@@ -37,6 +65,8 @@ def test_login_ok():
 
 
 def test_login_bad_password():
+    """Handles test login bad password.
+    """
     cfg = AuthConfig("k", "HS256", 10)
     store = _FakeStore(("u", hash_password("p")))
     with pytest.raises(InvalidCredentials):

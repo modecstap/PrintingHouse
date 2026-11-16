@@ -1,6 +1,7 @@
 """Order repository persistence against PostgreSQL."""
 
 import pytest
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from backend.new_core.order.order import OrderContent, OrderID
@@ -26,8 +27,12 @@ __all__ = [
     "test_take_latest_orders_by_descending_id",
 ]
 
-def test_save_take_round_trips_parts_markup_on_order(db_session):
-    """``parts_markup`` persists on the order row, not on parts."""
+def test_save_take_round_trips_parts_markup_on_order(db_session: Session):
+    """``parts_markup`` persists on the order row, not on parts.
+
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
@@ -47,10 +52,10 @@ def test_save_take_round_trips_parts_markup_on_order(db_session):
     assert loaded.product.blocks[0] == product.blocks[0]
 
 
-def test_save_then_take_round_trips_full_graph(db_session):
+def test_save_then_take_round_trips_full_graph(db_session: Session):
     """Insert-only save reloads nested parts, operations,
 
-    and additional works.
+    :param db_session: the db session.
     """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
@@ -69,8 +74,11 @@ def test_save_then_take_round_trips_full_graph(db_session):
     assert loaded == order
 
 
-def test_save_print_only_graph_round_trips(db_session):
-    """A print-only block still round-trips."""
+def test_save_print_only_graph_round_trips(db_session: Session):
+    """A print-only block still round-trips.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run(with_laminate=False, with_cut=False)
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
@@ -82,8 +90,11 @@ def test_save_print_only_graph_round_trips(db_session):
     assert repo.take(OrderID(2)) == order
 
 
-def test_second_save_same_id_raises_order_id_occupied(db_session):
-    """Duplicate id becomes ``OrderIdOccupied`` with Russian text."""
+def test_second_save_same_id_raises_order_id_occupied(db_session: Session):
+    """Duplicate id becomes ``OrderIdOccupied`` with Russian text.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
@@ -97,15 +108,21 @@ def test_second_save_same_id_raises_order_id_occupied(db_session):
             repo.save(order)
 
 
-def test_take_missing_raises_order_not_found(db_session):
-    """Missing id uses ``take: заказа нет``."""
+def test_take_missing_raises_order_not_found(db_session: Session):
+    """Missing id uses ``take: заказа нет``.
+
+    :param db_session: the db session.
+    """
     repo = SqlOrderRepository(db_session)
     with pytest.raises(OrderNotFound, match="take: заказа нет, id=99"):
         repo.take(OrderID(99))
 
 
-def test_generate_id_starts_at_zero_and_advances(db_session):
-    """Sequence first value is zero and moves independently of saves."""
+def test_generate_id_starts_at_zero_and_advances(db_session: Session):
+    """Sequence first value is zero and moves independently of saves.
+
+    :param db_session: the db session.
+    """
     repo = SqlOrderRepository(db_session)
     assert repo.generate_id() == OrderID(0)
 
@@ -122,8 +139,11 @@ def test_generate_id_starts_at_zero_and_advances(db_session):
     assert repo.generate_id() == OrderID(1)
 
 
-def test_save_with_unknown_printer_raises_integrity_error(db_session):
-    """Catalog FK violations stay ``IntegrityError``."""
+def test_save_with_unknown_printer_raises_integrity_error(db_session: Session):
+    """Catalog FK violations stay ``IntegrityError``.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, _ctx = build_worked_run()
     repo = SqlOrderRepository(db_session)
     order = make_order(3, OrderContent(product=product_from_run(run), count=1))
@@ -133,8 +153,11 @@ def test_save_with_unknown_printer_raises_integrity_error(db_session):
             repo.save(order)
 
 
-def test_replace_updates_count_and_product(db_session):
-    """Replace keeps order id and overwrites count and blocks."""
+def test_replace_updates_count_and_product(db_session: Session):
+    """Replace keeps order id and overwrites count and blocks.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
@@ -160,8 +183,11 @@ def test_replace_updates_count_and_product(db_session):
     assert loaded.id == OrderID(6)
 
 
-def test_replace_updates_description_and_count_keeps_created_at(db_session):
-    """Replace changes description and count but not created_at."""
+def test_replace_updates_description_and_count_keeps_created_at(db_session: Session):
+    """Replace changes description and count but not created_at.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)
@@ -194,8 +220,11 @@ def test_replace_updates_description_and_count_keeps_created_at(db_session):
     assert loaded.created_at == original_created_at
 
 
-def test_replace_missing_raises_order_not_found(db_session):
-    """Missing id on replace uses ``replace: заказа нет``."""
+def test_replace_missing_raises_order_not_found(db_session: Session):
+    """Missing id on replace uses ``replace: заказа нет``.
+
+    :param db_session: the db session.
+    """
     repo = SqlOrderRepository(db_session)
     run, _, _, _, _ctx = build_worked_run()
     order = make_order(11, OrderContent(product=product_from_run(run), count=1))
@@ -204,8 +233,11 @@ def test_replace_missing_raises_order_not_found(db_session):
             repo.replace(order)
 
 
-def test_take_latest_orders_by_descending_id(db_session):
-    """``take_latest`` returns the highest ids first."""
+def test_take_latest_orders_by_descending_id(db_session: Session):
+    """``take_latest`` returns the highest ids first.
+
+    :param db_session: the db session.
+    """
     run, _, _, _, ctx = build_worked_run()
     insert_catalogs_from_ctx(db_session, ctx)
     repo = SqlOrderRepository(db_session)

@@ -23,6 +23,10 @@ class CutPricing:
     print_run: PrintRun
 
     def report(self) -> CostReport:
+        """Handles report.
+
+        :return: the CostReport result.
+        """
         stack = self.sheets_in_stack()
         lifts = (
             Decimal(self.print_run.imposition_count()) / Decimal(stack)
@@ -41,6 +45,10 @@ class CutPricing:
         )
 
     def sheets_in_stack(self) -> int:
+        """Handles sheets in stack.
+
+        :return: the int result.
+        """
         sheets = (
             Decimal(self.cutter.max_stack)
             / self.print_run.block.imposition.thickness()
@@ -48,4 +56,8 @@ class CutPricing:
         return max(int(sheets), 0)
 
     def run(self) -> PrintRun:
+        """Handles run.
+
+        :return: the PrintRun result.
+        """
         return self.print_run

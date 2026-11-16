@@ -17,6 +17,8 @@ _MONEY = Numeric(18, 4)
 
 
 class PrinterRow(Base):  # pylint: disable=too-few-public-methods
+    """Printer Row.
+    """
     __tablename__ = "printers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -30,6 +32,8 @@ class PrinterRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class LaminatorRow(Base):  # pylint: disable=too-few-public-methods
+    """Laminator Row.
+    """
     __tablename__ = "laminators"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -38,6 +42,8 @@ class LaminatorRow(Base):  # pylint: disable=too-few-public-methods
 
 
 class CutterRow(Base):  # pylint: disable=too-few-public-methods
+    """Cutter Row.
+    """
     __tablename__ = "cutters"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

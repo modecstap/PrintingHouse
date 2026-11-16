@@ -60,18 +60,42 @@ __all__ = [
 ]
 
 def _money_from_str(value: str) -> Money:
+    """Handles money from str.
+
+    :param value: the value.
+
+    :return: the Money result.
+    """
     return Money(Decimal(value))
 
 
 def _money_to_str(value: Money) -> str:
+    """Handles money to str.
+
+    :param value: the value.
+
+    :return: the str result.
+    """
     return format(value.amount, "f")
 
 
 def _format_from_dto(dto: FormatDto) -> Format:
+    """Handles format from dto.
+
+    :param dto: the dto.
+
+    :return: the Format result.
+    """
     return Format(name=dto.name, height=dto.height, width=dto.width)
 
 
 def _imposition_from_dto(dto: ImpositionDto) -> Imposition:
+    """Handles imposition from dto.
+
+    :param dto: the dto.
+
+    :return: the Imposition result.
+    """
     return Imposition(
         target=_format_from_dto(dto.target),
         press_sheet=sheet_from_read_dto(dto.press_sheet),
@@ -81,6 +105,14 @@ def _imposition_from_dto(dto: ImpositionDto) -> Imposition:
 
 
 def _operation_from_dto(dto: RunOperationDto) -> RunOperation:
+    """Handles operation from dto.
+
+    :param dto: the dto.
+
+    :raises TypeError: when the operation fails.
+
+    :return: the RunOperation result.
+    """
     if isinstance(dto, PrintOpDto):
         return Print(
             printer_id=PrinterID(dto.printer_id),
@@ -105,6 +137,12 @@ def _operation_from_dto(dto: RunOperationDto) -> RunOperation:
 
 
 def _part_from_dto(dto: PartDto) -> Part:
+    """Handles part from dto.
+
+    :param dto: the dto.
+
+    :return: the Part result.
+    """
     return Part(
         imposition=_imposition_from_dto(dto.imposition),
         count=dto.count,
@@ -114,6 +152,12 @@ def _part_from_dto(dto: PartDto) -> Part:
 
 
 def _additional_work_from_dto(dto: AdditionalWorkDto) -> AdditionalWork:
+    """Handles additional work from dto.
+
+    :param dto: the dto.
+
+    :return: the AdditionalWork result.
+    """
     return AdditionalWork(
         name=dto.name,
         price=_money_from_str(dto.price),
@@ -125,9 +169,9 @@ def _additional_work_from_dto(dto: AdditionalWorkDto) -> AdditionalWork:
 def product_from_dto(dto: ProductDto) -> Product:
     """Builds a domain product from JSON.
 
-    :param dto:
+    :param dto: the dto.
 
-    :return: ``Product`` instance.
+    :return: the Product result.
     """
     return Product(
         parts_markup=Percent(
@@ -137,10 +181,22 @@ def product_from_dto(dto: ProductDto) -> Product:
 
 
 def _format_to_dto(fmt: Format) -> FormatDto:
+    """Handles format to dto.
+
+    :param fmt: the fmt.
+
+    :return: the FormatDto result.
+    """
     return FormatDto(name=fmt.name, height=fmt.height, width=fmt.width)
 
 
 def _imposition_to_dto(imposition: Imposition) -> ImpositionDto:
+    """Handles imposition to dto.
+
+    :param imposition: the imposition.
+
+    :return: the ImpositionDto result.
+    """
     return ImpositionDto(
         target=_format_to_dto(imposition.target),
         press_sheet=sheet_to_read_dto(imposition.press_sheet),
@@ -150,6 +206,14 @@ def _imposition_to_dto(imposition: Imposition) -> ImpositionDto:
 
 
 def _operation_to_dto(operation: RunOperation) -> RunOperationDto:
+    """Handles operation to dto.
+
+    :param operation: the operation.
+
+    :raises TypeError: when the operation fails.
+
+    :return: the RunOperationDto result.
+    """
     if isinstance(operation, Print):
         return PrintOpDto(
             kind="print",
@@ -180,6 +244,12 @@ def _operation_to_dto(operation: RunOperation) -> RunOperationDto:
 
 
 def _part_to_dto(part: Part) -> PartDto:
+    """Handles part to dto.
+
+    :param part: the part.
+
+    :return: the PartDto result.
+    """
     return PartDto(
         imposition=_imposition_to_dto(part.imposition),
         count=part.count,
@@ -189,6 +259,12 @@ def _part_to_dto(part: Part) -> PartDto:
 
 
 def _additional_work_to_dto(work: AdditionalWork) -> AdditionalWorkDto:
+    """Handles additional work to dto.
+
+    :param work: the work.
+
+    :return: the AdditionalWorkDto result.
+    """
     return AdditionalWorkDto(
         name=work.name,
         price=_money_to_str(work.price),
@@ -200,9 +276,9 @@ def _additional_work_to_dto(work: AdditionalWork) -> AdditionalWorkDto:
 def product_to_dto(product: Product) -> ProductDto:
     """Serializes a domain product to JSON.
 
-    :param product:
+    :param product: the product.
 
-    :return: DTO tree.
+    :return: the ProductDto result.
     """
     return ProductDto(
         parts_markup=product.parts_markup.value, blocks=tuple(
@@ -213,9 +289,9 @@ def product_to_dto(product: Product) -> ProductDto:
 def order_to_dto(order: Order) -> OrderDto:
     """Serializes a stored order.
 
-    :param order:
+    :param order: the order.
 
-    :return: order JSON shape.
+    :return: the OrderDto result.
     """
     return OrderDto(
         id=order.id.value,
@@ -229,9 +305,9 @@ def order_to_dto(order: Order) -> OrderDto:
 def report_to_dto(report: OrderReport) -> OrderReportDto:
     """Serializes an order price report.
 
-    :param report:
+    :param report: the report.
 
-    :return: report JSON shape.
+    :return: the OrderReportDto result.
     """
     return OrderReportDto(
         product_price=_money_to_str(report.product_price),
@@ -244,9 +320,9 @@ def report_to_dto(report: OrderReport) -> OrderReportDto:
 def reference_from_dto(dto: ReferenceDto) -> Reference:
     """Builds a domain reference from JSON.
 
-    :param dto:
+    :param dto: the dto.
 
-    :return: ``Reference`` instance.
+    :return: the Reference result.
     """
     return Reference(
         name=dto.name,
@@ -258,9 +334,9 @@ def reference_from_dto(dto: ReferenceDto) -> Reference:
 def reference_to_dto(reference: Reference) -> ReferenceDto:
     """Serializes a reference row.
 
-    :param reference:
+    :param reference: the reference.
 
-    :return: reference JSON shape.
+    :return: the ReferenceDto result.
     """
     return ReferenceDto(
         name=reference.name,

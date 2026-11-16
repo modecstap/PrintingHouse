@@ -13,6 +13,10 @@ class OrderFactory:
     """Allocates order ids and builds orders."""
 
     def __init__(self, orders: OrderRepository) -> None:
+        """Initializes this instance.
+
+        :param orders: the orders.
+        """
         self._orders = orders
 
     def create(
@@ -22,11 +26,11 @@ class OrderFactory:
             description: str = "") -> Order:
         """Builds an order with a generated id.
 
-        :param product:
-        :param count:
-        :param description:
+        :param product: the product.
+        :param count: the count.
+        :param description: the description.
 
-        :return: the new order.
+        :return: the Order result.
         """
         return Order(
             id=self._orders.generate_id(),

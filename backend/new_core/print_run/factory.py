@@ -12,6 +12,10 @@ class PrintRunFactory:
     """Allocates print run ids and builds runs."""
 
     def __init__(self, print_runs: PrintRunRepository) -> None:
+        """Initializes this instance.
+
+        :param print_runs: the print runs.
+        """
         self._print_runs = print_runs
 
     def create(
@@ -22,11 +26,11 @@ class PrintRunFactory:
     ) -> PrintRun:
         """Builds a print run with a generated id.
 
-        :param for_order:
-        :param block:
-        :param required_count:
+        :param for_order: the for order.
+        :param block: the block.
+        :param required_count: the required count.
 
-        :return: the new print run.
+        :return: the PrintRun result.
         """
         return PrintRun(
             id=self._print_runs.generate_id(for_order),

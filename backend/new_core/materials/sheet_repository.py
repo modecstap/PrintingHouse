@@ -17,29 +17,23 @@ class SheetRepository(Protocol):
     def take(self, sheet_id: SheetID) -> Sheet:
         """Returns the sheet with this id.
 
-        :param sheet_id:
+        :param sheet_id: id of the sheet.
 
         :raises KeyError: if there is no sheet.
-
-        :return: the sheet row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[Sheet, ...]:
         """Returns every stored sheet.
-
-        :return: sheets in ascending id order.
-        """
+"""
         ...
 
     def add(self, paper: Paper, sheet_format: Format) -> SheetID:
         """Inserts a new sheet; the store assigns the id.
 
-        :param paper:
-        :param sheet_format:
-
-        :return: the assigned sheet id.
-        """
+        :param paper: the paper.
+        :param sheet_format: the sheet format.
+"""
         ...
 
     def replace(self, sheet: Sheet) -> None:
@@ -48,8 +42,6 @@ class SheetRepository(Protocol):
         :param sheet:
 
         :raises KeyError: if there is no sheet with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -59,21 +51,15 @@ class SheetRepository(Protocol):
         :param sheet_id:
 
         :raises KeyError: if there is no sheet.
-
-        :return: nothing.
         """
         ...
 
     def distinct_paper_types(self) -> tuple[str, ...]:
         """Returns unique paper type names across stored sheets.
-
-        :return: canonical type strings in ascending order.
-        """
+"""
         ...
 
     def distinct_paper_densities(self) -> tuple[int, ...]:
         """Returns unique paper densities across stored sheets.
-
-        :return: densities in ascending numeric order.
-        """
+"""
         ...

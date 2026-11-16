@@ -12,9 +12,11 @@ class PricingStrategy(Protocol):
     """Estimates the cost of one run operation."""
 
     def report(self) -> CostReport:
-        """Returns material, work, startup, and markup for one press target."""
+        """Returns material, work, startup, and markup for one press target.
+"""
         ...
 
     def run(self) -> PrintRun:
-        """Returns the print run associated with this pricing strategy."""
+        """Returns the print run associated with this pricing strategy.
+"""
         ...

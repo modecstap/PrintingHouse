@@ -27,6 +27,12 @@ __all__ = [
 ]
 
 def _order(order_id: int) -> Order:
+    """Handles order.
+
+    :param order_id: id of the order.
+
+    :return: the Order result.
+    """
     run, _, _, _, _ = build_worked_run(
         with_print=False,
         with_laminate=False,
@@ -47,11 +53,19 @@ def _order(order_id: int) -> Order:
 
 
 def _list_service(orders: InMemoryOrderRepository) -> OrderService:
+    """Handles list service.
+
+    :param orders: the orders.
+
+    :return: the OrderService result.
+    """
     uow = InMemoryUnitOfWork(orders=orders)
     return order_service(uow, _RunPricingFixtures())
 
 
 def test_should_list_orders_with_the_larger_id_first_when_a_limit_is_set():
+    """Handles test should list orders with the larger id first when a limit is set.
+    """
     orders = InMemoryOrderRepository(
         orders={
             _order(1).id: _order(1),
@@ -64,11 +78,15 @@ def test_should_list_orders_with_the_larger_id_first_when_a_limit_is_set():
 
 
 def test_should_return_an_empty_list_when_there_are_no_orders():
+    """Handles test should return an empty list when there are no orders.
+    """
     listed = _list_service(InMemoryOrderRepository()).get_orders(10)
     assert listed == ()
 
 
 def test_get_order_returns_the_stored_order():
+    """Handles test get order returns the stored order.
+    """
     stored = _order(4)
     orders = InMemoryOrderRepository(orders={stored.id: stored})
 
@@ -76,5 +94,7 @@ def test_get_order_returns_the_stored_order():
 
 
 def test_get_order_raises_when_the_id_is_missing():
+    """Handles test get order raises when the id is missing.
+    """
     with pytest.raises(OrderNotFound):
         _list_service(InMemoryOrderRepository()).get_order(OrderID(404))

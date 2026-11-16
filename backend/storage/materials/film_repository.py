@@ -17,16 +17,20 @@ class SqlFilmRepository:
     """Loads and stores films in PostgreSQL."""
 
     def __init__(self, session: Session) -> None:
+        """Initializes this instance.
+
+        :param session: database session.
+        """
         self._session = session
 
     def take(self, film_id: FilmID) -> Film:
         """Returns the film with this id.
 
-        :param film_id:
+        :param film_id: id of the film.
 
         :raises KeyError: if there is no film.
 
-        :return: the film row.
+        :return: the Film result.
         """
         row = self._session.get(FilmRow, film_id.value)
         if row is None:
@@ -36,7 +40,7 @@ class SqlFilmRepository:
     def take_all(self) -> tuple[Film, ...]:
         """Returns every stored film.
 
-        :return: films in ascending id order.
+        :return: the tuple[Film, ...] result.
         """
         stmt = select(FilmRow).order_by(FilmRow.id)
         rows = self._session.execute(stmt).scalars().all()
@@ -45,11 +49,11 @@ class SqlFilmRepository:
     def add(self, name: str, price: Money, density: int) -> FilmID:
         """Inserts a new film; the database assigns the id.
 
-        :param name:
-        :param price:
-        :param density:
+        :param name: the name.
+        :param price: the price.
+        :param density: the density.
 
-        :return: the assigned film id.
+        :return: the FilmID result.
         """
         wrapped_density = FilmDensity(density)
         row = FilmRow(
@@ -67,8 +71,6 @@ class SqlFilmRepository:
         :param film:
 
         :raises KeyError: if there is no film with this id.
-
-        :return: nothing.
         """
         row = self._session.get(FilmRow, film.id.value)
         if row is None:
@@ -84,8 +86,6 @@ class SqlFilmRepository:
         :param film_id:
 
         :raises KeyError: if there is no film.
-
-        :return: nothing.
         """
         row = self._session.get(FilmRow, film_id.value)
         if row is None:
@@ -95,7 +95,7 @@ class SqlFilmRepository:
     def distinct_film_densities(self) -> tuple[int, ...]:
         """Returns unique film densities across stored films.
 
-        :return: densities in ascending numeric order.
+        :return: the tuple[int, ...] result.
         """
         stmt = (
             select(FilmRow.density)
@@ -106,6 +106,13 @@ class SqlFilmRepository:
 
     @staticmethod
     def _film_from_row(film_id: FilmID, row: FilmRow) -> Film:
+        """Handles film from row.
+
+        :param film_id: id of the film.
+        :param row: the row.
+
+        :return: the Film result.
+        """
         return Film(
             id=film_id,
             name=row.name,

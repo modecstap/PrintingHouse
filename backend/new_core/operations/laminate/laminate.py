@@ -14,8 +14,7 @@ __all__ = ["Laminate"]
 
 @dataclass(frozen=True, slots=True)
 class Laminate:
-    """
-    Value Object. One lamination of a press target: the specification,
+    """Value Object. One lamination of a press target: the specification,
     the laminator, and the operator.
     """
 

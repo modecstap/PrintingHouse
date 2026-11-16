@@ -1,3 +1,6 @@
+"""CLI entry: waits for the database and starts the API server.
+"""
+
 import asyncio
 import os
 import sys
@@ -22,6 +25,8 @@ __all__ = [
 ]
 
 async def main() -> None:
+    """Handles main.
+    """
     try:
         await wait_for_database()
         await start_server()
@@ -31,11 +36,15 @@ async def main() -> None:
 
 
 async def wait_for_database() -> None:
+    """Handles wait for database.
+    """
     config = DBConfig.from_env()
     await Database(config).wait_for_connection()
 
 
 async def start_server() -> None:
+    """Handles start server.
+    """
     auth_config = AuthConfig.from_env()
     db_config = DBConfig.from_env()
     database = Database(db_config)

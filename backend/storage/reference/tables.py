@@ -9,6 +9,8 @@ from backend.storage.base import Base
 __all__ = ["OrderReferenceRow"]
 
 class OrderReferenceRow(Base):  # pylint: disable=too-few-public-methods
+    """Order Reference Row.
+    """
     __tablename__ = "order_references"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)

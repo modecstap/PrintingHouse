@@ -9,13 +9,16 @@ __all__ = ["PaperDensity"]
 
 @dataclass(frozen=True, slots=True)
 class PaperDensity:
-    """
-    Value Object. Paper density in grams per square meter (г/м²).
+    """Value Object. Paper density in grams per square meter (г/м²).
     """
 
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value <= 0:
             raise InvalidInput(
                 subject="PaperDensity",

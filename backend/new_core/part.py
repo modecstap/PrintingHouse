@@ -11,8 +11,7 @@ __all__ = ["Part"]
 
 @dataclass(frozen=True, slots=True)
 class Part:
-    """
-    Value Object. One printed part: layout, copy count,
+    """Value Object. One printed part: layout, copy count,
     and finishing operations.
     """
 
@@ -25,8 +24,6 @@ class Part:
         """Rejects a negative block count.
 
         :raises InvalidInput: if count is below zero.
-
-        :return: nothing. A count of zero stays.
         """
         reasons: list[str] = []
         if self.count < 0:

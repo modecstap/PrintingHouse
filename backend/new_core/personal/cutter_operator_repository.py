@@ -28,11 +28,8 @@ class CutterOperatorIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param operator_id:
-
-        :return: sets the message
-        ``{operation}: оператор резки уже есть, id={operator_id.value}``.
+        :param operation: the operation.
+        :param operator_id: id of the operator.
         """
         super().__init__(
             f"{operation}: оператор резки уже есть, id={operator_id.value}",
@@ -45,26 +42,20 @@ class CutterOperatorRepository(Protocol):
     def take(self, operator_id: CutterOperatorID) -> CutterOperator:
         """Returns the cutter operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
-
-        :return: the operator row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[CutterOperator, ...]:
         """Returns every stored cutter operator.
-
-        :return: operators in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> CutterOperatorID:
         """Returns the next cutter operator id from the store sequence.
-
-        :return: a new operator id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, operator: CutterOperator) -> None:
@@ -73,8 +64,6 @@ class CutterOperatorRepository(Protocol):
         :param operator:
 
         :raises CutterOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -84,8 +73,6 @@ class CutterOperatorRepository(Protocol):
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -95,7 +82,5 @@ class CutterOperatorRepository(Protocol):
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         ...

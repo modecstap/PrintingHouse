@@ -25,11 +25,8 @@ class CutterIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param cutter_id:
-
-        :return: sets the message
-        ``{operation}: резак уже есть, id={cutter_id.value}``.
+        :param operation: the operation.
+        :param cutter_id: id of the cutter.
         """
         super().__init__(
             f"{operation}: резак уже есть, id={cutter_id.value}",
@@ -42,26 +39,20 @@ class CutterRepository(Protocol):
     def take(self, cutter_id: CutterID) -> Cutter:
         """Returns the cutter with this id.
 
-        :param cutter_id:
+        :param cutter_id: id of the cutter.
 
         :raises KeyError: if there is no cutter.
-
-        :return: the cutter row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[Cutter, ...]:
         """Returns every stored cutter.
-
-        :return: cutters in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> CutterID:
         """Returns the next cutter id from the store sequence.
-
-        :return: a new cutter id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, cutter: Cutter) -> None:
@@ -70,8 +61,6 @@ class CutterRepository(Protocol):
         :param cutter:
 
         :raises CutterIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -81,8 +70,6 @@ class CutterRepository(Protocol):
         :param cutter:
 
         :raises KeyError: if there is no cutter with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -92,7 +79,5 @@ class CutterRepository(Protocol):
         :param cutter_id:
 
         :raises KeyError: if there is no cutter.
-
-        :return: nothing.
         """
         ...

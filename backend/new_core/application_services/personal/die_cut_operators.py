@@ -25,8 +25,8 @@ class DieCutterOperatorCatalog:
     ) -> None:
         """Remembers the die-cut operator store.
 
-        :param die_cut_operators:
-        :param die_cut_operator_factory:
+        :param die_cut_operators: the die cut operators.
+        :param die_cut_operator_factory: the die cut operator factory.
         """
         self._die_cut_operators = die_cut_operators
         self._die_cut_operator_factory = die_cut_operator_factory
@@ -34,7 +34,7 @@ class DieCutterOperatorCatalog:
     def die_cut_operators(self) -> tuple[DieCutterOperator, ...]:
         """Returns every die-cut operator.
 
-        :return: rows in ascending id order.
+        :return: the tuple[DieCutterOperator, ...] result.
         """
         return self._die_cut_operators.take_all()
 
@@ -44,20 +44,18 @@ class DieCutterOperatorCatalog:
     ) -> DieCutterOperator:
         """Returns one die-cut operator.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
 
-        :return: the operator row.
+        :return: the DieCutterOperator result.
         """
         return self._die_cut_operators.take(operator_id)
 
     def save_die_cut_operator(self, operator: DieCutterOperator) -> None:
         """Stores a new die-cut operator under its id.
 
-        :param operator:
-
-        :return: nothing. Existing rows are not overwritten.
+        :param operator: the operator.
         """
         self._die_cut_operators.save(operator)
 
@@ -68,10 +66,10 @@ class DieCutterOperatorCatalog:
     ) -> DieCutterOperatorID:
         """Inserts a new die-cut operator; the store assigns the id.
 
-        :param name:
-        :param salary_by_operation:
+        :param name: the name.
+        :param salary_by_operation: the salary by operation.
 
-        :return: the assigned operator id.
+        :return: the DieCutterOperatorID result.
         """
         operator = self._die_cut_operator_factory.create(
             name, salary_by_operation)
@@ -84,8 +82,6 @@ class DieCutterOperatorCatalog:
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         self._die_cut_operators.replace(operator)
 
@@ -98,7 +94,5 @@ class DieCutterOperatorCatalog:
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         self._die_cut_operators.delete(operator_id)

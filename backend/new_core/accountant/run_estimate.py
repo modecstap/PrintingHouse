@@ -31,10 +31,13 @@ class RunEstimate:
     ) -> RunEstimate:
         """Builds an estimate from strategies and optionally pins the run.
 
-        :raises ValueError: if strategies disagree on the run, or both are empty
-        and no run is given.
+        :param strategies: the strategies.
+        :param run: the run.
+        :param parts_markup: the parts markup.
 
-        :return: a run estimate that implements :class:`RunEstimateView`.
+        :raises ValueError: if strategies disagree on the run, or both are empty
+
+        :return: the RunEstimate result.
         """
         if strategies:
             resolved = strategies[0].run()
@@ -54,19 +57,39 @@ class RunEstimate:
         )
 
     def aggregated_operations(self) -> CostReport:
+        """Handles aggregated operations.
+
+        :return: the CostReport result.
+        """
         report = CostReport.zero()
         for strategy in self._strategies:
             report += strategy.report()
         return report
 
     def block_markup(self) -> Percent:
+        """Handles block markup.
+
+        :return: the Percent result.
+        """
         return self._parts_markup
 
     def imposition_count(self) -> int:
+        """Handles imposition count.
+
+        :return: the int result.
+        """
         return self._run.imposition_count()
 
     def targets_on_imposition(self) -> int:
+        """Handles targets on imposition.
+
+        :return: the int result.
+        """
         return self._run.block.imposition.count()
 
     def block_count(self) -> int:
+        """Handles block count.
+
+        :return: the int result.
+        """
         return self._run.block.count

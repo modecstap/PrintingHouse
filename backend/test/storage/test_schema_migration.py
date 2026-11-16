@@ -1,6 +1,7 @@
 """Empty schema after Alembic head (session setup in conftest)."""
 
 import pytest
+from sqlalchemy.orm import Session
 
 from backend.new_core.order.order import OrderID
 from backend.new_core.order.repository import OrderNotFound
@@ -13,8 +14,12 @@ from backend.storage.reference.repository import SqlReferenceRepository
 
 __all__ = ["test_empty_stores_return_protocol_sentinels"]
 
-def test_empty_stores_return_protocol_sentinels(db_session):
-    """Missing rows yield ``OrderNotFound``, ``KeyError``, or empty tuples."""
+def test_empty_stores_return_protocol_sentinels(db_session: Session):
+    """Missing rows yield ``OrderNotFound``, ``KeyError``, or empty tuples.
+
+
+    :param db_session: the db session.
+    """
     orders = SqlOrderRepository(db_session)
     runs = SqlPrintRunRepository(db_session)
     refs = SqlReferenceRepository(db_session)

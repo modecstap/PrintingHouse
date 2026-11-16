@@ -28,11 +28,8 @@ class DieCutterOperatorIdOccupied(CatalogIdOccupied):
     ) -> None:
         """Builds the repository error text.
 
-        :param operation:
-        :param operator_id:
-
-        :return: sets the message
-        ``{operation}: оператор вырубки уже есть, id={operator_id.value}``.
+        :param operation: the operation.
+        :param operator_id: id of the operator.
         """
         super().__init__(
             f"{operation}: оператор вырубки уже есть, id={operator_id.value}",
@@ -45,26 +42,20 @@ class DieCutterOperatorRepository(Protocol):
     def take(self, operator_id: DieCutterOperatorID) -> DieCutterOperator:
         """Returns the die cutter operator with this id.
 
-        :param operator_id:
+        :param operator_id: id of the operator.
 
         :raises KeyError: if there is no operator.
-
-        :return: the operator row.
-        """
+"""
         ...
 
     def take_all(self) -> tuple[DieCutterOperator, ...]:
         """Returns every stored die-cut operator.
-
-        :return: operators in ascending id order.
-        """
+"""
         ...
 
     def generate_id(self) -> DieCutterOperatorID:
         """Returns the next die cutter operator id from the store sequence.
-
-        :return: a new operator id. It may already be occupied.
-        """
+"""
         ...
 
     def save(self, operator: DieCutterOperator) -> None:
@@ -73,8 +64,6 @@ class DieCutterOperatorRepository(Protocol):
         :param operator:
 
         :raises DieCutterOperatorIdOccupied: if that id is already stored.
-
-        :return: nothing. Existing rows are not overwritten.
         """
         ...
 
@@ -84,8 +73,6 @@ class DieCutterOperatorRepository(Protocol):
         :param operator:
 
         :raises KeyError: if there is no operator with this id.
-
-        :return: nothing.
         """
         ...
 
@@ -95,7 +82,5 @@ class DieCutterOperatorRepository(Protocol):
         :param operator_id:
 
         :raises KeyError: if there is no operator.
-
-        :return: nothing.
         """
         ...

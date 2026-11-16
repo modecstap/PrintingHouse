@@ -17,6 +17,10 @@ class CutterID:
     value: int
 
     def __post_init__(self) -> None:
+        """Validates fields after construction.
+
+        :raises InvalidInput: when the operation fails.
+        """
         if self.value < 0:
             raise InvalidInput(
                 "cutter id",
@@ -37,8 +41,6 @@ class Cutter:
 
         :raises InvalidInput: if the name is blank after strip, if max_stack
         is below zero, or if it is zero after a negative height is rejected.
-
-        :return: nothing.
         """
         stripped = self.name.strip()
         if not stripped:

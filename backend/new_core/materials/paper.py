@@ -13,8 +13,7 @@ __all__ = ["Paper"]
 
 @dataclass(frozen=True, slots=True)
 class Paper:
-    """
-    Value Object. The density, the thickness, the paper type, and the price
+    """Value Object. The density, the thickness, the paper type, and the price
     of one kilogram of a paper grade.
     """
 
@@ -28,9 +27,6 @@ class Paper:
 
         :raises InvalidInput: if thickness is not a positive Decimal with at
         most two fractional digits.
-
-        :return: nothing. A negative price never reaches this method,
-        because Money rejects it first.
         """
         reasons: list[str] = []
         if not isinstance(self.thickness, Decimal):
