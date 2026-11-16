@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
+from typing import TypeVar
+
 from sqlalchemy.orm import Session
 
 from backend.new_core.equipment.cutter import Cutter
@@ -26,6 +29,17 @@ from backend.storage.personal.tables import (
     PressOperatorRow,
 )
 from backend.test.new_core.test_print_run import _RunPricingFixtures
+
+_CatalogEntity = TypeVar("_CatalogEntity")
+
+
+def _insert_catalog_map(
+    session: Session,
+    entities: Mapping[object, _CatalogEntity],
+    insert: Callable[[Session, _CatalogEntity], None],
+) -> None:
+    for entity in entities.values():
+        insert(session, entity)
 
 
 def insert_printer(session: Session, printer: Printer) -> None:
@@ -133,24 +147,15 @@ def insert_sheet(session: Session, sheet: Sheet) -> None:
 
 def insert_catalogs_from_ctx(session: Session, ctx: _RunPricingFixtures) -> None:
     """Inserts every catalog entity referenced by ``build_worked_run`` fixtures."""
-    for printer in ctx.printers.values():
-        insert_printer(session, printer)
-    for operator in ctx.press_operators.values():
-        insert_press_operator(session, operator)
-    for laminator in ctx.laminators.values():
-        insert_laminator(session, laminator)
-    for operator in ctx.laminator_operators.values():
-        insert_laminator_operator(session, operator)
-    for cutter in ctx.cutters.values():
-        insert_cutter(session, cutter)
-    for operator in ctx.cutter_operators.values():
-        insert_cutter_operator(session, operator)
-    for operator in ctx.die_cut_operators.values():
-        insert_die_cutter_operator(session, operator)
-    for film in ctx.films.values():
-        insert_film(session, film)
-    for sheet in ctx.sheets.values():
-        insert_sheet(session, sheet)
+    _insert_catalog_map(session, ctx.printers, insert_printer)
+    _insert_catalog_map(session, ctx.press_operators, insert_press_operator)
+    _insert_catalog_map(session, ctx.laminators, insert_laminator)
+    _insert_catalog_map(session, ctx.laminator_operators, insert_laminator_operator)
+    _insert_catalog_map(session, ctx.cutters, insert_cutter)
+    _insert_catalog_map(session, ctx.cutter_operators, insert_cutter_operator)
+    _insert_catalog_map(session, ctx.die_cut_operators, insert_die_cutter_operator)
+    _insert_catalog_map(session, ctx.films, insert_film)
+    _insert_catalog_map(session, ctx.sheets, insert_sheet)
     session.flush()
     session.commit()
 

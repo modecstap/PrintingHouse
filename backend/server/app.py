@@ -39,25 +39,7 @@ def _validation_detail(exc: RequestValidationError) -> str:
     return "; ".join(parts)
 
 
-def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
-    """Builds the API application with routers and exception handlers.
-
-    :param auth_config:
-    :param database:
-
-    :return: configured FastAPI instance.
-    """
-    app = FastAPI(debug=False)
-    app.state.auth_config = auth_config
-    app.state.database = database
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
+def _add_http_logging_middleware(app: FastAPI) -> None:
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         start = time.perf_counter()
@@ -76,6 +58,8 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
             _logger.error(message)
         return response
 
+
+def _register_api_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(InvalidInput)
     @app.exception_handler(InvalidPriceException)
     async def unprocessable(_request: Request, exc: Exception) -> JSONResponse:
@@ -134,6 +118,29 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
             content={"detail": detail},
             headers=exc.headers,
         )
+
+
+def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
+    """Builds the API application with routers and exception handlers.
+
+    :param auth_config:
+    :param database:
+
+    :return: configured FastAPI instance.
+    """
+    app = FastAPI(debug=False)
+    app.state.auth_config = auth_config
+    app.state.database = database
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    _add_http_logging_middleware(app)
+    _register_api_exception_handlers(app)
 
     app.include_router(auth_router)
     app.include_router(orders_router)
