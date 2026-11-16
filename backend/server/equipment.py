@@ -73,24 +73,8 @@ def create_printer(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> CreatedIdDto:
     """Inserts a new printer and returns its assigned id."""
-    (
-        name,
-        spacing,
-        startup,
-        cyan,
-        magenta,
-        yellow,
-        black,
-    ) = printer_from_write_dto(body)
-    new_id = service.create_printer(
-        name,
-        spacing,
-        startup,
-        cyan,
-        magenta,
-        yellow,
-        black,
-    )
+    name, spacing, prices = printer_from_write_dto(body)
+    new_id = service.create_printer(name, spacing, prices)
     session.commit()
     return CreatedIdDto(id=new_id.value)
 

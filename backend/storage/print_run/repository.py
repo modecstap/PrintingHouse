@@ -6,7 +6,11 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session
 
 from backend.new_core.order.order import OrderID
-from backend.new_core.print_run.print_run import PrintRun, PrintRunID
+from backend.new_core.print_run.print_run import (
+    PrintRun,
+    PrintRunID,
+    require_runs_belong_to_order,
+)
 from backend.storage.part.mapping import part_row_to_part, persist_part
 from backend.storage.part.tables import PartRow
 from backend.storage.print_run.tables import PrintRunRow
@@ -82,12 +86,7 @@ class SqlPrintRunRepository:
 
         :return: nothing.
         """
-        for run in runs:
-            if run.for_order != order_id:
-                raise ValueError(
-                    f"run {run.id.value} for_order {run.for_order.value} "
-                    f"!= {order_id.value}",
-                )
+        require_runs_belong_to_order(order_id, runs)
 
         part_ids = self._session.execute(
             select(PrintRunRow.part_id).where(

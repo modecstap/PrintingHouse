@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from backend.auth.config import AuthConfig
 from backend.auth.passwords import hash_password
 from backend.auth.tokens import create_access_token
-from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.order import Order, OrderContent, OrderID
 from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.reference.reference import Reference
 from backend.server import dependencies
@@ -63,7 +63,7 @@ def test_references_without_token_401():
 def test_list_and_orders_happy_path():
     run, *_ = build_worked_run()
     product = product_from_run(run)
-    order = make_order(1, product, 1)
+    order = make_order(1, OrderContent(product=product, count=1))
     ref = Reference(name="r1", description="d", order_id=order.id)
     fake = _FakeReferenceService(references_rows=(ref,), orders_rows=(order,))
     client, headers = _client_with_fake(fake)

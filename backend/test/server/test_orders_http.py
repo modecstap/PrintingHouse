@@ -12,7 +12,7 @@ from backend.auth.passwords import hash_password
 from backend.auth.tokens import create_access_token
 from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.application_services.order import OrderIdAllocationFailed
-from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.order import Order, OrderContent, OrderID
 from backend.new_core.order.repository import OrderNotFound
 from backend.new_core.values.money import Money
 from backend.server import dependencies
@@ -75,11 +75,11 @@ class _FakeOrderService:
     def replace(
         self,
         order_id: OrderID,
-        product,
-        count: int,
-        description: str = "",
+        content: OrderContent,
     ) -> OrderID:
-        self.calls.append(f"replace:{order_id.value}:{count}:{description}")
+        self.calls.append(
+            f"replace:{order_id.value}:{content.count}:{content.description}",
+        )
         if self.replace_error:
             raise self.replace_error
         return order_id
@@ -153,7 +153,7 @@ def test_get_order_404():
 
 def test_list_limit_query():
     run, *_ = build_worked_run()
-    order = make_order(1, product_from_run(run), 1)
+    order = make_order(1, OrderContent(product=product_from_run(run), count=1))
     fake = _FakeOrderService(orders=(order,))
     client, headers = _client_with_fake(fake)
     response = client.get("/api/orders?limit=1", headers=headers)

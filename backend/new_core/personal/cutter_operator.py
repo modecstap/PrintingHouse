@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from backend.new_core.errors import InvalidInput
+from backend.new_core.personal.name import stripped_required_name
 from backend.new_core.values.money import Money
 
 
@@ -29,11 +30,6 @@ class CutterOperator:
     salary_by_operation: Money
 
     def __post_init__(self) -> None:
-        stripped = self.name.strip()
-        if not stripped:
-            raise InvalidInput(
-                subject="cutter operator",
-                reason="название не задано",
-            )
+        stripped = stripped_required_name(self.name, "cutter operator")
         if stripped != self.name:
             object.__setattr__(self, "name", stripped)

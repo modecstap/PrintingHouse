@@ -21,17 +21,24 @@ class PrinterID:
 
 
 @dataclass(frozen=True)
+class PrinterPrices:  # pylint: disable=too-few-public-methods
+    """Ink startup and per-channel prices; the fields are the value."""
+
+    startup: Money
+    cyan: Money
+    magenta: Money
+    yellow: Money
+    black: Money
+
+
+@dataclass(frozen=True)
 class Printer:
     """A printer: its startup and the price of each ink."""
 
     id: PrinterID
     name: str
     spacing: int
-    startup: Money
-    cyan: Money
-    magenta: Money
-    yellow: Money
-    black: Money
+    prices: PrinterPrices
 
     def __post_init__(self) -> None:
         stripped = self.name.strip()

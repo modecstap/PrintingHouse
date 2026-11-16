@@ -24,11 +24,12 @@ class PrintPricing:
     def report(self) -> CostReport:
         cyan, magenta, yellow, black = self.chroma.consumed_sheets()
         printer = self.printer
+        prices = printer.prices
         ink = (
-            printer.cyan * cyan
-            + printer.magenta * magenta
-            + printer.yellow * yellow
-            + printer.black * black
+            prices.cyan * cyan
+            + prices.magenta * magenta
+            + prices.yellow * yellow
+            + prices.black * black
         )
         paper = self.print_run.block.imposition.press_sheet.price()
         material = paper + ink
@@ -40,7 +41,7 @@ class PrintPricing:
         return CostReport(
             material=material,
             work=work,
-            startup=printer.startup / self.print_run.imposition_count(),
+            startup=prices.startup / self.print_run.imposition_count(),
             markup=Money.zero(),
         )
 

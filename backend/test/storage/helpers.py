@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from backend.new_core import AdditionalWork, Order, Product
-from backend.new_core.order.order import OrderID
+from backend.new_core.order.order import OrderContent, OrderID
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 from backend.new_core.values.percent import Percent
@@ -17,17 +17,15 @@ TEST_ORDER_CREATED_AT = datetime(2026, 6, 15, 12, 0, 0, tzinfo=UTC)
 
 def make_order(
     order_id: int,
-    product: Product,
-    count: int,
+    content: OrderContent,
     *,
-    description: str = "",
     created_at: datetime = TEST_ORDER_CREATED_AT,
 ) -> Order:
     return Order(
         id=OrderID(order_id),
-        product=product,
-        count=count,
-        description=description,
+        product=content.product,
+        count=content.count,
+        description=content.description,
         created_at=created_at,
     )
 

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from backend.new_core.application_services.order import OrderService
-from backend.new_core.order.order import OrderID
+from backend.new_core.order.order import OrderContent, OrderID
 from backend.server.dependencies import get_order_service, require_user
 from backend.server.mapping import order_to_dto, product_from_dto, report_to_dto
 from backend.server.schemas import OrderDto, OrderReportDto, OrderWriteDto, SaveOrderResponseDto
@@ -77,8 +77,10 @@ def replace_order(
     product = product_from_dto(body.product)
     stored_id = service.replace(
         OrderID(order_id),
-        product,
-        body.count,
-        body.description,
+        OrderContent(
+            product=product,
+            count=body.count,
+            description=body.description,
+        ),
     )
     return SaveOrderResponseDto(id=stored_id.value)

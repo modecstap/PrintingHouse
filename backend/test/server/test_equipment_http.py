@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from backend.auth.config import AuthConfig
 from backend.auth.passwords import hash_password
 from backend.auth.tokens import create_access_token
-from backend.new_core.equipment.printer import Printer, PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.values.money import Money
 from backend.server import dependencies
 from backend.server.app import create_app
@@ -39,11 +39,7 @@ class _FakeEquipmentService:
         self,
         name: str,
         spacing: int,
-        startup: Money,
-        cyan: Money,
-        magenta: Money,
-        yellow: Money,
-        black: Money,
+        prices,
     ) -> PrinterID:
         self.calls.append("create_printer")
         return PrinterID(7)
@@ -152,11 +148,13 @@ def test_replace_printer_204():
         id=PrinterID(5),
         name="Тест",
         spacing=0,
-        startup=Money(Decimal("0")),
-        cyan=Money(Decimal("0")),
-        magenta=Money(Decimal("0")),
-        yellow=Money(Decimal("0")),
-        black=Money(Decimal("0")),
+        prices=PrinterPrices(
+            startup=Money(Decimal("0")),
+            cyan=Money(Decimal("0")),
+            magenta=Money(Decimal("0")),
+            yellow=Money(Decimal("0")),
+            black=Money(Decimal("0")),
+        ),
     )
 
 

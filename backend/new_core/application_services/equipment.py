@@ -11,7 +11,7 @@ from backend.new_core.equipment.factory import (
 )
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
 from backend.new_core.equipment.laminator_repository import LaminatorRepository
-from backend.new_core.equipment.printer import Printer, PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.equipment.printer_repository import PrinterRepository
 from backend.new_core.values.money import Money
 
@@ -75,32 +75,20 @@ class EquipmentCatalogService:
         self,
         name: str,
         spacing: int,
-        startup: Money,
-        cyan: Money,
-        magenta: Money,
-        yellow: Money,
-        black: Money,
+        prices: PrinterPrices,
     ) -> PrinterID:
         """Inserts a new printer; the store assigns the id.
 
         :param name:
         :param spacing:
-        :param startup:
-        :param cyan:
-        :param magenta:
-        :param yellow:
-        :param black:
+        :param prices:
 
         :return: the assigned printer id.
         """
         printer = self._printer_factory.create(
             name,
             spacing,
-            startup,
-            cyan,
-            magenta,
-            yellow,
-            black,
+            prices,
         )
         self._printers.save(printer)
         return printer.id

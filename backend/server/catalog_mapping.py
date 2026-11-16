@@ -8,7 +8,7 @@ from decimal import Decimal
 from backend.new_core.format import Format
 from backend.new_core.equipment.cutter import Cutter, CutterID
 from backend.new_core.equipment.laminator import Laminator, LaminatorID
-from backend.new_core.equipment.printer import Printer, PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
@@ -53,11 +53,11 @@ def printer_to_dto(printer: Printer) -> PrinterDto:
         id=printer.id.value,
         name=printer.name,
         spacing=printer.spacing,
-        startup=str(printer.startup.amount),
-        cyan=str(printer.cyan.amount),
-        magenta=str(printer.magenta.amount),
-        yellow=str(printer.yellow.amount),
-        black=str(printer.black.amount),
+        startup=str(printer.prices.startup.amount),
+        cyan=str(printer.prices.cyan.amount),
+        magenta=str(printer.prices.magenta.amount),
+        yellow=str(printer.prices.yellow.amount),
+        black=str(printer.prices.black.amount),
     )
 
 
@@ -66,25 +66,29 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
         id=PrinterID(dto.id),
         name=dto.name,
         spacing=dto.spacing,
-        startup=_money(dto.startup),
-        cyan=_money(dto.cyan),
-        magenta=_money(dto.magenta),
-        yellow=_money(dto.yellow),
-        black=_money(dto.black),
+        prices=PrinterPrices(
+            startup=_money(dto.startup),
+            cyan=_money(dto.cyan),
+            magenta=_money(dto.magenta),
+            yellow=_money(dto.yellow),
+            black=_money(dto.black),
+        ),
     )
 
 
 def printer_from_write_dto(
     dto: PrinterWriteDto,
-) -> tuple[str, int, Money, Money, Money, Money, Money]:
+) -> tuple[str, int, PrinterPrices]:
     return (
         dto.name,
         dto.spacing,
-        _money(dto.startup),
-        _money(dto.cyan),
-        _money(dto.magenta),
-        _money(dto.yellow),
-        _money(dto.black),
+        PrinterPrices(
+            startup=_money(dto.startup),
+            cyan=_money(dto.cyan),
+            magenta=_money(dto.magenta),
+            yellow=_money(dto.yellow),
+            black=_money(dto.black),
+        ),
     )
 
 

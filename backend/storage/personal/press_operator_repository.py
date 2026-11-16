@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.new_core.personal.press_operator_repository import PressOperatorIdOccupied
 from backend.new_core.values.money import Money
+from backend.storage.personal.operator_row import replace_operator_row, save_operator_row
 from backend.storage.personal.tables import PressOperatorRow
 
 
@@ -71,17 +71,16 @@ class SqlPressOperatorRepository:
 
         :return: nothing. Existing rows are not overwritten.
         """
-        try:
-            self._session.add(
-                PressOperatorRow(
-                    id=operator.id.value,
-                    name=operator.name,
-                    salary_by_operation=operator.salary_by_operation.amount,
-                ),
-            )
-            self._session.flush()
-        except IntegrityError as exc:
-            raise PressOperatorIdOccupied("save", operator.id) from exc
+        save_operator_row(
+            self._session,
+            PressOperatorRow(
+                id=operator.id.value,
+                name=operator.name,
+                salary_by_operation=operator.salary_by_operation.amount,
+            ),
+            operator.id,
+            PressOperatorIdOccupied,
+        )
 
     def replace(self, operator: PressOperator) -> None:
         """Overwrites non-id fields of an existing press operator.
@@ -92,12 +91,11 @@ class SqlPressOperatorRepository:
 
         :return: nothing.
         """
-        row = self._session.get(PressOperatorRow, operator.id.value)
-        if row is None:
-            raise KeyError(operator.id)
-        row.name = operator.name
-        row.salary_by_operation = operator.salary_by_operation.amount
-        self._session.flush()
+        replace_operator_row(
+            self._session,
+            self._session.get(PressOperatorRow, operator.id.value),
+            operator,
+        )
 
     def delete(self, operator_id: PressOperatorID) -> None:
         """Removes the operator with this id.

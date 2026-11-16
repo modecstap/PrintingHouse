@@ -38,7 +38,11 @@ from backend.new_core.personal.laminator_operator_repository import (
 )
 from backend.new_core.personal.press_operator import PressOperator, PressOperatorID
 from backend.new_core.personal.press_operator_repository import PressOperatorIdOccupied
-from backend.new_core.print_run.print_run import PrintRun, PrintRunID
+from backend.new_core.print_run.print_run import (
+    PrintRun,
+    PrintRunID,
+    require_runs_belong_to_order,
+)
 from backend.new_core.reference.reference import Reference
 
 T = TypeVar("T")
@@ -99,12 +103,7 @@ class InMemoryPrintRunRepository:
         order_id: OrderID,
         runs: tuple[PrintRun, ...],
     ) -> None:
-        for run in runs:
-            if run.for_order != order_id:
-                raise ValueError(
-                    f"run {run.id.value} for_order {run.for_order.value} "
-                    f"!= {order_id.value}",
-                )
+        require_runs_belong_to_order(order_id, runs)
         self.by_order[order_id] = runs
 
 

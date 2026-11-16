@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.new_core.personal.die_cutter_operator import (
@@ -14,6 +13,7 @@ from backend.new_core.personal.die_cutter_operator_repository import (
     DieCutterOperatorIdOccupied,
 )
 from backend.new_core.values.money import Money
+from backend.storage.personal.operator_row import replace_operator_row, save_operator_row
 from backend.storage.personal.tables import DieCutterOperatorRow
 
 
@@ -76,17 +76,16 @@ class SqlDieCutterOperatorRepository:
 
         :return: nothing. Existing rows are not overwritten.
         """
-        try:
-            self._session.add(
-                DieCutterOperatorRow(
-                    id=operator.id.value,
-                    name=operator.name,
-                    salary_by_operation=operator.salary_by_operation.amount,
-                ),
-            )
-            self._session.flush()
-        except IntegrityError as exc:
-            raise DieCutterOperatorIdOccupied("save", operator.id) from exc
+        save_operator_row(
+            self._session,
+            DieCutterOperatorRow(
+                id=operator.id.value,
+                name=operator.name,
+                salary_by_operation=operator.salary_by_operation.amount,
+            ),
+            operator.id,
+            DieCutterOperatorIdOccupied,
+        )
 
     def replace(self, operator: DieCutterOperator) -> None:
         """Overwrites non-id fields of an existing die-cut operator.
@@ -97,12 +96,11 @@ class SqlDieCutterOperatorRepository:
 
         :return: nothing.
         """
-        row = self._session.get(DieCutterOperatorRow, operator.id.value)
-        if row is None:
-            raise KeyError(operator.id)
-        row.name = operator.name
-        row.salary_by_operation = operator.salary_by_operation.amount
-        self._session.flush()
+        replace_operator_row(
+            self._session,
+            self._session.get(DieCutterOperatorRow, operator.id.value),
+            operator,
+        )
 
     def delete(self, operator_id: DieCutterOperatorID) -> None:
         """Removes the operator with this id.

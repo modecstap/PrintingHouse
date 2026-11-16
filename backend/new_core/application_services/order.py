@@ -7,7 +7,7 @@ from backend.new_core.accountant.order_report import OrderReport
 from backend.new_core.accountant.pricing.factory import PricingStrategyFactory
 from backend.new_core.accountant.run_estimate import RunEstimate
 from backend.new_core.order.factory import OrderFactory
-from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.order import Order, OrderContent, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.order.repository import OrderIdOccupied
 from backend.new_core.application_services.unit_of_work import OrderUnitOfWork
@@ -142,16 +142,12 @@ class OrderService:
     def replace(
         self,
         order_id: OrderID,
-        product: Product,
-        count: int,
-        description: str = "",
+        content: OrderContent,
     ) -> OrderID:
         """Replaces an existing order and its print runs.
 
         :param order_id:
-        :param product:
-        :param count:
-        :param description:
+        :param content:
 
         :raises OrderNotFound: if the order does not exist.
         :raises KeyError: if a catalog id is missing.
@@ -165,9 +161,9 @@ class OrderService:
             existing = self._uow.orders.take(order_id)
             order = Order(
                 id=order_id,
-                product=product,
-                count=count,
-                description=description,
+                product=content.product,
+                count=content.count,
+                description=content.description,
                 created_at=existing.created_at,
             )
             runs = self._made_run_for_order(order)

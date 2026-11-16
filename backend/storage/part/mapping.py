@@ -96,7 +96,7 @@ def persist_part(session: Session, part: Part) -> int:
         )
         session.add(op_row)
         session.flush()
-        _persist_operation_subtype(session, op_row.id, operation, kind)
+        _persist_operation_subtype(session, op_row.id, operation)
     return row.id
 
 
@@ -113,23 +113,37 @@ def _load_operations(session: Session, part_id: int) -> tuple[RunOperation, ...]
     return tuple(loaded)
 
 
+def _require_subtype_row(
+    row: object | None,
+    table: str,
+    operation_id: int,
+) -> object:
+    if row is None:
+        raise RuntimeError(f"missing {table} for operation id={operation_id}")
+    return row
+
+
 def _load_operation_subtype(
     session: Session,
     op_row: PartOperationRow,
 ) -> RunOperation:
     if op_row.kind == "print":
-        sub = session.get(PartPrintRow, op_row.id)
-        if sub is None:
-            raise RuntimeError(f"missing part_prints for operation id={op_row.id}")
+        sub = _require_subtype_row(
+            session.get(PartPrintRow, op_row.id),
+            "part_prints",
+            op_row.id,
+        )
         return Print(
             printer_id=PrinterID(sub.printer_id),
             operator_id=PressOperatorID(sub.operator_id),
             chroma=Chroma[sub.chroma],
         )
     if op_row.kind == "laminate":
-        sub = session.get(PartLaminateRow, op_row.id)
-        if sub is None:
-            raise RuntimeError(f"missing part_laminates for operation id={op_row.id}")
+        sub = _require_subtype_row(
+            session.get(PartLaminateRow, op_row.id),
+            "part_laminates",
+            op_row.id,
+        )
         return Laminate(
             laminator_id=LaminatorID(sub.laminator_id),
             operator_id=LaminatorOperatorID(sub.operator_id),
@@ -137,17 +151,21 @@ def _load_operation_subtype(
             film_id=FilmID(sub.film_id),
         )
     if op_row.kind == "cut":
-        sub = session.get(PartCutRow, op_row.id)
-        if sub is None:
-            raise RuntimeError(f"missing part_cuts for operation id={op_row.id}")
+        sub = _require_subtype_row(
+            session.get(PartCutRow, op_row.id),
+            "part_cuts",
+            op_row.id,
+        )
         return Cut(
             cutter_id=CutterID(sub.cutter_id),
             operator_id=CutterOperatorID(sub.operator_id),
         )
     if op_row.kind == "die_cut":
-        sub = session.get(PartDieCutRow, op_row.id)
-        if sub is None:
-            raise RuntimeError(f"missing part_die_cuts for operation id={op_row.id}")
+        sub = _require_subtype_row(
+            session.get(PartDieCutRow, op_row.id),
+            "part_die_cuts",
+            op_row.id,
+        )
         return DieCut(operator_id=DieCutterOperatorID(sub.operator_id))
     raise RuntimeError(f"unknown operation kind {op_row.kind!r}")
 
@@ -156,8 +174,8 @@ def _persist_operation_subtype(
     session: Session,
     operation_id: int,
     operation: RunOperation,
-    kind: str,
 ) -> None:
+    kind = _operation_kind(operation)
     if kind == "print":
         assert isinstance(operation, Print)
         session.add(

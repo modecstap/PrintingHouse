@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from sqlalchemy import text
 
-from backend.new_core.equipment.printer import Printer, PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.values.money import Money
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
 from backend.test.new_core.in_memory_repositories import InMemoryPrinterRepository
@@ -27,11 +27,13 @@ def test_generate_id_follows_max_existing_id(db_session):
         id=PrinterID(10),
         name="№ 10",
         spacing=0,
-        startup=Money(Decimal("1")),
-        cyan=Money(Decimal("2")),
-        magenta=Money(Decimal("3")),
-        yellow=Money(Decimal("4")),
-        black=Money(Decimal("5")),
+        prices=PrinterPrices(
+            startup=Money(Decimal("1")),
+            cyan=Money(Decimal("2")),
+            magenta=Money(Decimal("3")),
+            yellow=Money(Decimal("4")),
+            black=Money(Decimal("5")),
+        ),
     )
     repo.save(printer)
     db_session.commit()

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from backend.new_core.errors import InvalidInput
@@ -17,6 +17,15 @@ class OrderID:
                 "order id",
                 f"id меньше 0, id={self.value}",
             )
+
+
+@dataclass(frozen=True)
+class OrderContent:  # pylint: disable=too-few-public-methods
+    """Product, count, and description shared by order mutations."""
+
+    product: Product
+    count: int
+    description: str = field(default="")
 
 
 @dataclass(frozen=True)

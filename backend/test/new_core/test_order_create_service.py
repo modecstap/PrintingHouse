@@ -16,7 +16,7 @@ from backend.new_core.part import Part
 from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.sheet import SheetID
 from backend.new_core.order.factory import OrderFactory
-from backend.new_core.order.order import Order, OrderID
+from backend.new_core.order.order import Order, OrderContent, OrderID
 from backend.new_core.order.product import Product
 from backend.new_core.application_services.order import (
     OrderIdAllocationFailed,
@@ -152,7 +152,7 @@ def test_replace_stores_imposition_spacing_from_product():
         blocks=(_block_with_spacing(run.block, 5, ctx),),
         operations=(),
     )
-    service.replace(order_id, updated, count=2)
+    service.replace(order_id, OrderContent(product=updated, count=2))
 
     runs = uow.print_runs.take_all_for_order(order_id)
     assert runs[0].block.imposition.spacing == 5
@@ -439,7 +439,10 @@ def test_replace_keeps_created_at_and_updates_description():
     order_id = service.save(product, count=4, description="старое")
     created_at = uow.orders.take(order_id).created_at
 
-    service.replace(order_id, product, count=8, description="новое")
+    service.replace(
+        order_id,
+        OrderContent(product=product, count=8, description="новое"),
+    )
     stored = uow.orders.take(order_id)
 
     assert stored.count == 8

@@ -28,16 +28,38 @@ class PrintRunID:
 _WASTE_ALLOWANCE = Percent(3)
 
 
+def require_runs_belong_to_order(
+    order_id: OrderID,
+    runs: tuple[PrintRun, ...],
+) -> None:
+    """Ensures every run targets the given order id.
+
+    :param order_id:
+    :param runs:
+
+    :raises ValueError: when a run's ``for_order`` differs.
+
+    :return: nothing.
+    """
+    for run in runs:
+        if run.for_order != order_id:
+            raise ValueError(
+                f"run {run.id.value} for_order {run.for_order.value} "
+                f"!= {order_id.value}",
+            )
+
+
 class PrintRun:
     """A run that prints one block and records the operations it uses."""
 
     def __init__(
             self,
-            id: PrintRunID,  # pylint: disable=redefined-builtin
+            id: PrintRunID,  # pylint: disable=redefined-builtin,too-many-arguments,too-many-positional-arguments
             for_order: OrderID,
             block: Part,
             required_count: int,
     ) -> None:
+        # The four parameters are the four fields of one run.
         self.id = id
         self.for_order = for_order
         self.block = block

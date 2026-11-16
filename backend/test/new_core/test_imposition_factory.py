@@ -4,7 +4,10 @@ from dataclasses import replace
 
 from backend.new_core import Imposition
 from backend.new_core.equipment.printer import PrinterID
-from backend.new_core.print_run.imposition_factory import ImpositionFactory
+from backend.new_core.print_run.imposition_factory import (
+    CatalogImposition,
+    ImpositionFactory,
+)
 from backend.test.new_core.in_memory_repositories import (
     InMemoryPrinterRepository,
     InMemorySheetRepository,
@@ -13,15 +16,11 @@ from backend.test.new_core.test_print_run import build_worked_run
 
 
 def test_create_keeps_passed_spacing_and_press_sheet():
-    """create uses spacing and press_sheet from the call."""
+    """Direct Imposition build keeps spacing and press_sheet."""
     run, *_ , ctx = build_worked_run()
     imp = run.block.imposition
-    factory = ImpositionFactory(
-        InMemorySheetRepository(items=dict(ctx.sheets)),
-        InMemoryPrinterRepository(items=dict(ctx.printers)),
-    )
 
-    built = factory.create(
+    built = Imposition(
         target=imp.target,
         press_sheet=imp.press_sheet,
         bleeds=imp.bleeds,
@@ -51,10 +50,12 @@ def test_create_for_printer_takes_spacing_from_catalog():
     )
 
     built = factory.create_for_printer(
-        target=imp.target,
-        sheet_id=imp.press_sheet.id,
-        bleeds=imp.bleeds,
-        printer_id=PrinterID(printer_id.value),
+        CatalogImposition(
+            target=imp.target,
+            sheet_id=imp.press_sheet.id,
+            bleeds=imp.bleeds,
+            printer_id=PrinterID(printer_id.value),
+        ),
     )
 
     assert built.spacing == 9

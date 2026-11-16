@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.auth import AuthConfig, InvalidCredentials, login
+from backend.auth.login import PasswordLogin
 from backend.server.dependencies import get_auth_config, get_user_store
 from backend.server.schemas import LoginRequest, TokenResponse
 from backend.storage.user.repository import SqlUserRepository
@@ -23,7 +24,11 @@ def issue_token(
     :raises HTTPException: 401 on invalid credentials without WWW-Authenticate.
     """
     try:
-        token = login(body.username, body.password, store, auth_config)
+        token = login(
+            PasswordLogin(username=body.username, password=body.password),
+            store,
+            auth_config,
+        )
     except InvalidCredentials:
         raise HTTPException(
             status_code=401,

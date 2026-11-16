@@ -1,6 +1,6 @@
 """Reference repository append semantics."""
 
-from backend.new_core.order.order import OrderID
+from backend.new_core.order.order import OrderContent, OrderID
 from backend.new_core.reference.reference import Reference
 from backend.storage.order.repository import SqlOrderRepository
 from backend.storage.reference.repository import SqlReferenceRepository
@@ -16,7 +16,7 @@ def test_save_appends_references_in_insertion_order(db_session):
     insert_catalogs_from_ctx(db_session, ctx)
     orders = SqlOrderRepository(db_session)
     refs = SqlReferenceRepository(db_session)
-    order = make_order(6, product_from_run(run), 1)
+    order = make_order(6, OrderContent(product=product_from_run(run), count=1))
 
     with db_session.begin():
         orders.save(order)

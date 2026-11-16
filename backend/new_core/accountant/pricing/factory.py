@@ -26,10 +26,10 @@ from backend.new_core.personal.press_operator_repository import PressOperatorRep
 from backend.new_core.print_run.print_run import PrintRun
 
 
-class PricingStrategyFactory:
+class PricingStrategyFactory:  # pylint: disable=too-many-instance-attributes
     """Resolves catalog rows and builds one pricing strategy per operation."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         printers: PrinterRepository,
         press_operators: PressOperatorRepository,
@@ -40,6 +40,7 @@ class PricingStrategyFactory:
         die_cut_operators: DieCutterOperatorRepository,
         films: FilmRepository,
     ) -> None:
+        # Eight independent catalog repositories, one per priced resource.
         self._printers = printers
         self._press_operators = press_operators
         self._laminators = laminators

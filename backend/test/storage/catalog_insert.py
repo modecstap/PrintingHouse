@@ -34,11 +34,11 @@ def insert_printer(session: Session, printer: Printer) -> None:
             id=printer.id.value,
             name=printer.name,
             spacing=printer.spacing,
-            startup=printer.startup.amount,
-            cyan=printer.cyan.amount,
-            magenta=printer.magenta.amount,
-            yellow=printer.yellow.amount,
-            black=printer.black.amount,
+            startup=printer.prices.startup.amount,
+            cyan=printer.prices.cyan.amount,
+            magenta=printer.prices.magenta.amount,
+            yellow=printer.prices.yellow.amount,
+            black=printer.prices.black.amount,
         ),
     )
 

@@ -24,7 +24,7 @@ from backend.test.new_core.in_memory_repositories import (
 )
 from backend.new_core.equipment.cutter import CutterID
 from backend.new_core.equipment.laminator import LaminatorID
-from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.equipment.printer import PrinterID, PrinterPrices
 from backend.new_core.materials.film import FilmID
 from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.sheet import SheetID
@@ -182,11 +182,13 @@ def build_worked_run(  # pylint: disable=too-many-arguments,too-many-locals
         id=PrinterID(1),
         name="№ 1",
         spacing=0,
-        startup=Money(Decimal(printer_startup)),
-        cyan=Money(Decimal(1)),
-        magenta=Money(Decimal(1)),
-        yellow=Money(Decimal(1)),
-        black=Money(Decimal(1)),
+        prices=PrinterPrices(
+            startup=Money(Decimal(printer_startup)),
+            cyan=Money(Decimal(1)),
+            magenta=Money(Decimal(1)),
+            yellow=Money(Decimal(1)),
+            black=Money(Decimal(1)),
+        ),
     )
     press_operator = PressOperator(
         id=PressOperatorID(1),

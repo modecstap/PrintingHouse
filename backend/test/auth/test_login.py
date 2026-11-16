@@ -2,7 +2,7 @@ import pytest
 
 from backend.auth.config import AuthConfig
 from backend.auth.errors import InvalidCredentials
-from backend.auth.login import login
+from backend.auth.login import PasswordLogin, login
 from backend.auth.passwords import hash_password
 
 
@@ -27,7 +27,7 @@ class _FakeStore:
 def test_login_ok():
     cfg = AuthConfig("k", "HS256", 10)
     store = _FakeStore(("u", hash_password("p")))
-    token = login("u", "p", store, cfg)
+    token = login(PasswordLogin("u", "p"), store, cfg)
     assert isinstance(token, str) and token
 
 
@@ -35,4 +35,4 @@ def test_login_bad_password():
     cfg = AuthConfig("k", "HS256", 10)
     store = _FakeStore(("u", hash_password("p")))
     with pytest.raises(InvalidCredentials):
-        login("u", "wrong", store, cfg)
+        login(PasswordLogin("u", "wrong"), store, cfg)

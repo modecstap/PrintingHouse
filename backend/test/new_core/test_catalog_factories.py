@@ -3,7 +3,7 @@
 from decimal import Decimal
 
 from backend.new_core.equipment.factory import PrinterFactory
-from backend.new_core.equipment.printer import PrinterID
+from backend.new_core.equipment.printer import PrinterID, PrinterPrices
 from backend.new_core.personal.factory import PressOperatorFactory
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.new_core.values.money import Money
@@ -18,24 +18,15 @@ def test_printer_factory_assigns_sequential_ids() -> None:
     factory = PrinterFactory(repo)
     money = Money(Decimal("1"))
 
-    first = factory.create(
-        name="P1",
-        spacing=3,
+    prices = PrinterPrices(
         startup=money,
         cyan=money,
         magenta=money,
         yellow=money,
         black=money,
     )
-    second = factory.create(
-        name="P2",
-        spacing=3,
-        startup=money,
-        cyan=money,
-        magenta=money,
-        yellow=money,
-        black=money,
-    )
+    first = factory.create(name="P1", spacing=3, prices=prices)
+    second = factory.create(name="P2", spacing=3, prices=prices)
 
     assert first.id == PrinterID(0)
     assert second.id == PrinterID(1)

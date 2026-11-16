@@ -6,7 +6,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from backend.new_core.equipment.printer import Printer, PrinterID
+from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.equipment.printer_repository import PrinterIdOccupied
 from backend.new_core.values.money import Money
 from backend.storage.equipment.tables import PrinterRow
@@ -68,11 +68,11 @@ class SqlPrinterRepository:
                     id=printer.id.value,
                     name=printer.name,
                     spacing=printer.spacing,
-                    startup=printer.startup.amount,
-                    cyan=printer.cyan.amount,
-                    magenta=printer.magenta.amount,
-                    yellow=printer.yellow.amount,
-                    black=printer.black.amount,
+                    startup=printer.prices.startup.amount,
+                    cyan=printer.prices.cyan.amount,
+                    magenta=printer.prices.magenta.amount,
+                    yellow=printer.prices.yellow.amount,
+                    black=printer.prices.black.amount,
                 ),
             )
             self._session.flush()
@@ -93,11 +93,11 @@ class SqlPrinterRepository:
             raise KeyError(printer.id)
         row.name = printer.name
         row.spacing = printer.spacing
-        row.startup = printer.startup.amount
-        row.cyan = printer.cyan.amount
-        row.magenta = printer.magenta.amount
-        row.yellow = printer.yellow.amount
-        row.black = printer.black.amount
+        row.startup = printer.prices.startup.amount
+        row.cyan = printer.prices.cyan.amount
+        row.magenta = printer.prices.magenta.amount
+        row.yellow = printer.prices.yellow.amount
+        row.black = printer.prices.black.amount
         self._session.flush()
 
     def delete(self, printer_id: PrinterID) -> None:
@@ -120,9 +120,11 @@ class SqlPrinterRepository:
             id=printer_id,
             name=row.name,
             spacing=row.spacing,
-            startup=Money(row.startup),
-            cyan=Money(row.cyan),
-            magenta=Money(row.magenta),
-            yellow=Money(row.yellow),
-            black=Money(row.black),
+            prices=PrinterPrices(
+                startup=Money(row.startup),
+                cyan=Money(row.cyan),
+                magenta=Money(row.magenta),
+                yellow=Money(row.yellow),
+                black=Money(row.black),
+            ),
         )

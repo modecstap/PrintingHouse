@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from sqlalchemy import select, text
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.new_core.personal.cutter_operator import CutterOperator, CutterOperatorID
 from backend.new_core.personal.cutter_operator_repository import CutterOperatorIdOccupied
 from backend.new_core.values.money import Money
+from backend.storage.personal.operator_row import replace_operator_row, save_operator_row
 from backend.storage.personal.tables import CutterOperatorRow
 
 
@@ -71,17 +71,16 @@ class SqlCutterOperatorRepository:
 
         :return: nothing. Existing rows are not overwritten.
         """
-        try:
-            self._session.add(
-                CutterOperatorRow(
-                    id=operator.id.value,
-                    name=operator.name,
-                    salary_by_operation=operator.salary_by_operation.amount,
-                ),
-            )
-            self._session.flush()
-        except IntegrityError as exc:
-            raise CutterOperatorIdOccupied("save", operator.id) from exc
+        save_operator_row(
+            self._session,
+            CutterOperatorRow(
+                id=operator.id.value,
+                name=operator.name,
+                salary_by_operation=operator.salary_by_operation.amount,
+            ),
+            operator.id,
+            CutterOperatorIdOccupied,
+        )
 
     def replace(self, operator: CutterOperator) -> None:
         """Overwrites non-id fields of an existing cutter operator.
@@ -92,12 +91,11 @@ class SqlCutterOperatorRepository:
 
         :return: nothing.
         """
-        row = self._session.get(CutterOperatorRow, operator.id.value)
-        if row is None:
-            raise KeyError(operator.id)
-        row.name = operator.name
-        row.salary_by_operation = operator.salary_by_operation.amount
-        self._session.flush()
+        replace_operator_row(
+            self._session,
+            self._session.get(CutterOperatorRow, operator.id.value),
+            operator,
+        )
 
     def delete(self, operator_id: CutterOperatorID) -> None:
         """Removes the operator with this id.
