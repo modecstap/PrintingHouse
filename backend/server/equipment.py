@@ -24,9 +24,12 @@ from backend.server.catalog_mapping import (
 )
 from backend.server.dependencies import (
     get_cutter_catalog,
+    get_cutter_catalog_and_session,
     get_db_session,
     get_laminator_catalog,
+    get_laminator_catalog_and_session,
     get_printer_catalog,
+    get_printer_catalog_and_session,
     require_user,
 )
 from backend.server.schemas import (
@@ -88,10 +91,13 @@ def replace_printer(
     printer_id: int,
     body: PrinterDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[PrinterCatalog, Session],
+        Depends(get_printer_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing printer."""
+    service, session = deps
     _require_body_id_matches_path(printer_id, body.id)
     service.replace_printer(printer_replace_from_dto(printer_id, body))
     session.commit()
@@ -149,10 +155,13 @@ def replace_laminator(
     laminator_id: int,
     body: LaminatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[LaminatorCatalog, Session],
+        Depends(get_laminator_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing laminator."""
+    service, session = deps
     _require_body_id_matches_path(laminator_id, body.id)
     service.replace_laminator(laminator_replace_from_dto(laminator_id, body))
     session.commit()
@@ -210,10 +219,13 @@ def replace_cutter(
     cutter_id: int,
     body: CutterDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[CutterCatalog, Session],
+        Depends(get_cutter_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing cutter."""
+    service, session = deps
     _require_body_id_matches_path(cutter_id, body.id)
     service.replace_cutter(cutter_replace_from_dto(cutter_id, body))
     session.commit()

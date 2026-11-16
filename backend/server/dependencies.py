@@ -214,6 +214,90 @@ def get_die_cut_operator_catalog(
     )
 
 
+def get_printer_catalog_and_session(
+    catalog: Annotated[PrinterCatalog, Depends(get_printer_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[PrinterCatalog, Session]:
+    """Returns printer catalog and request session for replace routes."""
+    return catalog, session
+
+
+def get_laminator_catalog_and_session(
+    catalog: Annotated[LaminatorCatalog, Depends(get_laminator_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[LaminatorCatalog, Session]:
+    """Returns laminator catalog and request session for replace routes."""
+    return catalog, session
+
+
+def get_cutter_catalog_and_session(
+    catalog: Annotated[CutterCatalog, Depends(get_cutter_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[CutterCatalog, Session]:
+    """Returns cutter catalog and request session for replace routes."""
+    return catalog, session
+
+
+def get_film_catalog_and_session(
+    catalog: Annotated[FilmCatalog, Depends(get_film_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[FilmCatalog, Session]:
+    """Returns film catalog and request session for replace routes."""
+    return catalog, session
+
+
+def get_sheet_catalog_and_session(
+    catalog: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[SheetCatalog, Session]:
+    """Returns sheet catalog and request session for replace routes."""
+    return catalog, session
+
+
+def get_press_operator_catalog_and_session(
+    catalog: Annotated[
+        PressOperatorCatalog,
+        Depends(get_press_operator_catalog),
+    ],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[PressOperatorCatalog, Session]:
+    """Returns press operator catalog and session for replace routes."""
+    return catalog, session
+
+
+def get_laminator_operator_catalog_and_session(
+    catalog: Annotated[
+        LaminatorOperatorCatalog,
+        Depends(get_laminator_operator_catalog),
+    ],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[LaminatorOperatorCatalog, Session]:
+    """Returns laminator operator catalog and session for replace routes."""
+    return catalog, session
+
+
+def get_cutter_operator_catalog_and_session(
+    catalog: Annotated[
+        CutterOperatorCatalog,
+        Depends(get_cutter_operator_catalog),
+    ],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[CutterOperatorCatalog, Session]:
+    """Returns cutter operator catalog and session for replace routes."""
+    return catalog, session
+
+
+def get_die_cut_operator_catalog_and_session(
+    catalog: Annotated[
+        DieCutterOperatorCatalog,
+        Depends(get_die_cut_operator_catalog),
+    ],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[DieCutterOperatorCatalog, Session]:
+    """Returns die-cut operator catalog and session for replace routes."""
+    return catalog, session
+
+
 def require_user(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None,

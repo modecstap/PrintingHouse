@@ -31,10 +31,14 @@ from backend.server.catalog_mapping import (
 )
 from backend.server.dependencies import (
     get_cutter_operator_catalog,
+    get_cutter_operator_catalog_and_session,
     get_db_session,
     get_die_cut_operator_catalog,
+    get_die_cut_operator_catalog_and_session,
     get_laminator_operator_catalog,
+    get_laminator_operator_catalog_and_session,
     get_press_operator_catalog,
+    get_press_operator_catalog_and_session,
     require_user,
 )
 from backend.server.schemas import CreatedIdDto, OperatorDto, OperatorWriteDto
@@ -88,10 +92,13 @@ def replace_press_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[PressOperatorCatalog, Depends(get_press_operator_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[PressOperatorCatalog, Session],
+        Depends(get_press_operator_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing press operator."""
+    service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_press_operator(press_operator_replace_from_dto(operator_id, body))
     session.commit()
@@ -164,13 +171,13 @@ def replace_laminator_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[
-        LaminatorOperatorCatalog,
-        Depends(get_laminator_operator_catalog),
+    deps: Annotated[
+        tuple[LaminatorOperatorCatalog, Session],
+        Depends(get_laminator_operator_catalog_and_session),
     ],
-    session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing laminator operator."""
+    service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_laminator_operator(
         laminator_operator_replace_from_dto(operator_id, body),
@@ -237,10 +244,13 @@ def replace_cutter_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[CutterOperatorCatalog, Depends(get_cutter_operator_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[CutterOperatorCatalog, Session],
+        Depends(get_cutter_operator_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing cutter operator."""
+    service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_cutter_operator(cutter_operator_replace_from_dto(operator_id, body))
     session.commit()
@@ -313,13 +323,13 @@ def replace_die_cut_operator(
     operator_id: int,
     body: OperatorDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[
-        DieCutterOperatorCatalog,
-        Depends(get_die_cut_operator_catalog),
+    deps: Annotated[
+        tuple[DieCutterOperatorCatalog, Session],
+        Depends(get_die_cut_operator_catalog_and_session),
     ],
-    session: Annotated[Session, Depends(get_db_session)],
 ) -> Response:
     """Replaces non-id fields of an existing die-cut operator."""
+    service, session = deps
     _require_body_id_matches_path(operator_id, body.id)
     service.replace_die_cut_operator(die_cut_operator_replace_from_dto(operator_id, body))
     session.commit()

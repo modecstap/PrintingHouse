@@ -20,7 +20,9 @@ from backend.server.catalog_mapping import (
 from backend.server.dependencies import (
     get_db_session,
     get_film_catalog,
+    get_film_catalog_and_session,
     get_sheet_catalog,
+    get_sheet_catalog_and_session,
     require_user,
 )
 from backend.server.schemas import CreatedIdDto, FilmDto, FilmReadDto, SheetDto, SheetReadDto
@@ -66,10 +68,13 @@ def replace_film(
     film_id: int,
     body: FilmDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[FilmCatalog, Depends(get_film_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[FilmCatalog, Session],
+        Depends(get_film_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing film."""
+    service, session = deps
     service.replace_film(film_replace_from_dto(film_id, body))
     session.commit()
     return Response(status_code=204)
@@ -153,10 +158,13 @@ def replace_sheet(
     sheet_id: int,
     body: SheetDto,
     _user: Annotated[str, Depends(require_user)],
-    service: Annotated[SheetCatalog, Depends(get_sheet_catalog)],
-    session: Annotated[Session, Depends(get_db_session)],
+    deps: Annotated[
+        tuple[SheetCatalog, Session],
+        Depends(get_sheet_catalog_and_session),
+    ],
 ) -> Response:
     """Replaces non-id fields of an existing sheet."""
+    service, session = deps
     service.replace_sheet(sheet_replace_from_dto(sheet_id, body))
     session.commit()
     return Response(status_code=204)
