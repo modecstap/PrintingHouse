@@ -9,6 +9,9 @@ Web app for calculating and managing print orders: FastAPI backend (`backend/`),
 - Migrations: `alembic -c backend/storage/alembic.ini upgrade head`
 - Backend local run: cwd `backend/`, repo root on `PYTHONPATH`, then `python main.py` (needs DB env vars from README).
 - Frontend, in `frontend/`: `npm start`, `npm test`, `npm run build`
+- Backend lint deps: `pip install -r backend/requirements-dev.txt`
+- Backend lint (pylint 10/10 + isort/black check + mypy): `scripts/lint-backend.sh`
+- Pylint only (from repo root, `PYTHONPATH=.`): `pylint --rcfile=.pylintrc backend`
 
 ## Structure
 

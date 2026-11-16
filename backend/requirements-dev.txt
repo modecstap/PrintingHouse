@@ -1,0 +1,10 @@
+-r requirements.txt
+
+# Lint / format / types (not installed in production image)
+pylint==3.3.7
+pylint-plugin-utils==0.8.2
+pylint-pydantic==0.4.1
+# pylint-sqlalchemy==0.3.0 incompatible with astroid 3 / pylint 3.x
+black==25.1.0
+isort==6.0.1
+mypy==1.15.0
