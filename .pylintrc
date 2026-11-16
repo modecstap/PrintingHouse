@@ -1,0 +1,176 @@
+[MAIN]
+# Python 3.12. Lint target: backend only (invoke: pylint backend).
+py-version=3.12
+jobs=1
+recursive=yes
+
+# Ignore only: migrations (alembic versions), venv, frontend, __pycache__.
+ignore=frontend,venv,.venv,__pycache__
+ignore-paths=
+    ^frontend/,
+    ^venv/,
+    ^\.venv/,
+    .*/__pycache__/.*,
+    ^backend/storage/alembic/versions/
+
+# pylint-sqlalchemy 0.3.0 broken on astroid 3 (astroid.node_classes removed).
+# SQLAlchemy covered via TYPECHECK generated-members + mypy plugin instead.
+load-plugins=
+    pylint.extensions.docparams,
+    pylint.extensions.docstyle,
+    pylint.extensions.typing,
+    pylint_pydantic
+
+# Fail CI on any message category; score must stay 10/10.
+fail-under=10
+fail-on=I,E,F,R,C,W
+
+[MESSAGES CONTROL]
+# No blanket disables yet. Format/import-order owned by black + isort.
+disable=
+    raw-checker-failed,
+    bad-inline-option,
+    locally-disabled,
+    file-ignored,
+    suppressed-message,
+    useless-suppression,
+    deprecated-pragma,
+    use-symbolic-message-instead,
+    wrong-import-order,
+    broad-exception-caught
+
+enable=
+    bare-except,
+    broad-exception-raised,
+    raise-missing-from,
+    wildcard-import,
+    unreachable,
+    unused-import,
+    unused-variable,
+    unused-argument,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    empty-docstring,
+    missing-param-doc,
+    missing-return-doc,
+    missing-raises-doc,
+    differing-param-doc,
+    differing-type-doc
+
+[REPORTS]
+output-format=text
+reports=no
+score=yes
+
+[BASIC]
+# Strict naming. Min useful length 2; one-letter names only via good-names.
+argument-naming-style=snake_case
+attr-naming-style=snake_case
+function-naming-style=snake_case
+method-naming-style=snake_case
+variable-naming-style=snake_case
+class-attribute-naming-style=any
+class-const-naming-style=UPPER_CASE
+const-naming-style=UPPER_CASE
+class-naming-style=PascalCase
+module-naming-style=snake_case
+inlinevar-naming-style=any
+
+# Override snake_case default (min 3 chars) to allow 2-char names.
+argument-rgx=[a-z_][a-z0-9_]+$
+attr-rgx=[a-z_][a-z0-9_]+$
+function-rgx=[a-z_][a-z0-9_]+$
+method-rgx=[a-z_][a-z0-9_]+$
+variable-rgx=[a-z_][a-z0-9_]+$
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+class-rgx=[A-Z_][a-zA-Z0-9]+$
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]*|[a-z_][a-z0-9_]+)$
+class-const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+good-names=id,db,ok,i,e,_
+bad-names=foo,bar,baz,toto,tutu,tata
+include-naming-hint=yes
+
+# Full docstrings required (Google body + :raises / Raises documented).
+docstring-min-length=1
+no-docstring-rgx=^$
+
+[PARAMETER_DOCUMENTATION]
+default-docstring-type=google
+accept-no-param-doc=no
+accept-no-raise-doc=no
+accept-no-return-doc=no
+accept-no-yields-doc=no
+
+[DESIGN]
+max-args=3
+max-positional-arguments=3
+max-attributes=7
+max-bool-expr=5
+max-branches=7
+max-locals=15
+max-parents=7
+max-public-methods=7
+max-returns=7
+max-statements=24
+min-public-methods=1
+
+[FORMAT]
+max-line-length=80
+max-module-lines=500
+indent-after-paren=4
+indent-string='    '
+
+[REFACTORING]
+max-nested-blocks=7
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+ignore-signatures=yes
+min-similarity-lines=4
+
+[TYPECHECK]
+ignore-none=yes
+ignore-on-opaque-inference=yes
+missing-member-hint=yes
+mixin-class-rgx=.*[Mm]ixin
+# SQLAlchemy dynamic members (no working pylint-sqlalchemy on pylint 3.x).
+generated-members=
+    engine,
+    connection,
+    session,
+    query,
+    metadata,
+    Column,
+    relationship,
+    mapped_column
+# Absolute imports only: relative imports are project convention violations.
+# Enforced via review + isort known_first_party; no relative import style.
+
+[VARIABLES]
+allow-global-unused-variables=no
+callbacks=cb_,callback_,_handle_,_on_
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?)$
+ignored-argument-names=_.*|^ignored_|^unused_
+init-import=no
+
+[IMPORTS]
+allow-reexport-from-package=no
+allow-wildcard-with-all=no
+
+[CLASSES]
+defining-attr-methods=__init__,__new__,setUp,__post_init__,__init_subclass__
+exclude-protected=_asdict,_fields,_replace,_source,_make
+valid-classmethod-first-arg=cls
+valid-metaclass-classmethod-first-arg=mcs
+
+[EXCEPTIONS]
+# Raising these is forbidden (broad-exception-raised). Catching Exception allowed
+# (broad-exception-caught disabled in MESSAGES CONTROL).
+overgeneral-exceptions=builtins.BaseException,builtins.Exception
