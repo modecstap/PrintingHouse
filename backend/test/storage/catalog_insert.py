@@ -22,7 +22,10 @@ from backend.storage.equipment.tables import (
     CutterRow,
     LaminatorRow,
 )
+from backend.new_core.chroma import Chroma, ChromaID
 from backend.new_core.edges import Edges, EdgesID
+from backend.new_core.values.percent import Percent
+from backend.storage.chroma.tables import ChromaRow
 from backend.storage.edges.tables import EdgesRow
 from backend.storage.materials.tables import FilmRow, SheetRow
 from backend.storage.personal.tables import (
@@ -46,6 +49,8 @@ __all__ = [
     "insert_sheet",
     "insert_edges",
     "DEFAULT_EDGES",
+    "insert_chroma",
+    "DEFAULT_CHROMA",
     "insert_catalogs_from_ctx",
     "insert_minimal_order_row",
 ]
@@ -191,6 +196,16 @@ def insert_film(session: Session, film: Film) -> None:
 DEFAULT_EDGES = Edges(id=EdgesID(1), name="", bleeds=0, spacing=0)
 
 
+DEFAULT_CHROMA = Chroma(
+    id=ChromaID(1),
+    name="4+0",
+    cyan=Percent(100),
+    magenta=Percent(100),
+    yellow=Percent(100),
+    black=Percent(100),
+)
+
+
 def insert_edges(session: Session, edges: Edges) -> None:
     """Persists one edges row from a domain ``Edges``.
 
@@ -203,6 +218,24 @@ def insert_edges(session: Session, edges: Edges) -> None:
             name=edges.name,
             bleeds=edges.bleeds,
             spacing=edges.spacing,
+        ),
+    )
+
+
+def insert_chroma(session: Session, chroma: Chroma) -> None:
+    """Persists one chroma row from a domain ``Chroma``.
+
+    :param session: the SQLAlchemy session.
+    :param chroma: the chroma row to insert.
+    """
+    session.add(
+        ChromaRow(
+            id=chroma.id.value,
+            name=chroma.name,
+            cyan=chroma.cyan.value,
+            magenta=chroma.magenta.value,
+            yellow=chroma.yellow.value,
+            black=chroma.black.value,
         ),
     )
 
@@ -252,6 +285,7 @@ def insert_catalogs_from_ctx(
     _insert_catalog_map(session, ctx.films, insert_film)
     _insert_catalog_map(session, ctx.sheets, insert_sheet)
     insert_edges(session, DEFAULT_EDGES)
+    insert_chroma(session, DEFAULT_CHROMA)
     session.flush()
     session.commit()
 
