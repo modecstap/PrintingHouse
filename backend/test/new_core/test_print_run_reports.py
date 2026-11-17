@@ -107,16 +107,16 @@ def test_constructor_print_stays_out_of_the_run():
 
 def test_sheet_cost_report_adds_block_markup_to_volume_markup():
     """A 10 percent block markup and a 30 percent volume markup both use the
-    base 73.
+    base 70.99.
 
-    The markups are 7.3 and 21.9. The second does not scale the first.
+    The markups are 7.10 and 21.30. The second does not scale the first.
     """
     run, _, _, _, ctx = build_worked_run(parts_markup=Percent(10))
 
     sheet = _estimate(run, ctx, parts_markup=Percent(10)).sheet_report()
 
-    assert sheet.markup == Money(Decimal("29.2"))
-    assert sheet.total() == Money(Decimal("102.2"))
+    assert sheet.markup == Money(Decimal("28.40"))
+    assert sheet.total() == Money(Decimal("99.39"))
 
 
 def test_sheet_cost_report_uses_the_15_percent_volume_band():

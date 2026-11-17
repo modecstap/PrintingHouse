@@ -28,13 +28,14 @@ __all__ = [
     "test_cost_report_is_zero_without_operations",
     "test_cost_report_is_zero_for_lamination_with_no_sides",
     "test_cost_report_prices_two_film_sides_once_for_salary",
+    "test_cost_report_uses_the_longer_press_sheet_side_for_film_length",
     "test_cost_report_adds_the_die_cutter_salary_once",
 ]
 
 def test_cost_report_prices_the_worked_run():
-    """Print, laminate, and cut price the press sheet at 13, 16, 44, and 21.9.
+    """Print, laminate, and cut price the press sheet at 10.99, 16, 44, and 21.30.
 
-    Two press sheets add 30 percent of 73, so the sheet total is 94.9.
+    Two press sheets add 30 percent of 70.99, so the sheet total is 92.29.
     Each target field is the press amount divided by 6. The block has 3
     sheets, so the block report is the target report times 3.
     """
@@ -47,16 +48,16 @@ def test_cost_report_prices_the_worked_run():
     per_item = estimate.list_report()
     report = estimate.block_report()
 
-    assert sheet.material == Money(Decimal(13))
+    assert sheet.material == Money(Decimal("10.99"))
     assert sheet.startup == Money(Decimal(16))
     assert sheet.work == Money(Decimal(44))
-    assert sheet.markup == Money(Decimal("21.9"))
-    assert sheet.total() == Money(Decimal("94.9"))
-    assert per_item.material == Money(Decimal(13) / Decimal(6))
+    assert sheet.markup == Money(Decimal("21.30"))
+    assert sheet.total() == Money(Decimal("92.29"))
+    assert per_item.material == Money(Decimal("10.99") / Decimal(6))
     assert per_item.startup == Money(Decimal(16) / Decimal(6))
     assert per_item.work == Money(Decimal(44) / Decimal(6))
-    assert per_item.markup == Money(Decimal("21.9") / Decimal(6))
-    assert per_item.total() == Money(Decimal("94.9") / Decimal(6))
+    assert per_item.markup == Money(Decimal("21.30") / Decimal(6))
+    assert per_item.total() == Money(Decimal("92.29") / Decimal(6))
     assert (
         per_item.material + per_item.startup + per_item.work + per_item.markup
         == per_item.total()
@@ -75,17 +76,17 @@ def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
 
     It drops ink and press salary.
 
-    The press sheet is 9, 16, 39, and 19.2. The total is 83.2.
+    The press sheet is 6.99, 16, 39, and 18.60. The total is 80.59.
     """
     run, _, _, _, ctx = build_worked_run(chroma=Chroma.ZERO_ZERO)
 
     sheet = _estimate(run, ctx).sheet_report()
 
-    assert sheet.material == Money(Decimal(9))
+    assert sheet.material == Money(Decimal("6.99"))
     assert sheet.startup == Money(Decimal(16))
     assert sheet.work == Money(Decimal(39))
-    assert sheet.markup == Money(Decimal("19.2"))
-    assert sheet.total() == Money(Decimal("83.2"))
+    assert sheet.markup == Money(Decimal("18.60"))
+    assert sheet.total() == Money(Decimal("80.59"))
 
 
 def test_cost_report_omits_lamination_when_it_is_not_passed():
@@ -225,7 +226,7 @@ def test_cost_report_is_zero_for_lamination_with_no_sides():
 
 
 def test_cost_report_prices_two_film_sides_once_for_salary():
-    """Two film sides price material at 6, startup at 5,
+    """Two film sides price material at 1.98, startup at 5,
 
     and salary once at 4.
     """
@@ -237,11 +238,30 @@ def test_cost_report_prices_two_film_sides_once_for_salary():
 
     sheet = _estimate(run, ctx).sheet_report()
 
-    assert sheet.material == Money(Decimal(6))
+    assert sheet.material == Money(Decimal("1.98"))
     assert sheet.startup == Money(Decimal(5))
     assert sheet.work == Money(Decimal(4))
-    assert sheet.markup == Money(Decimal("4.5"))
-    assert sheet.total() == Money(Decimal("19.5"))
+    assert sheet.markup == Money(Decimal("3.29"))
+    assert sheet.total() == Money(Decimal("14.27"))
+
+
+def test_cost_report_uses_the_longer_press_sheet_side_for_film_length():
+    """A 400 by 200 press sheet prices one-sided film at 1.29.
+
+    Laminator salary and startup stay 4 and 5.
+    """
+    run, _, _, _, ctx = build_worked_run(
+        press_width=400,
+        press_height=200,
+        with_print=False,
+        with_cut=False,
+    )
+
+    sheet = _estimate(run, ctx).sheet_report()
+
+    assert sheet.material == Money(Decimal("1.29"))
+    assert sheet.work == Money(Decimal(4))
+    assert sheet.startup == Money(Decimal(5))
 
 
 def test_cost_report_adds_the_die_cutter_salary_once():

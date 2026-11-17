@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 from backend.new_core.equipment.laminator import Laminator
 from backend.new_core.materials.film import Film
@@ -14,6 +15,8 @@ from backend.new_core.values.money import Money
 
 
 __all__ = ["LaminatePricing"]
+
+_FILM_OVERHANG_MM = 30
 
 @dataclass(frozen=True, slots=True)
 class LaminatePricing:
@@ -33,8 +36,13 @@ class LaminatePricing:
         sides = self.lamination.film_sides()
         if sides == 0:
             return CostReport.zero()
+        sheet = self.print_run.block.imposition.press_sheet.format
+        length_m = (
+            Decimal(max(sheet.width, sheet.height) + _FILM_OVERHANG_MM)
+            / Decimal(1000)
+        )
         return CostReport(
-            material=self.film.price * sides,
+            material=self.film.price * length_m * sides,
             work=self.operator.salary_by_operation,
             startup=self.laminator.startup / self.print_run.imposition_count(),
             markup=Money.zero(),
