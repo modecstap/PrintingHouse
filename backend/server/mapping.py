@@ -11,7 +11,6 @@ from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.chroma import Chroma
 from backend.new_core.operations.print.print import Print
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.order.additional_work import AdditionalWork
@@ -30,6 +29,8 @@ from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.server.catalog_mapping import (
+    chroma_from_read_dto,
+    chroma_to_read_dto,
     edges_from_read_dto,
     edges_to_read_dto,
     sheet_from_read_dto,
@@ -118,7 +119,7 @@ def _operation_from_dto(dto: RunOperationDto) -> RunOperation:
         return Print(
             printer_id=PrinterID(dto.printer_id),
             operator_id=PressOperatorID(dto.operator_id),
-            chroma=Chroma[dto.chroma],
+            chroma=chroma_from_read_dto(dto.chroma),
         )
     if isinstance(dto, LaminateOpDto):
         return Laminate(
@@ -219,7 +220,7 @@ def _operation_to_dto(operation: RunOperation) -> RunOperationDto:
             kind="print",
             printer_id=operation.printer_id.value,
             operator_id=operation.operator_id.value,
-            chroma=operation.chroma.name,
+            chroma=chroma_to_read_dto(operation.chroma),
         )
     if isinstance(operation, Laminate):
         return LaminateOpDto(

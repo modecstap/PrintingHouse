@@ -19,6 +19,7 @@ from backend.new_core.catalog.errors import CatalogIdOccupied
 from backend.new_core.errors import InvalidInput, InvalidPriceException
 from backend.new_core.order.repository import OrderNotFound
 from backend.server.auth import router as auth_router
+from backend.server.chroma import router as chroma_router
 from backend.server.edges import router as edges_router
 from backend.server.equipment import router as equipment_router
 from backend.server.materials import router as materials_router
@@ -233,6 +234,7 @@ def create_app(auth_config: AuthConfig, database: Database) -> FastAPI:
     app.include_router(equipment_router)
     app.include_router(materials_router)
     app.include_router(edges_router)
+    app.include_router(chroma_router)
     app.include_router(staff_router)
     return app
 

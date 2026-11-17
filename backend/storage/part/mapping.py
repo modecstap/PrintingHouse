@@ -12,7 +12,6 @@ from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.chroma import Chroma
 from backend.new_core.operations.print.print import Print
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.part import Part
@@ -24,7 +23,9 @@ from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
+from backend.new_core.chroma import ChromaID
 from backend.new_core.edges import EdgesID
+from backend.storage.chroma.chroma_repository import SqlChromaRepository
 from backend.storage.edges.edges_repository import SqlEdgesRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.part.tables import (
@@ -174,10 +175,11 @@ def _load_operation_subtype(
             "part_prints",
             op_row.id,
         )
+        chroma = SqlChromaRepository(session).take(ChromaID(sub.chroma_id))
         return Print(
             printer_id=PrinterID(sub.printer_id),
             operator_id=PressOperatorID(sub.operator_id),
-            chroma=Chroma[sub.chroma],
+            chroma=chroma,
         )
     if op_row.kind == "laminate":
         sub = _require_subtype_row(
@@ -227,12 +229,24 @@ def _persist_operation_subtype(
     kind = _operation_kind(operation)
     if kind == "print":
         assert isinstance(operation, Print)
+        chroma_repo = SqlChromaRepository(session)
+        chroma = operation.chroma
+        if chroma.id.value > 0:
+            chroma_id = chroma.id.value
+        else:
+            chroma_id = chroma_repo.find_or_add(
+                chroma.name,
+                chroma.cyan.value,
+                chroma.magenta.value,
+                chroma.yellow.value,
+                chroma.black.value,
+            ).value
         session.add(
             PartPrintRow(
                 operation_id=operation_id,
                 printer_id=operation.printer_id.value,
                 operator_id=operation.operator_id.value,
-                chroma=operation.chroma.name,
+                chroma_id=chroma_id,
             ),
         )
         return

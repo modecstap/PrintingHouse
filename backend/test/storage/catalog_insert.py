@@ -197,7 +197,7 @@ DEFAULT_EDGES = Edges(id=EdgesID(1), name="", bleeds=0, spacing=0)
 
 
 DEFAULT_CHROMA = Chroma(
-    id=ChromaID(1),
+    id=ChromaID(4),
     name="4+0",
     cyan=Percent(100),
     magenta=Percent(100),

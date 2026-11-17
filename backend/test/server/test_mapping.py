@@ -20,7 +20,7 @@ from backend.server.mapping import (
     reference_to_dto,
 )
 from backend.server.schemas import ProductDto, ReferenceDto
-from backend.test.new_core.test_print_run import build_worked_run
+from backend.test.new_core.test_print_run import build_worked_run, chroma_four_zero
 from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 
@@ -30,7 +30,7 @@ __all__ = [
     "test_imposition_extra_fields_ignored",
     "test_unknown_kind_rejected",
     "test_block_markup_field_rejected",
-    "test_dump_uses_enum_names_not_values",
+    "test_dump_print_chroma_as_read_object",
     "test_order_id_dumps_as_int",
     "test_reference_round_trip",
 ]
@@ -142,15 +142,18 @@ def test_block_markup_field_rejected():
         ProductDto.model_validate(payload)
 
 
-def test_dump_uses_enum_names_not_values():
-    """Handles test dump uses enum names not values.
-    """
+def test_dump_print_chroma_as_read_object():
+    """Print chroma serializes as id, name, and CMYK ints, not an enum name."""
     product = product_from_run(build_worked_run()[0])
     dto = product_to_dto(product)
     first_op = dto.blocks[0].operations[0]
-    if hasattr(first_op, "chroma"):
-        assert isinstance(first_op.chroma, str)
-        assert first_op.chroma == "FOUR_ZERO"
+    expected = chroma_four_zero()
+    assert first_op.chroma.id == expected.id.value
+    assert first_op.chroma.name == expected.name
+    assert first_op.chroma.cyan == expected.cyan.value
+    assert first_op.chroma.magenta == expected.magenta.value
+    assert first_op.chroma.yellow == expected.yellow.value
+    assert first_op.chroma.black == expected.black.value
 
 
 def test_order_id_dumps_as_int():

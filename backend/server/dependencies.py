@@ -20,6 +20,7 @@ from backend.new_core.application_services.equipment.laminators import (
 from backend.new_core.application_services.equipment.printers import (
     PrinterCatalog,
 )
+from backend.new_core.application_services.chroma.catalog import ChromaCatalog
 from backend.new_core.application_services.edges.catalog import EdgesCatalog
 from backend.new_core.application_services.materials.films import FilmCatalog
 from backend.new_core.application_services.materials.sheets import SheetCatalog
@@ -53,6 +54,7 @@ from backend.new_core.application_services.reference import (
     ReferenceOrderService,
 )
 from backend.storage.database import Database
+from backend.storage.chroma.chroma_repository import SqlChromaRepository
 from backend.storage.edges.edges_repository import SqlEdgesRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
@@ -92,6 +94,8 @@ __all__ = [
     "get_sheet_catalog",
     "get_edges_catalog",
     "get_edges_catalog_and_session",
+    "get_chroma_catalog",
+    "get_chroma_catalog_and_session",
     "get_press_operator_catalog",
     "get_laminator_operator_catalog",
     "get_cutter_operator_catalog",
@@ -276,6 +280,18 @@ def get_edges_catalog(
     return EdgesCatalog(SqlEdgesRepository(session))
 
 
+def get_chroma_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> ChromaCatalog:
+    """Builds :class:`ChromaCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the ChromaCatalog result.
+    """
+    return ChromaCatalog(SqlChromaRepository(session))
+
+
 def get_press_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> PressOperatorCatalog:
@@ -406,6 +422,20 @@ def get_edges_catalog_and_session(
     :param session: database session.
 
     :return: the tuple[EdgesCatalog, Session] result.
+    """
+    return catalog, session
+
+
+def get_chroma_catalog_and_session(
+    catalog: Annotated[ChromaCatalog, Depends(get_chroma_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[ChromaCatalog, Session]:
+    """Returns chroma catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[ChromaCatalog, Session] result.
     """
     return catalog, session
 

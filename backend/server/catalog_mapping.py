@@ -21,7 +21,9 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperator,
     LaminatorOperatorID,
 )
+from backend.new_core.chroma import Chroma, ChromaID
 from backend.new_core.edges import Edges, EdgesID
+from backend.new_core.values.percent import Percent
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.paper import Paper
@@ -36,6 +38,8 @@ from backend.new_core.values.money import Money
 from backend.server.schemas import (
     CutterDto,
     CutterWriteDto,
+    ChromaDto,
+    ChromaReadDto,
     EdgesDto,
     EdgesReadDto,
     FilmDto,
@@ -87,6 +91,10 @@ __all__ = [
     "edges_from_write_dto",
     "edges_replace_from_dto",
     "edges_from_read_dto",
+    "chroma_to_read_dto",
+    "chroma_from_write_dto",
+    "chroma_replace_from_dto",
+    "chroma_from_read_dto",
 ]
 
 def _money(amount: str) -> Money:
@@ -582,4 +590,69 @@ def edges_from_read_dto(dto: EdgesReadDto) -> Edges:
         name=dto.name,
         bleeds=dto.bleeds,
         spacing=dto.spacing,
+    )
+
+
+def chroma_to_read_dto(chroma: Chroma) -> ChromaReadDto:
+    """Maps a domain chroma row to a read DTO.
+
+    :param chroma: the chroma row.
+
+    :return: the ChromaReadDto result.
+    """
+    return ChromaReadDto(
+        id=chroma.id.value,
+        name=chroma.name,
+        cyan=chroma.cyan.value,
+        magenta=chroma.magenta.value,
+        yellow=chroma.yellow.value,
+        black=chroma.black.value,
+    )
+
+
+def chroma_from_write_dto(
+    dto: ChromaDto,
+) -> tuple[str, int, int, int, int]:
+    """Extracts write payload fields for chroma catalog create.
+
+    :param dto: the dto.
+
+    :return: name and four fill ints.
+    """
+    return dto.name, dto.cyan, dto.magenta, dto.yellow, dto.black
+
+
+def chroma_replace_from_dto(chroma_id: int, dto: ChromaDto) -> Chroma:
+    """Builds a domain chroma for replace from a write DTO.
+
+    :param chroma_id: id of the chroma row.
+    :param dto: the dto.
+
+    :return: the Chroma result.
+    """
+    name, cyan, magenta, yellow, black = chroma_from_write_dto(dto)
+    return Chroma(
+        id=ChromaID(chroma_id),
+        name=name,
+        cyan=Percent(cyan),
+        magenta=Percent(magenta),
+        yellow=Percent(yellow),
+        black=Percent(black),
+    )
+
+
+def chroma_from_read_dto(dto: ChromaReadDto) -> Chroma:
+    """Builds domain chroma from a read DTO.
+
+    :param dto: the dto.
+
+    :return: the Chroma result.
+    """
+    return Chroma(
+        id=ChromaID(dto.id),
+        name=dto.name,
+        cyan=Percent(dto.cyan),
+        magenta=Percent(dto.magenta),
+        yellow=Percent(dto.yellow),
+        black=Percent(dto.black),
     )

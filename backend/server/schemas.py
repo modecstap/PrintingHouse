@@ -15,6 +15,8 @@ __all__ = [
     "SheetDto",
     "EdgesDto",
     "EdgesReadDto",
+    "ChromaDto",
+    "ChromaReadDto",
     "ImpositionDto",
     "PrintOpDto",
     "FilmDto",
@@ -117,6 +119,31 @@ class EdgesReadDto(BaseModel):
     spacing: int
 
 
+class ChromaDto(BaseModel):
+    """Chroma Dto.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    cyan: int
+    magenta: int
+    yellow: int
+    black: int
+
+
+class ChromaReadDto(BaseModel):
+    """Chroma Read Dto.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    name: str
+    cyan: int
+    magenta: int
+    yellow: int
+    black: int
+
+
 class ImpositionDto(BaseModel):
     """Imposition Dto.
     """
@@ -135,14 +162,7 @@ class PrintOpDto(BaseModel):
     kind: Literal["print"]
     printer_id: int
     operator_id: int
-    chroma: Literal[
-        "ZERO_ZERO",
-        "ONE_ZERO",
-        "ONE_ONE",
-        "FOUR_ZERO",
-        "FOUR_ONE",
-        "FOUR_FOUR",
-    ]
+    chroma: ChromaReadDto
 
 
 class FilmDto(BaseModel):
