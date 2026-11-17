@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 
+from backend.new_core.edges import Edges
 from backend.new_core.errors import InvalidInput
 from backend.new_core.format import Format
 from backend.new_core.materials.sheet import Sheet
@@ -19,32 +20,14 @@ class Imposition:
 
     target: Format
     press_sheet: Sheet
-    bleeds: int
-    spacing: int
+    edges: Edges
 
     def __post_init__(self) -> None:
-        """Rejects a negative bleed or spacing, or a layout that does not fit.
+        """Rejects a layout that does not fit.
 
-        :raises InvalidInput: if bleeds is below zero, if spacing is
-        below zero, if a cell side is zero, or if the grid fits no positive
-        number of target sheets. Negative bleeds or spacing are reported first
-        without a fit reason in the same error.
+        :raises InvalidInput: if the grid fits no positive number of target
+        sheets.
         """
-        reasons: list[str] = []
-        if self.bleeds < 0:
-            reasons.append(
-                f"вылеты меньше 0, вылеты={self.bleeds} мм",
-            )
-        if self.spacing < 0:
-            reasons.append(
-                f"поля меньше 0, поля={self.spacing} мм",
-            )
-        if reasons:
-            raise InvalidInput(
-                subject="Imposition",
-                reason=reasons,
-            )
-
         count_x, count_y = self._axis_counts()
         item_count = count_x * count_y
         if item_count <= 0:
@@ -52,6 +35,16 @@ class Imposition:
                 subject="Imposition",
                 reason=f"на печатный лист влезает {item_count} целевых листов",
             )
+
+    @property
+    def bleeds(self) -> int:
+        """Bleeds used for layout, in millimeters."""
+        return self.edges.bleeds
+
+    @property
+    def spacing(self) -> int:
+        """Press-sheet margin used for layout, in millimeters."""
+        return self.edges.spacing
 
     def thickness(self) -> Decimal:
         """Handles thickness.
@@ -81,11 +74,11 @@ class Imposition:
 
         :return: the tuple[int, int] result.
         """
-        cell_width = self.target.width + 2 * self.bleeds
-        cell_height = self.target.height + 2 * self.bleeds
+        cell_width = self.target.width + 2 * self.edges.bleeds
+        cell_height = self.target.height + 2 * self.edges.bleeds
 
-        usable_width = self.press_sheet.format.width - 2 * self.spacing
-        usable_height = self.press_sheet.format.height - 2 * self.spacing
+        usable_width = self.press_sheet.format.width - 2 * self.edges.spacing
+        usable_height = self.press_sheet.format.height - 2 * self.edges.spacing
         straight_x = usable_width // cell_width
         straight_y = usable_height // cell_height
         turned_x = usable_width // cell_height

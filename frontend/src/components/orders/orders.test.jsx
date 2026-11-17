@@ -21,8 +21,7 @@ const SAMPLE_PRODUCT = {
           },
           format: { name: "SRA3", width: 320, height: 450 },
         },
-        bleeds: 2,
-        spacing: 5,
+        edges: { id: 1, name: "", bleeds: 2, spacing: 5 },
       },
       operations: [
         {
@@ -92,6 +91,9 @@ function stubCatalogFetch() {
       return jsonResponse(SAMPLE_SHEET_CATALOG);
     }
     if (url === "/api/materials/films") {
+      return jsonResponse([]);
+    }
+    if (url === "/api/edges") {
       return jsonResponse([]);
     }
     if (url === "/api/references") {

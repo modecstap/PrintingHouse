@@ -25,6 +25,7 @@ const CATALOG_GET_PATHS = [
   "/api/staff/die-cut-operators",
   "/api/materials/sheets",
   "/api/materials/films",
+  "/api/edges",
 ];
 
 function catalogGets(body = []) {

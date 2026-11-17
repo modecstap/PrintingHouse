@@ -11,6 +11,7 @@ export const EMPTY_CATALOGS = {
   dieCutOperators: [],
   sheets: [],
   films: [],
+  edges: [],
 };
 
 function toCatalogLoadState({ catalogs, error, errors }) {

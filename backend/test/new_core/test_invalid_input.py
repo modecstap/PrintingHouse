@@ -32,6 +32,7 @@ from backend.new_core import (
     PrintRun,
     Product,
 )
+from backend.new_core.edges import Edges, EdgesID
 from backend.test.new_core.test_imposition import imposition_test_sheet
 __all__ = [
     "test_imposition_rejects_count_when_nothing_fits",
@@ -61,8 +62,7 @@ def _fitting_imposition() -> Imposition:
     return Imposition(
         target=Format(name="t", height=100, width=100),
         press_sheet=press_sheet,
-        bleeds=0,
-        spacing=0,
+        edges=Edges(id=EdgesID(0), name="", bleeds=0, spacing=0),
     )
 
 
@@ -105,8 +105,7 @@ def test_imposition_rejects_count_when_nothing_fits():
         Imposition(
             target=Format(name="t", height=100, width=100),
             press_sheet=press_sheet,
-            bleeds=0,
-            spacing=0,
+            edges=Edges(id=EdgesID(0), name="", bleeds=0, spacing=0),
         )
 
     _rejects(message, _build)
@@ -177,22 +176,20 @@ def test_cutter_rejects_a_stack_height_of_zero():
     ("message", "build"),
     [
         pytest.param(
-            "Imposition: вылеты меньше 0, вылеты=-1 мм",
+            "Edges: вылеты меньше 0, вылеты=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
                 press_sheet=imposition_test_sheet(30, 40),
-                bleeds=-1,
-                spacing=0,
+                edges=Edges(id=EdgesID(0), name="", bleeds=-1, spacing=0),
             ),
             id="bleeds",
         ),
         pytest.param(
-            "Imposition: поля меньше 0, поля=-1 мм",
+            "Edges: поля меньше 0, поля=-1 мм",
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
                 press_sheet=imposition_test_sheet(30, 40),
-                bleeds=0,
-                spacing=-1,
+                edges=Edges(id=EdgesID(0), name="", bleeds=0, spacing=-1),
             ),
             id="spacing",
         ),
@@ -257,14 +254,13 @@ def test_negative_measure_is_rejected(message: str, build: bool):
         ),
         pytest.param(
             (
-                "Imposition: вылеты меньше 0, вылеты=-1 мм; "
+                "Edges: вылеты меньше 0, вылеты=-1 мм; "
                 "поля меньше 0, поля=-1 мм"
             ),
             lambda: Imposition(
                 target=Format(name="t", height=10, width=10),
                 press_sheet=imposition_test_sheet(30, 40),
-                bleeds=-1,
-                spacing=-1,
+                edges=Edges(id=EdgesID(0), name="", bleeds=-1, spacing=-1),
             ),
             id="imposition",
         ),

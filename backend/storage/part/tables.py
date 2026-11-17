@@ -33,8 +33,7 @@ class PartRow(Base):  # pylint: disable=too-few-public-methods
     target_height: Mapped[int] = mapped_column(Integer)
     target_width: Mapped[int] = mapped_column(Integer)
     sheet_id: Mapped[int] = mapped_column(ForeignKey("sheets.id"))
-    bleeds: Mapped[int] = mapped_column(Integer)
-    spacing: Mapped[int] = mapped_column(Integer)
+    edges_id: Mapped[int] = mapped_column(ForeignKey("edges.id"))
 
 
 class PartOperationRow(Base):  # pylint: disable=too-few-public-methods

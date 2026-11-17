@@ -31,3 +31,8 @@ export function sheetLabel(sheet) {
 export function filmLabel(film) {
   return `${film.name}, ${formatMoney(film.price)}, плотность ${film.density}`;
 }
+
+export function edgesLabel(edges) {
+  const title = edges.name.trim() !== "" ? edges.name : `№ ${edges.id}`;
+  return `${title}`;
+}

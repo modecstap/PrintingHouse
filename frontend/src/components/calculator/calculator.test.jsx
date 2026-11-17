@@ -82,6 +82,7 @@ function stubCatalogFetch(overrides = {}) {
       },
     ],
     films: [],
+    edges: [],
     ...overrides,
   };
 
@@ -116,6 +117,9 @@ function stubCatalogFetch(overrides = {}) {
     if (url === "/api/materials/films") {
       return jsonResponse(catalogs.films);
     }
+    if (url === "/api/edges") {
+      return jsonResponse(catalogs.edges);
+    }
     if (url === "/api/references") {
       return jsonResponse([]);
     }
@@ -137,8 +141,7 @@ const SAMPLE_PRODUCT = {
           paper: { name: "A", density: 150, thickness: "1", price_per_kilo: "80" },
           format: { name: "SRA3", width: 320, height: 450 },
         },
-        bleeds: 2,
-        spacing: 5,
+        edges: { id: 1, name: "", bleeds: 2, spacing: 5 },
       },
       operations: [],
     },
@@ -193,6 +196,7 @@ async function waitForCatalogs(fetchMock = global.fetch) {
       "/api/staff/die-cut-operators",
       "/api/materials/sheets",
       "/api/materials/films",
+      "/api/edges",
     ];
     for (const url of catalogUrls) {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -443,6 +447,7 @@ describe("Calculator", () => {
       "/api/staff/die-cut-operators",
       "/api/materials/sheets",
       "/api/materials/films",
+      "/api/edges",
     ];
     for (const url of catalogUrls) {
       expect(global.fetch).not.toHaveBeenCalledWith(

@@ -32,8 +32,7 @@ const sampleWriteJson = {
             },
             format: { name: "SRA3", width: 320, height: 450 },
           },
-          bleeds: 2,
-          spacing: 0,
+          edges: { id: 0, name: "", bleeds: 2, spacing: 0 },
         },
         operations: [
           { kind: "print", printer_id: 1, operator_id: 4, chroma: "FOUR_ZERO" },
@@ -74,6 +73,10 @@ function sampleForm() {
         },
         sheetFormat: { name: "SRA3", width: "320", height: "450" },
         bleeds: "2",
+        spacing: "0",
+        edgesId: "",
+        edgesName: "",
+        edgesManual: true,
         operations: [
           {
             clientKey: "print-key",
@@ -138,9 +141,14 @@ describe("applyCatalogDefaultsToForm", () => {
       dieCutOperators: [],
       sheets: [{ id: 2, paper: { name: "A", density: 1, thickness: 1, price_per_kilo: "1" }, format: null }],
       films: [],
+      edges: [{ id: 5, name: "std", bleeds: 2, spacing: 3 }],
     };
     const next = applyCatalogDefaultsToForm(form, catalogs);
     expect(next.blocks[0].paperSheetId).toBe("2");
+    expect(next.blocks[0].edgesManual).toBe(false);
+    expect(next.blocks[0].edgesId).toBe("5");
+    expect(next.blocks[0].bleeds).toBe("2");
+    expect(next.blocks[0].spacing).toBe("3");
     expect(next.blocks[0].operations[0].printerId).toBe("7");
     expect(next.blocks[0].operations[0].operatorId).toBe("3");
   });
@@ -166,6 +174,9 @@ describe("emptyCalculatorForm", () => {
     });
     expect(block.sheetFormat).toEqual({ name: "", width: "0", height: "0" });
     expect(block.bleeds).toBe("0");
+    expect(block.spacing).toBe("0");
+    expect(block.edgesId).toBe("");
+    expect(block.edgesManual).toBe(false);
     expect(block.operations.map((op) => op.kind)).toEqual(["print", "cut"]);
     expect(typeof block.clientKey).toBe("string");
     expect(block.clientKey.length).toBeGreaterThan(0);
@@ -241,8 +252,7 @@ describe("toOrderWrite", () => {
                 },
                 format: { name: "", width: 0, height: 0 },
               },
-              bleeds: 0,
-              spacing: 0,
+              edges: { id: 0, name: "", bleeds: 0, spacing: 0 },
             },
             operations: [
               {

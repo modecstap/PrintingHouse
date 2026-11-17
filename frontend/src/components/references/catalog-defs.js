@@ -2,6 +2,7 @@ import { formatMoney } from "../../lib/format-money";
 import { formatThicknessMm } from "../../lib/format-thickness-mm";
 import {
   toCutterList,
+  toEdgesList,
   toFilmList,
   toJsonDecimal,
   toJsonInt,
@@ -329,4 +330,42 @@ export const STAFF_CATALOGS = [
   }),
 ];
 
-export const MATERIAL_CATALOGS = [SHEETS, FILMS];
+const EDGES = {
+  key: "edges",
+  title: "Края",
+  listPath: "/api/edges",
+  itemPath(id) {
+    return `/api/edges/${id}`;
+  },
+  parseList: toEdgesList,
+  clientId: false,
+  canReplace: true,
+  columns: [
+    { header: "Номер", render: (row) => row.id },
+    { header: "Название", render: (row) => row.name },
+    { header: "Вылеты", render: (row) => row.bleeds },
+    { header: "Поля", render: (row) => row.spacing },
+  ],
+  fields: [
+    { name: "name", label: "Название" },
+    { name: "bleeds", label: "Вылеты", ...INT },
+    { name: "spacing", label: "Поля", ...INT },
+  ],
+  emptyForm: { name: "", bleeds: "", spacing: "" },
+  formFromRow(row) {
+    return {
+      name: row.name,
+      bleeds: String(row.bleeds),
+      spacing: String(row.spacing),
+    };
+  },
+  toPayload(form) {
+    return {
+      name: form.name.trim(),
+      bleeds: toJsonInt(form.bleeds),
+      spacing: toJsonInt(form.spacing),
+    };
+  },
+};
+
+export const MATERIAL_CATALOGS = [SHEETS, FILMS, EDGES];

@@ -46,6 +46,7 @@ from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.print.chroma import Chroma
+from backend.new_core.edges import Edges, EdgesID
 from backend.new_core import (
     Cut,
     Format,
@@ -385,8 +386,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments
             width=target_width,
         ),
         press_sheet=catalog.press_sheet,
-        bleeds=0,
-        spacing=0,
+        edges=Edges(id=EdgesID(1), name="", bleeds=0, spacing=0),
     )
     run_operations, printing, laminate, cut = _worked_run_block_operations(
         catalog,

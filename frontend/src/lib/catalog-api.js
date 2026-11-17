@@ -1,6 +1,7 @@
 import { requestJson } from "./api";
 import {
   toCutter,
+  toEdges,
   toFilm,
   toLaminator,
   toOperator,
@@ -53,6 +54,11 @@ export async function fetchFilms(signal) {
   return data.map(toFilm);
 }
 
+export async function fetchEdges(signal) {
+  const data = await requestJson("/api/edges", { signal });
+  return data.map(toEdges);
+}
+
 const CATALOG_LOADERS = [
   ["printers", fetchPrinters],
   ["laminators", fetchLaminators],
@@ -63,6 +69,7 @@ const CATALOG_LOADERS = [
   ["dieCutOperators", fetchDieCutOperators],
   ["sheets", fetchSheets],
   ["films", fetchFilms],
+  ["edges", fetchEdges],
 ];
 
 /** @type {Record<string, (signal?: AbortSignal) => Promise<unknown[]>>} */
@@ -76,6 +83,7 @@ export const CATALOG_LIST_LOADERS = {
   "/api/staff/die-cut-operators": fetchDieCutOperators,
   "/api/materials/sheets": fetchSheets,
   "/api/materials/films": fetchFilms,
+  "/api/edges": fetchEdges,
 };
 
 function failureMessage(reason) {

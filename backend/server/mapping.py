@@ -30,6 +30,8 @@ from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
 from backend.server.catalog_mapping import (
+    edges_from_read_dto,
+    edges_to_read_dto,
     sheet_from_read_dto,
     sheet_to_read_dto,
 )
@@ -99,8 +101,7 @@ def _imposition_from_dto(dto: ImpositionDto) -> Imposition:
     return Imposition(
         target=_format_from_dto(dto.target),
         press_sheet=sheet_from_read_dto(dto.press_sheet),
-        bleeds=dto.bleeds,
-        spacing=dto.spacing,
+        edges=edges_from_read_dto(dto.edges),
     )
 
 
@@ -200,8 +201,7 @@ def _imposition_to_dto(imposition: Imposition) -> ImpositionDto:
     return ImpositionDto(
         target=_format_to_dto(imposition.target),
         press_sheet=sheet_to_read_dto(imposition.press_sheet),
-        bleeds=imposition.bleeds,
-        spacing=imposition.spacing,
+        edges=edges_to_read_dto(imposition.edges),
     )
 
 

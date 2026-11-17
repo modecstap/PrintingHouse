@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from backend.new_core.values.money import Money
 from backend.new_core.materials.sheet import SheetID
+from backend.new_core.edges import Edges, EdgesID
 from backend.new_core import Format, Imposition, Paper, Sheet
 from backend.new_core.materials.paper_density import PaperDensity
 from backend.new_core.materials.paper_type import PaperType
@@ -48,8 +49,7 @@ def test_imposition_counts_six_and_cuts_ten_on_the_straight_grid():
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
         press_sheet=press_sheet,
-        bleeds=0,
-        spacing=0,
+        edges=Edges(id=EdgesID(0), name="", bleeds=0, spacing=0),
     )
 
     assert imposition.count() == 6
@@ -62,8 +62,7 @@ def test_imposition_counts_twelve_and_cuts_fourteen_on_the_turned_grid():
     imposition = Imposition(
         target=Format(name="t", height=20, width=10),
         press_sheet=press_sheet,
-        bleeds=0,
-        spacing=0,
+        edges=Edges(id=EdgesID(0), name="", bleeds=0, spacing=0),
     )
 
     assert imposition.count() == 12
@@ -79,8 +78,7 @@ def test_imposition_counts_six_and_cuts_ten_with_bleeds_and_spacing():
     imposition = Imposition(
         target=Format(name="t", height=100, width=100),
         press_sheet=press_sheet,
-        bleeds=5,
-        spacing=11,
+        edges=Edges(id=EdgesID(0), name="", bleeds=5, spacing=11),
     )
 
     assert imposition.count() == 6

@@ -22,6 +22,8 @@ from backend.storage.equipment.tables import (
     CutterRow,
     LaminatorRow,
 )
+from backend.new_core.edges import Edges, EdgesID
+from backend.storage.edges.tables import EdgesRow
 from backend.storage.materials.tables import FilmRow, SheetRow
 from backend.storage.personal.tables import (
     CutterOperatorRow,
@@ -42,6 +44,8 @@ __all__ = [
     "insert_die_cutter_operator",
     "insert_film",
     "insert_sheet",
+    "insert_edges",
+    "DEFAULT_EDGES",
     "insert_catalogs_from_ctx",
     "insert_minimal_order_row",
 ]
@@ -184,6 +188,25 @@ def insert_film(session: Session, film: Film) -> None:
     )
 
 
+DEFAULT_EDGES = Edges(id=EdgesID(1), name="", bleeds=0, spacing=0)
+
+
+def insert_edges(session: Session, edges: Edges) -> None:
+    """Persists one edges row from a domain ``Edges``.
+
+    :param session: the SQLAlchemy session.
+    :param edges: the edges row to insert.
+    """
+    session.add(
+        EdgesRow(
+            id=edges.id.value,
+            name=edges.name,
+            bleeds=edges.bleeds,
+            spacing=edges.spacing,
+        ),
+    )
+
+
 def insert_sheet(session: Session, sheet: Sheet) -> None:
     """Persists one sheet row from a domain ``Sheet``.
 
@@ -228,6 +251,7 @@ def insert_catalogs_from_ctx(
         insert_die_cutter_operator)
     _insert_catalog_map(session, ctx.films, insert_film)
     _insert_catalog_map(session, ctx.sheets, insert_sheet)
+    insert_edges(session, DEFAULT_EDGES)
     session.flush()
     session.commit()
 

@@ -24,6 +24,8 @@ from backend.new_core.personal.cutter_operator import CutterOperatorID
 from backend.new_core.personal.die_cutter_operator import DieCutterOperatorID
 from backend.new_core.personal.laminator_operator import LaminatorOperatorID
 from backend.new_core.personal.press_operator import PressOperatorID
+from backend.new_core.edges import EdgesID
+from backend.storage.edges.edges_repository import SqlEdgesRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.part.tables import (
     PartCutRow,
@@ -56,11 +58,11 @@ def part_row_to_part(session: Session, part_id: int) -> Part:
 
     sheet_id = SheetID(row.sheet_id)
     sheet = SqlSheetRepository(session).take(sheet_id)
+    edges = SqlEdgesRepository(session).take(EdgesID(row.edges_id))
     imposition = Imposition(
         target=Format(row.target_name, row.target_height, row.target_width),
         press_sheet=sheet,
-        bleeds=row.bleeds,
-        spacing=row.spacing,
+        edges=edges,
     )
     operations = _load_operations(session, part_id)
     return Part(
@@ -80,14 +82,22 @@ def persist_part(session: Session, part: Part) -> int:
     :return: the int result.
     """
     imp = part.imposition
+    edges_repo = SqlEdgesRepository(session)
+    if imp.edges.id.value > 0:
+        edges_id = imp.edges.id.value
+    else:
+        edges_id = edges_repo.find_or_add(
+            imp.edges.name,
+            imp.edges.bleeds,
+            imp.edges.spacing,
+        ).value
     row = PartRow(
         count=part.count,
         target_name=imp.target.name,
         target_height=imp.target.height,
         target_width=imp.target.width,
         sheet_id=imp.press_sheet.id.value,
-        bleeds=imp.bleeds,
-        spacing=imp.spacing,
+        edges_id=edges_id,
     )
     session.add(row)
     session.flush()

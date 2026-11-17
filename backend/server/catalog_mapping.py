@@ -21,6 +21,7 @@ from backend.new_core.personal.laminator_operator import (
     LaminatorOperator,
     LaminatorOperatorID,
 )
+from backend.new_core.edges import Edges, EdgesID
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.film_density import FilmDensity
 from backend.new_core.materials.paper import Paper
@@ -35,6 +36,8 @@ from backend.new_core.values.money import Money
 from backend.server.schemas import (
     CutterDto,
     CutterWriteDto,
+    EdgesDto,
+    EdgesReadDto,
     FilmDto,
     FilmReadDto,
     FormatDto,
@@ -80,6 +83,10 @@ __all__ = [
     "sheet_from_write_dto",
     "sheet_replace_from_dto",
     "sheet_from_read_dto",
+    "edges_to_read_dto",
+    "edges_from_write_dto",
+    "edges_replace_from_dto",
+    "edges_from_read_dto",
 ]
 
 def _money(amount: str) -> Money:
@@ -522,3 +529,60 @@ def sheet_from_read_dto(dto: SheetReadDto) -> Sheet:
         SheetDto(paper=dto.paper, format=dto.format),
     )
     return Sheet(id=SheetID(dto.id), paper=paper, format=sheet_format)
+
+
+def edges_to_read_dto(edges: Edges) -> EdgesReadDto:
+    """Handles edges to read dto.
+
+    :param edges: the edges row.
+
+    :return: the EdgesReadDto result.
+    """
+    return EdgesReadDto(
+        id=edges.id.value,
+        name=edges.name,
+        bleeds=edges.bleeds,
+        spacing=edges.spacing,
+    )
+
+
+def edges_from_write_dto(dto: EdgesDto) -> tuple[str, int, int]:
+    """Handles edges from write dto.
+
+    :param dto: the dto.
+
+    :return: the tuple[str, int, int] result.
+    """
+    return dto.name, dto.bleeds, dto.spacing
+
+
+def edges_replace_from_dto(edges_id: int, dto: EdgesDto) -> Edges:
+    """Handles edges replace from dto.
+
+    :param edges_id: id of the edges row.
+    :param dto: the dto.
+
+    :return: the Edges result.
+    """
+    name, bleeds, spacing = edges_from_write_dto(dto)
+    return Edges(
+        id=EdgesID(edges_id),
+        name=name,
+        bleeds=bleeds,
+        spacing=spacing,
+    )
+
+
+def edges_from_read_dto(dto: EdgesReadDto) -> Edges:
+    """Builds domain edges from a read DTO.
+
+    :param dto: the dto.
+
+    :return: the Edges result.
+    """
+    return Edges(
+        id=EdgesID(dto.id),
+        name=dto.name,
+        bleeds=dto.bleeds,
+        spacing=dto.spacing,
+    )

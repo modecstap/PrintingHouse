@@ -108,7 +108,11 @@ export function emptyBlock() {
       price_per_kilo: "0",
     },
     sheetFormat: { name: "", width: "0", height: "0" },
+    edgesId: "",
+    edgesName: "",
+    edgesManual: false,
     bleeds: "0",
+    spacing: "0",
     operations: [emptyPrintOperation(), emptyCutOperation()],
   };
 }
@@ -194,8 +198,12 @@ function mapBlockToWrite(block) {
         height: coerceIntegerField(block.target.height),
       },
       press_sheet: mapPressSheetToWrite(block),
-      bleeds: coerceIntegerField(block.bleeds),
-      spacing: 0,
+      edges: {
+        id: coerceIdField(block.edgesId) || 0,
+        name: String(block.edgesName ?? ""),
+        bleeds: coerceIntegerField(block.bleeds),
+        spacing: coerceIntegerField(block.spacing),
+      },
     },
     operations: block.operations.map(mapOperationToWrite),
   };
@@ -392,6 +400,51 @@ export function applyOperationCatalogDefaults(operation, catalogs) {
   return operation;
 }
 
+function blockFieldsFromEdgesRow(row) {
+  return {
+    edgesId: String(row.id),
+    edgesName: row.name,
+    bleeds: String(row.bleeds),
+    spacing: String(row.spacing),
+  };
+}
+
+export function isManualEdgesBlock(block) {
+  return Boolean(block.edgesManual);
+}
+
+function applyEdgesCatalogDefaults(block, catalogs) {
+  const rows = catalogs.edges ?? [];
+  if (rows.length === 0) {
+    return {
+      ...block,
+      edgesId: "",
+      edgesName: "",
+      edgesManual: true,
+    };
+  }
+  if (block.edgesManual) {
+    return {
+      ...block,
+      edgesId: "",
+      edgesName: String(block.edgesName ?? ""),
+    };
+  }
+  const selected = rows.find((row) => String(row.id) === block.edgesId);
+  if (selected) {
+    return {
+      ...block,
+      edgesManual: false,
+      ...blockFieldsFromEdgesRow(selected),
+    };
+  }
+  return {
+    ...block,
+    edgesManual: false,
+    ...blockFieldsFromEdgesRow(rows[0]),
+  };
+}
+
 export function applyBlockCatalogDefaults(block, catalogs) {
   let next = { ...block };
   if (next.paperSheetId === "" && catalogs.sheets?.length > 0) {
@@ -403,6 +456,7 @@ export function applyBlockCatalogDefaults(block, catalogs) {
       sheetFormat: sheetFormatFromSheet(sheet),
     };
   }
+  next = applyEdgesCatalogDefaults(next, catalogs);
   return {
     ...next,
     operations: ensureMandatoryBlockOperations(next.operations).map((operation) =>
@@ -444,7 +498,16 @@ function mapBlockFromDto(block) {
     sheetFormat: pressSheet
       ? sheetFormatFromSheet(pressSheet)
       : { name: "", width: "0", height: "0" },
-    bleeds: numberToFormString(imposition.bleeds),
+    edgesManual: !(imposition.edges?.id != null && Number(imposition.edges.id) > 0),
+    edgesId:
+      imposition.edges?.id != null && Number(imposition.edges.id) > 0
+        ? numberToFormString(imposition.edges.id)
+        : "",
+    edgesName: imposition.edges?.name ?? "",
+    bleeds: numberToFormString(imposition.edges?.bleeds ?? imposition.bleeds),
+    spacing: numberToFormString(
+      imposition.edges?.spacing ?? imposition.spacing ?? 0,
+    ),
     operations: block.operations.map(mapOperationFromDto),
   };
 }
@@ -612,11 +675,18 @@ function collectBlockMissingLabels(block, blockCount, blockIndex, missing) {
     isCoercibleIdField(block.paperSheetId),
     `${prefix}Бумага`,
   );
-  pushWhenInvalid(
-    missing,
-    isCoercibleIntegerField(block.bleeds),
-    `${prefix}Вылеты`,
-  );
+  if (isManualEdgesBlock(block)) {
+    pushWhenInvalid(
+      missing,
+      isCoercibleIntegerField(block.bleeds),
+      `${prefix}Вылеты`,
+    );
+    pushWhenInvalid(
+      missing,
+      isCoercibleIntegerField(block.spacing),
+      `${prefix}Поля`,
+    );
+  }
   for (const operation of block.operations) {
     collectOperationMissingLabels(operation, prefix, missing);
   }

@@ -5,6 +5,7 @@ import {
   toOperator,
   toSheet,
   toFilm,
+  toEdges,
   toPrinterList,
 } from "./catalog-parsers";
 
@@ -231,6 +232,17 @@ describe("toSheet", () => {
         format: { height: 1, width: 1 },
       }),
     ).toThrow("sheet: format.name must be a string");
+  });
+});
+
+describe("toEdges", () => {
+  it("should parse edges row", () => {
+    expect(toEdges({ id: 1, name: "std", bleeds: 2, spacing: 5 })).toEqual({
+      id: 1,
+      name: "std",
+      bleeds: 2,
+      spacing: 5,
+    });
   });
 });
 

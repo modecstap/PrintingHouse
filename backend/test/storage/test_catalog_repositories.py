@@ -13,6 +13,7 @@ from backend.new_core.equipment.laminator import LaminatorID
 from backend.new_core.equipment.printer import Printer, PrinterID, PrinterPrices
 from backend.new_core.equipment.printer_repository import PrinterIdOccupied
 from backend.new_core.format import Format
+from backend.new_core.edges import Edges, EdgesID
 from backend.new_core.materials.film import Film, FilmID
 from backend.new_core.materials.paper import Paper
 from backend.new_core.materials.paper_density import PaperDensity
@@ -30,6 +31,7 @@ from backend.storage.equipment.laminator_repository import (
     SqlLaminatorRepository,
 )
 from backend.storage.equipment.printer_repository import SqlPrinterRepository
+from backend.storage.edges.edges_repository import SqlEdgesRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.materials.tables import FilmRow, SheetRow
@@ -59,6 +61,7 @@ __all__ = [
     "test_printer_save_list_delete_round_trip",
     "test_printer_spacing_round_trip",
     "test_printer_save_replace_take_round_trip",
+    "test_edges_add_take_all_replace_take_round_trip",
     "test_film_add_take_all_replace_take_round_trip",
     "test_sheet_add_take_all_replace_take_round_trip",
     "test_sheet_round_trip_fractional_thickness",
@@ -172,6 +175,29 @@ def test_printer_save_replace_take_round_trip(db_session: Session):
     repo.replace(updated)
     db_session.commit()
     assert repo.take(PrinterID(12)) == updated
+
+
+def test_edges_add_take_all_replace_take_round_trip(db_session: Session):
+    """``add``, ``take_all``, ``replace``, and ``take`` round-trip edges.
+
+    :param db_session: the db session.
+    """
+    repo = SqlEdgesRepository(db_session)
+    first_id = repo.add("std", 2, 5)
+    second_id = repo.add("wide", 3, 11)
+    db_session.commit()
+    assert first_id != second_id
+    assert len(repo.take_all()) == 2
+
+    updated = Edges(
+        id=first_id,
+        name="renamed",
+        bleeds=4,
+        spacing=6,
+    )
+    repo.replace(updated)
+    db_session.commit()
+    assert repo.take(first_id) == updated
 
 
 def test_film_add_take_all_replace_take_round_trip(db_session: Session):
@@ -501,6 +527,8 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session: Sess
 
     :param db_session: the db session.
     """
+    SqlEdgesRepository(db_session).add("", 0, 0)
+    db_session.flush()
     sheet_repo = SqlSheetRepository(db_session)
     sheet_id = sheet_repo.add(
         Paper(
@@ -515,8 +543,7 @@ def test_delete_sheet_referenced_by_part_raises_integrity_error(db_session: Sess
             target_height=100,
             target_width=100,
             sheet_id=sheet_id.value,
-            bleeds=0,
-            spacing=0,
+            edges_id=1,
         ),
     )
     db_session.commit()
@@ -543,8 +570,7 @@ def test_delete_film_referenced_by_part_raises_integrity_error(db_session: Sessi
         target_height=100,
         target_width=100,
         sheet_id=sheet_id.value,
-        bleeds=0,
-        spacing=0,
+        edges_id=1,
     )
     db_session.add(part)
     db_session.flush()

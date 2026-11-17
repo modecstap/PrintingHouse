@@ -135,6 +135,27 @@ export function toSheet(raw) {
   };
 }
 
+export function toEdges(raw) {
+  if (typeof raw?.id !== "number") {
+    throw new Error("edges: id must be a number");
+  }
+  if (typeof raw?.name !== "string") {
+    throw new Error("edges: name must be a string");
+  }
+  if (typeof raw?.bleeds !== "number") {
+    throw new Error("edges: bleeds must be a number");
+  }
+  if (typeof raw?.spacing !== "number") {
+    throw new Error("edges: spacing must be a number");
+  }
+  return {
+    id: raw.id,
+    name: raw.name,
+    bleeds: raw.bleeds,
+    spacing: raw.spacing,
+  };
+}
+
 export function toFilm(raw) {
   if (typeof raw?.id !== "number") {
     throw new Error("film: id must be a number");
@@ -185,4 +206,8 @@ export function toSheetList(raw) {
 
 export function toFilmList(raw) {
   return toList(raw, toFilm, "film");
+}
+
+export function toEdgesList(raw) {
+  return toList(raw, toEdges, "edges");
 }

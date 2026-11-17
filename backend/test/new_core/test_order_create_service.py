@@ -78,7 +78,7 @@ def _block_with_spacing(block: Part, spacing: int, ctx: _RunPricingFixtures) -> 
     sheet = ctx.sheets[block.imposition.press_sheet.id]
     imposition = replace(
         block.imposition,
-        spacing=spacing,
+        edges=replace(block.imposition.edges, spacing=spacing),
         press_sheet=sheet,
     )
     return replace(block, imposition=imposition, need_spacing=False)

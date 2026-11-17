@@ -8,7 +8,7 @@ import {
   sheetFormatFromSheet,
   sortBlockOperationsByKind,
 } from "../models/order";
-import { sheetLabel } from "../models/catalog-label";
+import { edgesLabel, sheetLabel } from "../models/catalog-label";
 import {
   filterSheetsByPaperFilters,
   isSelectedPaperSheetInFilteredList,
@@ -81,6 +81,28 @@ export default function BlockSection({
     }
     update({
       operations: block.operations.filter((op) => op.kind !== kind),
+    });
+  };
+
+  const edgesRows = catalogs.edges ?? [];
+  const showEdgesDropdown = edgesRows.length > 0;
+  const showManualEdgeFields = !showEdgesDropdown || block.edgesManual;
+
+  const selectEdgesProfile = (edgesId) => {
+    if (edgesId === "") {
+      update({ edgesId: "", edgesName: "", edgesManual: true });
+      return;
+    }
+    const row = edgesRows.find((item) => String(item.id) === edgesId);
+    if (!row) {
+      return;
+    }
+    update({
+      edgesId,
+      edgesName: row.name,
+      edgesManual: false,
+      bleeds: String(row.bleeds),
+      spacing: String(row.spacing),
     });
   };
 
@@ -212,13 +234,39 @@ export default function BlockSection({
               label: sheetLabel(sheet),
             }))}
           />
-          <TextField
-            id={`${idPrefix}-bleeds`}
-            label="Вылеты"
-            value={block.bleeds}
-            type="number"
-            onChange={(v) => update({ bleeds: v })}
-          />
+        </div>
+        <div>
+        {showEdgesDropdown && (
+            <Dropdown
+              id={`${idPrefix}-edges-profile`}
+              label="Края"
+              value={block.edgesManual ? "" : block.edgesId}
+              onChange={selectEdgesProfile}
+              emptyOptionLabel="Вручную"
+              options={edgesRows.map((row) => ({
+                value: String(row.id),
+                label: edgesLabel(row),
+              }))}
+            />
+          )}
+          {showManualEdgeFields && (
+            <>
+              <TextField
+                id={`${idPrefix}-bleeds`}
+                label="Вылеты"
+                value={block.bleeds}
+                type="number"
+                onChange={(v) => update({ bleeds: v })}
+              />
+              <TextField
+                id={`${idPrefix}-spacing`}
+                label="Поля"
+                value={block.spacing}
+                type="number"
+                onChange={(v) => update({ spacing: v })}
+              />
+            </>
+          )}
         </div>
       </div>
       

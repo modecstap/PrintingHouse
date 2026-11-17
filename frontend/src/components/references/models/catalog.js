@@ -5,12 +5,14 @@ export {
   toOperator,
   toSheet,
   toFilm,
+  toEdges,
   toPrinterList,
   toLaminatorList,
   toCutterList,
   toOperatorList,
   toSheetList,
   toFilmList,
+  toEdgesList,
 } from "../../../lib/catalog-parsers";
 
 export function toJsonInt(value) {

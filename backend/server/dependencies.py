@@ -20,6 +20,7 @@ from backend.new_core.application_services.equipment.laminators import (
 from backend.new_core.application_services.equipment.printers import (
     PrinterCatalog,
 )
+from backend.new_core.application_services.edges.catalog import EdgesCatalog
 from backend.new_core.application_services.materials.films import FilmCatalog
 from backend.new_core.application_services.materials.sheets import SheetCatalog
 from backend.new_core.application_services.personal.cutter_operators import (
@@ -52,6 +53,7 @@ from backend.new_core.application_services.reference import (
     ReferenceOrderService,
 )
 from backend.storage.database import Database
+from backend.storage.edges.edges_repository import SqlEdgesRepository
 from backend.storage.materials.film_repository import SqlFilmRepository
 from backend.storage.materials.sheet_repository import SqlSheetRepository
 from backend.storage.equipment.cutter_repository import SqlCutterRepository
@@ -88,6 +90,8 @@ __all__ = [
     "get_cutter_catalog",
     "get_film_catalog",
     "get_sheet_catalog",
+    "get_edges_catalog",
+    "get_edges_catalog_and_session",
     "get_press_operator_catalog",
     "get_laminator_operator_catalog",
     "get_cutter_operator_catalog",
@@ -260,6 +264,18 @@ def get_sheet_catalog(
     return SheetCatalog(SqlSheetRepository(session))
 
 
+def get_edges_catalog(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> EdgesCatalog:
+    """Builds :class:`EdgesCatalog` for this request.
+
+    :param session: database session.
+
+    :return: the EdgesCatalog result.
+    """
+    return EdgesCatalog(SqlEdgesRepository(session))
+
+
 def get_press_operator_catalog(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> PressOperatorCatalog:
@@ -376,6 +392,20 @@ def get_film_catalog_and_session(
     :param session: database session.
 
     :return: the tuple[FilmCatalog, Session] result.
+    """
+    return catalog, session
+
+
+def get_edges_catalog_and_session(
+    catalog: Annotated[EdgesCatalog, Depends(get_edges_catalog)],
+    session: Annotated[Session, Depends(get_db_session)],
+) -> tuple[EdgesCatalog, Session]:
+    """Returns edges catalog and request session for replace routes.
+
+    :param catalog: the catalog.
+    :param session: database session.
+
+    :return: the tuple[EdgesCatalog, Session] result.
     """
     return catalog, session
 

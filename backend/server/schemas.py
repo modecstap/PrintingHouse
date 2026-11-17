@@ -13,6 +13,8 @@ __all__ = [
     "FormatDto",
     "PaperDto",
     "SheetDto",
+    "EdgesDto",
+    "EdgesReadDto",
     "ImpositionDto",
     "PrintOpDto",
     "FilmDto",
@@ -94,6 +96,27 @@ class SheetDto(BaseModel):
     format: FormatDto
 
 
+class EdgesDto(BaseModel):
+    """Edges Dto.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    name: str
+    bleeds: int
+    spacing: int
+
+
+class EdgesReadDto(BaseModel):
+    """Edges Read Dto.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    id: int
+    name: str
+    bleeds: int
+    spacing: int
+
+
 class ImpositionDto(BaseModel):
     """Imposition Dto.
     """
@@ -101,8 +124,7 @@ class ImpositionDto(BaseModel):
 
     target: FormatDto
     press_sheet: SheetReadDto
-    bleeds: int
-    spacing: int
+    edges: EdgesReadDto
 
 
 class PrintOpDto(BaseModel):
