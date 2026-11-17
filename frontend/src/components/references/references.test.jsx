@@ -263,7 +263,6 @@ describe("Reference pages", () => {
           {
             id: 7,
             name: "Тест",
-            spacing: 3,
             startup: "100",
             cyan: "1.5",
             magenta: "2",
@@ -284,7 +283,6 @@ describe("Reference pages", () => {
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
     await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
-    await userEvent.type(within(region).getByLabelText("Поля:"), "3");
     await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
     await userEvent.type(within(region).getByLabelText("C:"), "1.5");
     await userEvent.type(within(region).getByLabelText("M:"), "2");
@@ -301,7 +299,6 @@ describe("Reference pages", () => {
       expect(postCall).toBeDefined();
       expect(JSON.parse(postCall[1].body)).toEqual({
         name: "Тест",
-        spacing: 3,
         startup: "100",
         cyan: "1.5",
         magenta: "2",
@@ -316,7 +313,6 @@ describe("Reference pages", () => {
     });
 
     await userEvent.type(within(region).getByLabelText("Название:"), "Тест");
-    await userEvent.type(within(region).getByLabelText("Поля:"), "3");
     await userEvent.type(within(region).getByLabelText("Запуск:"), "100");
     await userEvent.type(within(region).getByLabelText("C:"), "1.5");
     await userEvent.type(within(region).getByLabelText("M:"), "2");

@@ -63,13 +63,11 @@ class _FakePrinterCatalog:
     def create_printer(
         self,
         name: str,
-        spacing: int,
         prices,
     ) -> PrinterID:
         """Creates a printer.
 
         :param name: the name.
-        :param spacing: the spacing.
         :param prices: the prices.
 
         :return: the PrinterID result.
@@ -128,7 +126,6 @@ def test_equipment_routes_require_token():
 
 _PRINTER_WRITE_JSON = {
     "name": "Тест",
-    "spacing": 0,
     "startup": "0",
     "cyan": "0",
     "magenta": "0",
@@ -155,7 +152,6 @@ def test_create_printer_returns_id():
 _PRINTER_JSON = {
     "id": 5,
     "name": "Тест",
-    "spacing": 0,
     "startup": "0",
     "cyan": "0",
     "magenta": "0",
@@ -179,7 +175,6 @@ def test_replace_printer_204():
     assert fake.last_replace_printer == Printer(
         id=PrinterID(5),
         name="Тест",
-        spacing=0,
         prices=PrinterPrices(
             startup=Money(Decimal("0")),
             cyan=Money(Decimal("0")),

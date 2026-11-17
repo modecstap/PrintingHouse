@@ -53,20 +53,17 @@ class PrinterCatalog:
     def create_printer(
         self,
         name: str,
-        spacing: int,
         prices: PrinterPrices,
     ) -> PrinterID:
         """Inserts a new printer; the store assigns the id.
 
         :param name: the name.
-        :param spacing: the spacing.
         :param prices: the prices.
 
         :return: the PrinterID result.
         """
         printer = self._printer_factory.create(
             name,
-            spacing,
             prices,
         )
         self._printers.save(printer)

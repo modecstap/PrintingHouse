@@ -30,13 +30,11 @@ class PrinterFactory:
     def create(
         self,
         name: str,
-        spacing: int,
         prices: PrinterPrices,
     ) -> Printer:
         """Builds a printer with a generated id.
 
         :param name: the name.
-        :param spacing: the spacing.
         :param prices: the prices.
 
         :return: the Printer result.
@@ -44,7 +42,6 @@ class PrinterFactory:
         return Printer(
             id=self._printers.generate_id(),
             name=name,
-            spacing=spacing,
             prices=prices,
         )
 

@@ -59,7 +59,6 @@ __all__ = [
     "test_catalog_take_round_trips_domain_objects",
     "test_catalog_take_missing_raises_key_error",
     "test_printer_save_list_delete_round_trip",
-    "test_printer_spacing_round_trip",
     "test_printer_save_replace_take_round_trip",
     "test_edges_add_take_all_replace_take_round_trip",
     "test_film_add_take_all_replace_take_round_trip",
@@ -122,7 +121,7 @@ def test_printer_save_list_delete_round_trip(db_session: Session):
     :param db_session: the db session.
     """
     repo = SqlPrinterRepository(db_session)
-    printer = sample_printer(10, "№ 10", 0)
+    printer = sample_printer(10, "№ 10")
     repo.save(printer)
     db_session.commit()
     assert repo.take_all() == (printer,)
@@ -137,33 +136,19 @@ def test_printer_save_list_delete_round_trip(db_session: Session):
         repo.save(printer)
 
 
-def test_printer_spacing_round_trip(db_session: Session):
-    """``spacing`` survives save and load.
-
-    :param db_session: the db session.
-    """
-    repo = SqlPrinterRepository(db_session)
-    printer = sample_printer(11, "№ 11", 7, prices=zero_printer_prices())
-    repo.save(printer)
-    db_session.commit()
-    assert repo.take(PrinterID(11)).spacing == 7
-    assert repo.take_all() == (printer,)
-
-
 def test_printer_save_replace_take_round_trip(db_session: Session):
     """``save``, ``replace``, and ``take`` round-trip a printer.
 
     :param db_session: the db session.
     """
     repo = SqlPrinterRepository(db_session)
-    printer = sample_printer(12, "№ 12", 3)
+    printer = sample_printer(12, "№ 12")
     repo.save(printer)
     db_session.commit()
 
     updated = Printer(
         id=PrinterID(12),
         name="renamed",
-        spacing=9,
         prices=PrinterPrices(
             startup=Money(Decimal("10")),
             cyan=Money(Decimal("20")),
@@ -463,7 +448,6 @@ def test_material_catalog_replace_missing_raises_key_error(
             Printer(
                 id=PrinterID(404),
                 name="x",
-                spacing=0,
                 prices=PrinterPrices(
                     startup=Money(Decimal("1")),
                     cyan=Money(Decimal("0")),

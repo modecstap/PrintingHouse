@@ -8,7 +8,6 @@ import { renderWithToken } from "../../test-utils/render-with-token";
 const PRINTER = {
   id: 1,
   name: "Принтер 1",
-  spacing: 0,
   startup: "10",
   cyan: "0.1",
   magenta: "0.2",

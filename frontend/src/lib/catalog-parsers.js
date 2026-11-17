@@ -5,9 +5,6 @@ export function toPrinter(raw) {
   if (typeof raw?.name !== "string") {
     throw new Error("printer: name must be a string");
   }
-  if (typeof raw?.spacing !== "number") {
-    throw new Error("printer: spacing must be a number");
-  }
   if (typeof raw?.startup !== "string") {
     throw new Error("printer: startup must be a string");
   }
@@ -26,7 +23,6 @@ export function toPrinter(raw) {
   return {
     id: raw.id,
     name: raw.name,
-    spacing: raw.spacing,
     startup: raw.startup,
     cyan: raw.cyan,
     magenta: raw.magenta,

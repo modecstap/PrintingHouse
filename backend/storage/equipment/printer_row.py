@@ -16,7 +16,6 @@ def new_printer_row(printer: Printer) -> PrinterRow:
     return PrinterRow(
         id=printer.id.value,
         name=printer.name,
-        spacing=printer.spacing,
         startup=printer.prices.startup.amount,
         cyan=printer.prices.cyan.amount,
         magenta=printer.prices.magenta.amount,

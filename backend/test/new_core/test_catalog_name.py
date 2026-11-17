@@ -9,8 +9,8 @@ from backend.test.storage.helpers import zero_printer_prices
 
 __all__ = [
     "test_printer_rejects_blank_name",
-    "test_printer_rejects_negative_spacing",
 ]
+
 
 def test_printer_rejects_blank_name():
     """Whitespace-only name raises InvalidInput."""
@@ -18,17 +18,5 @@ def test_printer_rejects_blank_name():
         Printer(
             id=PrinterID(1),
             name="   ",
-            spacing=0,
-            prices=zero_printer_prices(),
-        )
-
-
-def test_printer_rejects_negative_spacing():
-    """Negative spacing raises InvalidInput with field message."""
-    with pytest.raises(InvalidInput, match="поля меньше 0"):
-        Printer(
-            id=PrinterID(1),
-            name="printer",
-            spacing=-1,
             prices=zero_printer_prices(),
         )

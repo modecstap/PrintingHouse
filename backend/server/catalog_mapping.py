@@ -109,7 +109,6 @@ def printer_to_dto(printer: Printer) -> PrinterDto:
     return PrinterDto(
         id=printer.id.value,
         name=printer.name,
-        spacing=printer.spacing,
         startup=str(printer.prices.startup.amount),
         cyan=str(printer.prices.cyan.amount),
         magenta=str(printer.prices.magenta.amount),
@@ -128,7 +127,6 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
     return Printer(
         id=PrinterID(dto.id),
         name=dto.name,
-        spacing=dto.spacing,
         prices=PrinterPrices(
             startup=_money(dto.startup),
             cyan=_money(dto.cyan),
@@ -141,16 +139,15 @@ def printer_from_dto(dto: PrinterDto) -> Printer:
 
 def printer_from_write_dto(
     dto: PrinterWriteDto,
-) -> tuple[str, int, PrinterPrices]:
+) -> tuple[str, PrinterPrices]:
     """Handles printer from write dto.
 
     :param dto: the dto.
 
-    :return: the tuple[str, int, PrinterPrices] result.
+    :return: the tuple[str, PrinterPrices] result.
     """
     return (
         dto.name,
-        dto.spacing,
         PrinterPrices(
             startup=_money(dto.startup),
             cyan=_money(dto.cyan),

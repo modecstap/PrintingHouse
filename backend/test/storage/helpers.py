@@ -102,7 +102,6 @@ def sequential_printer_prices() -> PrinterPrices:
 def sample_printer(
     printer_id: int,
     name: str,
-    spacing: int,
     *,
     prices: PrinterPrices | None = None,
 ) -> Printer:
@@ -110,7 +109,6 @@ def sample_printer(
 
     :param printer_id: id of the printer.
     :param name: the name.
-    :param spacing: the spacing.
     :param prices: the prices.
 
     :return: the Printer result.
@@ -118,7 +116,6 @@ def sample_printer(
     return Printer(
         id=PrinterID(printer_id),
         name=name,
-        spacing=spacing,
         prices=prices or sequential_printer_prices(),
     )
 

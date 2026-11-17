@@ -38,7 +38,6 @@ from backend.test.storage.helpers import TEST_ORDER_CREATED_AT, product_from_run
 
 __all__ = [
     "test_save_persists_imposition_spacing_from_product",
-    "test_order_report_keeps_stored_spacing_when_catalog_printer_changes",
     "test_replace_stores_imposition_spacing_from_product",
     "test_quote_returns_report_and_does_not_write_stores",
     "test_quote_with_two_blocks_reports_two_imposition_counts",
@@ -99,36 +98,6 @@ def test_save_persists_imposition_spacing_from_product():
     order_id = service.save(product, count=1)
     stored_runs = uow.print_runs.take_all_for_order(order_id)
     assert stored_runs[0].block.imposition.spacing == 5
-
-
-def test_order_report_keeps_stored_spacing_when_catalog_printer_changes():
-    """order_report does not overwrite spacing
-
-    from the updated printer catalog.
-    """
-    run, printing, _, _, ctx = build_worked_run()
-    printer_id = printing.printer_id
-    ctx.printers[printer_id] = replace(ctx.printers[printer_id], spacing=5)
-    printers = InMemoryPrinterRepository(items=dict(ctx.printers))
-    uow = InMemoryUnitOfWork()
-    service = OrderService(
-        uow=uow,
-        order_factory=OrderFactory(uow.orders),
-        print_run_factory=PrintRunFactory(uow.print_runs),
-        pricing_factory=pricing_strategy_factory(ctx, printers=printers),
-    )
-    product = Product(
-        parts_markup=Percent(0),
-        blocks=(_block_with_spacing(run.block, 5, ctx),),
-        operations=(),
-    )
-    order_id = service.save(product, count=1)
-    before = service.order_report(order_id)
-    printers.items[printer_id] = replace(printers.items[printer_id], spacing=99)
-
-    stored = uow.print_runs.take_all_for_order(order_id)[0]
-    assert stored.block.imposition.spacing == 5
-    assert service.order_report(order_id).impositions == before.impositions
 
 
 def test_replace_stores_imposition_spacing_from_product():

@@ -317,7 +317,6 @@ class PrinterDto(BaseModel):
 
     id: int
     name: str
-    spacing: int
     startup: str
     cyan: str
     magenta: str
@@ -361,7 +360,6 @@ class PrinterWriteDto(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     name: str
-    spacing: int
     startup: str
     cyan: str
     magenta: str

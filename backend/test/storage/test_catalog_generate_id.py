@@ -39,7 +39,7 @@ def test_generate_id_follows_max_existing_id(db_session: Session):
     :param db_session: the db session.
     """
     repo = SqlPrinterRepository(db_session)
-    printer = sample_printer(10, "№ 10", 0)
+    printer = sample_printer(10, "№ 10")
     insert_printer(db_session, printer)
     db_session.commit()
     db_session.execute(

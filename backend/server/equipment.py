@@ -129,8 +129,8 @@ def create_printer(
 
     :return: the CreatedIdDto result.
     """
-    name, spacing, prices = printer_from_write_dto(body)
-    new_id = service.create_printer(name, spacing, prices)
+    name, prices = printer_from_write_dto(body)
+    new_id = service.create_printer(name, prices)
     session.commit()
     return CreatedIdDto(id=new_id.value)
 

@@ -32,8 +32,8 @@ def test_printer_factory_assigns_sequential_ids() -> None:
         yellow=money,
         black=money,
     )
-    first = factory.create(name="P1", spacing=3, prices=prices)
-    second = factory.create(name="P2", spacing=3, prices=prices)
+    first = factory.create(name="P1", prices=prices)
+    second = factory.create(name="P2", prices=prices)
 
     assert first.id == PrinterID(0)
     assert second.id == PrinterID(1)

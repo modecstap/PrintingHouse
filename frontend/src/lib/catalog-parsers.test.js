@@ -15,7 +15,6 @@ describe("toPrinter", () => {
       toPrinter({
         id: 1,
         name: "Принтер 1",
-        spacing: 0,
         startup: "10",
         cyan: "0.1",
         magenta: "0.2",
@@ -25,7 +24,6 @@ describe("toPrinter", () => {
     ).toEqual({
       id: 1,
       name: "Принтер 1",
-      spacing: 0,
       startup: "10",
       cyan: "0.1",
       magenta: "0.2",
@@ -40,25 +38,10 @@ describe("toPrinter", () => {
     );
   });
 
-  it("should throw when printer spacing is missing", () => {
-    expect(() =>
-      toPrinter({
-        id: 1,
-        name: "X",
-        startup: "10",
-        cyan: "1",
-        magenta: "2",
-        yellow: "3",
-        black: "4",
-      }),
-    ).toThrow("printer: spacing must be a number");
-  });
-
   it("should throw when printer name is missing", () => {
     expect(() =>
       toPrinter({
         id: 1,
-        spacing: 0,
         startup: "10",
         cyan: "1",
         magenta: "2",

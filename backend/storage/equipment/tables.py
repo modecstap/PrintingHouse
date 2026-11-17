@@ -23,7 +23,6 @@ class PrinterRow(Base):  # pylint: disable=too-few-public-methods
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(Text)
-    spacing: Mapped[int] = mapped_column(Integer)
     startup: Mapped[Decimal] = mapped_column(_MONEY)
     cyan: Mapped[Decimal] = mapped_column(_MONEY)
     magenta: Mapped[Decimal] = mapped_column(_MONEY)

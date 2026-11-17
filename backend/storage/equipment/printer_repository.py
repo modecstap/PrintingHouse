@@ -84,7 +84,6 @@ class SqlPrinterRepository:
         if row is None:
             raise KeyError(printer.id)
         row.name = printer.name
-        row.spacing = printer.spacing
         row.startup = printer.prices.startup.amount
         row.cyan = printer.prices.cyan.amount
         row.magenta = printer.prices.magenta.amount
@@ -116,7 +115,6 @@ class SqlPrinterRepository:
         return Printer(
             id=printer_id,
             name=row.name,
-            spacing=row.spacing,
             prices=PrinterPrices(
                 startup=Money(row.startup),
                 cyan=Money(row.cyan),
