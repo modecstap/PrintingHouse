@@ -7,7 +7,7 @@ import pytest
 from backend.new_core.operations.laminate.lamination import Lamination
 from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.values.money import Money
-from backend.new_core import Accountant, Print
+from backend.new_core import Print
 from backend.test.new_core.test_print_run import (
     _append_block_operation,
     attach_die_cut_operator,
@@ -42,10 +42,10 @@ def test_cost_report_prices_the_worked_run():
 
     assert run.production_count() == 12
     assert run.imposition_count() == 2
-    accountant = Accountant()
-    sheet = accountant.sheet_cost_report(_estimate(run, ctx))
-    per_item = accountant.list_report(_estimate(run, ctx))
-    report = accountant.block_cost_report(_estimate(run, ctx))
+    estimate = _estimate(run, ctx)
+    sheet = estimate.sheet_report()
+    per_item = estimate.list_report()
+    report = estimate.block_report()
 
     assert sheet.material == Money(Decimal(13))
     assert sheet.startup == Money(Decimal(16))
@@ -79,7 +79,7 @@ def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
     """
     run, _, _, _, ctx = build_worked_run(chroma=Chroma.ZERO_ZERO)
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(9))
     assert sheet.startup == Money(Decimal(16))
@@ -97,7 +97,7 @@ def test_cost_report_omits_lamination_when_it_is_not_passed():
     """
     run, _, _, _, ctx = build_worked_run(with_laminate=False)
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
@@ -119,7 +119,7 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
 
     assert run.block.operations == (printing, second)
     assert printing is not second
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(20))
     assert sheet.startup == Money(Decimal(22))
@@ -150,7 +150,7 @@ def test_press_sheet_material_equals_the_chroma_shares(
     """
     run, _, _, _, ctx = build_run_with_free_chroma_pricing(chroma=chroma)
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(material))
 
@@ -169,10 +169,10 @@ def test_list_report_divides_by_the_imposition_count():
         with_cut=False,
     )
 
-    accountant = Accountant()
-    sheet = accountant.sheet_cost_report(_estimate(run, ctx))
-    per_item = accountant.list_report(_estimate(run, ctx))
-    report = accountant.block_cost_report(_estimate(run, ctx))
+    estimate = _estimate(run, ctx)
+    sheet = estimate.sheet_report()
+    per_item = estimate.list_report()
+    report = estimate.block_report()
 
     assert run.imposition_count() == 1
     assert run.block.imposition.count() == 6
@@ -202,7 +202,7 @@ def test_cost_report_is_zero_without_operations():
 
     assert not run.block.operations
     assert run.production_count() == 12
-    report = Accountant().block_cost_report(_estimate(run, ctx))
+    report = _estimate(run, ctx).block_report()
 
     assert report.material == Money.zero()
     assert report.startup == Money.zero()
@@ -215,7 +215,7 @@ def test_cost_report_is_zero_for_lamination_with_no_sides():
     """Lamination DONT leaves the press sheet at 10, 11, 40, and 18.3."""
     run, _, _, _, ctx = build_worked_run(lamination=Lamination.DONT)
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
@@ -235,7 +235,7 @@ def test_cost_report_prices_two_film_sides_once_for_salary():
         with_cut=False,
     )
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.material == Money(Decimal(6))
     assert sheet.startup == Money(Decimal(5))
@@ -252,9 +252,9 @@ def test_cost_report_adds_the_die_cutter_salary_once():
     run, _, _, _, ctx = build_run_without_block_operations()
     attach_die_cut_operator(run, ctx)
 
-    accountant = Accountant()
-    sheet = accountant.sheet_cost_report(_estimate(run, ctx))
-    per_item = accountant.list_report(_estimate(run, ctx))
+    estimate = _estimate(run, ctx)
+    sheet = estimate.sheet_report()
+    per_item = estimate.list_report()
 
     assert sheet.material == Money(Decimal(0))
     assert sheet.startup == Money(Decimal(0))

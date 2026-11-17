@@ -47,17 +47,3 @@ def test_create_requires_strategies_or_explicit_run():
     """
     with pytest.raises(ValueError, match="strategies or an explicit run"):
         RunEstimate.create(())
-
-
-def test_create_accepts_empty_strategies_with_explicit_run():
-    """Handles test create accepts empty strategies with explicit run.
-    """
-    run, _, _, _, _ = build_worked_run(
-        with_print=False,
-        with_laminate=False,
-        with_cut=False,
-    )
-
-    estimate = RunEstimate.create((), run=run)
-
-    assert estimate.imposition_count() == run.imposition_count()

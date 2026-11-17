@@ -13,6 +13,23 @@ from backend.new_core.values.percent import Percent
 
 __all__ = ["RunEstimate"]
 
+
+def _volume_factor(sheet_count: int) -> Percent:
+    """Handles volume factor.
+
+    :param sheet_count: the sheet count.
+
+    :return: the Percent result.
+    """
+    if sheet_count < 5:
+        return Percent(30)
+    if sheet_count < 100:
+        return Percent(15)
+    if sheet_count < 500:
+        return Percent(5)
+    return Percent(0)
+
+
 @dataclass(frozen=True, slots=True)
 class RunEstimate:
     """Pricing strategies for one print run, with one validated press run."""
@@ -56,29 +73,31 @@ class RunEstimate:
             _parts_markup=parts_markup,
         )
 
-    def aggregated_operations(self) -> CostReport:
-        """Handles aggregated operations.
+    def sheet_report(self) -> CostReport:
+        """Returns the operation cost of one press target with markups.
 
         :return: the CostReport result.
         """
         report = CostReport.zero()
         for strategy in self._strategies:
             report += strategy.report()
-        return report
+        report = report.apply_markup(self._parts_markup)
+        volume_markup = _volume_factor(self._run.imposition_count())
+        return report.apply_markup(volume_markup)
 
-    def block_markup(self) -> Percent:
-        """Handles block markup.
+    def list_report(self) -> CostReport:
+        """Returns the press-target cost divided across the target sheets.
 
-        :return: the Percent result.
+        :return: the CostReport result.
         """
-        return self._parts_markup
+        return self.sheet_report() / self.targets_on_imposition()
 
-    def imposition_count(self) -> int:
-        """Handles imposition count.
+    def block_report(self) -> CostReport:
+        """Returns the per-target cost times the block sheet count.
 
-        :return: the int result.
+        :return: the CostReport result.
         """
-        return self._run.imposition_count()
+        return self.list_report() * self._run.block.count
 
     def targets_on_imposition(self) -> int:
         """Handles targets on imposition.
@@ -86,10 +105,3 @@ class RunEstimate:
         :return: the int result.
         """
         return self._run.block.imposition.count()
-
-    def block_count(self) -> int:
-        """Handles block count.
-
-        :return: the int result.
-        """
-        return self._run.block.count

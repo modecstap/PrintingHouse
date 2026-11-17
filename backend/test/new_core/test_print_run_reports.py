@@ -85,9 +85,9 @@ def test_constructor_print_stays_out_of_the_run():
     )
 
     assert run.block.operations == (printing,)
-    accountant = Accountant()
-    sheet = accountant.sheet_cost_report(_estimate(run, ctx))
-    per_item = accountant.list_report(_estimate(run, ctx))
+    estimate = _estimate(run, ctx)
+    sheet = estimate.sheet_report()
+    per_item = estimate.list_report()
 
     assert sheet.material == Money(Decimal(10))
     assert sheet.startup == Money(Decimal(11))
@@ -113,9 +113,7 @@ def test_sheet_cost_report_adds_block_markup_to_volume_markup():
     """
     run, _, _, _, ctx = build_worked_run(parts_markup=Percent(10))
 
-    sheet = Accountant.sheet_cost_report(
-        _estimate(run, ctx, parts_markup=Percent(10)),
-    )
+    sheet = _estimate(run, ctx, parts_markup=Percent(10)).sheet_report()
 
     assert sheet.markup == Money(Decimal("29.2"))
     assert sheet.total() == Money(Decimal("102.2"))
@@ -128,7 +126,7 @@ def test_sheet_cost_report_uses_the_15_percent_volume_band():
         required_count=24,
     )
 
-    sheet = Accountant.sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert run.imposition_count() == 5
     assert sheet.material == Money(Decimal(4))
@@ -217,7 +215,7 @@ def test_sheet_cost_report_uses_volume_markup_tiers(
 
     assert run.imposition_count() == press_sheets
 
-    sheet = Accountant().sheet_cost_report(_estimate(run, ctx))
+    sheet = _estimate(run, ctx).sheet_report()
 
     assert sheet.work == Money(Decimal(8))
     assert sheet.markup == Money(expected_markup)

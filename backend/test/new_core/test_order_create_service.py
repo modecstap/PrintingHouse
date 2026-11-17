@@ -206,7 +206,6 @@ def test_quote_applies_product_parts_markup_to_each_block():
     uow = InMemoryUnitOfWork()
     service = _create_service(uow, ctx)
     markup = Percent(10)
-    accountant = Accountant()
 
     def sheet_markups(blocks: tuple) -> tuple:
         """Handles sheet markups.
@@ -219,9 +218,9 @@ def test_quote_applies_product_parts_markup_to_each_block():
         order = OrderFactory(uow.orders).create(product, count=4)
         runs = service._made_run_for_order(order)
         return tuple(
-            accountant.sheet_cost_report(
-                service._run_estimate(r, order.product.parts_markup),
-            ).markup
+            service._run_estimate(
+                r, order.product.parts_markup,
+            ).sheet_report().markup
             for r in runs
         )
 

@@ -21,60 +21,9 @@ __all__ = [
 TAX_COMPENSATION_FACTOR = Percent(93)
 
 
-def _volume_factor(sheet_count: int) -> Percent:
-    """Handles volume factor.
-
-    :param sheet_count: the sheet count.
-
-    :return: the Percent result.
-    """
-    if sheet_count < 5:
-        return Percent(30)
-    if sheet_count < 100:
-        return Percent(15)
-    if sheet_count < 500:
-        return Percent(5)
-    return Percent(0)
-
-
 class Accountant:
     """Turns runs and additional work into cost and order reports."""
 
-    @staticmethod
-    def sheet_cost_report(estimate: RunEstimate) -> CostReport:
-        """Returns the operation cost of one press target.
-
-        :param estimate: the estimate.
-
-        :return: the CostReport result.
-        """
-        report = estimate.aggregated_operations()
-
-        report = report.apply_markup(estimate.block_markup())
-        report = report.apply_markup(_volume_factor(
-            estimate.imposition_count()))
-
-        return report
-
-    def list_report(self, estimate: RunEstimate) -> CostReport:
-        """Returns the press-target cost divided across the target sheets.
-
-        :param estimate: the estimate.
-
-        :return: the CostReport result.
-        """
-        sheet_report = self.sheet_cost_report(estimate)
-        return sheet_report / estimate.targets_on_imposition()
-
-    def block_cost_report(self, estimate: RunEstimate) -> CostReport:
-        """Returns the target-target cost times the block count.
-
-        :param estimate: the estimate.
-
-        :return: the CostReport result.
-        """
-        report = self.list_report(estimate)
-        return report * estimate.block_count()
 
     def product_cost_report(
             self,
@@ -90,7 +39,7 @@ class Accountant:
         """
         total_report = CostReport.zero()
         for estimate in estimates:
-            total_report += self.block_cost_report(estimate)
+            total_report += estimate.block_report()
 
         for work in works:
             priced = CostReport(
