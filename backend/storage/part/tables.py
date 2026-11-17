@@ -61,7 +61,7 @@ class PartPrintRow(Base):  # pylint: disable=too-few-public-methods
     )
     printer_id: Mapped[int] = mapped_column(ForeignKey("printers.id"))
     operator_id: Mapped[int] = mapped_column(ForeignKey("press_operators.id"))
-    chroma: Mapped[str] = mapped_column(Text)
+    chroma_id: Mapped[int] = mapped_column(ForeignKey("chroma.id"))
 
 
 class PartLaminateRow(Base):  # pylint: disable=too-few-public-methods
