@@ -78,7 +78,7 @@ def test_cost_report_prices_the_worked_run():
 
 
 def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
-    """ZERO_ZERO keeps paper and printer startup.
+    """Preset 0+0 keeps paper and printer startup.
 
     It drops ink and press salary.
 
@@ -114,7 +114,7 @@ def test_cost_report_omits_lamination_when_it_is_not_passed():
 
 
 def test_cost_report_adds_paper_and_ink_for_a_second_print():
-    """Two FOUR_ZERO prints price the press sheet at 20, 22, 10, and 15.6."""
+    """Two 4+0 prints price the press sheet at 20, 22, 10, and 15.6."""
     run, printing, _, _, ctx = build_worked_run(
         with_laminate=False, with_cut=False)
     second = Print(
