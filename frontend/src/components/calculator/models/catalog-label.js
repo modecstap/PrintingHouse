@@ -1,19 +1,47 @@
 import { formatMoney } from "../../../lib/format-money";
 
+export function catalogSelectOptionLabel({
+  value,
+  optionValue,
+  shortLabel,
+  detailLabel,
+}) {
+  if (value !== "" && value != null && String(value) === String(optionValue)) {
+    return detailLabel;
+  }
+  return shortLabel;
+}
+
 export function printerLabel(printer) {
   return printer.name;
+}
+
+export function printerDetailLabel(printer) {
+  return `${printer.name}`;
 }
 
 export function laminatorLabel(laminator) {
   return laminator.name;
 }
 
+export function laminatorDetailLabel(laminator) {
+  return `${laminator.name}`;
+}
+
 export function cutterLabel(cutter) {
   return cutter.name;
 }
 
+export function cutterDetailLabel(cutter) {
+  return `${cutter.name}, стопа ${cutter.max_stack}`;
+}
+
 export function operatorLabel(operator) {
   return operator.name;
+}
+
+export function operatorDetailLabel(operator) {
+  return `${operator.name}`;
 }
 
 function sheetSizeLabel(format) {
@@ -26,6 +54,10 @@ function sheetSizeLabel(format) {
 export function sheetLabel(sheet) {
   const { paper, format } = sheet;
   return `${paper.name} - ${paper.density} - ${sheetSizeLabel(format)}`;
+}
+
+export function filmShortLabel(film) {
+  return film.name;
 }
 
 export function filmLabel(film) {

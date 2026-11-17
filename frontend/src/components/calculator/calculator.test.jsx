@@ -169,10 +169,7 @@ async function fillMandatoryPrintAndCut() {
     within(printRegion).getByLabelText("Печать:"),
     "4",
   );
-  await userEvent.selectOptions(
-    within(printRegion).getByLabelText("Цветность:"),
-    "FOUR_FOUR",
-  );
+  await userEvent.selectOptions(screen.getByLabelText("Цветность:"), "FOUR_FOUR");
   const cutRegion = screen.getByRole("region", { name: /^Рез$/i });
   await userEvent.selectOptions(
     within(cutRegion).getByLabelText("Резак:"),
@@ -303,7 +300,7 @@ describe("Calculator", () => {
     const options = within(operatorSelect).getAllByRole("option");
     const labels = options.map((o) => o.textContent);
 
-    expect(labels.some((t) => t === "№ 4")).toBe(true);
+    expect(labels.some((t) => t === "№ 4" || t.startsWith("№ 4,"))).toBe(true);
     expect(labels.some((t) => t.includes("№ 5,"))).toBe(false);
     expect(
       screen.queryByRole("button", { name: /создать|добавить.*принтер|оператор/i }),
@@ -473,7 +470,7 @@ describe("Calculator", () => {
 
       const section = blockSection(1);
       await userEvent.selectOptions(
-        within(section).getByLabelText("Тип бумаги:"),
+        within(section).getByLabelText("Тип:"),
         "офсет",
       );
 
@@ -497,7 +494,7 @@ describe("Calculator", () => {
         "3",
       );
       await userEvent.selectOptions(
-        within(section).getByLabelText("Тип бумаги:"),
+        within(section).getByLabelText("Тип:"),
         "офсет",
       );
 
@@ -513,7 +510,7 @@ describe("Calculator", () => {
 
       const section = blockSection(1);
       await userEvent.selectOptions(
-        within(section).getByLabelText("Тип бумаги:"),
+        within(section).getByLabelText("Тип:"),
         "офсет",
       );
 
@@ -542,7 +539,7 @@ describe("Calculator", () => {
       const section2 = blockSection(2);
 
       await userEvent.selectOptions(
-        within(section1).getByLabelText("Тип бумаги:"),
+        within(section1).getByLabelText("Тип:"),
         "офсет",
       );
 

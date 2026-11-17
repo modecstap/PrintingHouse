@@ -177,7 +177,12 @@ describe("emptyCalculatorForm", () => {
     expect(block.spacing).toBe("0");
     expect(block.edgesId).toBe("");
     expect(block.edgesManual).toBe(false);
-    expect(block.operations.map((op) => op.kind)).toEqual(["print", "cut"]);
+    expect(block.operations.map((op) => op.kind)).toEqual([
+      "print",
+      "laminate",
+      "cut",
+      "die_cut",
+    ]);
     expect(typeof block.clientKey).toBe("string");
     expect(block.clientKey.length).toBeGreaterThan(0);
   });

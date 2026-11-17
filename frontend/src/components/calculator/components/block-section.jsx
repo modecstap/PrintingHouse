@@ -4,11 +4,23 @@ import {
   emptyDieCutOperation,
   emptyLaminateOperation,
   emptyPaperFields,
+  isDieCutOperationActive,
+  isLaminateOperationActive,
   paperFromSheet,
   sheetFormatFromSheet,
   sortBlockOperationsByKind,
 } from "../models/order";
-import { edgesLabel, sheetLabel } from "../models/catalog-label";
+import {
+  catalogSelectOptionLabel,
+  edgesLabel,
+  operatorDetailLabel,
+  operatorLabel,
+  sheetLabel,
+} from "../models/catalog-label";
+import {
+  CHROMA_OPTIONS,
+  LAMINATION_OPTIONS,
+} from "../models/operation-options";
 import {
   filterSheetsByPaperFilters,
   isSelectedPaperSheetInFilteredList,
@@ -20,13 +32,29 @@ import OperationFields from "./operation-fields";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import Button from "../../generic/button/button";
 import { TextField } from "../../generic/text-field/text-field";
-import { Checkbox } from "../../generic/checkbox/checkbox";
 import styles from "../calculator.module.css";
 
-const TOGGLE_OPERATION_KINDS = [
-  { kind: "laminate", label: "Ламинация", factory: emptyLaminateOperation },
-  { kind: "die_cut", label: "Высечка", factory: emptyDieCutOperation },
-];
+function findBlockOperation(block, kind) {
+  return block.operations.find((operation) => operation.kind === kind);
+}
+
+function replaceBlockOperation(block, kind, nextOperation) {
+  const hasKind = block.operations.some((operation) => operation.kind === kind);
+  const operations = hasKind
+    ? block.operations.map((operation) =>
+        operation.kind === kind ? nextOperation : operation,
+      )
+    : sortBlockOperationsByKind([...block.operations, nextOperation]);
+  return { ...block, operations };
+}
+
+function resetInactiveLaminateOperation(operation, lamination) {
+  return {
+    ...emptyLaminateOperation(),
+    clientKey: operation.clientKey,
+    lamination,
+  };
+}
 
 export default function BlockSection({
   block,
@@ -41,6 +69,10 @@ export default function BlockSection({
 
   const [paperTypeFilter, setPaperTypeFilter] = useState("");
   const [paperDensityFilter, setPaperDensityFilter] = useState("");
+
+  const printOperation = findBlockOperation(block, "print");
+  const laminateOperation = findBlockOperation(block, "laminate");
+  const dieCutOperation = findBlockOperation(block, "die_cut");
 
   const paperTypeOptions = useMemo(
     () => uniquePaperTypeOptionsFromSheets(sheets),
@@ -66,22 +98,31 @@ export default function BlockSection({
     });
   };
 
-  const setOperationKindEnabled = (kind, factory, enabled) => {
-    if (enabled) {
-      if (block.operations.some((op) => op.kind === kind)) {
-        return;
-      }
-      update({
-        operations: sortBlockOperationsByKind([
-          ...block.operations,
-          applyOperationCatalogDefaults(factory(), catalogs),
-        ]),
-      });
+  const updatePrintOperation = (partial) => {
+    if (!printOperation) {
       return;
     }
-    update({
-      operations: block.operations.filter((op) => op.kind !== kind),
-    });
+    updateOperation(printOperation.clientKey, { ...printOperation, ...partial });
+  };
+
+  const setLamination = (lamination) => {
+    const base = laminateOperation ?? emptyLaminateOperation();
+    let next = { ...base, lamination };
+    if (isLaminateOperationActive(next)) {
+      next = applyOperationCatalogDefaults(next, catalogs);
+    } else {
+      next = resetInactiveLaminateOperation(base, lamination);
+    }
+    onChange(replaceBlockOperation(block, "laminate", next));
+  };
+
+  const setDieCutOperator = (operatorId) => {
+    const base = dieCutOperation ?? emptyDieCutOperation();
+    let next = { ...base, operatorId };
+    if (isDieCutOperationActive(next)) {
+      next = applyOperationCatalogDefaults(next, catalogs);
+    }
+    onChange(replaceBlockOperation(block, "die_cut", next));
   };
 
   const edgesRows = catalogs.edges ?? [];
@@ -171,7 +212,17 @@ export default function BlockSection({
     setPaperDensityFilter(nextDensity);
   };
 
-  const existingKinds = new Set(block.operations.map((op) => op.kind));
+  const visibleOperations = sortBlockOperationsByKind(block.operations).filter(
+    (operation) => {
+      if (operation.kind === "die_cut") {
+        return false;
+      }
+      if (operation.kind === "laminate") {
+        return isLaminateOperationActive(operation);
+      }
+      return true;
+    },
+  );
 
   return (
     <section className={styles.calculatorBlock}>
@@ -205,38 +256,7 @@ export default function BlockSection({
             type="number"
             onChange={(v) => update({ target: { ...block.target, height: v } })}
           />
-        </div>
-        <div className={styles.right}>
-          <Dropdown
-            id={`${idPrefix}-paper-type-filter`}
-            label="Тип бумаги"
-            value={paperTypeFilter}
-            onChange={onPaperTypeFilterChange}
-            emptyOptionLabel="—"
-            options={paperTypeOptions}
-          />
-          <Dropdown
-            id={`${idPrefix}-paper-density-filter`}
-            label="Плотность"
-            value={paperDensityFilter}
-            onChange={onPaperDensityFilterChange}
-            emptyOptionLabel="—"
-            options={paperDensityOptions}
-          />
-          <Dropdown
-            id={`${idPrefix}-paper-sheet`}
-            label="Бумага"
-            value={paperSheetValue}
-            onChange={selectPaperSheet}
-            emptyOptionLabel="—"
-            options={filteredSheets.map((sheet) => ({
-              value: String(sheet.id),
-              label: sheetLabel(sheet),
-            }))}
-          />
-        </div>
-        <div>
-        {showEdgesDropdown && (
+          {showEdgesDropdown && (
             <Dropdown
               id={`${idPrefix}-edges-profile`}
               label="Края"
@@ -268,15 +288,75 @@ export default function BlockSection({
             </>
           )}
         </div>
+        <div className={styles.right}>
+          <Dropdown
+            id={`${idPrefix}-paper-type-filter`}
+            label="Тип"
+            value={paperTypeFilter}
+            onChange={onPaperTypeFilterChange}
+            emptyOptionLabel="—"
+            options={paperTypeOptions}
+          />
+          <Dropdown
+            id={`${idPrefix}-paper-density-filter`}
+            label="Плотность"
+            value={paperDensityFilter}
+            onChange={onPaperDensityFilterChange}
+            emptyOptionLabel="—"
+            options={paperDensityOptions}
+          />
+          <Dropdown
+            id={`${idPrefix}-paper-sheet`}
+            label="Бумага"
+            value={paperSheetValue}
+            onChange={selectPaperSheet}
+            emptyOptionLabel="—"
+            options={filteredSheets.map((sheet) => ({
+              value: String(sheet.id),
+              label: sheetLabel(sheet),
+            }))}
+          />
+        </div>
+        <div className={styles.thirdColumn}>
+          {printOperation && (
+            <Dropdown
+              id={`${idPrefix}-chroma`}
+              label="Цветность"
+              value={printOperation.chroma}
+              onChange={(v) => updatePrintOperation({ chroma: v })}
+              emptyOptionLabel="—"
+              options={CHROMA_OPTIONS}
+            />
+          )}
+          <Dropdown
+            id={`${idPrefix}-lamination`}
+            label="Ламинация"
+            value={laminateOperation?.lamination ?? ""}
+            onChange={setLamination}
+            emptyOptionLabel="—"
+            options={LAMINATION_OPTIONS}
+          />
+          <Dropdown
+            id={`${idPrefix}-die-cut-operator`}
+            label="Высечка"
+            value={dieCutOperation?.operatorId ?? ""}
+            onChange={setDieCutOperator}
+            emptyOptionLabel="—"
+            options={(catalogs.dieCutOperators ?? []).map((operator) => ({
+              value: String(operator.id),
+              label: catalogSelectOptionLabel({
+                value: dieCutOperation?.operatorId ?? "",
+                optionValue: operator.id,
+                shortLabel: operatorLabel(operator),
+                detailLabel: operatorDetailLabel(operator),
+              }),
+            }))}
+          />
+        </div>
       </div>
-      
-      <OperationKindToggles
-        idPrefix={idPrefix}
-        existingKinds={existingKinds}
-        onToggle={setOperationKindEnabled}
-      />
+
       <div className={styles.operations}>
-        {sortBlockOperationsByKind(block.operations).map((operation) => (
+        {visibleOperations.map((operation) => (
           <OperationFields
             key={operation.clientKey}
             operation={operation}
@@ -286,24 +366,5 @@ export default function BlockSection({
         ))}
       </div>
     </section>
-  );
-}
-
-function OperationKindToggles({ idPrefix, existingKinds, onToggle }) {
-  return (
-    <div className={styles.operationKinds}>
-      {TOGGLE_OPERATION_KINDS.map(({ kind, label, factory }) => {
-        const inputId = `${idPrefix}-kind-${kind}`;
-        return (
-          <Checkbox
-            key={kind}
-            id={inputId}
-            label={label}
-            checked={existingKinds.has(kind)}
-            onChange={(next) => onToggle(kind, factory, next)}
-          />
-        );
-      })}
-    </div>
   );
 }

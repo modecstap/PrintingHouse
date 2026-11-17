@@ -84,13 +84,28 @@ export function sortBlockOperationsByKind(operations) {
   );
 }
 
+export function isLaminateOperationActive(operation) {
+  const lamination = operation?.lamination ?? "";
+  return lamination === "ONE_ZERO" || lamination === "ONE_ONE";
+}
+
+export function isDieCutOperationActive(operation) {
+  return isCoercibleIdField(operation?.operatorId);
+}
+
 function ensureMandatoryBlockOperations(operations) {
   const next = [...operations];
   if (!next.some((op) => op.kind === "print")) {
     next.push(emptyPrintOperation());
   }
+  if (!next.some((op) => op.kind === "laminate")) {
+    next.push(emptyLaminateOperation());
+  }
   if (!next.some((op) => op.kind === "cut")) {
     next.push(emptyCutOperation());
+  }
+  if (!next.some((op) => op.kind === "die_cut")) {
+    next.push(emptyDieCutOperation());
   }
   return sortBlockOperationsByKind(next);
 }
@@ -113,7 +128,12 @@ export function emptyBlock() {
     edgesManual: false,
     bleeds: "0",
     spacing: "0",
-    operations: [emptyPrintOperation(), emptyCutOperation()],
+    operations: [
+      emptyPrintOperation(),
+      emptyLaminateOperation(),
+      emptyCutOperation(),
+      emptyDieCutOperation(),
+    ],
   };
 }
 
@@ -205,7 +225,17 @@ function mapBlockToWrite(block) {
         spacing: coerceIntegerField(block.spacing),
       },
     },
-    operations: block.operations.map(mapOperationToWrite),
+    operations: block.operations
+      .filter((operation) => {
+        if (operation.kind === "laminate") {
+          return isLaminateOperationActive(operation);
+        }
+        if (operation.kind === "die_cut") {
+          return isDieCutOperationActive(operation);
+        }
+        return true;
+      })
+      .map(mapOperationToWrite),
   };
 }
 
@@ -373,6 +403,9 @@ export function applyOperationCatalogDefaults(operation, catalogs) {
     };
   }
   if (operation.kind === "laminate") {
+    if (!isLaminateOperationActive(operation)) {
+      return operation;
+    }
     return {
       ...operation,
       laminatorId:
@@ -391,6 +424,9 @@ export function applyOperationCatalogDefaults(operation, catalogs) {
     };
   }
   if (operation.kind === "die_cut") {
+    if (!isDieCutOperationActive(operation)) {
+      return operation;
+    }
     return {
       ...operation,
       operatorId:
@@ -609,6 +645,9 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
     return;
   }
   if (operation.kind === "laminate") {
+    if (!isLaminateOperationActive(operation)) {
+      return;
+    }
     pushWhenInvalid(
       missing,
       isCoercibleIdField(operation.laminatorId),
@@ -627,7 +666,7 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
     pushWhenInvalid(
       missing,
       isNonEmptyStringField(operation.lamination),
-      `${labelPrefix}Кратность`,
+      `${labelPrefix}Ламинация`,
     );
     return;
   }
@@ -645,6 +684,9 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
     return;
   }
   if (operation.kind === "die_cut") {
+    if (!isDieCutOperationActive(operation)) {
+      return;
+    }
     pushWhenInvalid(
       missing,
       isCoercibleIdField(operation.operatorId),

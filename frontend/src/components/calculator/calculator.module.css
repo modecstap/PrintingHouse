@@ -50,6 +50,15 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.left,
+.right,
+.thirdColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  min-width: 0;
+}
+
 .fieldRow {
   width: 100%;
   display: grid;
@@ -58,12 +67,6 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.operationKinds {
-  display: flex;
-  width: 100%;
-  justify-content: space-around;
-  gap: var(--spacing-4);
-}
 
 .missingFieldsHeading {
   margin: 0;

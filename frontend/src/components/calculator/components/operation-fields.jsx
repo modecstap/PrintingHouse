@@ -1,8 +1,14 @@
 import {
+  catalogSelectOptionLabel,
+  cutterDetailLabel,
   cutterLabel,
   filmLabel,
+  filmShortLabel,
+  laminatorDetailLabel,
   laminatorLabel,
+  operatorDetailLabel,
   operatorLabel,
+  printerDetailLabel,
   printerLabel,
 } from "../models/catalog-label";
 import {
@@ -11,21 +17,6 @@ import {
 } from "../models/order";
 import { Dropdown } from "../../generic/dropdown/dropdown";
 import styles from "../calculator.module.css";
-
-const CHROMA_OPTIONS = [
-  { value: "ZERO_ZERO", label: "0+0" },
-  { value: "ONE_ZERO", label: "1+0" },
-  { value: "ONE_ONE", label: "1+1" },
-  { value: "FOUR_ZERO", label: "4+0" },
-  { value: "FOUR_ONE", label: "4+1" },
-  { value: "FOUR_FOUR", label: "4+4" },
-];
-
-const LAMINATION_OPTIONS = [
-  { value: "DONT", label: "Нет" },
-  { value: "ONE_ZERO", label: "1+0" },
-  { value: "ONE_ONE", label: "1+1" },
-];
 
 const KIND_HEADING = {
   print: "Печать",
@@ -47,6 +38,18 @@ function resolveFilmId(filmId, film, films) {
   return match ? String(match.id) : "";
 }
 
+function catalogDropdownOptions(items, value, shortLabel, detailLabel) {
+  return items.map((item) => ({
+    value: String(item.id),
+    label: catalogSelectOptionLabel({
+      value,
+      optionValue: item.id,
+      shortLabel: shortLabel(item),
+      detailLabel: detailLabel(item),
+    }),
+  }));
+}
+
 export default function OperationFields({ operation, catalogs, onChange }) {
   const heading = KIND_HEADING[operation.kind] ?? operation.kind;
   const idPrefix = `${operation.clientKey}`;
@@ -65,29 +68,25 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             value={operation.printerId}
             onChange={(v) => onChange({ ...operation, printerId: v })}
             emptyOptionLabel="—"
-            options={catalogs.printers.map((p) => ({
-              value: String(p.id),
-              label: printerLabel(p),
-            }))}
+            options={catalogDropdownOptions(
+              catalogs.printers,
+              operation.printerId,
+              printerLabel,
+              printerDetailLabel,
+            )}
           />
           <Dropdown
             id={`${idPrefix}-press-operator`}
-            label="Печать"
+            label="печатник"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
-            options={catalogs.pressOperators.map((o) => ({
-              value: String(o.id),
-              label: operatorLabel(o),
-            }))}
-          />
-          <Dropdown
-            id={`${idPrefix}-chroma`}
-            label="Цветность"
-            value={operation.chroma}
-            onChange={(v) => onChange({ ...operation, chroma: v })}
-            emptyOptionLabel="—"
-            options={CHROMA_OPTIONS}
+            options={catalogDropdownOptions(
+              catalogs.pressOperators,
+              operation.operatorId,
+              operatorLabel,
+              operatorDetailLabel,
+            )}
           />
         </div>
       </article>
@@ -133,29 +132,25 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             value={operation.laminatorId}
             onChange={(v) => onChange({ ...operation, laminatorId: v })}
             emptyOptionLabel="—"
-            options={catalogs.laminators.map((l) => ({
-              value: String(l.id),
-              label: laminatorLabel(l),
-            }))}
+            options={catalogDropdownOptions(
+              catalogs.laminators,
+              operation.laminatorId,
+              laminatorLabel,
+              laminatorDetailLabel,
+            )}
           />
           <Dropdown
             id={`${idPrefix}-laminate-operator`}
-            label="Ламинация"
+            label="Оператор"
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
-            options={catalogs.laminatorOperators.map((o) => ({
-              value: String(o.id),
-              label: operatorLabel(o),
-            }))}
-          />
-          <Dropdown
-            id={`${idPrefix}-lamination`}
-            label="Кратность"
-            value={operation.lamination}
-            onChange={(v) => onChange({ ...operation, lamination: v })}
-            emptyOptionLabel="—"
-            options={LAMINATION_OPTIONS}
+            options={catalogDropdownOptions(
+              catalogs.laminatorOperators,
+              operation.operatorId,
+              operatorLabel,
+              operatorDetailLabel,
+            )}
           />
           <Dropdown
             id={`${idPrefix}-film`}
@@ -165,7 +160,12 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             emptyOptionLabel="—"
             options={films.map((film) => ({
               value: String(film.id),
-              label: filmLabel(film),
+              label: catalogSelectOptionLabel({
+                value: filmValue,
+                optionValue: film.id,
+                shortLabel: filmShortLabel(film),
+                detailLabel: filmLabel(film),
+              }),
             }))}
           />
         </div>
@@ -187,10 +187,12 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             value={operation.cutterId}
             onChange={(v) => onChange({ ...operation, cutterId: v })}
             emptyOptionLabel="—"
-            options={catalogs.cutters.map((c) => ({
-              value: String(c.id),
-              label: cutterLabel(c),
-            }))}
+            options={catalogDropdownOptions(
+              catalogs.cutters,
+              operation.cutterId,
+              cutterLabel,
+              cutterDetailLabel,
+            )}
           />
           <Dropdown
             id={`${idPrefix}-cut-operator`}
@@ -198,34 +200,12 @@ export default function OperationFields({ operation, catalogs, onChange }) {
             value={operation.operatorId}
             onChange={(v) => onChange({ ...operation, operatorId: v })}
             emptyOptionLabel="—"
-            options={catalogs.cutterOperators.map((o) => ({
-              value: String(o.id),
-              label: operatorLabel(o),
-            }))}
-          />
-        </div>
-      </article>
-    );
-  }
-
-  if (operation.kind === "die_cut") {
-    return (
-      <article
-        className={styles.operationCard}
-        aria-label={heading}
-        role="region"
-      >
-        <div className={styles.fieldRow}>
-          <Dropdown
-            id={`${idPrefix}-die-cut-operator`}
-            label="Высечка"
-            value={operation.operatorId}
-            onChange={(v) => onChange({ ...operation, operatorId: v })}
-            emptyOptionLabel="—"
-            options={catalogs.dieCutOperators.map((o) => ({
-              value: String(o.id),
-              label: operatorLabel(o),
-            }))}
+            options={catalogDropdownOptions(
+              catalogs.cutterOperators,
+              operation.operatorId,
+              operatorLabel,
+              operatorDetailLabel,
+            )}
           />
         </div>
       </article>
