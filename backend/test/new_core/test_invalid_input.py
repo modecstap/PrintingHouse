@@ -32,6 +32,7 @@ from backend.new_core import (
     PrintRun,
     Product,
 )
+from backend.new_core.chroma import Chroma, ChromaID
 from backend.new_core.edges import Edges, EdgesID
 from backend.test.new_core.test_imposition import imposition_test_sheet
 __all__ = [
@@ -228,6 +229,18 @@ def test_cutter_rejects_a_stack_height_of_zero():
             lambda: Cutter(id=CutterID(1), name="№ 1", max_stack=-1),
             id="stack",
         ),
+        pytest.param(
+            "Chroma: C меньше 0, C=-1%",
+            lambda: Chroma(
+                id=ChromaID(0),
+                name="",
+                cyan=Percent(-1),
+                magenta=Percent(0),
+                yellow=Percent(0),
+                black=Percent(0),
+            ),
+            id="chroma cyan",
+        ),
     ],
 )
 def test_negative_measure_is_rejected(message: str, build: bool):
@@ -263,6 +276,21 @@ def test_negative_measure_is_rejected(message: str, build: bool):
                 edges=Edges(id=EdgesID(0), name="", bleeds=-1, spacing=-1),
             ),
             id="imposition",
+        ),
+        pytest.param(
+            (
+                "Chroma: C меньше 0, C=-1%; M меньше 0, M=-1%; "
+                "Y меньше 0, Y=-1%; K меньше 0, K=-1%"
+            ),
+            lambda: Chroma(
+                id=ChromaID(0),
+                name="",
+                cyan=Percent(-1),
+                magenta=Percent(-1),
+                yellow=Percent(-1),
+                black=Percent(-1),
+            ),
+            id="chroma",
         ),
     ],
 )
@@ -320,6 +348,11 @@ def test_every_invalid_field_is_reported(message: str, build: bool):
             "die cutter operator id",
             lambda: DieCutterOperatorID(-1),
             id="die cutter operator id",
+        ),
+        pytest.param(
+            "chroma id",
+            lambda: ChromaID(-1),
+            id="chroma id",
         ),
     ],
 )

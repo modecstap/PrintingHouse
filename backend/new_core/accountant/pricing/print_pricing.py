@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from backend.new_core.equipment.printer import Printer
 from backend.new_core.personal.press_operator import PressOperator
 from backend.new_core.accountant.cost_report import CostReport
-from backend.new_core.operations.print.chroma import Chroma
+from backend.new_core.chroma import Chroma
 from backend.new_core.print_run.print_run import PrintRun
 from backend.new_core.values.money import Money
 
@@ -39,7 +39,13 @@ class PrintPricing:
         )
         paper = self.print_run.block.imposition.press_sheet.price()
         material = paper + ink
-        if self.chroma is Chroma.ZERO_ZERO:
+        chroma = self.chroma
+        if (
+            chroma.cyan.value == 0
+            and chroma.magenta.value == 0
+            and chroma.yellow.value == 0
+            and chroma.black.value == 0
+        ):
             work = Money.zero()
         else:
             work = self.operator.salary_by_operation

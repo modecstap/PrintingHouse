@@ -7,7 +7,6 @@ import pytest
 
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.operations.print.chroma import Chroma
 from backend.new_core.personal.die_cutter_operator import (
     DieCutterOperator,
     DieCutterOperatorID,
@@ -30,6 +29,7 @@ from backend.test.new_core.test_print_run import (
     build_run_with_free_chroma_pricing,
     build_run_without_block_operations,
     build_worked_run,
+    chroma_four_zero,
     tax_scaling_order,
 )
 
@@ -62,7 +62,7 @@ def test_factories_append_in_call_order():
     ctx.die_cut_operators[operator.id] = operator
 
     assert run.block.operations == (printing, laminate, cut, die_cut)
-    assert printing.chroma is Chroma.FOUR_ZERO
+    assert printing.chroma == chroma_four_zero()
     assert run.block.imposition.press_sheet.paper.type.value == "press"
     assert laminate.lamination is Lamination.ONE_ZERO
     assert laminate.film_id == FilmID(1)
@@ -122,7 +122,7 @@ def test_sheet_cost_report_adds_block_markup_to_volume_markup():
 def test_sheet_cost_report_uses_the_15_percent_volume_band():
     """Five press sheets add 15 percent of the ink, not 30."""
     run, _, _, _, ctx = build_run_with_free_chroma_pricing(
-        chroma=Chroma.FOUR_ZERO,
+        chroma=chroma_four_zero(),
         required_count=24,
     )
 

@@ -11,7 +11,7 @@ from backend.new_core.operations.cut.cut import Cut
 from backend.new_core.operations.die_cut.die_cut import DieCut
 from backend.new_core.operations.laminate.laminate import Laminate
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.operations.print.chroma import Chroma
+from backend.new_core.chroma import Chroma
 from backend.new_core.operations.print.print import Print
 from backend.new_core.operations.run_operation import RunOperation
 from backend.new_core.order.additional_work import AdditionalWork

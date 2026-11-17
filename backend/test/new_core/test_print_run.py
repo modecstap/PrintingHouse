@@ -45,7 +45,7 @@ from backend.new_core.personal.press_operator import (
 from backend.new_core.print_run.print_run import PrintRun, PrintRunID
 from backend.new_core.values.money import Money
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.operations.print.chroma import Chroma
+from backend.new_core.chroma import Chroma, ChromaID
 from backend.new_core.edges import Edges, EdgesID
 from backend.new_core import (
     Cut,
@@ -76,7 +76,68 @@ __all__ = [
     "build_run_with_free_chroma_pricing",
     "tax_scaling_order",
     "attach_die_cut_operator",
+    "chroma_fill",
+    "chroma_zero_zero",
+    "chroma_one_zero",
+    "chroma_one_one",
+    "chroma_four_zero",
+    "chroma_four_one",
+    "chroma_four_four",
 ]
+
+
+def chroma_fill(
+    name: str,
+    cyan: int,
+    magenta: int,
+    yellow: int,
+    black: int,
+    *,
+    chroma_id: int = 1,
+) -> Chroma:
+    """Builds one ``Chroma`` preset for pricing tests."""
+    return Chroma(
+        id=ChromaID(chroma_id),
+        name=name,
+        cyan=Percent(cyan),
+        magenta=Percent(magenta),
+        yellow=Percent(yellow),
+        black=Percent(black),
+    )
+
+
+def chroma_zero_zero() -> Chroma:
+    """0+0 — no ink, no press salary."""
+    return chroma_fill("0+0", 0, 0, 0, 0, chroma_id=1)
+
+
+def chroma_one_zero() -> Chroma:
+    """1+0 — black only."""
+    return chroma_fill("1+0", 0, 0, 0, 100, chroma_id=2)
+
+
+def chroma_one_one() -> Chroma:
+    """1+1 — double black."""
+    return chroma_fill("1+1", 0, 0, 0, 200, chroma_id=3)
+
+
+def chroma_four_zero() -> Chroma:
+    """4+0 — full CMYK once each."""
+    return chroma_fill("4+0", 100, 100, 100, 100, chroma_id=4)
+
+
+def chroma_four_one() -> Chroma:
+    """4+1 — full CMYK with double black."""
+    return chroma_fill("4+1", 100, 100, 100, 200, chroma_id=5)
+
+
+def chroma_four_four() -> Chroma:
+    """4+4 — double CMYK."""
+    return chroma_fill("4+4", 200, 200, 200, 200, chroma_id=6)
+
+
+_DEFAULT_CHROMA = chroma_four_zero()
+
 
 @dataclass
 class _RunPricingFixtures:  # pylint: disable=too-many-instance-attributes
@@ -323,7 +384,7 @@ def build_worked_run(  # pylint: disable=too-many-arguments
     press_density: int = 100,
     press_price: int = 1000,
     required_count: int = 10,
-    chroma: Chroma = Chroma.FOUR_ZERO,
+    chroma: Chroma = _DEFAULT_CHROMA,
     printer_startup: int = 22,
     press_salary: int = 5,
     lamination: Lamination = Lamination.ONE_ZERO,

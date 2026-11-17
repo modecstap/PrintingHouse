@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 
 from backend.new_core.operations.laminate.lamination import Lamination
-from backend.new_core.operations.print.chroma import Chroma
+from backend.new_core.chroma import Chroma
 from backend.new_core.values.money import Money
 from backend.new_core import Print
 from backend.test.new_core.test_print_run import (
@@ -15,6 +15,12 @@ from backend.test.new_core.test_print_run import (
     build_run_with_free_chroma_pricing,
     _estimate,
     build_worked_run,
+    chroma_four_four,
+    chroma_four_one,
+    chroma_four_zero,
+    chroma_one_one,
+    chroma_one_zero,
+    chroma_zero_zero,
 )
 
 
@@ -78,7 +84,7 @@ def test_cost_report_drops_ink_and_printer_salary_for_zero_chroma():
 
     The press sheet is 6.99, 16, 39, and 18.60. The total is 80.59.
     """
-    run, _, _, _, ctx = build_worked_run(chroma=Chroma.ZERO_ZERO)
+    run, _, _, _, ctx = build_worked_run(chroma=chroma_zero_zero())
 
     sheet = _estimate(run, ctx).sheet_report()
 
@@ -132,12 +138,12 @@ def test_cost_report_adds_paper_and_ink_for_a_second_print():
 @pytest.mark.parametrize(
     ("chroma", "material"),
     [
-        (Chroma.ZERO_ZERO, 0),
-        (Chroma.ONE_ZERO, 1),
-        (Chroma.ONE_ONE, 2),
-        (Chroma.FOUR_ZERO, 4),
-        (Chroma.FOUR_ONE, 5),
-        (Chroma.FOUR_FOUR, 8),
+        (chroma_zero_zero(), 0),
+        (chroma_one_zero(), 1),
+        (chroma_one_one(), 2),
+        (chroma_four_zero(), 4),
+        (chroma_four_one(), 5),
+        (chroma_four_four(), 8),
     ],
 )
 def test_press_sheet_material_equals_the_chroma_shares(
