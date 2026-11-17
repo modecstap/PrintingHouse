@@ -82,7 +82,16 @@ function stubCatalogFetch(overrides = {}) {
     ],
     films: [],
     edges: [],
-    chroma: [],
+    chroma: [
+      {
+        id: 6,
+        name: "4+4",
+        cyan: 200,
+        magenta: 200,
+        yellow: 200,
+        black: 200,
+      },
+    ],
     ...overrides,
   };
 
@@ -169,10 +178,10 @@ async function fillMandatoryPrintAndCut() {
     "1",
   );
   await userEvent.selectOptions(
-    within(printRegion).getByLabelText("Печать:"),
+    within(printRegion).getByLabelText("печатник:"),
     "4",
   );
-  await userEvent.selectOptions(screen.getByLabelText("Цветность:"), "FOUR_FOUR");
+  await userEvent.selectOptions(screen.getByLabelText("Цветность:"), "6");
   const cutRegion = screen.getByRole("region", { name: /^Рез$/i });
   await userEvent.selectOptions(
     within(cutRegion).getByLabelText("Резак:"),
@@ -295,12 +304,12 @@ describe("Calculator", () => {
     await waitFor(() => {
       const printRegion = screen.getByRole("region", { name: /Печать/i });
       expect(within(printRegion).getByLabelText("Принтер:")).toHaveValue("1");
-      expect(within(printRegion).getByLabelText("Печать:")).toHaveValue("4");
+      expect(within(printRegion).getByLabelText("печатник:")).toHaveValue("4");
     });
 
     const operatorSelect = within(
       screen.getByRole("region", { name: /Печать/i }),
-    ).getByLabelText("Печать:");
+    ).getByLabelText("печатник:");
     const options = within(operatorSelect).getAllByRole("option");
     const labels = options.map((o) => o.textContent);
 

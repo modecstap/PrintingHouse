@@ -68,3 +68,8 @@ export function edgesLabel(edges) {
   const title = edges.name.trim() !== "" ? edges.name : `№ ${edges.id}`;
   return `${title}`;
 }
+
+export function chromaLabel(chroma) {
+  const title = chroma.name.trim() !== "" ? chroma.name : `№ ${chroma.id}`;
+  return `${title}`;
+}

@@ -41,7 +41,13 @@ function emptyPrintOperation() {
     kind: "print",
     printerId: "",
     operatorId: "",
-    chroma: "",
+    chromaId: "",
+    chromaName: "",
+    chromaManual: false,
+    cyan: "",
+    magenta: "",
+    yellow: "",
+    black: "",
   };
 }
 
@@ -180,7 +186,14 @@ function mapOperationToWrite(operation) {
       kind: "print",
       printer_id: coerceIdField(operation.printerId),
       operator_id: coerceIdField(operation.operatorId),
-      chroma: operation.chroma,
+      chroma: {
+        id: coerceIdField(operation.chromaId) || 0,
+        name: String(operation.chromaName ?? ""),
+        cyan: coerceIntegerField(operation.cyan),
+        magenta: coerceIntegerField(operation.magenta),
+        yellow: coerceIntegerField(operation.yellow),
+        black: coerceIntegerField(operation.black),
+      },
     };
   }
   if (operation.kind === "laminate") {
@@ -258,12 +271,25 @@ export function toOrderWrite(form) {
 
 function mapOperationFromDto(operation) {
   if (operation.kind === "print") {
+    const chroma = operation.chroma;
+    const catalogChroma =
+      chroma?.id != null && Number(chroma.id) > 0;
     return {
       clientKey: newClientKey(),
       kind: "print",
       printerId: numberToFormString(operation.printer_id),
       operatorId: numberToFormString(operation.operator_id),
-      chroma: operation.chroma,
+      chromaManual: !catalogChroma,
+      chromaId: catalogChroma ? numberToFormString(chroma.id) : "",
+      chromaName: chroma?.name ?? "",
+      cyan:
+        chroma?.cyan != null ? numberToFormString(chroma.cyan) : "",
+      magenta:
+        chroma?.magenta != null ? numberToFormString(chroma.magenta) : "",
+      yellow:
+        chroma?.yellow != null ? numberToFormString(chroma.yellow) : "",
+      black:
+        chroma?.black != null ? numberToFormString(chroma.black) : "",
     };
   }
   if (operation.kind === "laminate") {
@@ -449,6 +475,54 @@ export function isManualEdgesBlock(block) {
   return Boolean(block.edgesManual);
 }
 
+function printFieldsFromChromaRow(row) {
+  return {
+    chromaId: String(row.id),
+    chromaName: row.name,
+    chromaManual: false,
+    cyan: String(row.cyan),
+    magenta: String(row.magenta),
+    yellow: String(row.yellow),
+    black: String(row.black),
+  };
+}
+
+function applyChromaCatalogDefaults(operation, catalogs) {
+  if (operation.kind !== "print") {
+    return operation;
+  }
+  const rows = catalogs.chroma ?? [];
+  if (rows.length === 0) {
+    return {
+      ...operation,
+      chromaManual: true,
+      chromaId: "",
+    };
+  }
+  if (operation.chromaManual) {
+    return {
+      ...operation,
+      chromaId: "",
+      chromaName: String(operation.chromaName ?? ""),
+    };
+  }
+  const selected = rows.find((row) => String(row.id) === operation.chromaId);
+  if (selected) {
+    return {
+      ...operation,
+      ...printFieldsFromChromaRow(selected),
+    };
+  }
+  if (operation.chromaId === "" || operation.chromaId === undefined) {
+    return { ...operation };
+  }
+  return {
+    ...operation,
+    chromaManual: true,
+    chromaId: "",
+  };
+}
+
 function applyEdgesCatalogDefaults(block, catalogs) {
   const rows = catalogs.edges ?? [];
   if (rows.length === 0) {
@@ -495,9 +569,10 @@ export function applyBlockCatalogDefaults(block, catalogs) {
   next = applyEdgesCatalogDefaults(next, catalogs);
   return {
     ...next,
-    operations: ensureMandatoryBlockOperations(next.operations).map((operation) =>
-      applyOperationCatalogDefaults(operation, catalogs),
-    ),
+    operations: ensureMandatoryBlockOperations(next.operations).map((operation) => {
+      const withEquipment = applyOperationCatalogDefaults(operation, catalogs);
+      return applyChromaCatalogDefaults(withEquipment, catalogs);
+    }),
   };
 }
 
@@ -637,11 +712,13 @@ function collectOperationMissingLabels(operation, blockPrefix, missing) {
       isCoercibleIdField(operation.operatorId),
       `${labelPrefix}Печатник`,
     );
-    pushWhenInvalid(
-      missing,
-      isNonEmptyStringField(operation.chroma),
-      `${labelPrefix}Цветность`,
-    );
+    const chromaFilled =
+      (!operation.chromaManual && isCoercibleIdField(operation.chromaId)) ||
+      (isCoercibleIntegerField(operation.cyan) &&
+        isCoercibleIntegerField(operation.magenta) &&
+        isCoercibleIntegerField(operation.yellow) &&
+        isCoercibleIntegerField(operation.black));
+    pushWhenInvalid(missing, chromaFilled, `${labelPrefix}Цветность`);
     return;
   }
   if (operation.kind === "laminate") {

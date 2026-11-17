@@ -12,15 +12,13 @@ import {
 } from "../models/order";
 import {
   catalogSelectOptionLabel,
+  chromaLabel,
   edgesLabel,
   operatorDetailLabel,
   operatorLabel,
   sheetLabel,
 } from "../models/catalog-label";
-import {
-  CHROMA_OPTIONS,
-  LAMINATION_OPTIONS,
-} from "../models/operation-options";
+import { LAMINATION_OPTIONS } from "../models/operation-options";
 import {
   filterSheetsByPaperFilters,
   isSelectedPaperSheetInFilteredList,
@@ -128,6 +126,38 @@ export default function BlockSection({
   const edgesRows = catalogs.edges ?? [];
   const showEdgesDropdown = edgesRows.length > 0;
   const showManualEdgeFields = !showEdgesDropdown || block.edgesManual;
+
+  const chromaRows = catalogs.chroma ?? [];
+  const showChromaDropdown = chromaRows.length > 0;
+  const showManualChromaFields =
+    printOperation && (!showChromaDropdown || printOperation.chromaManual);
+
+  const selectChromaProfile = (chromaId) => {
+    if (!printOperation) {
+      return;
+    }
+    if (chromaId === "") {
+      updatePrintOperation({
+        chromaManual: true,
+        chromaId: "",
+        chromaName: "",
+      });
+      return;
+    }
+    const row = chromaRows.find((item) => String(item.id) === chromaId);
+    if (!row) {
+      return;
+    }
+    updatePrintOperation({
+      chromaId,
+      chromaName: row.name,
+      chromaManual: false,
+      cyan: String(row.cyan),
+      magenta: String(row.magenta),
+      yellow: String(row.yellow),
+      black: String(row.black),
+    });
+  };
 
   const selectEdgesProfile = (edgesId) => {
     if (edgesId === "") {
@@ -318,15 +348,50 @@ export default function BlockSection({
           />
         </div>
         <div className={styles.thirdColumn}>
-          {printOperation && (
+          {printOperation && showChromaDropdown && (
             <Dropdown
               id={`${idPrefix}-chroma`}
               label="Цветность"
-              value={printOperation.chroma}
-              onChange={(v) => updatePrintOperation({ chroma: v })}
-              emptyOptionLabel="—"
-              options={CHROMA_OPTIONS}
+              value={printOperation.chromaManual ? "" : printOperation.chromaId}
+              onChange={selectChromaProfile}
+              emptyOptionLabel="Вручную"
+              options={chromaRows.map((row) => ({
+                value: String(row.id),
+                label: chromaLabel(row),
+              }))}
             />
+          )}
+          {printOperation && showManualChromaFields && (
+            <>
+              <TextField
+                id={`${idPrefix}-chroma-cyan`}
+                label="C"
+                value={printOperation.cyan}
+                type="number"
+                onChange={(v) => updatePrintOperation({ cyan: v })}
+              />
+              <TextField
+                id={`${idPrefix}-chroma-magenta`}
+                label="M"
+                value={printOperation.magenta}
+                type="number"
+                onChange={(v) => updatePrintOperation({ magenta: v })}
+              />
+              <TextField
+                id={`${idPrefix}-chroma-yellow`}
+                label="Y"
+                value={printOperation.yellow}
+                type="number"
+                onChange={(v) => updatePrintOperation({ yellow: v })}
+              />
+              <TextField
+                id={`${idPrefix}-chroma-black`}
+                label="K"
+                value={printOperation.black}
+                type="number"
+                onChange={(v) => updatePrintOperation({ black: v })}
+              />
+            </>
           )}
           <Dropdown
             id={`${idPrefix}-lamination`}

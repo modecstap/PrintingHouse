@@ -35,7 +35,19 @@ const sampleWriteJson = {
           edges: { id: 0, name: "", bleeds: 2, spacing: 0 },
         },
         operations: [
-          { kind: "print", printer_id: 1, operator_id: 4, chroma: "FOUR_ZERO" },
+          {
+            kind: "print",
+            printer_id: 1,
+            operator_id: 4,
+            chroma: {
+              id: 4,
+              name: "4+0",
+              cyan: 100,
+              magenta: 100,
+              yellow: 100,
+              black: 100,
+            },
+          },
           {
             kind: "laminate",
             laminator_id: 2,
@@ -83,7 +95,13 @@ function sampleForm() {
             kind: "print",
             printerId: "1",
             operatorId: "4",
-            chroma: "FOUR_ZERO",
+            chromaId: "4",
+            chromaName: "4+0",
+            chromaManual: false,
+            cyan: "100",
+            magenta: "100",
+            yellow: "100",
+            black: "100",
           },
           {
             clientKey: "laminate-key",
@@ -142,6 +160,16 @@ describe("applyCatalogDefaultsToForm", () => {
       sheets: [{ id: 2, paper: { name: "A", density: 1, thickness: 1, price_per_kilo: "1" }, format: null }],
       films: [],
       edges: [{ id: 5, name: "std", bleeds: 2, spacing: 3 }],
+      chroma: [
+        {
+          id: 6,
+          name: "4+4",
+          cyan: 200,
+          magenta: 200,
+          yellow: 200,
+          black: 200,
+        },
+      ],
     };
     const next = applyCatalogDefaultsToForm(form, catalogs);
     expect(next.blocks[0].paperSheetId).toBe("2");
@@ -151,6 +179,8 @@ describe("applyCatalogDefaultsToForm", () => {
     expect(next.blocks[0].spacing).toBe("3");
     expect(next.blocks[0].operations[0].printerId).toBe("7");
     expect(next.blocks[0].operations[0].operatorId).toBe("3");
+    expect(next.blocks[0].operations[0].chromaId).toBe("");
+    expect(next.blocks[0].operations[0].chromaManual).toBe(false);
   });
 });
 
@@ -264,7 +294,14 @@ describe("toOrderWrite", () => {
                 kind: "print",
                 printer_id: "",
                 operator_id: "",
-                chroma: "",
+                chroma: {
+                  id: 0,
+                  name: "",
+                  cyan: "",
+                  magenta: "",
+                  yellow: "",
+                  black: "",
+                },
               },
               { kind: "cut", cutter_id: "", operator_id: "" },
             ],
@@ -295,7 +332,9 @@ describe("toCalculatorForm", () => {
     expect(form.blocks[0].target.width).toBe("90");
     expect(form.blocks[0].paperSheetId).toBe("1");
     expect(form.blocks[0].operations[0].printerId).toBe("1");
-    expect(form.blocks[0].operations[0].chroma).toBe("FOUR_ZERO");
+    expect(form.blocks[0].operations[0].chromaId).toBe("4");
+    expect(form.blocks[0].operations[0].chromaName).toBe("4+0");
+    expect(form.blocks[0].operations[0].cyan).toBe("100");
     expect(form.blocks[0].operations[1].filmId).toBe("2");
     expect(form.additionalWorks[0].price).toBe("10.00");
     expect(form.blocks[0].clientKey).toMatch(/\S/);
