@@ -12,6 +12,7 @@ export const EMPTY_CATALOGS = {
   sheets: [],
   films: [],
   edges: [],
+  chroma: [],
 };
 
 function toCatalogLoadState({ catalogs, error, errors }) {

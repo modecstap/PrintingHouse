@@ -82,6 +82,7 @@ function stubCatalogFetch(overrides = {}) {
     ],
     films: [],
     edges: [],
+    chroma: [],
     ...overrides,
   };
 
@@ -118,6 +119,9 @@ function stubCatalogFetch(overrides = {}) {
     }
     if (url === "/api/edges") {
       return jsonResponse(catalogs.edges);
+    }
+    if (url === "/api/chroma") {
+      return jsonResponse(catalogs.chroma);
     }
     if (url === "/api/references") {
       return jsonResponse([]);
@@ -193,6 +197,7 @@ async function waitForCatalogs(fetchMock = global.fetch) {
       "/api/materials/sheets",
       "/api/materials/films",
       "/api/edges",
+      "/api/chroma",
     ];
     for (const url of catalogUrls) {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -444,6 +449,7 @@ describe("Calculator", () => {
       "/api/materials/sheets",
       "/api/materials/films",
       "/api/edges",
+      "/api/chroma",
     ];
     for (const url of catalogUrls) {
       expect(global.fetch).not.toHaveBeenCalledWith(

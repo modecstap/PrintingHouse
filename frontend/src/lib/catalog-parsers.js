@@ -207,3 +207,36 @@ export function toFilmList(raw) {
 export function toEdgesList(raw) {
   return toList(raw, toEdges, "edges");
 }
+
+export function toChroma(raw) {
+  if (typeof raw?.id !== "number") {
+    throw new Error("chroma: id must be a number");
+  }
+  if (typeof raw?.name !== "string") {
+    throw new Error("chroma: name must be a string");
+  }
+  if (typeof raw?.cyan !== "number") {
+    throw new Error("chroma: cyan must be a number");
+  }
+  if (typeof raw?.magenta !== "number") {
+    throw new Error("chroma: magenta must be a number");
+  }
+  if (typeof raw?.yellow !== "number") {
+    throw new Error("chroma: yellow must be a number");
+  }
+  if (typeof raw?.black !== "number") {
+    throw new Error("chroma: black must be a number");
+  }
+  return {
+    id: raw.id,
+    name: raw.name,
+    cyan: raw.cyan,
+    magenta: raw.magenta,
+    yellow: raw.yellow,
+    black: raw.black,
+  };
+}
+
+export function toChromaList(raw) {
+  return toList(raw, toChroma, "chroma");
+}

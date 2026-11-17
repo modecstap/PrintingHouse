@@ -6,6 +6,7 @@ export {
   toSheet,
   toFilm,
   toEdges,
+  toChroma,
   toPrinterList,
   toLaminatorList,
   toCutterList,
@@ -13,6 +14,7 @@ export {
   toSheetList,
   toFilmList,
   toEdgesList,
+  toChromaList,
 } from "../../../lib/catalog-parsers";
 
 export function toJsonInt(value) {

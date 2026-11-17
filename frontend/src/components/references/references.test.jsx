@@ -29,6 +29,7 @@ const CATALOG_GET_PATHS = [
   "/api/materials/sheets",
   "/api/materials/films",
   "/api/edges",
+  "/api/chroma",
 ];
 
 function catalogGets(body = []) {
@@ -198,6 +199,7 @@ describe("Reference pages", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Края" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Цветность" })).toBeInTheDocument();
     });
   });
 

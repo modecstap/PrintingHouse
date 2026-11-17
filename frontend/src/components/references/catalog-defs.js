@@ -1,6 +1,7 @@
 import { formatMoney } from "../../lib/format-money";
 import { formatThicknessMm } from "../../lib/format-thickness-mm";
 import {
+  toChromaList,
   toCutterList,
   toEdgesList,
   toFilmList,
@@ -325,6 +326,58 @@ export const STAFF_CATALOGS = [
   }),
 ];
 
+const CHROMA = {
+  key: "chroma",
+  title: "Цветность",
+  listPath: "/api/chroma",
+  itemPath(id) {
+    return `/api/chroma/${id}`;
+  },
+  parseList: toChromaList,
+  clientId: false,
+  canReplace: true,
+  columns: [
+    { header: "Номер", render: (row) => row.id },
+    { header: "Название", render: (row) => row.name },
+    { header: "C", render: (row) => row.cyan },
+    { header: "M", render: (row) => row.magenta },
+    { header: "Y", render: (row) => row.yellow },
+    { header: "K", render: (row) => row.black },
+  ],
+  fields: [
+    { name: "name", label: "Название" },
+    { name: "cyan", label: "C", ...INT },
+    { name: "magenta", label: "M", ...INT },
+    { name: "yellow", label: "Y", ...INT },
+    { name: "black", label: "K", ...INT },
+  ],
+  emptyForm: {
+    name: "",
+    cyan: "",
+    magenta: "",
+    yellow: "",
+    black: "",
+  },
+  formFromRow(row) {
+    return {
+      name: row.name,
+      cyan: String(row.cyan),
+      magenta: String(row.magenta),
+      yellow: String(row.yellow),
+      black: String(row.black),
+    };
+  },
+  toPayload(form) {
+    return {
+      name: form.name.trim(),
+      cyan: toJsonInt(form.cyan),
+      magenta: toJsonInt(form.magenta),
+      yellow: toJsonInt(form.yellow),
+      black: toJsonInt(form.black),
+    };
+  },
+};
+
 const EDGES = {
   key: "edges",
   title: "Края",
@@ -363,6 +416,6 @@ const EDGES = {
   },
 };
 
-export const VALUE_CATALOGS = [EDGES];
+export const VALUE_CATALOGS = [EDGES, CHROMA];
 
 export const MATERIAL_CATALOGS = [SHEETS, FILMS];

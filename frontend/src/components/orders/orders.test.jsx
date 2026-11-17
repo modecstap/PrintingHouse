@@ -96,6 +96,9 @@ function stubCatalogFetch() {
     if (url === "/api/edges") {
       return jsonResponse([]);
     }
+    if (url === "/api/chroma") {
+      return jsonResponse([]);
+    }
     if (url === "/api/references") {
       return jsonResponse([]);
     }

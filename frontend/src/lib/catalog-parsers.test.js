@@ -5,6 +5,7 @@ import {
   toOperator,
   toSheet,
   toFilm,
+  toChroma,
   toEdges,
   toPrinterList,
 } from "./catalog-parsers";
@@ -225,6 +226,28 @@ describe("toEdges", () => {
       name: "std",
       bleeds: 2,
       spacing: 5,
+    });
+  });
+});
+
+describe("toChroma", () => {
+  it("should parse chroma row", () => {
+    expect(
+      toChroma({
+        id: 4,
+        name: "4+0",
+        cyan: 100,
+        magenta: 100,
+        yellow: 100,
+        black: 100,
+      }),
+    ).toEqual({
+      id: 4,
+      name: "4+0",
+      cyan: 100,
+      magenta: 100,
+      yellow: 100,
+      black: 100,
     });
   });
 });
