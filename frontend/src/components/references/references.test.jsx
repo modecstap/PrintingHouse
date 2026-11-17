@@ -1,7 +1,10 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { formatMoney } from "../../lib/format-money";
-import References from "./references";
+import ReferenceValues from "./reference-values";
+import ReferencesEquipment from "./references-equipment";
+import ReferencesMaterials from "./references-materials";
+import ReferencesStaff from "./references-staff";
 import { jsonResponse } from "../../test-utils/json-response";
 import { renderWithToken } from "../../test-utils/render-with-token";
 
@@ -48,7 +51,7 @@ function templateTable() {
     .closest("table");
 }
 
-describe("References", () => {
+describe("Reference pages", () => {
   const originalFetch = global.fetch;
 
   afterEach(() => {
@@ -76,7 +79,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferenceValues />);
 
     await waitFor(() => {
       expect(within(templateTable()).getByText("Шаблон")).toBeInTheDocument();
@@ -106,7 +109,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferenceValues />);
 
     await waitFor(() => {
       expect(
@@ -140,7 +143,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferenceValues />);
 
     await waitFor(() => {
       expect(
@@ -166,7 +169,7 @@ describe("References", () => {
     expect(within(tbody).queryAllByRole("row")).toHaveLength(0);
   });
 
-  it("should show catalog group headings and all nine catalog titles", async () => {
+  it("should show values page title and template table headers", async () => {
     mockFetch((url) => {
       if (url === "/api/references") {
         return jsonResponse([]);
@@ -174,14 +177,11 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferenceValues />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Оборудование" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Значения" })).toBeInTheDocument();
     });
-    expect(screen.getByRole("heading", { name: "Персонал" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Материалы" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Справочники" })).toBeInTheDocument();
     expect(screen.queryByText("Справочная система")).not.toBeInTheDocument();
 
     await waitFor(() => {
@@ -190,25 +190,53 @@ describe("References", () => {
       ).toBeInTheDocument();
     });
 
-    for (const title of [
-      "Принтеры",
-      "Ламинаторы",
-      "Резаки",
-      "Печатники",
-      "Ламинация",
-      "Рез",
-      "Высечка",
-      "Листы",
-      "Плёнки",
-    ]) {
-      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-    }
-
     expect(
       within(templateTable()).getByRole("columnheader", {
         name: "Заказ",
       })
     ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Края" })).toBeInTheDocument();
+    });
+  });
+
+  it("should show all nine catalog titles on split reference pages", async () => {
+    mockFetch((url) => {
+      if (url === "/api/references") {
+        return jsonResponse([]);
+      }
+      return jsonResponse({}, 404);
+    });
+
+    const { unmount: unmountEquipment } = renderWithToken(
+      <ReferencesEquipment />
+    );
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Оборудование" })).toBeInTheDocument();
+    });
+    for (const title of ["Принтеры", "Ламинаторы", "Резаки"]) {
+      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+    }
+    unmountEquipment();
+
+    const { unmount: unmountStaff } = renderWithToken(<ReferencesStaff />);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Персонал" })).toBeInTheDocument();
+    });
+    for (const title of ["Печатники", "Ламинация", "Рез", "Высечка"]) {
+      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+    }
+    unmountStaff();
+
+    renderWithToken(<ReferencesMaterials />);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Материалы" })).toBeInTheDocument();
+    });
+    for (const title of ["Листы", "Плёнки"]) {
+      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("heading", { name: "Края" })).not.toBeInTheDocument();
   });
 
   it("should create a printer and show 409 on duplicate id", async () => {
@@ -251,7 +279,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferencesEquipment />);
 
     const region = await screen.findByRole("region", { name: "Принтеры" });
 
@@ -351,7 +379,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferencesMaterials />);
 
     const sheets = await screen.findByRole("region", { name: "Листы" });
     const films = screen.getByRole("region", { name: "Плёнки" });
@@ -460,7 +488,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferencesMaterials />);
 
     const sheets = await screen.findByRole("region", { name: "Листы" });
     const paperFieldset = within(sheets).getByRole("group", { name: "Бумага" });
@@ -522,7 +550,7 @@ describe("References", () => {
       return jsonResponse({}, 404);
     });
 
-    renderWithToken(<References />);
+    renderWithToken(<ReferencesEquipment />);
 
     const cutters = await screen.findByRole("region", { name: "Резаки" });
     await waitFor(() => {
@@ -546,9 +574,6 @@ describe("References", () => {
         "printers down"
       );
     });
-    expect(
-      screen.getByRole("columnheader", { name: "Имя" })
-    ).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Ламинаторы" })).toBeInTheDocument();
   });
 });

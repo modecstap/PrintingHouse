@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  EQUIPMENT_CATALOGS,
-  MATERIAL_CATALOGS,
-  STAFF_CATALOGS,
-} from "./catalog-defs";
+import { VALUE_CATALOGS } from "./catalog-defs";
 import CatalogPanel from "./catalog-panel";
 import { fetchReferences, saveReference } from "./api/references";
 import Button from "../generic/button/button";
@@ -16,10 +12,7 @@ import styles from "./references.module.css";
 
 const EMPTY_FORM = { name: "", description: "", orderId: "" };
 
-export default function References({
-  catalogs: _catalogs,
-  onCatalogsInvalidated,
-}) {
+export default function ReferenceValues({ onCatalogsInvalidated }) {
   const {
     data: references,
     status: listStatus,
@@ -52,7 +45,7 @@ export default function References({
   return (
     <div className={pageStyles.page}>
       <div className={pageStyles.pageTitle}>
-        <h1>Справочники</h1>
+        <h1>Значения</h1>
       </div>
 
       {listStatus === "loading" && <div>Загрузка...</div>}
@@ -125,44 +118,13 @@ export default function References({
         {saveError && <div role="alert">{saveError}</div>}
       </div>
 
-      <section aria-labelledby="references-equipment">
-        <h2 id="references-equipment" className={styles.groupHeading}>
-          Оборудование
-        </h2>
-        {EQUIPMENT_CATALOGS.map((def) => (
-          <CatalogPanel
-            key={def.key}
-            def={def}
-            onCatalogsInvalidated={onCatalogsInvalidated}
-          />
-        ))}
-      </section>
-
-      <section aria-labelledby="references-staff">
-        <h2 id="references-staff" className={styles.groupHeading}>
-          Персонал
-        </h2>
-        {STAFF_CATALOGS.map((def) => (
-          <CatalogPanel
-            key={def.key}
-            def={def}
-            onCatalogsInvalidated={onCatalogsInvalidated}
-          />
-        ))}
-      </section>
-
-      <section aria-labelledby="references-materials">
-        <h2 id="references-materials" className={styles.groupHeading}>
-          Материалы
-        </h2>
-        {MATERIAL_CATALOGS.map((def) => (
-          <CatalogPanel
-            key={def.key}
-            def={def}
-            onCatalogsInvalidated={onCatalogsInvalidated}
-          />
-        ))}
-      </section>
+      {VALUE_CATALOGS.map((def) => (
+        <CatalogPanel
+          key={def.key}
+          def={def}
+          onCatalogsInvalidated={onCatalogsInvalidated}
+        />
+      ))}
     </div>
   );
 }

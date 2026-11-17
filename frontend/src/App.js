@@ -1,7 +1,10 @@
 import { Tabs } from "./components/generic/tabs/tabs";
 import Calculator from "./components/calculator/calculator";
 import Orders from "./components/orders/orders";
-import References from "./components/references/references";
+import ReferenceValues from "./components/references/reference-values";
+import ReferencesEquipment from "./components/references/references-equipment";
+import ReferencesMaterials from "./components/references/references-materials";
+import ReferencesStaff from "./components/references/references-staff";
 import Auth from "./components/auth/auth";
 import { useCatalogs } from "./hooks/useCatalogs";
 import { AuthSessionProvider, useAuthSession } from "./lib/auth-session";
@@ -13,6 +16,10 @@ function AppTabs() {
   const catalogProps = {
     catalogs: catalogLoadState.catalogs,
     catalogLoadState,
+  };
+
+  const referenceCatalogProps = {
+    onCatalogsInvalidated: reloadCatalogs,
   };
 
   const tabs = [
@@ -27,14 +34,24 @@ function AppTabs() {
       Content: () => <Orders {...catalogProps} />,
     },
     {
-      id: "references",
-      label: "Справочники",
-      Content: () => (
-        <References
-          catalogs={catalogLoadState.catalogs}
-          onCatalogsInvalidated={reloadCatalogs}
-        />
-      ),
+      id: "references-equipment",
+      label: "Оборудование",
+      Content: () => <ReferencesEquipment {...referenceCatalogProps} />,
+    },
+    {
+      id: "references-staff",
+      label: "Персонал",
+      Content: () => <ReferencesStaff {...referenceCatalogProps} />,
+    },
+    {
+      id: "references-materials",
+      label: "Материалы",
+      Content: () => <ReferencesMaterials {...referenceCatalogProps} />,
+    },
+    {
+      id: "reference-values",
+      label: "Значения",
+      Content: () => <ReferenceValues {...referenceCatalogProps} />,
     },
     { id: "auth", label: "Вход", Content: Auth },
   ];

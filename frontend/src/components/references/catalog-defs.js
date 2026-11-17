@@ -368,4 +368,6 @@ const EDGES = {
   },
 };
 
-export const MATERIAL_CATALOGS = [SHEETS, FILMS, EDGES];
+export const VALUE_CATALOGS = [EDGES];
+
+export const MATERIAL_CATALOGS = [SHEETS, FILMS];
